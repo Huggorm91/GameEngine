@@ -20,9 +20,10 @@ float4 GetAlphaBlendColor(float4 first, float4 second)
     {
         return result;
     }
-    result.x = first.x * first.w / result.w + second.x * second.w / result.w;
-    result.y = first.y * first.w / result.w + second.y * second.w / result.w;
-    result.z = first.z * first.w / result.w + second.z * second.w / result.w;
+    float alphaInverse = 1.f / result.w;
+    result.x = (first.x * first.w) * alphaInverse + (second.x * second.w) * alphaInverse;
+    result.y = (first.y * first.w) * alphaInverse + (second.y * second.w) * alphaInverse;
+    result.z = (first.z * first.w) * alphaInverse + (second.z * second.w) * alphaInverse;
     return result;
 }
 
@@ -53,6 +54,15 @@ float3 CalculateBlinnPhong(float3 aPixelNormal, float3 aPosition, float3 aColor,
 float3 LinearToGamma(float3 aColor)
 {
     return pow(abs(aColor), 0.45454545454545454545454545454545f); // 1 / 2.2
+}
+
+uint GetNumMips(TextureCube aCubeMap)
+{
+    uint width = 0;
+    uint height = 0;
+    uint numMips = 0;
+    aCubeMap.GetDimensions(0, width, height, numMips);
+    return numMips;
 }
 
 #endif // SHADERFUNCTIONS_HLSLI

@@ -1,15 +1,22 @@
 #pragma once
 #include "GraphicsCommand.h"
 #include "../Rendering/Texture.h"
+#include "../InterOp/RHI.h"
 
 class GfxCmd_SetTextureResource : public GraphicsCommand
 {
 public:
-	GfxCmd_SetTextureResource(Texture* anAlbedoTexture, Texture* aNormalTexture);
+	enum class TextureSlot: unsigned
+	{
+		AmbientlightCubeMap = 100
+	};
+
+	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, PIPELINE_STAGE aStage);
 
 	void Execute() override;
 
 private:
-	const Texture* myAlbedoTexture;
-	const Texture* myNormalTexture;
+	const PIPELINE_STAGE myStage;
+	const TextureSlot mySlot;
+	const Texture* myTexture;
 };

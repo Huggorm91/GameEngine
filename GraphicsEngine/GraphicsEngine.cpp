@@ -40,6 +40,12 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
 
+		if (!RHI::LoadTexture(&myDefaultCubeMap, L"Content/Textures/CubeMaps/skansen_cubemap.dds"))
+		{
+			GELogger.Err("Failed to load default cubemap!");
+		}
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 100, &myDefaultCubeMap);
+
 		if (!CreateDefaultSampler())
 		{
 			GELogger.Err("Failed to create default sampler!");

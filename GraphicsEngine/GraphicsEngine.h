@@ -39,6 +39,7 @@ public:
 	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const { return myWindowHandle; }
 	[[nodiscard]] SIZE FORCEINLINE GetWindowSize() const { return myWindowSize; }
 	inline const Material& GetDefaultMaterial() const { return myDefaultMaterial; }
+	inline const Texture* GetDefaultCubeMap() const {	return &myDefaultCubeMap; }
 	inline LineDrawer& GetLineDrawer() { return myLineDrawer; }
 
 private:
@@ -61,6 +62,7 @@ private:
 
 	Texture myDefaultNormalTexture{};
 	Texture myMissingTexture{};
+	Texture myDefaultCubeMap{};
 	Material myDefaultMaterial{};
 
 	FrameBuffer myFrameBuffer{};

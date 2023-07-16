@@ -30,9 +30,10 @@ struct DefaultPixelOutput
 };
 
 SamplerState DefaultSampler : register(s0);
-Texture2D albedoTexture : register(t0);
-Texture2D normalTexture : register(t1);
-Texture2D DefaultTexture : register(t14);
-Texture2D MissingTexture : register(t15);
+Texture2D AlbedoTexture : register(t0);
+Texture2D NormalTexture : register(t1);
+Texture2D DefaultTexture : register(t98);
+Texture2D MissingTexture : register(t99);
+TextureCube AmbientlightCubeMap : register(t100);
 
 #endif // DEFAULTMATERIALDATA_HLSLI

@@ -2,27 +2,11 @@
 #include "GfxCmd_SetTextureResource.h"
 #include "AssetManager/Managers/TextureManager.h"
 
-GfxCmd_SetTextureResource::GfxCmd_SetTextureResource(Texture* anAlbedoTexture, Texture* aNormalTexture) : myAlbedoTexture(anAlbedoTexture), myNormalTexture(aNormalTexture)
+GfxCmd_SetTextureResource::GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, PIPELINE_STAGE aStage) : myTexture(aTexture), mySlot(aSlot), myStage(aStage)
 {
 }
 
 void GfxCmd_SetTextureResource::Execute()
 {
-	if (myAlbedoTexture)
-	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, myAlbedoTexture);
-	}
-	else
-	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, GetMissingTexture());
-	}
-
-	if (myNormalTexture)
-	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 1, myNormalTexture);
-	}
-	else
-	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 1, GetDefaultNormalTexture());
-	}
+		RHI::SetTextureResource(myStage, static_cast<unsigned>(mySlot), myTexture);
 }
