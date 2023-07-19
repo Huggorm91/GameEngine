@@ -359,6 +359,7 @@
     <None Include="Shaders\Default\DefaultLineData.hlsli" />
     <None Include="Shaders\Default\DefaultMaterialData.hlsli" />
     <None Include="Shaders\Default\DefaultVertexInput.hlsli" />
+    <None Include="Shaders\Default\LightFunctions.hlsli" />
     <None Include="Shaders\Default\ShaderFunctions.hlsli" />
   </ItemGroup>
   <ItemGroup>

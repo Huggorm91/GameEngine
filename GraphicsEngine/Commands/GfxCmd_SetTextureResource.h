@@ -8,7 +8,7 @@ class GfxCmd_SetTextureResource : public GraphicsCommand
 public:
 	enum class TextureSlot: unsigned
 	{
-		AmbientlightCubeMap = 100
+		EnvironmentCubeMap = 100
 	};
 
 	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, PIPELINE_STAGE aStage);

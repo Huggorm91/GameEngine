@@ -198,6 +198,7 @@
     <None Include="Shaders\Default\ShaderFunctions.hlsli" />
     <None Include="Shaders\ConstantBuffers\MaterialBuffer.hlsli" />
     <None Include="Shaders\Default\DefaultLineData.hlsli" />
+    <None Include="Shaders\Default\LightFunctions.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Default_VS.hlsl" />
