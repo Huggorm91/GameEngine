@@ -4,10 +4,15 @@ DefaultVertexToPixel main(DefaultVertexInput input)
 {
 	DefaultVertexToPixel result;
 
-	result.Color = GetAlphaBlendColor(OB_Color, input.Color0);
-	result.Color = GetAlphaBlendColor(result.Color, input.Color1);
-	result.Color = GetAlphaBlendColor(result.Color, input.Color2);
-	result.Color = GetAlphaBlendColor(result.Color, input.Color3);
+	result.Color[0] = GetAlphaBlendColor(OB_Color, input.Color0);
+	result.Color[1] = GetAlphaBlendColor(OB_Color, input.Color1);
+	result.Color[2] = GetAlphaBlendColor(OB_Color, input.Color2);
+    result.Color[3] = GetAlphaBlendColor(OB_Color, input.Color3);
+	
+    //result.Color[0] = GetAdditiveBlendColor(OB_Color, input.Color0);
+    //result.Color[1] = GetAdditiveBlendColor(OB_Color, input.Color1);
+    //result.Color[2] = GetAdditiveBlendColor(OB_Color, input.Color2);
+    //result.Color[3] = GetAdditiveBlendColor(OB_Color, input.Color3);
 
 	result.UVs[0] = input.UV0;
 	result.UVs[1] = input.UV1;

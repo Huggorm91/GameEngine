@@ -221,6 +221,12 @@ void ModelViewer::Init()
 		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
 	}
+
+	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
+	myGameObjects.back().SetPosition({ 0.f, -1.f, 0.f });
+	myGameObjects.back().SetScale({ 20.f, 20.f, 20.f });
+	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
 }
 
 void ModelViewer::Update()

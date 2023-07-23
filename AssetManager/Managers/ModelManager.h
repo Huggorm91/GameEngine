@@ -11,7 +11,8 @@ enum class Primitives
 	Sphere,
 	InvertedCube,
 	InvertedPyramid,
-	InvertedSphere
+	InvertedSphere,
+	Plane
 };
 
 class ModelManager

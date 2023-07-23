@@ -11,7 +11,7 @@
 struct DefaultVertexToPixel
 {
     float2 UVs[4] : UV;
-    float4 Color : COLOR;
+    float4 Color[4] : COLOR;
 
     float4 LocalPosition : LOCALPOSITION;
     float4 Position : SV_POSITION;

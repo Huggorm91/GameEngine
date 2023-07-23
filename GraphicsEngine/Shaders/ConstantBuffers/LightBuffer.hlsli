@@ -29,12 +29,14 @@ cbuffer LightBuffer : register(b2)
 {
 	float3 LB_InvertedDirection;
     float paddinglb0;
-	float3 LB_AmbientColor;
+    float3 LB_DirectionalColor;
     float paddinglb1;
-	float3 LB_DiffuseColor;
+	float3 LB_AmbientColor;
     float paddinglb2;
-	float3 LB_SpecularColor;
+	float3 LB_DiffuseColor;
     float paddinglb3;
+	float3 LB_SpecularColor;
+    float paddinglb4;
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];

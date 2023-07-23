@@ -11,8 +11,6 @@ struct Vertex
 {
 	Vertex();
 	Vertex(const TGA::FBX::Vertex& aVertex);
-	Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector4f& aColor);
-	Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector4f& aColor, const CommonUtilities::Vector2f& aUV);
 	Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector2f& aUV, const CommonUtilities::Vector3f& aNormal, const CommonUtilities::Vector3f& aTangent);
 
 	CommonUtilities::Vector2f myUVs[4];

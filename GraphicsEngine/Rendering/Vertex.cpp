@@ -26,7 +26,7 @@ Vertex::Vertex() : myPosition(), myColors(), myBoneIDs(), myBoneWeights(), myUVs
 
 Vertex::Vertex(const TGA::FBX::Vertex& aVertex) : myUVs{ {aVertex.UVs[0][0], aVertex.UVs[0][1]}, {aVertex.UVs[1][0], aVertex.UVs[1][1]}, {aVertex.UVs[2][0], aVertex.UVs[2][1]}, {aVertex.UVs[3][0], aVertex.UVs[3][1]} },
 myColors{ {aVertex.VertexColors[0][0], aVertex.VertexColors[0][1], aVertex.VertexColors[0][2], aVertex.VertexColors[0][3]}, {aVertex.VertexColors[1][0], aVertex.VertexColors[1][1], aVertex.VertexColors[1][2], aVertex.VertexColors[1][3]}, {aVertex.VertexColors[2][0], aVertex.VertexColors[2][1], aVertex.VertexColors[2][2], aVertex.VertexColors[2][3]}, {aVertex.VertexColors[3][0], aVertex.VertexColors[3][1], aVertex.VertexColors[3][2], aVertex.VertexColors[3][3]} },
-myPosition(aVertex.Position[0], aVertex.Position[1], aVertex.Position[2], aVertex.Position[3]), 
+myPosition(aVertex.Position[0], aVertex.Position[1], aVertex.Position[2], aVertex.Position[3]),
 myBoneIDs(aVertex.BoneIDs[0], aVertex.BoneIDs[1], aVertex.BoneIDs[2], aVertex.BoneIDs[3]),
 myBoneWeights(aVertex.BoneWeights[0], aVertex.BoneWeights[1], aVertex.BoneWeights[2], aVertex.BoneWeights[3]),
 myNormal(aVertex.Normal[0], aVertex.Normal[1], aVertex.Normal[2]),
@@ -34,15 +34,7 @@ myTangent(aVertex.Tangent[0], aVertex.Tangent[1], aVertex.Tangent[2])
 {
 }
 
-Vertex::Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector4f& aColor) : myPosition(aPosition, 1.f), myColors{ aColor }, myBoneIDs(), myBoneWeights(), myUVs(), myNormal(), myTangent()
-{
-}
-
-Vertex::Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector4f& aColor, const CommonUtilities::Vector2f& aUV) : myPosition(aPosition, 1.f), myColors{ aColor }, myBoneIDs(), myBoneWeights(), myUVs{aUV}, myNormal(), myTangent()
-{
-}
-
-Vertex::Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector2f& aUV, const CommonUtilities::Vector3f& aNormal, const CommonUtilities::Vector3f& aTangent) : 
-	myPosition(aPosition, 1.f), myColors(), myBoneIDs(), myBoneWeights(), myUVs{aUV}, myNormal(aNormal), myTangent(aTangent)
+Vertex::Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector2f& aUV, const CommonUtilities::Vector3f& aNormal, const CommonUtilities::Vector3f& aTangent) :
+	myPosition(aPosition, 1.f), myColors{ {0.f, 0.f, 0.f, 1.f} }, myBoneIDs(), myBoneWeights(), myUVs{ aUV }, myNormal(aNormal), myTangent(aTangent)
 {
 }

@@ -46,7 +46,7 @@ float3 CalculateBlinnPhong(float3 aPixelNormal, float3 aPosition, float3 aColor,
 
     const float3 phongA = aColor * LB_AmbientColor;
     const float3 phongD = aColor * (LB_DiffuseColor * LdotN);
-    const float3 phongS = LB_SpecularColor * saturate(pow(NdotH, aShininess));
+    const float3 phongS = LB_DirectionalColor * saturate(pow(NdotH, aShininess));
 
     return phongA + phongD + phongS;
 }

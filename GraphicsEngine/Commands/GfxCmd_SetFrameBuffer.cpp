@@ -13,8 +13,8 @@ void GfxCmd_SetFrameBuffer::Execute()
 	buffer.Data.View = myViewMatrix;
 	buffer.Data.Projection = myProjectionMatrix;
 	buffer.Data.Position = myCameraPosition;
-	buffer.Data.TotalTime = CommonUtilities::Timer::GetTotalTime();
 	buffer.Data.DeltaTime = CommonUtilities::Timer::GetDeltaTime();
+	buffer.Data.TotalTime = CommonUtilities::Timer::GetTotalTime();
 
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER, 0, buffer);

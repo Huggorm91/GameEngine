@@ -5,11 +5,11 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_SetObjectBuffer.h"
 
-MeshComponent::MeshComponent() : Component(), myTransform(), myColor(), myElements(), myBoxSphereBounds()
+MeshComponent::MeshComponent() : Component(), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds()
 {
 }
 
-MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh) : myElements(), myName(aMesh.Name), myColor(), myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform()
+MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh) : myElements(), myName(aMesh.Name), myColor{ 0.f, 0.f, 0.f, 1.f }, myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform()
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
 	{

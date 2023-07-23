@@ -4,12 +4,6 @@
 #include <math.h>
 #include <Matrix3x3.hpp>
 
-struct VertexInfo
-{
-	CommonUtilities::Vector3f Position;
-	CommonUtilities::Vector4f Color;
-};
-
 MeshData CreateCubeMesh(const float aSize)
 {
 	return CreateCubeMesh({ aSize, aSize, aSize });
@@ -255,427 +249,6 @@ MeshData CreatePyramidMesh(const CommonUtilities::Vector3f& aSize)
 	return result;
 }
 
-MeshData CreateSphereMesh4(const float aRadius, const int aParallelCount, const int aMeridianCount)
-{
-	MeshData result;
-	result.myMeshName = "Sphere4";
-	const float pi = 3.1415926535f;
-	const float pi2 = 2.f * pi;
-	float piInverse = 1.f / pi;
-	float pi2Inverse = 1.f / pi2;
-	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
-
-	// add top vertex
-	std::vector<Vertex> mdlVertices;
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, aRadius * 2.f, 0.f }, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ 0.5f, 0.f });
-
-	CommonUtilities::Vector3f center{ 0.f, aRadius, 0.f };
-	// generate vertices per stack / slice
-	for (int i = 0; i < aMeridianCount - 1; i++)
-	{
-		float phi = pi * (i + 1) / aMeridianCount;
-		for (int j = 0; j < aParallelCount; j++)
-		{
-			float theta = pi2 * j / aParallelCount;
-			CommonUtilities::Vector3f pos;
-			pos.x = aRadius * (std::sin(phi) * std::cos(theta));
-			pos.y = aRadius * std::cos(phi) + aRadius;
-			pos.z = aRadius * (std::sin(phi) * std::sin(theta));
-			CommonUtilities::Vector3f directionToCenter = (center - pos).GetNormalized();
-			mdlVertices.emplace_back(pos, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ j == aParallelCount - 1 ? 1.f : .5f + (atan2(directionToCenter.z, directionToCenter.x) * pi2Inverse), i == aMeridianCount - 1 ? 1.f : .5f + asin(directionToCenter.y) * piInverse });
-		}
-	}
-
-	// add bottom vertex
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, 0.f, 0.f }, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ 0.5f, 1.f });
-
-	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
-	{
-		AMLogger.Err("Could not create a vertex buffer for Sphere!");
-		return result;
-	}
-
-	// add top / bottom triangles
-	const unsigned top = 0;
-	const unsigned bottom = static_cast<unsigned int>(mdlVertices.size() - 1);
-	std::vector<unsigned int> mdlIndices;
-	for (int i = 0; i < aParallelCount; ++i)
-	{
-		auto i0 = i + 1;
-		auto i1 = (i + 1) % aParallelCount + 1;
-		CreateTri(mdlIndices, top, i1, i0);
-
-		i0 = i + aParallelCount * (aMeridianCount - 2) + 1;
-		i1 = (i + 1) % aParallelCount + aParallelCount * (aMeridianCount - 2) + 1;
-		CreateTri(mdlIndices, bottom, i0, i1);
-	}
-
-	// add quads per stack / slice
-	for (int j = 0; j < aMeridianCount - 2; j++)
-	{
-		auto j0 = j * aParallelCount + 1;
-		auto j1 = (j + 1) * aParallelCount + 1;
-		for (int i = 0; i < aParallelCount; i++)
-		{
-			auto i0 = j0 + i;
-			auto i1 = j0 + (i + 1) % aParallelCount;
-			auto i2 = j1 + (i + 1) % aParallelCount;
-			auto i3 = j1 + i;
-			CreateQuad(mdlIndices, i0, i1, i2, i3);
-		}
-	}
-
-	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
-	{
-		AMLogger.Err("Could not create a index buffer for Sphere!");
-		return result;
-	}
-
-	result.myVertexCount = static_cast<UINT>(mdlVertices.size());
-	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
-	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	result.myStride = sizeof(Vertex);
-
-	return result;
-}
-
-MeshData CreateSphereMesh5(const float aRadius, const int aSlices, const int aStacks)
-{
-	MeshData result;
-	result.myMeshName = "Sphere5";
-	std::vector<Vertex> mdlVertices;
-
-	float radiansPerStack = (180 / (aStacks)) * 0.0174532925f;
-	float radiansPerSlice = (360 / aSlices) * 0.0174532925f;
-
-	CommonUtilities::Matrix4x4f stackMatrix = CommonUtilities::Matrix4x4f::CreateRotationAroundX(radiansPerStack);
-	CommonUtilities::Matrix4x4f sliceMatrix = CommonUtilities::Matrix4x4f::CreateRotationAroundY(radiansPerSlice);
-
-	CommonUtilities::Vector4f direction(0, 1, 0, 0);
-	CommonUtilities::Vector4f tangent(-1, 0, 0, 0);
-
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, aRadius * 2.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 0.f }, direction, CommonUtilities::Vector3f{ 1, 0, 0 });
-	direction *= stackMatrix;
-
-	for (int stack = 0; stack < aStacks - 1; stack++)
-	{
-		float UVY = ((float)stack + 1.0f) / (float)aStacks;
-		for (int slice = 0; slice < aSlices; slice++)
-		{
-			float UVX = (((float)slice) / ((float)aSlices - 1.0f));
-
-			CommonUtilities::Vector3f pos = direction * aRadius;
-			pos.y += aRadius;
-			mdlVertices.emplace_back(pos, CommonUtilities::Vector2f{ UVX, UVY }, direction, tangent);
-
-			direction *= sliceMatrix;
-			tangent *= sliceMatrix;
-		}
-		direction *= stackMatrix;
-	}
-
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, 0.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 1.f }, CommonUtilities::Vector3f{ 0, -1, 0 }, CommonUtilities::Vector3f{ 1, 0, 0 });
-
-
-	std::vector<unsigned int> mdlIndices;
-
-	//top
-	for (int index = 1; index < aSlices + 1; index++)
-	{
-		int nextIndex = index + 1;
-		if (nextIndex >= aSlices + 1)
-		{
-			nextIndex = 1;
-		}
-
-		mdlIndices.push_back(0);
-		mdlIndices.push_back(index);
-		mdlIndices.push_back(nextIndex);
-	}
-
-
-	//Middle
-	for (int stack = 1; stack < aStacks - 1; stack++)
-	{
-		int stackStartIndex = (stack - 1) * aSlices + 1;
-		for (int slice = 0; slice < aSlices; slice++)
-		{
-			int currentNodeIndex = stackStartIndex + slice;
-			int nextNodeIndex = currentNodeIndex + 1;
-			if (nextNodeIndex >= (stackStartIndex + aSlices))
-			{
-				nextNodeIndex = stackStartIndex;
-			}
-
-			mdlIndices.push_back(currentNodeIndex);
-			mdlIndices.push_back(currentNodeIndex + aSlices);
-			mdlIndices.push_back(nextNodeIndex);
-
-			mdlIndices.push_back(nextNodeIndex);
-			mdlIndices.push_back(currentNodeIndex + aSlices);
-			mdlIndices.push_back(nextNodeIndex + aSlices);
-		}
-	}
-
-
-	//bottom
-	int bottomStartIndex = mdlVertices.size() - (aSlices + 1);
-	for (int index = bottomStartIndex; index < mdlVertices.size() - 1; index++)
-	{
-		int nextIndex = index + 1;
-		if (nextIndex >= mdlVertices.size() - 1)
-		{
-			nextIndex = bottomStartIndex;
-		}
-
-		mdlIndices.push_back(index);
-		mdlIndices.push_back(mdlVertices.size() - 1);
-		mdlIndices.push_back(nextIndex);
-	}
-
-
-	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
-	{
-		AMLogger.Err("Could not create a vertex buffer for Sphere!");
-		return result;
-	}
-
-	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
-	{
-		AMLogger.Err("Could not create a index buffer for Sphere!");
-		return result;
-	}
-
-	result.myVertexCount = static_cast<UINT>(mdlVertices.size());
-	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
-	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	result.myStride = sizeof(Vertex);
-
-	return result;
-}
-
-MeshData CreateSphereMesh2(const float aRadius, const int aParallelCount, const int aMeridianCount)
-{
-	MeshData result;
-	result.myMeshName = "Sphere2";
-	float pi = 3.1415926535f;
-	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
-
-	// add top vertex
-	std::vector<Vertex> mdlVertices;
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, aRadius * 2.f, 0.f }, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ 0.5f, 0.f });
-
-	CommonUtilities::Vector3f center{ 0.f, aRadius, 0.f };
-	CommonUtilities::Vector2f uvMultiplier;
-	uvMultiplier.x = 1.f / aParallelCount;
-	uvMultiplier.y = 1.f / aMeridianCount;
-	// generate vertices per stack / slice
-	for (int i = 0; i < aMeridianCount - 1; i++)
-	{
-		float phi = pi * (i + 1) / aMeridianCount;
-		for (int j = 0; j < aParallelCount; j++)
-		{
-			float theta = 2.0f * pi * j / aParallelCount;
-			CommonUtilities::Vector3f pos;
-			pos.x = aRadius * (std::sin(phi) * std::cos(theta));
-			pos.y = aRadius * std::cos(phi) + aRadius;
-			pos.z = aRadius * (std::sin(phi) * std::sin(theta));
-			mdlVertices.emplace_back(pos, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ uvMultiplier.x * j, uvMultiplier.y * i });
-		}
-	}
-
-	// add bottom vertex
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, 0.f, 0.f }, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ 0.5f, 1.f });
-
-	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
-	{
-		AMLogger.Err("Could not create a vertex buffer for Sphere!");
-		return result;
-	}
-
-	// add top / bottom triangles
-	const unsigned top = 0;
-	const unsigned bottom = static_cast<unsigned int>(mdlVertices.size() - 1);
-	std::vector<unsigned int> mdlIndices;
-	for (int i = 0; i < aParallelCount; ++i)
-	{
-		auto i0 = i + 1;
-		auto i1 = (i + 1) % aParallelCount + 1;
-		CreateTri(mdlIndices, top, i1, i0);
-
-		i0 = i + aParallelCount * (aMeridianCount - 2) + 1;
-		i1 = (i + 1) % aParallelCount + aParallelCount * (aMeridianCount - 2) + 1;
-		CreateTri(mdlIndices, bottom, i0, i1);
-	}
-
-	// add quads per stack / slice
-	for (int j = 0; j < aMeridianCount - 2; j++)
-	{
-		auto j0 = j * aParallelCount + 1;
-		auto j1 = (j + 1) * aParallelCount + 1;
-		for (int i = 0; i < aParallelCount; i++)
-		{
-			auto i0 = j0 + i;
-			auto i1 = j0 + (i + 1) % aParallelCount;
-			auto i2 = j1 + (i + 1) % aParallelCount;
-			auto i3 = j1 + i;
-			CreateQuad(mdlIndices, i0, i1, i2, i3);
-		}
-	}
-
-	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
-	{
-		AMLogger.Err("Could not create a index buffer for Sphere!");
-		return result;
-	}
-
-	result.myVertexCount = static_cast<UINT>(mdlVertices.size());
-	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
-	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	result.myStride = sizeof(Vertex);
-
-	return result;
-}
-
-MeshData CreateSphereMesh3(const float aRadius, const int aParallelCount, const int aMeridianCount)
-{
-	MeshData result;
-	result.myMeshName = "Sphere3";
-	const float pi = 3.1415926535f;
-	const float pi2 = 2.f * pi;
-	float piInverse = 1.f / pi;
-	float pi2Inverse = 1.f / pi2;
-	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
-
-
-	CommonUtilities::Vector2f uvMultiplier;
-	uvMultiplier.x = 1.f / aParallelCount;
-	uvMultiplier.y = 1.f / aMeridianCount;
-	CommonUtilities::Vector3f center{ 0.f, aRadius, 0.f };
-	std::vector<Vertex> mdlVertices;
-	std::vector<unsigned int> mdlIndices;
-	for (int t = 0; t < aMeridianCount; t++) // stacks are ELEVATION so they count theta
-	{
-		float theta1 = ((float)(t) / aMeridianCount) * pi;
-		float theta2 = ((float)(t + 1) / aMeridianCount) * pi;
-
-		for (int p = 0; p < aParallelCount; p++) // slices are ORANGE SLICES so the count azimuth
-		{
-			float phi1 = ((float)(p) / aParallelCount) * pi2; // azimuth goes around 0 .. 2*PI
-			float phi2 = ((float)(p + 1) / aParallelCount) * pi2;
-
-			//phi2   phi1
-			// |      |
-			// 2------1 -- theta1
-			// |\ _   |
-			// |    \ |
-			// 3------4 -- theta2
-			//
-
-			//vertex1 = vertex on a sphere of radius r at spherical coords theta1, phi1
-			CommonUtilities::Vector3f pos1;
-			pos1.x = aRadius * std::cos(phi1) * std::sin(theta1);
-			pos1.y = (aRadius * std::sin(phi1) * std::sin(theta1)) + aRadius;
-			pos1.z = aRadius * std::cos(theta1);
-
-			//vertex2 = vertex on a sphere of radius r at spherical coords theta1, phi2
-			CommonUtilities::Vector3f pos2;
-			pos2.x = aRadius * std::cos(phi2) * std::sin(theta1);
-			pos2.y = (aRadius * std::sin(phi2) * std::sin(theta1)) + aRadius;
-			pos2.z = aRadius * std::cos(theta1);
-
-			//vertex3 = vertex on a sphere of radius r at spherical coords theta2, phi2
-			CommonUtilities::Vector3f pos3;
-			pos3.x = aRadius * std::cos(phi2) * std::sin(theta2);
-			pos3.y = (aRadius * std::sin(phi2) * std::sin(theta2)) + aRadius;
-			pos3.z = aRadius * std::cos(theta2);
-
-			//vertex4 = vertex on a sphere of radius r at spherical coords theta2, phi1
-			CommonUtilities::Vector3f pos4;
-			pos4.x = aRadius * std::cos(phi1) * std::sin(theta2);
-			pos4.y = (aRadius * std::sin(phi1) * std::sin(theta2)) + aRadius;
-			pos4.z = aRadius * std::cos(theta2);
-
-			// x = r * cos(phi) * sin(theta)
-			// y = r * sin(phi) * sin(theta)
-			// z = r * cos(theta)
-
-			// facing out
-			if (t == 0) // top cap
-			{
-				unsigned Top = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d1 = (center - pos1).GetNormalized();
-				mdlVertices.emplace_back(pos1, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d1.z, d1.x) * pi2Inverse), .5f + asin(d1.y) * piInverse });
-
-				unsigned BackRight = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d3 = (center - pos3).GetNormalized();
-				mdlVertices.emplace_back(pos3, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d3.z, d3.x) * pi2Inverse), .5f + asin(d3.y) * piInverse });
-
-				unsigned v4 = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d4 = (center - pos4).GetNormalized();
-				mdlVertices.emplace_back(pos4, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d4.z, d4.x) * pi2Inverse), .5f + asin(d4.y) * piInverse });
-
-				CreateTri(mdlIndices, v4, BackRight, Top);
-			}
-			else if (t + 1 == aMeridianCount) //end cap
-			{
-				unsigned Top = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d1 = (center - pos1).GetNormalized();
-				mdlVertices.emplace_back(pos1, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d1.z, d1.x) * pi2Inverse), .5f + asin(d1.y) * piInverse });
-
-				unsigned BackLeft = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d2 = (center - pos2).GetNormalized();
-				mdlVertices.emplace_back(pos2, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d2.z, d2.x) * pi2Inverse), .5f + asin(d2.y) * piInverse });
-
-				unsigned BackRight = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d3 = (center - pos3).GetNormalized();
-				mdlVertices.emplace_back(pos3, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d3.z, d3.x) * pi2Inverse), .5f + asin(d3.y) * piInverse });
-
-				CreateTri(mdlIndices, BackRight, BackLeft, Top);
-			}
-			else // body, facing OUT:
-			{
-				unsigned Top = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d1 = (center - pos1).GetNormalized();
-				mdlVertices.emplace_back(pos1, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d1.z, d1.x) * pi2Inverse), .5f + asin(d1.y) * piInverse });
-
-				unsigned BackLeft = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d2 = (center - pos2).GetNormalized();
-				mdlVertices.emplace_back(pos2, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d2.z, d2.x) * pi2Inverse), .5f + asin(d2.y) * piInverse });
-
-				unsigned BackRight = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d3 = (center - pos3).GetNormalized();
-				mdlVertices.emplace_back(pos3, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d3.z, d3.x) * pi2Inverse), .5f + asin(d3.y) * piInverse });
-
-				unsigned v4 = static_cast<unsigned>(mdlVertices.size());
-				CommonUtilities::Vector3f d4 = (center - pos4).GetNormalized();
-				mdlVertices.emplace_back(pos4, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, CommonUtilities::Vector2f{ .5f + (atan2(d4.z, d4.x) * pi2Inverse), .5f + asin(d4.y) * piInverse });
-
-				CreateQuad(mdlIndices, v4, BackRight, BackLeft, Top);
-			}
-		}
-	}
-
-	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
-	{
-		AMLogger.Err("Could not create a vertex buffer for Sphere!");
-		return result;
-	}
-
-	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
-	{
-		AMLogger.Err("Could not create a index buffer for Sphere!");
-		return result;
-	}
-
-	result.myVertexCount = static_cast<UINT>(mdlVertices.size());
-	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
-	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	result.myStride = sizeof(Vertex);
-
-	return result;
-}
-
 MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int aStackCount)
 {
 	MeshData result;
@@ -693,6 +266,7 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 	const float latitudeSpacing = 1.0f / (aStackCount + 1.0f);
 	const float longitudeSpacing = 1.0f / aSliceCount;
 	CommonUtilities::Vector3f tangent(1.f, 0.f, 0.f);
+
 	// generate vertices per stack / slice
 	for (int latitude = 0; latitude < aStackCount; latitude++)
 	{
@@ -719,7 +293,6 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 
 			CommonUtilities::Vector3f normal((pos - center).GetNormalized());
 
-			//mdlVertices.emplace_back(pos, CommonUtilities::Vector4f{ random(), random(), random(), 1.f }, uv);
 			mdlVertices.emplace_back(pos, uv, normal, tangent * CommonUtilities::Matrix3x3f::CreateRotationAroundY(theta));
 		}
 	}
@@ -1120,6 +693,76 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
 	{
 		AMLogger.Err("Could not create a index buffer for InvertedSphere!");
+		return result;
+	}
+
+	result.myVertexCount = static_cast<UINT>(mdlVertices.size());
+	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
+	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	result.myStride = sizeof(Vertex);
+
+	return result;
+}
+
+MeshData CreatePlaneMesh(const float aSize)
+{
+	return CreatePlaneMesh({ aSize, aSize });
+}
+
+MeshData CreatePlaneMesh(const CommonUtilities::Vector2f& aSize)
+{
+	MeshData result;
+	result.myMeshName = "Plane";
+	CommonUtilities::Vector2f halfSize = aSize * 0.5f;
+
+	// up = Up | do = Down | Ri = Right | Le = Left
+	CommonUtilities::Vector3f upRi = { halfSize.x, 0.f, halfSize.y };
+	CommonUtilities::Vector3f upLe = { -halfSize.x, 0.f, halfSize.y };
+	CommonUtilities::Vector3f doRi = { halfSize.x, 0.f, -halfSize.y };
+	CommonUtilities::Vector3f doLe = { -halfSize.x, 0.f, -halfSize.y };
+
+	std::vector<Vertex> mdlVertices = {
+		// Top plane
+		{
+			upRi, {1.f, 0.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}
+		},
+		{
+			doRi, {1.f, 1.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}
+		},
+		{
+			doLe, {0.f, 1.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}
+		},
+		{
+			upLe, {0.f, 0.f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}
+		},
+		// Bottom plane
+		{
+			doLe, {1.f, 1.f}, {0.f, -1.f, 0.f}, {-1.f, 0.f, 0.f}
+		},
+		{
+			doRi, {0.f, 1.f}, {0.f, -1.f, 0.f}, {-1.f, 0.f, 0.f}
+		},
+		{
+			upRi, {0.f, 0.f}, {0.f, -1.f, 0.f}, {-1.f, 0.f, 0.f}
+		},
+		{
+			upLe, {1.f, 0.f}, {0.f, -1.f, 0.f}, {-1.f, 0.f, 0.f}
+		}
+	};
+
+	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
+	{
+		AMLogger.Err("Could not create a vertex buffer for Plane!");
+		return result;
+	}
+
+	std::vector<unsigned int> mdlIndices{};
+	CreateQuad(mdlIndices, 0, 1, 2, 3);
+	CreateQuad(mdlIndices, 4, 5, 6, 7);
+
+	if (!RHI::CreateIndexBuffer(result.myIndexBuffer, mdlIndices))
+	{
+		AMLogger.Err("Could not create a index buffer for Plane!");
 		return result;
 	}
 

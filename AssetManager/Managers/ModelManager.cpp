@@ -70,6 +70,15 @@ void ModelManager::GeneratePrimitives()
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
 		mesh.myName = "InvertedPyramid";
 	}
+
+	{
+		auto modelIter = myModels.emplace("plane", GameObject());
+		GameObject& model = modelIter.first->second;
+		auto elementIter = myMeshData.emplace("plane", std::vector<MeshData>{ CreatePlaneMesh(100.f) });
+		MeshComponent& mesh = model.AddComponent<MeshComponent>();
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
+		mesh.myName = "Plane";
+	}
 }
 
 GameObject* ModelManager::GetModel(const std::string& aPath)
@@ -115,6 +124,8 @@ GameObject* ModelManager::GetModel(Primitives aPrimitive)
 		return &myModels["invertedpyramid"];
 	case Primitives::InvertedSphere:
 		return &myModels["invertedsphere"];
+	case Primitives::Plane:
+		return &myModels["plane"];
 	default:
 		AMLogger.Err("ModelManager: Primitive does not exist");
 		return nullptr;;

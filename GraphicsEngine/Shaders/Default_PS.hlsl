@@ -5,7 +5,8 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
 	DefaultPixelOutput result;
 
 	float4 textureColor = AlbedoTexture.Sample(DefaultSampler, input.UVs[0]);
-	result.Color = GetAlphaBlendColor(input.Color, textureColor);
+	result.Color = GetAlphaBlendColor(input.Color[0], textureColor);
+    //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
     float3 pixelNormal = NormalTexture.Sample(DefaultSampler, input.UVs[0]);
     pixelNormal = 2 * pixelNormal - 1;

@@ -28,12 +28,14 @@ struct LightBufferData
 {
 	CommonUtilities::Vector3f InvertedDirection;
 	float padding0;
-	CommonUtilities::Vector3f AmbientColor;
+	CommonUtilities::Vector3f DirectionalColor;
 	float padding1;
-	CommonUtilities::Vector3f DiffuseColor;
+	CommonUtilities::Vector3f AmbientColor;
 	float padding2;
-	CommonUtilities::Vector3f SpecularColor;
+	CommonUtilities::Vector3f DiffuseColor;
 	float padding3;
+	CommonUtilities::Vector3f SpecularColor;
+	float padding4;
 
 	PointlightData Pointlights[8];
 	SpotlightData Spotlights[8];
