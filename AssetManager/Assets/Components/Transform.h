@@ -17,6 +17,7 @@ public:
 	void SetScale(const CommonUtilities::Vector3f& aScale);
 	const CommonUtilities::Vector3f& GetScale() const;
 
+	const CommonUtilities::Vector3f& GetWorldPosition() const;
 	const CommonUtilities::Matrix4x4f& GetTransform() const;
 
 	bool HasChanged() const;
@@ -27,6 +28,7 @@ private:
 	CommonUtilities::Vector3f myRotation;
 	CommonUtilities::Vector3f myScale;
 
+	CommonUtilities::Vector3f myWorldPosition;
 	CommonUtilities::Matrix4x4f myTransform;
 
 	void UpdateTransform();

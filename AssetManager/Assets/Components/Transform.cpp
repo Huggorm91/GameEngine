@@ -45,6 +45,11 @@ const CommonUtilities::Vector3f& Transform::GetScale() const
 	return myScale;
 }
 
+const CommonUtilities::Vector3f& Transform::GetWorldPosition() const
+{
+	return myWorldPosition;
+}
+
 const CommonUtilities::Matrix4x4f& Transform::GetTransform() const
 {
 	if (myHasChanged)
@@ -65,4 +70,5 @@ void Transform::UpdateTransform()
 	myTransform = CommonUtilities::Matrix4x4f::CreateScaleMatrix(myScale) *
 		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(myRotation)) *
 		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+	myWorldPosition = myTransform * CommonUtilities::Vector4f{ myPosition, 1.f };
 }

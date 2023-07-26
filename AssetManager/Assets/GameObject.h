@@ -35,6 +35,7 @@ public:
 
 	const Transform& GetTransform() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
+	const CommonUtilities::Vector3f& GetWorldPosition() const;
 
 	void SetActive(bool aIsActive);
 	void ToogleActive();

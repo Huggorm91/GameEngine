@@ -51,6 +51,11 @@ const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
 	return myTransform.GetTransform();
 }
 
+const CommonUtilities::Vector3f& GameObject::GetWorldPosition() const
+{
+	return myTransform.GetWorldPosition();
+}
+
 void GameObject::SetActive(bool aIsActive)
 {
 	myIsActive = aIsActive;
