@@ -95,6 +95,60 @@ void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
 	myBackGroundColor = aColor;
 }
 
+#ifdef _DEBUG
+void GraphicsEngine::SetRenderMode(RenderMode aMode)
+{
+	myRendermode = aMode;
+
+	// TODO: Set the correct Shaders as active shaders for each RenderMode
+	switch (myRendermode)
+	{
+	case GraphicsEngine::Default:
+	{
+		break;
+	}
+	case GraphicsEngine::UV:
+	{
+		break;
+	}
+	case GraphicsEngine::PixelNormal:
+	{
+		break;
+	}
+	case GraphicsEngine::Normal:
+	{
+		break;
+	}
+	case GraphicsEngine::Tangent:
+	{
+		break;
+	}
+	case GraphicsEngine::Binormal:
+	{
+		break;
+	}
+	case GraphicsEngine::AmbientLight:
+	{
+		break;
+	}
+	case GraphicsEngine::DirectLight:
+	{
+		break;
+	}
+	case GraphicsEngine::PointLight:
+	{
+		break;
+	}
+	case GraphicsEngine::SpotLight:
+	{
+		break;
+	}
+	default:
+		break;
+	}
+}
+#endif // _DEBUG
+
 void GraphicsEngine::BeginFrame()
 {
 	RHI::ClearRenderTarget(&myBackBuffer, { myBackGroundColor.x, myBackGroundColor.y, myBackGroundColor.z, myBackGroundColor.w });

@@ -15,6 +15,25 @@ class GraphicsEngine
 public:
 	static GraphicsEngine& Get() { static GraphicsEngine myInstance; return myInstance;	}
 
+#ifdef _DEBUG
+	enum RenderMode
+	{
+		Default,
+		UV,
+		PixelNormal,
+		Normal,
+		Tangent,
+		Binormal,
+		AmbientLight,
+		DirectLight,
+		PointLight,
+		SpotLight,
+		Count
+	};
+
+	void SetRenderMode(RenderMode aMode);
+#endif // _DEBUG
+
 /**
  * Initializes the Graphics Engine with the specified settings.
  * @param windowHandle The window that will contain this Graphics Engine.
@@ -45,6 +64,10 @@ public:
 private:
 	friend class LightCommand;
 	friend class GraphicsCommand;
+
+#ifdef _DEBUG
+	RenderMode myRendermode = Default;
+#endif // _DEBUG
 
 	LineDrawer::LineHandle myGrid;
 
