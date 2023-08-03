@@ -211,5 +211,6 @@
     <FxCompile Include="Shaders\Default_Line_PS.hlsl" />
     <FxCompile Include="Shaders\Default_UI_Line_VS.hlsl" />
     <FxCompile Include="Shaders\PixelNormal_Heatmap_PS.hlsl" />
+    <FxCompile Include="Shaders\BlinnPhong_PS.hlsl" />
   </ItemGroup>
 </Project>

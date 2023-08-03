@@ -2,10 +2,10 @@
 
 DefaultPixelOutput main(DefaultVertexToPixel input)
 {
-	DefaultPixelOutput result;
+    DefaultPixelOutput result;
 
-	float4 textureColor = AlbedoTexture.Sample(DefaultSampler, input.UVs[0]);
-	result.Color = GetAlphaBlendColor(input.Color[0], textureColor);
+    float4 textureColor = AlbedoTexture.Sample(DefaultSampler, input.UVs[0]);
+    result.Color = GetAlphaBlendColor(input.Color[0], textureColor);
     //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
     float3 pixelNormal = NormalTexture.Sample(DefaultSampler, input.UVs[0]);
@@ -14,10 +14,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     pixelNormal = normalize(mul(pixelNormal, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS)));
 
     result.Color.rgb = CalculateBlinnPhong(pixelNormal, input.Position.xyz, result.Color.rgb, 62, FB_CameraPosition, LB_InvertedDirection);
-    //result.Color.rgb += GetDirectLight();
-    //result.Color.rgb += GetPointLight();
-    //result.Color.rgb += GetSpotLight();
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
     
-	return result;
+    return result;
 }

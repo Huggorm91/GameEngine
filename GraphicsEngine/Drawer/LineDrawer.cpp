@@ -141,9 +141,9 @@ bool LineDrawer::IsActive(const LineHandle& aHandle) const
 
 bool LineDrawer::Init()
 {
-	myVertexShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_Line_VS-Debug.cso");
-	myUIVertexShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_UI_Line_VS-Debug.cso");
-	myPixelShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_Line_PS-Debug.cso");
+	myVertexShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_Line_VS.cso");
+	myUIVertexShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_UI_Line_VS.cso");
+	myPixelShader = AssetManager::GetAsset<Shader&>("Content/Shaders/Default_Line_PS.cso");
 	if (!RHI::CreateInputLayout(LineVertex::InputLayout, LineVertex::InputLayoutDefinition, myVertexShader.GetBlob(), myVertexShader.GetBlobSize()))
 	{
 		GELogger.Err("LineDrawer: Failed to create InputLayout!");

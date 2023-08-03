@@ -202,9 +202,9 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename)-$(Configuration).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename)-$(Configuration).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_DEBUG</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
@@ -234,9 +234,9 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename)-$(Configuration).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename)-$(Configuration).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_RELEASE</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
@@ -266,9 +266,9 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename)-$(Configuration).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename)-$(Configuration).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_RETAIL</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
@@ -370,6 +370,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\BlinnPhong_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\Default_Line_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
