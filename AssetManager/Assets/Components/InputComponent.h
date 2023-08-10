@@ -13,8 +13,12 @@ public:
 	void ReceiveEvent(CommonUtilities::eInputEvent anEvent, CommonUtilities::eKey aKey) override;
 	void ReceiveEvent(CommonUtilities::eInputAction anEvent, float aValue) override;
 
+void AddEvent(CommonUtilities::eInputEvent anEvent, CommonUtilities::eKey aKey, CommonUtilities::eInputAction aResponse);
+void Subscribe (Component* aSubsciber, CommonUtilities::eInputAction anEvent);
+
 	const InputComponent* GetTypePointer() const override;
 
 private:
-
+// List of subscribed components 
+// List of new events (eInputEvent + eKey = eInputAction)
 };
