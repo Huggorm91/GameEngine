@@ -65,33 +65,33 @@
 //    return (kD + kS) * aSL * aSpotLight.Intensity;
 //}
 
-//float3 GetDirectionallight(float4 aPosition, float3 aPixelNormal)
-//{
-//    float3 inverseLightDirection = normalize(-DirectionalLight.Direction);
+float3 GetDirectionallight(float4 aPosition, float3 aPixelNormal)
+{
+    float3 inverseLightDirection = normalize(-DirectionalLight.Direction);
     
-//    //const float3 cubeMap = environmentCube.Sample(defaultSampler, DirectionalLight.Direction);
+    //const float3 cubeMap = environmentCube.Sample(defaultSampler, DirectionalLight.Direction);
     
-//    float3 kD = DirectionalLight.DiffuseColor;
-//    float nL = dot(aPixelNormal, inverseLightDirection);
+    float3 kD = DirectionalLight.DiffuseColor;
+    float nL = dot(aPixelNormal, inverseLightDirection);
 
-//    kD = saturate(kD * nL);
-//    kD.a = 1;
+    kD = saturate(kD * nL);
+    kD.a = 1;
     
-//    const int cubeMips = GetNumMips(environmentCube);
+    const int cubeMips = GetNumMips(environmentCube);
     
-//    float3 kS = DirectionalLight.SpecularColor; //Specular color
-//    float3 v = normalize(FB_Pos - aPosition);
+    float3 kS = DirectionalLight.SpecularColor; //Specular color
+    float3 v = normalize(FB_Pos - aPosition);
     
     
-//    float3 h = ((inverseLightDirection) + v) / length((inverseLightDirection) + v);
-//    float nDotH = saturate(dot(aPixelNormal, h));
-//    kS = kS * (pow(nDotH, Material.Shininess) * DirectionalLight.Intensity);
-//    kS.a = 1;
-//    kS = AvarageColor(kS);
-//    return (kD + kS) * DirectionalLight.Intensity;
-//}
+    float3 h = ((inverseLightDirection) + v) / length((inverseLightDirection) + v);
+    float nDotH = saturate(dot(aPixelNormal, h));
+    kS = kS * (pow(nDotH, Material.Shininess) * DirectionalLight.Intensity);
+    kS.a = 1;
+    kS = AvarageColor(kS);
+    return (kD + kS) * DirectionalLight.Intensity;
+}
 
-//float3 GetPointlight(float4 aPosition, float3 aPixelNormal)
+//float3 GetPointlights(float4 aPosition, float3 aPixelNormal)
 //{
 //    float3 result = 0;
 //    [unroll]
@@ -106,7 +106,7 @@
 //    return result;
 //}
 
-//float3 GetSpotlight(float4 aPosition, float3 aPixelNormal)
+//float3 GetSpotlights(float4 aPosition, float3 aPixelNormal)
 //{
 //    float3 result = 0;
 //    [unroll]
@@ -120,5 +120,23 @@
 //    }
 //    return result;
 //}
+
+float3 GetLightSourceContribution(float3 aPosition, float3 aPixelNormal)
+{
+    float3 result = 0;
+    
+    const float3 v = normalize(FB_Pos - aPosition);
+    const float3 invertedDirectionPlusV = LB_InvertedDirection + v;
+    const float3 h = invertedDirectionPlusV / length(invertedDirectionPlusV);
+    
+    const float nDotH = saturate(dot(aPixelNormal, h));
+    const float normalDotInvertedDirection = dot(aPixelNormal, LB_InvertedDirection);
+    const float3 kSMultiplier = pow(nDotH, Material.Shininess);
+    
+    result = GetDirectionallight();
+    result += GetPointlights();
+    result += GetSpotlights();
+    return result;
+}
 
 #endif // LIGHTFUNCTIONS_HLSLI
