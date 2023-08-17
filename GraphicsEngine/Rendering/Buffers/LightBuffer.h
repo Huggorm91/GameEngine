@@ -26,9 +26,9 @@ struct SpotlightData
 
 struct LightBufferData
 {
-	CommonUtilities::Vector3f InvertedDirection;
+	CommonUtilities::Vector3f myInvertedDirection;
 	float padding0;
-	CommonUtilities::Vector3f DirectionalColor;
+	CommonUtilities::Vector3f myDirectionallightColor;
 	float padding1;
 	CommonUtilities::Vector3f AmbientColor;
 	float padding2;
@@ -37,8 +37,8 @@ struct LightBufferData
 	CommonUtilities::Vector3f SpecularColor;
 	float padding4;
 
-	PointlightData Pointlights[8];
-	SpotlightData Spotlights[8];
+	PointlightData myPointlights[8];
+	SpotlightData mySpotlights[8];
 };
 
 typedef ConstantBuffer<LightBufferData> LightBuffer;

@@ -72,3 +72,7 @@ CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer()
 	assert(myParent != nullptr && "Component not Initialized!");
 	return myParent->myComponents;
 }
+
+void Component::NotifyInput(CommonUtilities::eInputAction anEvent)
+{
+}

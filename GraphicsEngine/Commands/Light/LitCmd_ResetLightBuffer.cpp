@@ -6,7 +6,7 @@ void LitCmd_ResetLightBuffer::Execute(const int anIndex)
 	UNREFERENCED_PARAMETER(anIndex);
 
 	LightBuffer& buffer = GetLightBuffer();
-	buffer.Data.InvertedDirection = CommonUtilities::Vector3f::Null;
+	buffer.Data.myInvertedDirection = CommonUtilities::Vector3f::Null;
 	buffer.Data.AmbientColor = CommonUtilities::Vector3f::Null;
 	buffer.Data.DiffuseColor = CommonUtilities::Vector3f::Null;
 	buffer.Data.SpecularColor = CommonUtilities::Vector3f::Null;
@@ -16,8 +16,8 @@ void LitCmd_ResetLightBuffer::Execute(const int anIndex)
 
 	for (int i = 0; i < 8; i++)
 	{
-		buffer.Data.Pointlights[i] = pointlight;
-		buffer.Data.Spotlights[i] = spotlight;
+		buffer.Data.myPointlights[i] = pointlight;
+		buffer.Data.mySpotlights[i] = spotlight;
 	}
 
 	RHI::UpdateConstantBufferData(buffer);

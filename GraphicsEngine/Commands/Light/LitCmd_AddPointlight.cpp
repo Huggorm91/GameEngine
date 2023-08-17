@@ -9,7 +9,7 @@ void LitCmd_AddPointlight::Execute(const int anIndex)
 {
 	LightBuffer& buffer = GetLightBuffer();
 
-	PointlightData& data = buffer.Data.Pointlights[anIndex];
+	PointlightData& data = buffer.Data.myPointlights[anIndex];
 	data.myPosition = myPosition;
 	data.myRadius = myRadius;
 	data.myColor = myColor;

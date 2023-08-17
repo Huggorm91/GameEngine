@@ -2,7 +2,10 @@
 #include <Container/Blackboard.hpp>
 
 class GameObject;
-namespace CommonUtilities{ enum class eInputAction;}
+namespace CommonUtilities
+{
+	enum class eInputAction : int;
+}
 
 class Component
 {
@@ -34,5 +37,5 @@ protected:
 	const CommonUtilities::Blackboard<unsigned int>& GetComponentContainer() const;
 	CommonUtilities::Blackboard<unsigned int>& GetComponentContainer();
 
-virtual void NotifyInput( CommonUtilities::eInputAction anEvent);
+	virtual void NotifyInput(CommonUtilities::eInputAction anEvent);
 };

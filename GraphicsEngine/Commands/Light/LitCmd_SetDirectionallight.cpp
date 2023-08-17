@@ -14,8 +14,8 @@ void LitCmd_SetDirectionallight::Execute(const int anIndex)
 	UNREFERENCED_PARAMETER(anIndex);
 
 	LightBuffer& buffer = GetLightBuffer();
-	buffer.Data.InvertedDirection = myInvertedLightDirection;
-	buffer.Data.DirectionalColor = { 1.f, 1.f, 1.f }; //myColor;
+	buffer.Data.myInvertedDirection = myInvertedLightDirection;
+	buffer.Data.myDirectionallightColor = myColor;
 	buffer.Data.AmbientColor = myColor;
 	buffer.Data.DiffuseColor = { 1.f, 0.9f, 0.7f };
 	buffer.Data.SpecularColor = { 1.f, 1.f, 1.f };

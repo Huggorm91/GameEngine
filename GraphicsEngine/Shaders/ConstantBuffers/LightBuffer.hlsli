@@ -3,24 +3,24 @@
 
 struct PointlightData
 {
-    float4x4 myTransform;
-    float3 myPosition;
-    float myRadius;
-    float3 myColor;
-    float myIntensity;
+    float4x4 Transform;
+    float3 Position;
+    float Radius;
+    float3 Color;
+    float Intensity;
 };
 
 struct SpotlightData
 {
-    float4x4 myTransform;
-    float3 myPosition;
-    float myRadius;
-    float3 myColor;
-    float myIntensity;
-    float3 myLightDirection;
-    float myInnerAngle;
-    float myOuterAngle;
-    float myConeIntensityDifference;
+    float4x4 Transform;
+    float3 Position;
+    float Radius;
+    float3 Color;
+    float Intensity;
+    float3 LightDirection;
+    float InnerAngle;
+    float OuterAngle;
+    float ConeIntensityDifference;
 
     float2 padding;
 };
@@ -29,7 +29,7 @@ cbuffer LightBuffer : register(b2)
 {
 	float3 LB_InvertedDirection;
     float paddinglb0;
-    float3 LB_DirectionalColor;
+    float3 LB_DirectionallightColor;
     float paddinglb1;
 	float3 LB_AmbientColor;
     float paddinglb2;

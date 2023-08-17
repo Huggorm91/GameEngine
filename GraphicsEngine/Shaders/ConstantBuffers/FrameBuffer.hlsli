@@ -7,5 +7,7 @@ cbuffer FrameBuffer : register(b0)
 	float3 FB_CameraPosition;
 	float FB_DeltaTime;
 	double FB_TotalTime;
+	
+    double paddingfb;
 }
 #endif // FRAMEBUFFER_HLSLI

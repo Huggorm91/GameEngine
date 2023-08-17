@@ -10,7 +10,7 @@ void LitCmd_AddSpotlight::Execute(const int anIndex)
 {
 	LightBuffer& buffer = GetLightBuffer();
 
-	SpotlightData& data = buffer.Data.Spotlights[anIndex];
+	SpotlightData& data = buffer.Data.mySpotlights[anIndex];
 	data.myPosition = myPosition;
 	data.myRadius = myRadius;
 	data.myColor = myColor;

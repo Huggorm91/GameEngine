@@ -11,7 +11,7 @@ void LitCmd_SetLightBuffer::Execute(const int anIndex)
 	UNREFERENCED_PARAMETER(anIndex);
 
 	LightBuffer& buffer = GetLightBuffer();
-	buffer.Data.InvertedDirection = myInvertedDirection;
+	buffer.Data.myInvertedDirection = myInvertedDirection;
 	buffer.Data.AmbientColor = myAmbientColor;
 	buffer.Data.DiffuseColor = myDiffuseColor;
 	buffer.Data.SpecularColor = mySpecularColor;
