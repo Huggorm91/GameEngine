@@ -13,10 +13,9 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     pixelNormal.z = sqrt(1 - saturate(pixelNormal.x * pixelNormal.x + pixelNormal.y * pixelNormal.y));
     pixelNormal = normalize(mul(pixelNormal, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS)));
 
-    result.Color.rgb = CalculateBlinnPhong(pixelNormal, input.Position.xyz, result.Color.rgb, 62, FB_CameraPosition, LB_InvertedDirection);
-    //result.Color.rgb += GetDirectLight();
-    //result.Color.rgb += GetPointLight();
-    //result.Color.rgb += GetSpotLight();
+    //result.Color.rgb = CalculateBlinnPhong(pixelNormal, input.Position.xyz, result.Color.rgb, 62, FB_CameraPosition, LB_InvertedDirection);
+    result.Color.rgb *= GetLightSourceContribution(input.Position.xyz, pixelNormal/*, result.Color.rgb*/);
+    
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
     
 	return result;

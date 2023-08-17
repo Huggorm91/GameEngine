@@ -102,8 +102,8 @@ float3 GetLightSourceContribution(float3 aPosition, float3 aPixelNormal)
     const float3 kSMultiplier = pow(nDotH, MB_Shininess);
     
     result = GetDirectionallight(kSMultiplier, nDotInvDir);
-    result += GetPointlights(kSMultiplier, nDotInvDir);
-    result += GetSpotlights(kSMultiplier, nDotInvDir);
+    //result += GetPointlights(kSMultiplier, nDotInvDir);
+    //result += GetSpotlights(kSMultiplier, nDotInvDir);
     return result;
 }
 

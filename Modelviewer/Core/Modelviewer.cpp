@@ -13,6 +13,7 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/Assets/Components/Light/DirectionallightComponent.h"
 #include "AssetManager/Assets/Components/Light/PointlightComponent.h"
 #include "AssetManager/Assets/Components/Light/SpotlightComponent.h"
 #include "AssetManager/Assets/Components/Debugging/DebugDrawComponent.h"
@@ -222,6 +223,12 @@ void ModelViewer::Init()
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
 	}
 
+	myGameObjects.emplace_back();
+	{
+		DirectionallightComponent pointlight(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f });
+		myGameObjects.back().AddComponent(pointlight);
+	}
+
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
 	myGameObjects.back().SetPosition({ 0.f, -1.f, 0.f });
 	myGameObjects.back().SetScale({ 20.f, 20.f, 20.f });
@@ -237,7 +244,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
 	myCamera.Update();
-	engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
+	//engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();
