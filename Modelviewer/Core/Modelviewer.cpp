@@ -223,11 +223,11 @@ void ModelViewer::Init()
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
 	}
 
-	myGameObjects.emplace_back();
+	/*myGameObjects.emplace_back();
 	{
-		DirectionallightComponent pointlight(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f });
-		myGameObjects.back().AddComponent(pointlight);
-	}
+		DirectionallightComponent light(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f });
+		myGameObjects.back().AddComponent(light);
+	}*/
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
 	myGameObjects.back().SetPosition({ 0.f, -1.f, 0.f });
@@ -244,7 +244,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
 	myCamera.Update();
-	//engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
+	engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();

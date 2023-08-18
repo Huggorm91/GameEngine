@@ -1,11 +1,11 @@
 #include "GraphicsEngine.pch.h"
 #include "LitCmd_SetDirectionallight.h"
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const DirectionallightComponent& aLight): LightCommand(), myInvertedLightDirection(aLight.GetInvertedLightDirection()), myColor(aLight.GetColor())
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const DirectionallightComponent& aLight): LightCommand(), myInvertedLightDirection(aLight.GetInvertedLightDirection()), myColor(aLight.GetColor()), myIntensity(aLight.GetIntensity())
 {
 }
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor)
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float aIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(aIntensity)
 {
 }
 
@@ -16,9 +16,7 @@ void LitCmd_SetDirectionallight::Execute(const int anIndex)
 	LightBuffer& buffer = GetLightBuffer();
 	buffer.Data.myInvertedDirection = myInvertedLightDirection;
 	buffer.Data.myDirectionallightColor = myColor;
-	buffer.Data.AmbientColor = myColor;
-	buffer.Data.DiffuseColor = { 1.f, 0.9f, 0.7f };
-	buffer.Data.SpecularColor = { 1.f, 1.f, 1.f };
+	buffer.Data.myDirectionallightIntensity = myIntensity;
 
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);

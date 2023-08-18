@@ -19,8 +19,6 @@ public:
 	inline static GameObject GetAsset(Primitives anIdentifier) { return *myModelManager.GetModel(anIdentifier); }
 	inline static GameObject GetAsset(const std::string& aModelIdentifier, const std::string& aMaterialIdentifier);
 	template<> static GameObject GetAsset(const std::string& anIdentifier);
-	inline static void CreateAsset(const GameObject& anAsset, const std::string& anIdentifier);
-	inline static void CreateAsset(const GameObject* anAsset, const std::string& anIdentifier);
 
 	template<> static Animation& GetAsset(const std::string& anIdentifier);
 	template<> static Animation* GetAsset(const std::string& anIdentifier);
@@ -32,14 +30,17 @@ public:
 	template<> static Shader* GetAsset(const std::string& anIdentifier);
 
 	template<> static Material GetAsset(const std::string& anIdentifier);
-	inline static void SaveAsset(const Material& anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(&anAsset, aPath); }
-	inline static void SaveAsset(const Material* anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(anAsset, aPath); }
+	inline static Material GetAsset(const std::string& anIdentifier, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr) { return *myMaterialManager.CreateMaterial(anIdentifier, aVertexShader, aPixelShader, anAlbedo, aNormal); }
+	inline static Material GetAsset(const std::string& anIdentifier, const std::string& aVertexShader, const std::string& aPixelShader, const std::string& anAlbedo = "", const std::string& aNormal = "") { return *myMaterialManager.CreateMaterial(anIdentifier, myShaderManager.GetShader(aVertexShader), myShaderManager.GetShader(aPixelShader), anAlbedo.empty() ? nullptr : myTextureManager.GetTexture(anAlbedo), aNormal.empty() ? nullptr : myTextureManager.GetTexture(aNormal)); }
+
+	inline static void CreateAsset(const GameObject& anAsset, const std::string& anIdentifier);
+	inline static void CreateAsset(const GameObject* anAsset, const std::string& anIdentifier);
+
 	inline static void CreateAsset(const Material& anAsset, const std::string& anIdentifier) { myMaterialManager.CreateMaterial(anAsset, anIdentifier); }
 	inline static void CreateAsset(const Material* anAsset, const std::string& anIdentifier) { myMaterialManager.CreateMaterial(*anAsset, anIdentifier); }
-	inline static Material GetAsset(const std::string& anIdentifier, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr) 
-	{ return *myMaterialManager.CreateMaterial(anIdentifier, aVertexShader, aPixelShader, anAlbedo, aNormal); }
-	inline static Material GetAsset(const std::string& anIdentifier, const std::string& aVertexShader, const std::string& aPixelShader, const std::string& anAlbedo = "", const std::string& aNormal = "")
-	{ return *myMaterialManager.CreateMaterial(anIdentifier, myShaderManager.GetShader(aVertexShader), myShaderManager.GetShader(aPixelShader), anAlbedo.empty() ? nullptr : myTextureManager.GetTexture(anAlbedo), aNormal.empty() ? nullptr : myTextureManager.GetTexture(aNormal)); }
+
+	inline static void SaveAsset(const Material& anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(&anAsset, aPath); }
+	inline static void SaveAsset(const Material* anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(anAsset, aPath); }
 
 private:
 	static ModelManager myModelManager;

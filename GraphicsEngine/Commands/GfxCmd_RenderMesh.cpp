@@ -22,8 +22,14 @@ void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 {
 	RHI::SetVertexShader(aMaterial.GetVertexShader());
 	RHI::SetPixelShader(aMaterial.GetPixelShader());
-	//RHI::UpdateConstantBufferData(aMaterial.GetBuffer());
-	//RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 3, aMaterial.GetBuffer());
+	auto& buffer = GetMaterialBuffer();
+	buffer.Data.AlbedoColor = aMaterial.GetColor();
+	buffer.Data.UVTiling = aMaterial.GetUVTiling();
+	buffer.Data.NormalStrength = aMaterial.GetNormalStrength();
+	buffer.Data.Shininess = aMaterial.GetShininess();
+	buffer.Data.Metalness = aMaterial.GetMetalness();
+	RHI::UpdateConstantBufferData(buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 3, buffer);
 
 	if (aMaterial.GetTexture())
 	{

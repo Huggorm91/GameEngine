@@ -10,7 +10,7 @@ public:
 	void Execute(const int anIndex) override;
 
 private:
-	float myRadius;
+	float myRange;
 	float myIntensity;
 	float myInnerAngle;
 	float myOuterAngle;

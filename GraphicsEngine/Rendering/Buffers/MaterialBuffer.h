@@ -8,6 +8,9 @@ struct MaterialBufferData
 	CommonUtilities::Vector2f UVTiling;
 	float NormalStrength;
 	float Shininess;
+	float Metalness;
+
+	CommonUtilities::Vector3f padding;
 };
 
 typedef ConstantBuffer<MaterialBufferData> MaterialBuffer;

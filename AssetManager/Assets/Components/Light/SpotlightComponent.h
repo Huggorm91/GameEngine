@@ -7,13 +7,13 @@ class SpotlightComponent : public Component
 {
 public:
 	SpotlightComponent();
-	SpotlightComponent(float aRadius, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
+	SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
 	~SpotlightComponent() = default;
 
-	void Init(float aRadius, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
+	void Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
 	void Update() override;
 
-	void SetRadius(float aRadius);
+	void SetRange(float aRange);
 	void SetIntensity(float anIntensity);
 	void SetInnerAngle(float anAngle);
 	void SetOuterAngle(float anAngle);
@@ -22,7 +22,7 @@ public:
 	void SetLightDirection(const CommonUtilities::Vector3f& aDirection);
 	void SetColor(const CommonUtilities::Vector3f& aColor);
 
-	float GetRadius() const;
+	float GetRange() const;
 	float GetIntensity() const;
 	float GetInnerAngle() const;
 	float GetOuterAngle() const;
@@ -35,7 +35,7 @@ public:
 	const SpotlightComponent* GetTypePointer() const override;
 
 private:
-	float myRadius;
+	float myRange;
 	float myIntensity;
 	float myInnerAngle;
 	float myOuterAngle;

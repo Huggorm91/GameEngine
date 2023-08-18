@@ -58,7 +58,6 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			GELogger.Err("Failed to create InputLayout!");
 			return false;
 		}
-		
 
 		myFrameBuffer.Initialize();
 		myObjectBuffer.Initialize();

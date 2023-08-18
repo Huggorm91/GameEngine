@@ -14,7 +14,7 @@ struct SpotlightData
 {
     float4x4 Transform;
     float3 Position;
-    float Radius;
+    float Range;
     float3 Color;
     float Intensity;
     float3 LightDirection;
@@ -28,15 +28,9 @@ struct SpotlightData
 cbuffer LightBuffer : register(b2)
 {
 	float3 LB_InvertedDirection;
-    float paddinglb0;
+    float LB_DirectionallightIntensity;
     float3 LB_DirectionallightColor;
-    float paddinglb1;
-	float3 LB_AmbientColor;
-    float paddinglb2;
-	float3 LB_DiffuseColor;
-    float paddinglb3;
-	float3 LB_SpecularColor;
-    float paddinglb4;
+    float paddinglb;
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];

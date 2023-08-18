@@ -31,8 +31,7 @@ float4 GetAdditiveBlendColor(float4 first, float4 second)
 {
     float4 result = first;
     result += second;
-    result = saturate(result);
-    return result;
+    return saturate(result);
 }
 
 float3 CalculateBlinnPhong(float3 aPixelNormal, float3 aPosition, float3 aColor, float aShininess, float3 aCameraPosition, float3 anInvertedLightDirection)
@@ -44,16 +43,16 @@ float3 CalculateBlinnPhong(float3 aPixelNormal, float3 aPosition, float3 aColor,
     const float LdotN = saturate(dot(anInvertedLightDirection, aPixelNormal));
     const float NdotH = saturate(dot(aPixelNormal, H));
 
-    const float3 phongA = aColor * LB_AmbientColor;
-    const float3 phongD = aColor * (LB_DiffuseColor * LdotN);
+    //const float3 phongA = aColor * LB_AmbientColor;
+    const float3 phongD = aColor * (LB_DirectionallightColor * LdotN);
     const float3 phongS = LB_DirectionallightColor * saturate(pow(NdotH, aShininess));
 
-    return phongA + phongD + phongS;
+    return /*phongA +*/ phongD + phongS;
 }
 
 float3 LinearToGamma(float3 aColor)
 {
-    return pow(abs(aColor), 0.45454545454545454545454545454545f); // 1 / 2.2
+    return pow(aColor, 0.45454545454545454545454545454545f); // 1 / 2.2
 }
 
 uint GetNumMips(TextureCube aCubeMap)

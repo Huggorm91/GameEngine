@@ -81,9 +81,6 @@
     <ClInclude Include="Rendering\Buffers\LightBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Commands\Light\LitCmd_SetLightBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Rendering\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -159,9 +156,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Commands\GfxCmd_SetTextureResource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\Light\LitCmd_SetLightBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\Material.cpp">

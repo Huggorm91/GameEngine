@@ -4,62 +4,71 @@
 #include "../ConstantBuffers/LightBuffer.hlsli"
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
 
-float3 GetPointlightValue(float3 aKSMultiplier, float aNDotInvDir, PointlightData aPointLight)
-{
-//   // const float3 cubeMap = environmentCube.Sample(defaultSampler, inverseLightDirection);
+float3 GetPointlightValue(float3 aPosition, float3 aPixelNormal, float3 aV, PointlightData aPointLight, float3 aColor)
+{  
+    //const float3 invertedDirection = (aSpotLight.Position - aPosition);
+    //const float nDotL = dot(aPixelNormal, invertedDirection);
+
+    //const float3 LplusV = invertedDirection + aV;
+    //const float3 h = normalize(LplusV / length(LplusV));
+    //const float nDotH = saturate(dot(aPixelNormal, h));
     
-//    float3 kD = saturate(aPointLight.DiffuseColor * aNDotInvDir);
+    //float d = distance(aPosition, aPointLight.Position);
+    //float lightRange = max(aPointLight.Radius, 0.00001f);
     
-//    float3 kS = aPointLight.SpecularColor * aKSMultiplier * aPointLight.Intensity);
+    //float3 kD = aColor * (aPointLight.Color * nDotL);
+    //float3 kS = aPointLight.Color * pow(nDotH, MB_Shininess) * aPointLight.Intensity;
+    //float a = saturate(1 - pow(d * (1 / lightRange), 2));   
     
-//    float aPL; //Light attenuation
-//    float d = distance(aPosition, aPointLight.Position); //Distance between the light and the pixel
-//    float lightRange = max(aPointLight.Range, 0.00001f);
-//    aPL = saturate(1 - pow(d * (1 / lightRange), 2));
-    
-//    return (kD + kS) * aPL * aPointLight.Intensity;
+    //return (kD + kS) * a * aPointLight.Intensity;
     return 0;
 }
 
-float3 GetSpotLightValue(float3 aKSMultiplier, float aNDotInvDir, SpotlightData aSpotLight)
+float3 GetSpotLightValue(float3 aPosition, float3 aPixelNormal, float3 aV, SpotlightData aSpotLight, float3 aColor)
 {
-//    //const float3 cubeMap = environmentCube.Sample(defaultSampler, aSpotLight.Direction);
+    //const float3 invertedDirection = (aSpotLight.Position - aPosition);
+    //const float nDotL = dot(aPixelNormal, invertedDirection);
+
+    //const float3 LplusV = invertedDirection + aV;
+    //const float3 h = normalize(LplusV / length(LplusV));
+    //const float nDotH = saturate(dot(aPixelNormal, h));
     
-//    float3 kD = saturate(aSpotLight.DiffuseColor * aNDotInvDir);
+    //float3 kD = aColor * (aSpotLight.Color * nDotL);
+    //float3 kS = aSpotLight.Color * pow(nDotH, MB_Shininess) * aSpotLight.Intensity;
     
-//    float3 kS = aSpotLight.SpecularColor * aKSMultiplier * aSpotLight.Intensity;
-    
-//    float aLR; //Light range attenuation
-//    float d = distance(aPosition, aSpotLight.Position); //Distance between the light and the pixel
-//    float lightRange = max(aSpotLight.Range, 0.00001f);
-//    aLR = 1 - pow(d * (1.0f / lightRange), 2.0f);
+    //float a = 1 - pow(d * (1.0f / lightRange), 2.0f);
+    //float d = distance(aPosition, aSpotLight.Position);
+    //float lightRange = max(aSpotLight.Range, 0.00001f);
    
-//    float aLW; //Light width attenuation
-//    float aDot = dot(-aSpotLight.Direction, inverseLightDirection);
-//    float dotMinSin = saturate(aDot - cos(aSpotLight.OuterConeAngle));
-//    float otherCos = cos(aSpotLight.InnerConeAngle) - cos(aSpotLight.OuterConeAngle);
+    //float aLW; //Light width attenuation
+    //float aDot = dot(-aSpotLight.Direction, invertedDirection);
+    //float dotMinSin = saturate(aDot - cos(aSpotLight.OuterConeAngle));
+    //float otherCos = cos(aSpotLight.InnerConeAngle) - cos(aSpotLight.OuterConeAngle);
     
-//    aLW = pow((dotMinSin / otherCos), 2);
+    //aLW = pow((dotMinSin / otherCos), 2);
     
-//    //float aSL = pow((dot(-aSpotLight.Direction, inverseLightDirection)) - sin(aSpotLight.OuterConeAngle) / (cos(aSpotLight.InnerConeAngle) - cos(aSpotLight.OuterConeAngle)), 2);
+    ////float aSL = pow((dot(-aSpotLight.Direction, inverseLightDirection)) - sin(aSpotLight.OuterConeAngle) / (cos(aSpotLight.InnerConeAngle) - cos(aSpotLight.OuterConeAngle)), 2);
     
-//    float aSL = saturate(aLW * aLR); //Spot Light attenuation
+    //float aSL = saturate(aLW * aLR); //Spot Light attenuation
     
-//    return (kD + kS) * aSL * aSpotLight.Intensity;
+    //return (kD + kS) * aSL * aSpotLight.Intensity;
     return 0;
 }
 
-float3 GetDirectionallight(float3 aKSMultiplier, float aNDotInvDir)
-{    
-    //const int cubeMips = GetNumMips(environmentCube);
-    //const float3 cubeMap = environmentCube.Sample(defaultSampler, DirectionalLight.Direction);
+float3 GetDirectionallight(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
+{
+    const float nDotL = saturate(dot(aPixelNormal, LB_InvertedDirection));
+
+    const float3 LplusV = LB_InvertedDirection + aV;
+    const float3 h = normalize(LplusV / length(LplusV));
+    const float nDotH = saturate(dot(aPixelNormal, h));
     
-    float3 kD = saturate(LB_DirectionallightColor * aNDotInvDir);
-    float3 kS = LB_DirectionallightColor * aKSMultiplier;
-    return kD + kS;
+    float3 kD = aColor * (LB_DirectionallightColor * nDotL);
+    float3 kS = LB_DirectionallightColor * saturate(pow(nDotH, MB_Shininess));
+    return (kD + kS) * LB_DirectionallightIntensity;
 }
 
-float3 GetPointlights(float3 aKSMultiplier, float aNDotInvDir)
+float3 GetPointlights(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
 {
     float3 result = 0;
     [unroll]
@@ -68,13 +77,13 @@ float3 GetPointlights(float3 aKSMultiplier, float aNDotInvDir)
         [flatten]
         if (LB_Pointlights[i].Intensity > 0)
         {
-            result += GetPointlightValue(aKSMultiplier, aNDotInvDir, LB_Pointlights[i]);
+            result += GetPointlightValue(aPosition, aPixelNormal, aV, LB_Pointlights[i], aColor);
         }
     }
     return result;
 }
 
-float3 GetSpotlights(float3 aKSMultiplier, float aNDotInvDir)
+float3 GetSpotlights(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
 {
     float3 result = 0;
     [unroll]
@@ -83,27 +92,30 @@ float3 GetSpotlights(float3 aKSMultiplier, float aNDotInvDir)
         [flatten]
         if (LB_Spotlights[i].Intensity > 0)
         {
-            result += GetSpotLightValue(aKSMultiplier, aNDotInvDir, LB_Spotlights[i]);
+            result += GetSpotLightValue(aPosition, aPixelNormal, aV, LB_Spotlights[i], aColor);
         }
     }
     return result;
 }
 
-float3 GetLightSourceContribution(float3 aPosition, float3 aPixelNormal)
+float3 GetLightSourceContribution(float3 aPosition, float3 aPixelNormal, float3 aColor)
 {
     float3 result = 0;
     
+    ////IBL (Image Based Lighting) - ambiance and reflections
+    //float3 v = normalize(FB_Pos.rgb - aInput.WorldPosition.rgb);
+    //const int cubeMips = GetNumMips(environmentCube);
+    //float mipLvl = (cubeMips / Material.Shininess) * cubeMips;
+    ////mipLvl += abs(length(FB_Pos.rgb - aInput.WorldPosition.rgb))/600;
+    //clamp(mipLvl, 0, cubeMips - 1);
+    //float3 reflectionVector = normalize(reflect(-v.rgb, pixelNormal.rgb));
+    //const float3 reflectionColor = environmentCube.SampleLevel(defaultSampler, reflectionVector, mipLvl).rgb;
+    
     const float3 v = normalize(FB_CameraPosition - aPosition);
-    const float3 invertedDirectionPlusV = LB_InvertedDirection + v;
-    const float3 h = invertedDirectionPlusV / length(invertedDirectionPlusV);
-    const float nDotH = saturate(dot(aPixelNormal, h));
     
-    const float nDotInvDir = dot(aPixelNormal, LB_InvertedDirection);
-    const float3 kSMultiplier = pow(nDotH, MB_Shininess);
-    
-    result = GetDirectionallight(kSMultiplier, nDotInvDir);
-    //result += GetPointlights(kSMultiplier, nDotInvDir);
-    //result += GetSpotlights(kSMultiplier, nDotInvDir);
+    result = GetDirectionallight(aPosition, aPixelNormal, v, aColor);
+    //result += GetPointlights(kSMultiplier, nDotL, aColor);
+    //result += GetSpotlights(kSMultiplier, nDotL, aColor);
     return result;
 }
 

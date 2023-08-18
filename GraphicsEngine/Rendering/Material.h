@@ -32,6 +32,12 @@ public:
 	void SetTexture(Texture* aTexture);
 	void SetNormalTexture(Texture* aTexture);
 
+	void SetShininess(float aShininess);
+	void SetMetalness(float aMetalness);
+	void SetNormalStrength(float aNormalStrength);
+	void SetUVTiling(const CommonUtilities::Vector2f& aUVTiling);
+	void SetColor(const CommonUtilities::Vector4f& aColor);
+
 	void SetName(const std::string& aName);
 
 	void AddTexture(Texture* aTexture, unsigned aPipelineStage, eTextureSlot aSlot);
@@ -41,6 +47,14 @@ public:
 
 	const Texture* GetTexture() const;
 	const Texture* GetNormalTexture() const;
+
+	float GetShininess() const;
+	float GetMetalness() const;
+	float GetNormalStrength() const;
+	const CommonUtilities::Vector2f& GetUVTiling() const;
+	const CommonUtilities::Vector4f& GetColor() const;
+
+	const std::string& GetName() const;
 
 	const MaterialBuffer& GetBuffer() const;
 
@@ -60,7 +74,13 @@ private:
 	Texture* myAlbedoTexture;
 	Texture* myNormalTexture;
 
-	MaterialBuffer myBuffer;
+	float myShininess;
+	float myMetalness;
+	float myNormalStrength;
+	CommonUtilities::Vector2f myUVTiling;
+	CommonUtilities::Vector4f myAlbedoColor;
+
 	std::string myName;
 	std::vector<TextureBinding> myTextures;
+	MaterialBuffer myBuffer;
 };

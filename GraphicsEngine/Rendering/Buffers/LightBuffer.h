@@ -13,7 +13,7 @@ struct PointlightData
 struct SpotlightData
 {
 	CommonUtilities::Vector3f myPosition;
-	float myRadius;
+	float myRange;
 	CommonUtilities::Vector3f myColor;
 	float myIntensity;
 	CommonUtilities::Vector3f myLightDirection;
@@ -27,15 +27,9 @@ struct SpotlightData
 struct LightBufferData
 {
 	CommonUtilities::Vector3f myInvertedDirection;
-	float padding0;
+	float myDirectionallightIntensity;
 	CommonUtilities::Vector3f myDirectionallightColor;
-	float padding1;
-	CommonUtilities::Vector3f AmbientColor;
-	float padding2;
-	CommonUtilities::Vector3f DiffuseColor;
-	float padding3;
-	CommonUtilities::Vector3f SpecularColor;
-	float padding4;
+	float padding;
 
 	PointlightData myPointlights[8];
 	SpotlightData mySpotlights[8];

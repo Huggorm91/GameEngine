@@ -3,11 +3,11 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
 
-DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirection(), myColor(1.f, 1.f, 1.f)
+DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f)
 {
 }
 
-DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor): myInvertedLightDirection(-aDirection), myColor(aColor)
+DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity): myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity)
 {
 }
 
@@ -31,6 +31,11 @@ void DirectionallightComponent::SeColor(const CommonUtilities::Vector3f& aColor)
 	myColor = aColor;
 }
 
+void DirectionallightComponent::SetIntensity(float anIntensity)
+{
+	myIntensity = anIntensity;
+}
+
 CommonUtilities::Vector3f DirectionallightComponent::GetLightDirection() const
 {
 	return -myInvertedLightDirection;
@@ -44,6 +49,11 @@ const CommonUtilities::Vector3f& DirectionallightComponent::GetInvertedLightDire
 const CommonUtilities::Vector3f& DirectionallightComponent::GetColor() const
 {
 	return myColor;
+}
+
+float DirectionallightComponent::GetIntensity() const
+{
+	return myIntensity;
 }
 
 const DirectionallightComponent* DirectionallightComponent::GetTypePointer() const

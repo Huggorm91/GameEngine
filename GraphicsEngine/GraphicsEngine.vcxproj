@@ -280,7 +280,6 @@
     <ClInclude Include="Camera\PerspectiveCamera.h" />
     <ClInclude Include="Commands\GfxCmd_SetObjectBuffer.h" />
     <ClInclude Include="Commands\GfxCmd_SetTextureResource.h" />
-    <ClInclude Include="Commands\Light\LitCmd_SetLightBuffer.h" />
     <ClInclude Include="InterOp\ShaderInfo.h" />
     <ClInclude Include="Drawer\LineDrawer.h" />
     <ClInclude Include="Commands\Light\LightCommand.h" />
@@ -312,7 +311,6 @@
     <ClCompile Include="Camera\PerspectiveCamera.cpp" />
     <ClCompile Include="Commands\GfxCmd_SetObjectBuffer.cpp" />
     <ClCompile Include="Commands\GfxCmd_SetTextureResource.cpp" />
-    <ClCompile Include="Commands\Light\LitCmd_SetLightBuffer.cpp" />
     <ClCompile Include="Drawer\LineDrawer.cpp" />
     <ClCompile Include="Commands\Light\LightCommand.cpp" />
     <ClCompile Include="Commands\Light\LitCmd_AddPointlight.cpp" />

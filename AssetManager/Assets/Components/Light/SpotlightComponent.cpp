@@ -4,18 +4,18 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddSpotlight.h"
 
-SpotlightComponent::SpotlightComponent() : myRadius(), myIntensity(), myInnerAngle(), myOuterAngle(), myConeIntensityDifference(), myPosition(), myLightDirection(), myColor()
+SpotlightComponent::SpotlightComponent() : myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myConeIntensityDifference(), myPosition(), myLightDirection(), myColor()
 {
 }
 
-SpotlightComponent::SpotlightComponent(float aRadius, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor) :
-	myRadius(aRadius), myIntensity(anIntensity), myInnerAngle(anInnerAngle), myOuterAngle(anOuterAngle), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection), myColor(aColor)
+SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor) :
+	myRange(aRange), myIntensity(anIntensity), myInnerAngle(anInnerAngle), myOuterAngle(anOuterAngle), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection), myColor(aColor)
 {
 }
 
-void SpotlightComponent::Init(float aRadius, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor)
+void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor)
 {
-	myRadius = aRadius;
+	myRange = aRange;
 	myIntensity = anIntensity;
 	myInnerAngle = anInnerAngle;
 	myOuterAngle = anOuterAngle;
@@ -35,9 +35,9 @@ void SpotlightComponent::Update()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_AddSpotlight>(*this));
 }
 
-void SpotlightComponent::SetRadius(float aRadius)
+void SpotlightComponent::SetRange(float aRange)
 {
-	myRadius = aRadius;
+	myRange = aRange;
 }
 
 void SpotlightComponent::SetIntensity(float anIntensity)
@@ -80,9 +80,9 @@ const SpotlightComponent* SpotlightComponent::GetTypePointer() const
 	return this;
 }
 
-float SpotlightComponent::GetRadius() const
+float SpotlightComponent::GetRange() const
 {
-	return myRadius;
+	return myRange;
 }
 
 float SpotlightComponent::GetIntensity() const
