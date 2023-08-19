@@ -17,7 +17,7 @@ float3 GetPointlightValue(float3 aPosition, float3 aPixelNormal, float3 aV, Poin
     //float lightRange = max(aPointLight.Radius, 0.00001f);
     
     //float3 kD = aColor * (aPointLight.Color * nDotL);
-    //float3 kS = aPointLight.Color * pow(nDotH, MB_Shininess) * aPointLight.Intensity;
+    //float3 kS = lerp(aPointLight.Color, aColor, MB_Metalness) * pow(nDotH, MB_Shininess) * aPointLight.Intensity;
     //float a = saturate(1 - pow(d * (1 / lightRange), 2));   
     
     //return (kD + kS) * a * aPointLight.Intensity;
@@ -34,7 +34,7 @@ float3 GetSpotLightValue(float3 aPosition, float3 aPixelNormal, float3 aV, Spotl
     //const float nDotH = saturate(dot(aPixelNormal, h));
     
     //float3 kD = aColor * (aSpotLight.Color * nDotL);
-    //float3 kS = aSpotLight.Color * pow(nDotH, MB_Shininess) * aSpotLight.Intensity;
+    //float3 kS = lerp(aSpotLight.Color, aColor, MB_Metalness) * pow(nDotH, MB_Shininess) * aSpotLight.Intensity;
     
     //float a = 1 - pow(d * (1.0f / lightRange), 2.0f);
     //float d = distance(aPosition, aSpotLight.Position);
@@ -64,7 +64,7 @@ float3 GetDirectionallight(float3 aPosition, float3 aPixelNormal, float3 aV, flo
     const float nDotH = saturate(dot(aPixelNormal, h));
     
     float3 kD = aColor * (LB_DirectionallightColor * nDotL);
-    float3 kS = LB_DirectionallightColor * saturate(pow(nDotH, MB_Shininess));
+    float3 kS = lerp(LB_DirectionallightColor, aColor, MB_Metalness) * saturate(pow(nDotH, MB_Shininess));
     return (kD + kS) * LB_DirectionallightIntensity;
 }
 
