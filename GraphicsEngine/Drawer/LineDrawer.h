@@ -92,5 +92,7 @@ private:
 	unsigned AddPrimitive(const LinePrimitive& aPrimitive);
 	void UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle);
 
+void CreateLineCircle(LinePrimitive& outPrimitive, float aRadius, const CommonUtilities::Vector3f& aStartPosition, const CommonUtilities::Vector3f& aDirection);
+
 	void UpdateBuffers(bool aIsUI);
 };
