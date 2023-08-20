@@ -364,3 +364,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/GraphicsEngine/Shaders/Include/Binormal_Heatmap_PS.h
+/GraphicsEngine/Shaders/Include/BlinnPhong_PS.h
+/GraphicsEngine/Shaders/Include/Default_PS.h
+/GraphicsEngine/Shaders/Include/Default_VS.h
+/GraphicsEngine/Shaders/Include/Normal_Heatmap_PS.h
+/GraphicsEngine/Shaders/Include/PixelNormal_Heatmap_PS.h
+/GraphicsEngine/Shaders/Include/Tangent_Heatmap_PS.h
+/GraphicsEngine/Shaders/Include/UV_Heatmap_PS.h
