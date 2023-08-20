@@ -14,6 +14,7 @@ struct DefaultVertexToPixel
     float4 Color[4] : COLOR;
 
     float4 LocalPosition : LOCALPOSITION;
+    float4 WorldPosition : WORLDPOSITION;
     float4 Position : SV_POSITION;
 
     float3 NormalWS : NORMAL_WS;

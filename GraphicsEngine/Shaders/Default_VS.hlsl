@@ -45,8 +45,8 @@ DefaultVertexToPixel main(DefaultVertexInput input)
     result.TangentWS = normalize(mul(transform3x3, result.TangentOS));
     result.BinormalWS = normalize(mul(transform3x3, result.BinormalOS));
 	
-	result.Position = mul(OB_Transform, result.Position);
-	result.Position = mul(FB_View, result.Position);
+	result.WorldPosition = mul(OB_Transform, result.Position);
+    result.Position = mul(FB_View, result.WorldPosition);
 	result.Position = mul(FB_Projection, result.Position);
 
 	return result;

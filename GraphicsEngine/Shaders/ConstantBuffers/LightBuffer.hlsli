@@ -3,7 +3,6 @@
 
 struct PointlightData
 {
-    float4x4 Transform;
     float3 Position;
     float Radius;
     float3 Color;
@@ -12,7 +11,6 @@ struct PointlightData
 
 struct SpotlightData
 {
-    float4x4 Transform;
     float3 Position;
     float Range;
     float3 Color;
@@ -20,7 +18,7 @@ struct SpotlightData
     float3 LightDirection;
     float InnerAngle;
     float OuterAngle;
-    float ConeIntensityDifference;
+    float ConeIntensityDifference; // Potentially remove
 
     float2 padding;
 };

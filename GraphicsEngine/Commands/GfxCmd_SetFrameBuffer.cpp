@@ -17,5 +17,5 @@ void GfxCmd_SetFrameBuffer::Execute()
 	buffer.Data.TotalTime = CommonUtilities::Timer::GetTotalTime();
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER, 0, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, buffer);
 }

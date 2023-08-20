@@ -192,46 +192,64 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ -100.f, 50.f, 500.f });
+		myGameObjects.back().SetPosition({ -100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 1.f, 0.f, 0.f });
 		myGameObjects.back().AddComponent(pointlight);
 
-		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
+		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
 	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 100.f, 50.f, 500.f });
+		myGameObjects.back().SetPosition({ 100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 0.f, 1.f, 0.f });
 		myGameObjects.back().AddComponent(pointlight);
 
-		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
+		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
 	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 50.f, 600.f });
+		myGameObjects.back().SetPosition({ 0.f, 150.f, 600.f });
 
 		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 0.f, 0.f, 1.f });
 		myGameObjects.back().AddComponent(pointlight);
 
-		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);
+		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	/*myGameObjects.emplace_back();
+	myGameObjects.emplace_back();
 	{
-		DirectionallightComponent light(CommonUtilities::Vector3f{ 0.f, -1.f, -1.f });
+		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
+
+		SpotlightComponent pointlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, 0.f, 1.f });
+		myGameObjects.back().AddComponent(pointlight);
+
+		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, pointlight.GetLightDirection());*/
+	}
+
+	myGameObjects.emplace_back();
+	{
+		DirectionallightComponent light({ 0.f, -1.f, -1.f });
+		light.SetIntensity(0.5f);
 		myGameObjects.back().AddComponent(light);
-	}*/
+	}
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
-	myGameObjects.back().SetPosition({ 0.f, -1.f, 0.f });
+	myGameObjects.back().SetPosition({ 0.f, -10.f, 0.f });
 	myGameObjects.back().SetScale({ 20.f, 20.f, 20.f });
+	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+
+	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
+	myGameObjects.back().SetPosition({ 0.f, 240.f, 1000.f });
+	myGameObjects.back().SetScale({ 20.f, 20.f, 5.f });
+	myGameObjects.back().SetRotation({ 90.f, 0.f, 0.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
 }
@@ -244,7 +262,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
 	myCamera.Update();
-	engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
+	//engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();

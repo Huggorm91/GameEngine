@@ -39,7 +39,7 @@ private:
 	float myIntensity;
 	float myInnerAngle;
 	float myOuterAngle;
-	float myConeIntensityDifference;
+	float myConeIntensityDifference;  // Potentially remove
 	CommonUtilities::Vector3f myPosition;
 	CommonUtilities::Vector3f myLightDirection;
 	CommonUtilities::Vector3f myColor;

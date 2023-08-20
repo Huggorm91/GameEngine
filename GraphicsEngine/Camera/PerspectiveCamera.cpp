@@ -16,7 +16,7 @@ void PerspectiveCamera::Init(const CommonUtilities::Vector2f& aScreenSize)
 	myClipMatrix(3, 4) = 1.f;
 	myClipMatrix(4, 4) = 0.f;
 
-	myPosition = { 0.f, 100.f, 0.f };
+	myPosition = { 0.f, 200.f, 0.f };
 	myRotationSpeed = 2.f;
 	myMovementSpeed = 100.f;
 

@@ -9,7 +9,7 @@ SpotlightComponent::SpotlightComponent() : myRange(), myIntensity(), myInnerAngl
 }
 
 SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor) :
-	myRange(aRange), myIntensity(anIntensity), myInnerAngle(anInnerAngle), myOuterAngle(anOuterAngle), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection), myColor(aColor)
+	myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection.GetNormalized()), myColor(aColor)
 {
 }
 
@@ -17,11 +17,11 @@ void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngl
 {
 	myRange = aRange;
 	myIntensity = anIntensity;
-	myInnerAngle = anInnerAngle;
-	myOuterAngle = anOuterAngle;
+	myInnerAngle = CommonUtilities::DegreeToRadian(anInnerAngle);
+	myOuterAngle = CommonUtilities::DegreeToRadian(anOuterAngle);
 	myConeIntensityDifference = aDifference;
 	myPosition = aPosition;
-	myLightDirection = aDirection;
+	myLightDirection = aDirection.GetNormalized();
 	myColor = aColor;
 }
 
@@ -67,7 +67,7 @@ void SpotlightComponent::SetPosition(const CommonUtilities::Vector3f& aPosition)
 
 void SpotlightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDirection)
 {
-	myLightDirection = aDirection;
+	myLightDirection = aDirection.GetNormalized();
 }
 
 void SpotlightComponent::SetColor(const CommonUtilities::Vector3f& aColor)
