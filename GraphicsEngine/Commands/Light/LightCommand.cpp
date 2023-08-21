@@ -19,3 +19,8 @@ LightBuffer& LightCommand::GetLightBuffer()
 {
     return GraphicsEngine::Get().myLightBuffer;
 }
+
+const Texture* LightCommand::GetDefaultCubemap()
+{
+    return GraphicsEngine::Get().GetDefaultCubeMap();
+}

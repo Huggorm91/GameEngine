@@ -29,7 +29,7 @@ struct LightBufferData
 	CommonUtilities::Vector3f myInvertedDirection;
 	float myDirectionallightIntensity;
 	CommonUtilities::Vector3f myDirectionallightColor;
-	float padding;
+	float myAmbientlightIntensity;
 
 	PointlightData myPointlights[8];
 	SpotlightData mySpotlights[8];

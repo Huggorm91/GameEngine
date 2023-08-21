@@ -70,9 +70,8 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			return false;
 		}
 
-		myGrid = myLineDrawer.AddAxisLines(CommonUtilities::Vector3f::Null, 10000000.f, true);
-
 #ifndef _RETAIL
+		myGrid = myLineDrawer.AddAxisLines(CommonUtilities::Vector3f::Null, 10000000.f, true);
 	}
 	catch (const std::exception& e)
 	{

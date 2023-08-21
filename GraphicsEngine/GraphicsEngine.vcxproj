@@ -287,6 +287,7 @@
     <ClInclude Include="Commands\Light\LitCmd_AddSpotlight.h" />
     <ClInclude Include="Commands\Light\LitCmd_SetDirectionallight.h" />
     <ClInclude Include="Commands\Light\LitCmd_ResetLightBuffer.h" />
+    <ClInclude Include="Commands\Light\LitCmd_SetAmbientlight.h" />
     <ClInclude Include="Rendering\LineVertex.h" />
     <ClInclude Include="Rendering\Buffers\MaterialBuffer.h" />
     <ClInclude Include="Rendering\Material.h" />
@@ -317,6 +318,7 @@
     <ClCompile Include="Commands\Light\LitCmd_AddSpotlight.cpp" />
     <ClCompile Include="Commands\Light\LitCmd_SetDirectionallight.cpp" />
     <ClCompile Include="Commands\Light\LitCmd_ResetLightBuffer.cpp" />
+    <ClCompile Include="Commands\Light\LitCmd_SetAmbientlight.cpp" />
     <ClCompile Include="Rendering\LineVertex.cpp" />
     <ClCompile Include="Rendering\Material.cpp" />
     <ClCompile Include="Rendering\Color.cpp" />

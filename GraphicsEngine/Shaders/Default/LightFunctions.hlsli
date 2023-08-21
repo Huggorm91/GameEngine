@@ -1,16 +1,9 @@
 #ifndef LIGHTFUNCTIONS_HLSLI
 #define LIGHTFUNCTIONS_HLSLI
-#include "../ConstantBuffers/FrameBuffer.hlsli"
-#include "../ConstantBuffers/LightBuffer.hlsli"
-#include "../ConstantBuffers/MaterialBuffer.hlsli"
-
-float GetRangeAttenuation(float aDistance, float aLightRange)
-{
-    return 1 - pow(aDistance / aLightRange, 2);
-}
+#include "DefaultMaterialData.hlsli"
 
 float3 GetPointlightValue(float3 aPosition, float3 aPixelNormal, float3 aV, PointlightData aPointLight, float3 aColor)
-{  
+{
     const float3 invertedDirection = normalize(aPointLight.Position - aPosition);
     const float nDotL = max(dot(aPixelNormal, invertedDirection), 0.f);
 
@@ -95,15 +88,15 @@ float3 GetLightSourceContribution(float3 aPosition, float3 aPixelNormal, float3 
 {
     float3 result = 0;
     const float3 v = normalize(FB_CameraPosition - aPosition);
+    const float3 reflection = normalize(reflect(-v, aPixelNormal));
+
+    const uint cubeMips = GetNumMips(EnvironmentCubeMap);
+    float mipLvl = clamp(cubeMips * (1 - MB_Shininess * 0.001f), 0, cubeMips - 1);
+    const float3 ambientKD = EnvironmentCubeMap.SampleLevel(DefaultSampler, aPixelNormal, mipLvl);
+    const float3 ambientKS = EnvironmentCubeMap.SampleLevel(DefaultSampler, reflection, mipLvl);
+    const float3 ambientLight = (ambientKD + ambientKS) * LB_AmbientlightIntensity;
     
-    ////IBL (Image Based Lighting) - ambiance and reflections
-    //const int cubeMips = GetNumMips(environmentCube);
-    //float mipLvl = (cubeMips / Material.Shininess) * cubeMips;
-    ////mipLvl += abs(length(FB_Pos.rgb - aInput.WorldPosition.rgb))/600;
-    //clamp(mipLvl, 0, cubeMips - 1);
-    //float3 reflectionVector = normalize(reflect(-v.rgb, pixelNormal.rgb));
-    //const float3 reflectionColor = environmentCube.SampleLevel(defaultSampler, reflectionVector, mipLvl).rgb;    
-    
+    result = aColor * ambientLight;
     result += GetDirectionallight(aPosition, aPixelNormal, v, aColor);
     result += GetPointlights(aPosition, aPixelNormal, v, aColor);
     result += GetSpotlights(aPosition, aPixelNormal, v, aColor);

@@ -21,4 +21,5 @@ protected:
 
 	LightCommand(Type aType);
 	LightBuffer& GetLightBuffer();
+	const Texture* GetDefaultCubemap();
 };

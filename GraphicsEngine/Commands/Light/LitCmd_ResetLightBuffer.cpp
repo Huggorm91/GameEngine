@@ -9,6 +9,7 @@ void LitCmd_ResetLightBuffer::Execute(const int anIndex)
 	buffer.Data.myInvertedDirection = CommonUtilities::Vector3f::Null;
 	buffer.Data.myDirectionallightColor = CommonUtilities::Vector3f::Null;
 	buffer.Data.myDirectionallightIntensity = 0.f;
+	buffer.Data.myAmbientlightIntensity = 1.f;
 
 	PointlightData pointlight{};
 	SpotlightData spotlight{};

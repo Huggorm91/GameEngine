@@ -10,7 +10,7 @@
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/InterOp/Helpers.h"
-#include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
+#include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Components/Light/DirectionallightComponent.h"
@@ -128,8 +128,10 @@ void ModelViewer::Init()
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 500.f });
 	{
 		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
-		mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		//mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		mesh.SetColor(GetColor(eColor::White));
+		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
 	
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
@@ -139,8 +141,10 @@ void ModelViewer::Init()
 	
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	//myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
+	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(500.f);
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::InvertedCube));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 700.f });
@@ -227,17 +231,28 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent pointlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, 0.f, 1.f });
-		myGameObjects.back().AddComponent(pointlight);
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, 1.f });
+		myGameObjects.back().AddComponent(spotlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, pointlight.GetLightDirection());*/
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
+	}
+
+	myGameObjects.emplace_back();
+	{
+		myGameObjects.back().SetPosition({ 0.f, 200.f, 300.f });
+
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, -1.f });
+		myGameObjects.back().AddComponent(spotlight);
+
+		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
 	}
 
 	myGameObjects.emplace_back();
 	{
 		DirectionallightComponent light({ 0.f, -1.f, -1.f });
-		light.SetIntensity(0.5f);
+		light.SetIntensity(0.f);
 		myGameObjects.back().AddComponent(light);
 	}
 
@@ -245,6 +260,7 @@ void ModelViewer::Init()
 	myGameObjects.back().SetPosition({ 0.f, -10.f, 0.f });
 	myGameObjects.back().SetScale({ 20.f, 20.f, 20.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+	//myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
 	myGameObjects.back().SetPosition({ 0.f, 240.f, 1000.f });
@@ -262,7 +278,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
 	myCamera.Update();
-	//engine.AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ 0.225f, 0.225f , 0.225f }));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 0.5f));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();

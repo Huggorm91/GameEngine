@@ -6,7 +6,6 @@
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
 #include "DefaultVertexInput.hlsli"
 #include "ShaderFunctions.hlsli"
-#include "LightFunctions.hlsli"
 
 struct DefaultVertexToPixel
 {
@@ -37,5 +36,7 @@ Texture2D NormalTexture : register(t1);
 Texture2D DefaultTexture : register(t98);
 Texture2D MissingTexture : register(t99);
 TextureCube EnvironmentCubeMap : register(t100);
+
+#include "LightFunctions.hlsli" // Included last in order to see Texture declarations
 
 #endif // DEFAULTMATERIALDATA_HLSLI

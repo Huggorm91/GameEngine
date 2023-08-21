@@ -64,4 +64,9 @@ uint GetNumMips(TextureCube aCubeMap)
     return numMips;
 }
 
+float GetRangeAttenuation(float aDistance, float aLightRange)
+{
+    return 1 - pow(aDistance / aLightRange, 2);
+}
+
 #endif // SHADERFUNCTIONS_HLSLI

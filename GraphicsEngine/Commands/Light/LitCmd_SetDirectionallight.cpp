@@ -5,7 +5,7 @@ LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const DirectionallightCom
 {
 }
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float aIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(aIntensity)
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity)
 {
 }
 

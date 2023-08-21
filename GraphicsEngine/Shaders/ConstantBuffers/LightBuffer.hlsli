@@ -28,7 +28,7 @@ cbuffer LightBuffer : register(b2)
 	float3 LB_InvertedDirection;
     float LB_DirectionallightIntensity;
     float3 LB_DirectionallightColor;
-    float paddinglb;
+    float LB_AmbientlightIntensity;
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];
