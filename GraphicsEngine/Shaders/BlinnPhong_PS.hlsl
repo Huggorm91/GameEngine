@@ -18,7 +18,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     result.Color = GetAlphaBlendColor(result.Color, MB_AlbedoColor);
     //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
-    float3 pixelNormal = NormalTexture.Sample(DefaultSampler, scaledUV);
+    float3 pixelNormal = NormalTexture.Sample(DefaultSampler, scaledUV).rgb;
     pixelNormal.xy = 2 * pixelNormal.xy - 1;
     pixelNormal.z = sqrt(1 - saturate(pixelNormal.x * pixelNormal.x + pixelNormal.y * pixelNormal.y));
     pixelNormal.xy *= MB_NormalStrength;
