@@ -58,8 +58,9 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 
 	ShowSplashScreen();
 
-	// TODO: Load all setting from json
-	CommonUtilities::InputMapper::GetInstance()->Init(myMainWindowHandle);
+	// TODO: Load all settings from json
+	auto& input = *CommonUtilities::InputMapper::GetInstance();
+	input.Init(myMainWindowHandle);
 	AssetManager::Init();
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
@@ -68,6 +69,13 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 #endif // _RETAIL	
 	myCamera.Init({ static_cast<float>(aWindowSize.cx), static_cast<float>(aWindowSize.cy) });
 	AssetManager::GeneratePrimitives();
+
+#ifdef _DEBUG
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
+#endif // _DEBUG
 
 	HideSplashScreen();
 
@@ -293,3 +301,36 @@ void ModelViewer::UpdateScene()
 		model.Update();
 	}
 }
+#ifdef _DEBUG
+void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
+{
+	auto& engine = GraphicsEngine::Get();
+	switch (aKey)
+	{
+	case CommonUtilities::eKey::F5:
+	{
+		myDebugMode = engine.NextDebugMode();
+		break;
+	}
+	case CommonUtilities::eKey::F6:
+	{
+		myLightMode = engine.NextLightMode();
+		break;
+	}
+	case CommonUtilities::eKey::F7:
+	{
+		myRenderMode = engine.NextRenderMode();
+		break;
+	}
+	case CommonUtilities::eKey::F8:
+	{
+		myDebugMode = engine.SetDebugMode(GraphicsEngine::DebugMode::Default);
+		myLightMode = engine.SetLightMode(GraphicsEngine::LightMode::Default);
+		myRenderMode = engine.SetRenderMode(GraphicsEngine::RenderMode::Mesh);
+		break;
+	}
+	default:
+		break;
+	}
+}
+#endif // DEBUG

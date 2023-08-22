@@ -27,11 +27,19 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath)
 
 Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 {
+	std::string path = AddExtensionIfMissing(aPath, ".fbx");
+	path = GetValidPath(path, myPath);
+	if (path.empty())
+	{
+		AMLogger.Err("AnimationManager: Could not load animation from path: " + aPath);
+		return nullptr;
+	}
+
 	TGA::FBX::Animation tgaAnimation;
 	bool success = false;
 	try
 	{
-		success = TGA::FBX::Importer::LoadAnimationA(aPath, tgaAnimation);
+		success = TGA::FBX::Importer::LoadAnimationA(path, tgaAnimation);
 	}
 	catch (const std::exception& e)
 	{

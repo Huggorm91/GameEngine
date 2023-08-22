@@ -37,6 +37,8 @@ Texture2D DefaultTexture : register(t98);
 Texture2D MissingTexture : register(t99);
 TextureCube EnvironmentCubeMap : register(t100);
 
-#include "LightFunctions.hlsli" // Included last in order to see Texture declarations
+// Included last in order to see Texture declarations
+#include "PhongFunctions.hlsli" 
+#include "PBLFunctions.hlsli"
 
 #endif // DEFAULTMATERIALDATA_HLSLI

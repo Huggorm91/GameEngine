@@ -27,8 +27,16 @@ Texture* TextureManager::GetTexture(const std::string& aPath)
 
 Texture* TextureManager::LoadTexture(const std::string& aPath)
 {
+	std::string path = AddExtensionIfMissing(aPath, ".dds");
+	path = GetValidPath(path, myPath);
+	if (path.empty())
+	{
+		AMLogger.Err("TextureManager: Could not load texture from path: " + aPath);
+		return nullptr;
+	}
+
 	Texture texture;
-	if (RHI::LoadTexture(&texture, Helpers::string_cast<std::wstring>(aPath)))
+	if (RHI::LoadTexture(&texture, Helpers::string_cast<std::wstring>(path)))
 	{
 		auto iter = myTextures.emplace(aPath, texture);
 		return &iter.first->second;

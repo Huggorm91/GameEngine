@@ -134,11 +134,19 @@ GameObject* ModelManager::GetModel(Primitives aPrimitive)
 
 GameObject* ModelManager::LoadModel(const std::string& aPath)
 {
+	std::string path = AddExtensionIfMissing(aPath, ".fbx");
+	path = GetValidPath(path, myPath);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager: Could not load model from path: " + aPath);
+		return nullptr;
+	}
+
 	TGA::FBX::Mesh tgaMesh;
 	bool success = false;
 	try
 	{
-		success = TGA::FBX::Importer::LoadMeshA(aPath, tgaMesh);
+		success = TGA::FBX::Importer::LoadMeshA(path, tgaMesh);
 	}
 	catch (const std::exception& e)
 	{

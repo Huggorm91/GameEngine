@@ -94,56 +94,187 @@ void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
 }
 
 #ifdef _DEBUG
-void GraphicsEngine::SetRenderMode(RenderMode aMode)
+GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 {
-	myRendermode = aMode;
+	myDebugMode = aMode;
 
-	// TODO: Set the correct Shaders as active shaders for each RenderMode
-	switch (myRendermode)
+	// TODO: Set the correct Shaders as active shaders for each DebugMode
+	switch (myDebugMode)
 	{
-	case GraphicsEngine::Default:
+	case GraphicsEngine::DebugMode::Count:
 	{
+		myDebugMode = DebugMode::Default;
+		// Letting it fall through
+	}
+	case GraphicsEngine::DebugMode::Default:
+	{
+		GELogger.Log("DebugMode: Default");
 		break;
 	}
-	case GraphicsEngine::UV:
+	case GraphicsEngine::DebugMode::UV:
 	{
+		GELogger.Log("DebugMode: UV");
 		break;
 	}
-	case GraphicsEngine::PixelNormal:
+	case GraphicsEngine::DebugMode::PixelNormal:
 	{
+		GELogger.Log("DebugMode: PixelNormal");
 		break;
 	}
-	case GraphicsEngine::Normal:
+	case GraphicsEngine::DebugMode::Normal:
 	{
+		GELogger.Log("DebugMode: Normal");
 		break;
 	}
-	case GraphicsEngine::Tangent:
+	case GraphicsEngine::DebugMode::Tangent:
 	{
+		GELogger.Log("DebugMode: Tangent");
 		break;
 	}
-	case GraphicsEngine::Binormal:
+	case GraphicsEngine::DebugMode::Binormal:
 	{
+		GELogger.Log("DebugMode: Binormal");
 		break;
 	}
-	case GraphicsEngine::AmbientLight:
+	case GraphicsEngine::DebugMode::AmbientOcclusion:
 	{
+		GELogger.Log("DebugMode: AmbientOcclusion");
 		break;
 	}
-	case GraphicsEngine::DirectLight:
+	case GraphicsEngine::DebugMode::Roughness:
 	{
+		GELogger.Log("DebugMode: Roughness");
 		break;
 	}
-	case GraphicsEngine::PointLight:
+	case GraphicsEngine::DebugMode::Metalness:
 	{
+		GELogger.Log("DebugMode: Metalness");
 		break;
 	}
-	case GraphicsEngine::SpotLight:
+	case GraphicsEngine::DebugMode::VertexColors:
 	{
+		GELogger.Log("DebugMode: VertexColors");
+		break;
+	}
+	case GraphicsEngine::DebugMode::AlbedoMap:
+	{
+		GELogger.Log("DebugMode: AlbedoMap");
+		break;
+	}
+	case GraphicsEngine::DebugMode::NormalMap:
+	{
+		GELogger.Log("DebugMode: NormalMap");
 		break;
 	}
 	default:
+		GELogger.Err("DebugMode: Invalid option");
+		return myDebugMode;
+	}
+
+	myFrameBuffer.Data.myDebugMode = static_cast<int>(myDebugMode);
+	RHI::UpdateConstantBufferData(myFrameBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+
+	return myDebugMode;
+}
+
+GraphicsEngine::DebugMode GraphicsEngine::NextDebugMode()
+{
+	return SetDebugMode(static_cast<DebugMode>(static_cast<int>(myDebugMode) + 1));
+}
+
+GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
+{
+	myLightMode = aMode;
+
+	// TODO: Set the correct Shaders as active shaders for each LightMode
+	switch (myLightMode)
+	{
+	case GraphicsEngine::LightMode::Count:
+	{
+		myLightMode = LightMode::Default;
+		// Letting it fall through
+	}
+	case GraphicsEngine::LightMode::Default:
+	{
+		GELogger.Log("LightMode: Default");
 		break;
 	}
+	case GraphicsEngine::LightMode::AmbientLight:
+	{
+		GELogger.Log("LightMode: AmbientLight");
+		break;
+	}
+	case GraphicsEngine::LightMode::DirectLight:
+	{
+		GELogger.Log("LightMode: DirectLight");
+		break;
+	}
+	case GraphicsEngine::LightMode::PointLight:
+	{
+		GELogger.Log("LightMode: PointLight");
+		break;
+	}
+	case GraphicsEngine::LightMode::SpotLight:
+	{
+		GELogger.Log("LightMode: SpotLight");
+		break;
+	}
+	case GraphicsEngine::LightMode::IgnoreLight:
+	{
+		GELogger.Log("LightMode: IgnoreLight");
+		break;
+	}
+	default:
+		GELogger.Err("LightMode: Invalid option");
+		return myLightMode;
+	}
+
+	myLightBuffer.Data.myLightMode = static_cast<int>(myLightMode);
+	RHI::UpdateConstantBufferData(myLightBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, myLightBuffer);
+
+	return myLightMode;
+}
+
+GraphicsEngine::LightMode GraphicsEngine::NextLightMode()
+{
+	return SetLightMode(static_cast<LightMode>(static_cast<int>(myLightMode) + 1));
+}
+
+GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
+{
+	myRenderMode = aMode;
+
+	// TODO: Set the correct Shaders as active shaders for each RenderMode
+	switch (myRenderMode)
+	{
+	case GraphicsEngine::RenderMode::Count:
+	{
+		myRenderMode = RenderMode::Mesh;
+		// Letting it fall through
+	}
+	case GraphicsEngine::RenderMode::Mesh:
+	{
+		GELogger.Log("RenderMode: Mesh");
+		break;
+	}
+	case GraphicsEngine::RenderMode::WireFrame:
+	{
+		GELogger.Log("RenderMode: WireFrame");
+		break;
+	}
+	default:
+		GELogger.Err("RenderMode: Invalid option");
+		break;
+	}
+
+	return myRenderMode;
+}
+
+GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
+{
+	return SetRenderMode(static_cast<RenderMode>(static_cast<int>(myRenderMode) + 1));
 }
 #endif // _DEBUG
 
