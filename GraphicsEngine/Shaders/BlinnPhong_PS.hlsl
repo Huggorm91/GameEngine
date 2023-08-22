@@ -75,15 +75,14 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     }
     case 6:
     {
+        // AmbientOcclusion is not used by BlinnPhong
         result.Color.rgb = 0;
-        //result.Color.rgb = MB_AmbientOcclusion;
         result.Color.w = 1;
         break;
     }
     case 7:
     {
-        result.Color.rgb = 0;
-        //result.Color.rgb = MB_Roughness;
+        result.Color.rgb = MB_Shininess;
         result.Color.w = 1;
         break;
     }

@@ -33,7 +33,9 @@ struct DefaultPixelOutput
 SamplerState DefaultSampler : register(s0);
 Texture2D AlbedoTexture : register(t0);
 Texture2D NormalTexture : register(t1);
-Texture2D DefaultTexture : register(t98);
+Texture2D MaterialTexture : register(t2);
+Texture2D DefaultMaterialTexture : register(t97);
+Texture2D DefaultNormalTexture : register(t98);
 Texture2D MissingTexture : register(t99);
 TextureCube EnvironmentCubeMap : register(t100);
 

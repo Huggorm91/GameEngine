@@ -31,9 +31,9 @@ void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 3, buffer);
 
-	if (aMaterial.GetTexture())
+	if (aMaterial.GetAlbedoTexture())
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, aMaterial.GetTexture());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, aMaterial.GetAlbedoTexture());
 	}
 	else
 	{
@@ -47,5 +47,14 @@ void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 	else
 	{
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 1, GetDefaultNormalTexture());
+	}
+
+	if (aMaterial.GetMaterialTexture())
+	{
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 2, aMaterial.GetMaterialTexture());
+	}
+	else
+	{
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 2, GetDefaultMaterialTexture());
 	}
 }

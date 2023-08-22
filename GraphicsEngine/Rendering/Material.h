@@ -22,17 +22,21 @@ public:
 	Material();
 	Material(const Material& aMaterial);
 	Material(const Json::Value& aJsonValue);
-	Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal);
+	// Any nullptr will use GraphicEngine default
+	Material(const std::string& aName, Shader* aVertexShader = nullptr, Shader* aPixelShader = nullptr, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr, Texture* aMaterial = nullptr);
 	~Material() = default;
 	Material& operator=(const Material& aMaterial);
 
 	void SetVertexShader(Shader* aShader);
 	void SetPixelShader(Shader* aShader);
 
-	void SetTexture(Texture* aTexture);
+	void SetAlbedoTexture(Texture* aTexture);
 	void SetNormalTexture(Texture* aTexture);
+	void SetMaterialTexture(Texture* aTexture);
 
+	// Only used for BlinnPhong
 	void SetShininess(float aShininess);
+	// Only used for BlinnPhong
 	void SetMetalness(float aMetalness);
 	void SetNormalStrength(float aNormalStrength);
 	void SetUVTiling(const CommonUtilities::Vector2f& aUVTiling);
@@ -45,8 +49,9 @@ public:
 	const Shader* GetVertexShader() const;
 	const Shader* GetPixelShader() const;
 
-	const Texture* GetTexture() const;
+	const Texture* GetAlbedoTexture() const;
 	const Texture* GetNormalTexture() const;
+	const Texture* GetMaterialTexture() const;
 
 	float GetShininess() const;
 	float GetMetalness() const;
@@ -73,9 +78,10 @@ private:
 
 	Texture* myAlbedoTexture;
 	Texture* myNormalTexture;
+	Texture* myMaterialTexture;
 
-	float myShininess;
-	float myMetalness;
+	float myShininess;	// Only used for BlinnPhong
+	float myMetalness;	// Only used for BlinnPhong
 	float myNormalStrength;
 	CommonUtilities::Vector2f myUVTiling;
 	CommonUtilities::Vector4f myAlbedoColor;

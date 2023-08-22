@@ -28,15 +28,21 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			return false;
 		}
 
-		if (!RHI::LoadTexture(&myDefaultNormalTexture, L"Content/Textures/Default/T_Default_N.dds"))
+		if (!RHI::LoadTexture(&myDefaultMaterialTexture, L"Content/Textures/Default/T_Default_M.dds"))
+		{
+			GELogger.Err("Failed to load default material texture!");
+		}
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 97, &myDefaultMaterialTexture);
+
+		if (!RHI::LoadTexture(&myDefaultNormalTexture, L"Content/Textures/Default/T_Default_N_Flat.dds"))
 		{
 			GELogger.Err("Failed to load default normal texture!");
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 98, &myDefaultNormalTexture);
 
-		if (!RHI::LoadTexture(&myMissingTexture, L"Content/Textures/Default/T_Missing_M.dds"))
+		if (!RHI::LoadTexture(&myMissingTexture, L"Content/Textures/Default/T_Missing_C.dds"))
 		{
-			GELogger.Err("Failed to load missing texture!");
+			GELogger.Err("Failed to load default missing texture!");
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
 

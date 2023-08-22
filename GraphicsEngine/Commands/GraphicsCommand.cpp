@@ -23,14 +23,19 @@ MaterialBuffer& GraphicsCommand::GetMaterialBuffer()
     return GraphicsEngine::Get().myMaterialBuffer;
 }
 
+Texture* GraphicsCommand::GetMissingTexture()
+{
+    return &GraphicsEngine::Get().myMissingTexture;
+}
+
 Texture* GraphicsCommand::GetDefaultNormalTexture()
 {
     return &GraphicsEngine::Get().myDefaultNormalTexture;
 }
 
-Texture* GraphicsCommand::GetMissingTexture()
+Texture* GraphicsCommand::GetDefaultMaterialTexture()
 {
-    return &GraphicsEngine::Get().myMissingTexture;
+    return &GraphicsEngine::Get().myDefaultMaterialTexture;
 }
 
 Material* GraphicsCommand::GetDefaultMaterial()

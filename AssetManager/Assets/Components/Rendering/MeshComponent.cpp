@@ -68,11 +68,11 @@ std::vector<MeshElement>& MeshComponent::GetElements()
 	return myElements;
 }
 
-void MeshComponent::SetTexture(Texture* aTexture)
+void MeshComponent::SetAlbedoTexture(Texture* aTexture)
 {
 	for (auto& element : myElements)
 	{
-		element.myMaterial.SetTexture(aTexture);
+		element.myMaterial.SetAlbedoTexture(aTexture);
 	}
 }
 
@@ -81,6 +81,14 @@ void MeshComponent::SetNormalTexture(Texture* aTexture)
 	for (auto& element : myElements)
 	{
 		element.myMaterial.SetNormalTexture(aTexture);
+	}
+}
+
+void MeshComponent::SetMaterialTexture(Texture* aTexture)
+{
+	for (auto& element : myElements)
+	{
+		element.myMaterial.SetMaterialTexture(aTexture);
 	}
 }
 

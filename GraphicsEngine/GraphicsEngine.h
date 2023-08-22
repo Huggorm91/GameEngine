@@ -112,8 +112,9 @@ private:
 	Texture myBackBuffer{};
 	Texture myDepthBuffer{};
 
-	Texture myDefaultNormalTexture{};
 	Texture myMissingTexture{};
+	Texture myDefaultNormalTexture{};
+	Texture myDefaultMaterialTexture{};
 	Texture myDefaultCubeMap{};
 	Material myDefaultMaterial{};
 

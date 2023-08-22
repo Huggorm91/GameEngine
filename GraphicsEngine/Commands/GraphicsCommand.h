@@ -18,7 +18,8 @@ protected:
 	LightBuffer& GetLightBuffer();
 	MaterialBuffer& GetMaterialBuffer();
 
-	Texture* GetDefaultNormalTexture();
 	Texture* GetMissingTexture();
+	Texture* GetDefaultNormalTexture();
+	Texture* GetDefaultMaterialTexture();
 	Material* GetDefaultMaterial();
 };

@@ -73,21 +73,25 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     }
     case 6:
     {
-        result.Color.rgb = 0;
-        //result.Color.rgb = MB_AmbientOcclusion;
+        float2 scaledUV = input.UVs[0] * MB_UVTiling;
+        float ambient = MaterialTexture.Sample(DefaultSampler, scaledUV).x;
+        result.Color.rgb = ambient;
         result.Color.w = 1;
         break;
     }
     case 7:
     {
-        result.Color.rgb = 0;
-        //result.Color.rgb = MB_Roughness;
+        float2 scaledUV = input.UVs[0] * MB_UVTiling;
+        float roughness = MaterialTexture.Sample(DefaultSampler, scaledUV).y;
+        result.Color.rgb = roughness;
         result.Color.w = 1;
         break;
     }
     case 8:
     {
-        result.Color.rgb = MB_Metalness;
+        float2 scaledUV = input.UVs[0] * MB_UVTiling;
+        float metalness = MaterialTexture.Sample(DefaultSampler, scaledUV).z;
+        result.Color.rgb = metalness;
         result.Color.w = 1;
         break;
     }

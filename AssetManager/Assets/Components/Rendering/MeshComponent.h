@@ -25,8 +25,9 @@ public:
 	const std::vector<MeshElement>& GetElements() const;
 	std::vector<MeshElement>& GetElements();
 
-	void SetTexture(Texture* aTexture);
+	void SetAlbedoTexture(Texture* aTexture);
 	void SetNormalTexture(Texture* aTexture);
+	void SetMaterialTexture(Texture* aTexture);
 
 	void SetColor(const CommonUtilities::Vector4f& aColor);
 	const CommonUtilities::Vector4f& GetColor() const;

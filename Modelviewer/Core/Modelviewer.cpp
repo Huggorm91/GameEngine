@@ -136,46 +136,53 @@ void ModelViewer::Init()
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 500.f });
 	{
 		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
-		//mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		//mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		//mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 		mesh.SetColor(GetColor(eColor::White));
 		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
 	
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
 	myGameObjects.back().SetPosition({ 200.f, 0.f, 500.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 	
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	//myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	//myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	//myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
 	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(500.f);
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::InvertedCube));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedpyramid"));
 	myGameObjects.back().SetPosition({ 200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedsphere"));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 200.f });
 	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
-		mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
+		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M_Updated.dds"));
 		mesh.SetAnimation(AssetManager::GetAsset<Animation&>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Wave.fbx"));
 		mesh.StartAnimation();
 		mesh.SetColor({ 1.f,0.f,0.f,.5f });
@@ -186,8 +193,9 @@ void ModelViewer::Init()
 	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
-		mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
+		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
 		mesh.SetAnimation(AssetManager::GetAsset<Animation&>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
 		mesh.StartAnimation(true);
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
@@ -198,8 +206,9 @@ void ModelViewer::Init()
 	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
-		mesh.SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
+		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
 	}
 
 	myGameObjects.emplace_back();
