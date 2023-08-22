@@ -1,6 +1,7 @@
 #ifndef PBLFUNCTIONS_HLSLI
 #define PBLFUNCTIONS_HLSLI
 #include "DefaultMaterialData.hlsli"
+static const float PI = 3.1415926535f;
 
 // Functions required for convoluting a cubemap
 float2 Hammersley(float i, float numSamples)

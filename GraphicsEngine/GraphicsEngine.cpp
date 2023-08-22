@@ -263,11 +263,13 @@ GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
 	case GraphicsEngine::RenderMode::Mesh:
 	{
 		GELogger.Log("RenderMode: Mesh");
+		RHI::SetRasterizerState(RasterizerState::RS_Default);
 		break;
 	}
 	case GraphicsEngine::RenderMode::WireFrame:
 	{
 		GELogger.Log("RenderMode: WireFrame");
+		RHI::SetRasterizerState(RasterizerState::RS_Wireframe);
 		break;
 	}
 	default:
