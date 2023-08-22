@@ -33,6 +33,11 @@ struct LightBufferData
 
 	PointlightData myPointlights[8];
 	SpotlightData mySpotlights[8];
+
+#ifdef _DEBUG
+	int myLightMode;
+	CommonUtilities::Vector3f padding;
+#endif // _DEBUG
 };
 
 typedef ConstantBuffer<LightBufferData> LightBuffer;

@@ -27,8 +27,24 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 
 Shader* ShaderManager::LoadShader(const std::string& aPath)
 {
+	std::string path = AddExtensionIfMissing(aPath, ".cso");
+
+#ifdef _DEBUG
+	path = GetValidPath(path, myPath + "Debug/");
+#elif _RELEASE
+	path = GetValidPath(path, myPath + "Release/");
+#elif _RETAIL
+	path = GetValidPath(path, myPath + "Retail/");
+#endif // _DEBUG
+	
+	if (path.empty())
+	{
+		AMLogger.Err("ShaderManager: Could not load shader from path: " + aPath);
+		return nullptr;
+	}
+
 	Shader shader;
-	if (RHI::LoadShader(&shader, Helpers::string_cast<std::wstring>(aPath)))
+	if (RHI::LoadShader(&shader, Helpers::string_cast<std::wstring>(path)))
 	{
 		auto iter = myShaders.emplace(aPath, shader);
 		return &iter.first->second;

@@ -10,8 +10,18 @@
 
 class SplashWindow;
 
+#ifdef _DEBUG
+#include <InputHandler.h>
+class ModelViewer: public CommonUtilities::InputObserver
+{
+	GraphicsEngine::DebugMode myDebugMode;
+	GraphicsEngine::LightMode myLightMode;
+	GraphicsEngine::RenderMode myRenderMode;
+#else
 class ModelViewer
 {
+#endif // _DEBUG
+
 	HINSTANCE myModuleHandle = nullptr;
 	HWND myMainWindowHandle = nullptr;
 
@@ -48,4 +58,10 @@ public:
 
 	bool Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWindowProcess, LPCWSTR aWindowTitle);
 	int Run();
+
+#ifdef _DEBUG
+	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
+	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
+#endif // _DEBUG
+
 };

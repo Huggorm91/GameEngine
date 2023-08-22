@@ -8,6 +8,11 @@ cbuffer FrameBuffer : register(b0)
 	float FB_DeltaTime;
 	double FB_TotalTime;
 	
-    double paddingfb;
+#ifdef _DEBUG
+	int FB_DebugMode;
+	float paddingfb;
+#else
+    double paddingfb;	
+#endif
 }
 #endif // FRAMEBUFFER_HLSLI

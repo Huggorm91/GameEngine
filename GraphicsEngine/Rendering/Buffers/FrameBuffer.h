@@ -10,7 +10,12 @@ struct FrameBufferData
 	float DeltaTime = 0.f;
 	double TotalTime = 0.f;
 
+#ifdef _DEBUG
+	int myDebugMode;
+	float padding;
+#else
 	double padding;
+#endif // _DEBUG
 };
 
 typedef ConstantBuffer<FrameBufferData> FrameBuffer;

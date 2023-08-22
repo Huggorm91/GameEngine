@@ -16,7 +16,7 @@ public:
 	static GraphicsEngine& Get() { static GraphicsEngine myInstance; return myInstance;	}
 
 #ifdef _DEBUG
-	enum RenderMode
+	enum class DebugMode
 	{
 		Default,
 		UV,
@@ -24,14 +24,41 @@ public:
 		Normal,
 		Tangent,
 		Binormal,
+		AmbientOcclusion,
+		Roughness,
+		Metalness,
+		VertexColors,
+		AlbedoMap,
+		NormalMap,
+		Count
+	};
+
+	enum class LightMode
+	{
+		Default,
 		AmbientLight,
 		DirectLight,
 		PointLight,
 		SpotLight,
+		IgnoreLight,
 		Count
 	};
 
-	void SetRenderMode(RenderMode aMode);
+	enum class RenderMode
+	{
+		Mesh,
+		WireFrame,
+		Count
+	};
+
+	DebugMode SetDebugMode(DebugMode aMode);
+	DebugMode NextDebugMode();
+
+	LightMode SetLightMode(LightMode aMode);
+	LightMode NextLightMode();
+
+	RenderMode SetRenderMode(RenderMode aMode);
+	RenderMode NextRenderMode();
 #endif // _DEBUG
 
 /**
@@ -66,7 +93,9 @@ private:
 	friend class GraphicsCommand;
 
 #ifdef _DEBUG
-	RenderMode myRendermode = Default;
+	DebugMode myDebugMode = DebugMode::Default;
+	LightMode myLightMode = LightMode::Default;
+	RenderMode myRenderMode = RenderMode::Mesh;
 #endif // _DEBUG
 
 	LineDrawer::LineHandle myGrid;
