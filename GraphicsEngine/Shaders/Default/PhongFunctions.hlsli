@@ -30,8 +30,8 @@ float3 GetPhongSpotLightValue(float3 aPosition, float3 aPixelNormal, float3 aV, 
     const float3 kD = aColor * aSpotLight.Color * nDotL;
     const float3 kS = lerp(aSpotLight.Color, aColor, MB_Metalness) * pow(nDotH, MB_Shininess);
     
-    const float widthAttenuation = pow(saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(cos(aSpotLight.InnerAngle) - cos(aSpotLight.OuterAngle), 0.00001f)), 2);
-    //const float widthAttenuation = pow(saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(aSpotLight.ConeIntensityDifference, 0.00001f)), 2);
+    const float widthAttenuation = saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(cos(aSpotLight.InnerAngle) - cos(aSpotLight.OuterAngle), 0.00001f));
+    //const float widthAttenuation = Pow2(saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(aSpotLight.ConeIntensityDifference, 0.00001f)));
     const float attenuation = saturate(widthAttenuation * GetRangeAttenuation(distance(aPosition, aSpotLight.Position), max(aSpotLight.Range, 0.00001f)));
     
     return (kD + kS) * attenuation * aSpotLight.Intensity;
@@ -118,21 +118,28 @@ float3 GetBlinnPhongLight(float3 aPosition, float3 aPixelNormal, float3 aColor)
     {
 #endif
     result += GetPhongDirectionallight(aPosition, aPixelNormal, v, aColor);
-#ifdef _DEBUG
+    #ifdef _DEBUG
     }
+#endif
+    [unroll]
+    for (int i = 0; i < 8; i++)
+    {
+#ifdef _DEBUG
     if(LB_LightMode == 0 || LB_LightMode == 3)
     {
-#endif
-    result += GetPhongPointlights(aPosition, aPixelNormal, v, aColor);
+#endif    
+        result += GetPhongPointlightValue(aPosition, aPixelNormal, v, LB_Pointlights[i], aColor);
 #ifdef _DEBUG
     }
     if(LB_LightMode == 0 || LB_LightMode == 4)
     {
 #endif
-    result += GetPhongSpotlights(aPosition, aPixelNormal, v, aColor);
+        result += GetPhongSpotLightValue(aPosition, aPixelNormal, v, LB_Spotlights[i], aColor);
 #ifdef _DEBUG
     }
 #endif
+    }
+
     return result;
 }
 

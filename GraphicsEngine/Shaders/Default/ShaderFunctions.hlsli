@@ -2,6 +2,16 @@
 #define SHADERFUNCTIONS_HLSLI
 #include "../ConstantBuffers/LightBuffer.hlsli"
 
+float Pow2(float aValue)
+{
+    return aValue * aValue;
+}
+
+float3 Pow2(float3 aValue)
+{
+    return aValue * aValue;
+}
+
 float4x4 GetSkinMatrix(float4 boneWeights, uint4 boneIDs, float4x4 boneTransforms[128])
 {
     float4x4 skinMatrix = 0;
@@ -67,7 +77,7 @@ uint GetNumMips(TextureCube aCubeMap)
 
 float GetRangeAttenuation(float aDistance, float aLightRange)
 {
-    return 1 - pow(aDistance / aLightRange, 2);
+    return 1 - Pow2(aDistance / aLightRange);
 }
 
 #endif // SHADERFUNCTIONS_HLSLI

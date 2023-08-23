@@ -27,13 +27,21 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     float3 materialMap = MaterialTexture.Sample(DefaultSampler, scaledUV).rgb;
     
     LightData data;
-    data.v = 0;
     data.position = input.WorldPosition.xyz;
     data.pixelNormal = pixelNormal;
     data.albedoColor = result.Color.rgb;
     data.occlusion = materialMap.r; 
     data.roughness = materialMap.g;
     data.metalness = materialMap.b;
+    
+    // These are calculated inside GetPblLight()
+    data.v = 0;
+    data.brdfDiffuse = 0;
+    data.specularColor = 0;
+    data.invertedSpecular = 0;
+    data.k = 0;
+    data.kInverse = 0;
+    data.aPow2 = 0;
     
     result.Color.rgb = GetPblLight(data);
     

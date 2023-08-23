@@ -269,7 +269,7 @@ void ModelViewer::Init()
 	myGameObjects.emplace_back();
 	{
 		DirectionallightComponent light({ 0.f, -1.f, -1.f });
-		light.SetIntensity(0.f);
+		light.SetIntensity(1.f);
 		myGameObjects.back().AddComponent(light);
 	}
 
