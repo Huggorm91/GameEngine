@@ -4,4 +4,9 @@ WASD för att flytta längs x- & z-axlarna
 Ctrl och Spacebar för att flytta längs y-axeln
 Shift ökar hastigheten
 Q & E roterar kameran runt y-axeln
-Musen flyttar kameran runt x- & y-axlarna
+Musen roterar kameran runt x- & y-axlarna
+
+F5 ändrar debug-läge
+F6 ändrar ljus-läge
+F7 ändrar render-läge
+F8 återställer allt till standardläge

@@ -16,14 +16,15 @@ float4 GetAlphaBlendColor(float4 first, float4 second)
 {
     float4 result = 0;
     result.w = 1 - (1 - first.w) * (1 - second.w);
-    if (result.w == 0.f)
+    
+    if (result.w != 0.f)
     {
-        return result;
+        float alphaInverse = 1.f / result.w;
+        result.x = (first.x * first.w) * alphaInverse + (second.x * second.w) * alphaInverse;
+        result.y = (first.y * first.w) * alphaInverse + (second.y * second.w) * alphaInverse;
+        result.z = (first.z * first.w) * alphaInverse + (second.z * second.w) * alphaInverse;
     }
-    float alphaInverse = 1.f / result.w;
-    result.x = (first.x * first.w) * alphaInverse + (second.x * second.w) * alphaInverse;
-    result.y = (first.y * first.w) * alphaInverse + (second.y * second.w) * alphaInverse;
-    result.z = (first.z * first.w) * alphaInverse + (second.z * second.w) * alphaInverse;
+    
     return result;
 }
 

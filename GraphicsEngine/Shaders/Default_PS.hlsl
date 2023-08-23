@@ -24,7 +24,18 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     pixelNormal.xy *= MB_NormalStrength;
     pixelNormal = normalize(mul(pixelNormal, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS)));
     
-    result.Color.rgb = GetPblLight(input.WorldPosition.xyz, pixelNormal, result.Color.rgb);
+    float3 materialMap = MaterialTexture.Sample(DefaultSampler, scaledUV).rgb;
+    
+    LightData data;
+    data.v = 0;
+    data.position = input.WorldPosition.xyz;
+    data.pixelNormal = pixelNormal;
+    data.albedoColor = result.Color.rgb;
+    data.occlusion = materialMap.r; 
+    data.roughness = materialMap.g;
+    data.metalness = materialMap.b;
+    
+    result.Color.rgb = GetPblLight(data);
     
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
 #ifdef _DEBUG

@@ -200,6 +200,7 @@
     <None Include="Shaders\Default\DefaultLineData.hlsli" />
     <None Include="Shaders\Default\PhongFunctions.hlsli" />
     <None Include="Shaders\Default\PBLFunctions.hlsli" />
+    <None Include="Shaders\Default\BrdfData.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Default_VS.hlsl" />
@@ -208,5 +209,7 @@
     <FxCompile Include="Shaders\Default_Line_PS.hlsl" />
     <FxCompile Include="Shaders\Default_UI_Line_VS.hlsl" />
     <FxCompile Include="Shaders\BlinnPhong_PS.hlsl" />
+    <FxCompile Include="Shaders\BrdfLUT_VS.hlsl" />
+    <FxCompile Include="Shaders\BrdfLUT_PS.hlsl" />
   </ItemGroup>
 </Project>

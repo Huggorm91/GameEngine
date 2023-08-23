@@ -92,6 +92,17 @@ private:
 	friend class LightCommand;
 	friend class GraphicsCommand;
 
+	struct Settings
+	{
+		std::string defaultMissingTexture;
+		std::string defaultNormalTexture;
+		std::string defaultMaterialTexture;
+		std::string defaultCubeMap;
+		std::string defaultMaterial;
+		CommonUtilities::Vector4f backgroundColor;
+		
+	};
+
 #ifdef _DEBUG
 	DebugMode myDebugMode = DebugMode::Default;
 	LightMode myLightMode = LightMode::Default;
@@ -102,15 +113,15 @@ private:
 
 	HWND myWindowHandle{};
 	ComPtr<ID3D11SamplerState> myDefaultSampler {};
+	ComPtr<ID3D11SamplerState> myLUTSampler {};
 
 	SIZE myWindowSize{0,0};
-	CommonUtilities::Vector4f myBackGroundColor {0.f, 0.70980392156f, 0.8862745098f, 1.f};
-
-	Shader myDefaultVertexShader{};
-	Shader myDefaultPixelShader{};
+	CommonUtilities::Vector4f myBackgroundColor {};
+	std::string mySettingsPath {"Settings/ge_settings.json"};
 
 	Texture myBackBuffer{};
 	Texture myDepthBuffer{};
+	Texture myBrdfLUTTexture{};
 
 	Texture myMissingTexture{};
 	Texture myDefaultNormalTexture{};
@@ -132,5 +143,9 @@ private:
 	GraphicsEngine() = default;
 
 	bool CreateDefaultSampler();
+	bool CreateLUTSampler();
+	bool CreateLUTTexture();
+	Settings LoadSettings();
+	void SaveSettings(Settings someSettings);
 };
 

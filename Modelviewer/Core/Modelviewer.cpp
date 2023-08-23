@@ -155,7 +155,7 @@ void ModelViewer::Init()
 	//myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 	//myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
-	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(500.f);
+	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::InvertedCube));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 700.f });

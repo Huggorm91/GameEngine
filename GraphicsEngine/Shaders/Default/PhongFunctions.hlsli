@@ -37,6 +37,19 @@ float3 GetPhongSpotLightValue(float3 aPosition, float3 aPixelNormal, float3 aV, 
     return (kD + kS) * attenuation * aSpotLight.Intensity;
 }
 
+float3 GetPhongAmbientlight(float3 aPixelNormal, float3 aV, float3 aColor)
+{
+    const float3 reflection = normalize(reflect(-aV, aPixelNormal));
+
+    const uint cubeMips = GetNumMips(EnvironmentCubeMap);
+    float mipLvl = clamp(cubeMips * (1 - MB_Shininess * 0.001f), 0, cubeMips - 1);
+    const float3 ambientKD = EnvironmentCubeMap.SampleLevel(DefaultSampler, aPixelNormal, cubeMips - 1).rgb;
+    const float3 ambientKS = EnvironmentCubeMap.SampleLevel(DefaultSampler, reflection, mipLvl).rgb;
+    const float3 ambientLight = (ambientKD + ambientKS) * LB_AmbientlightIntensity;
+    
+    return aColor * ambientLight;
+}
+
 float3 GetPhongDirectionallight(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
 {
     const float nDotL = max(dot(aPixelNormal, LB_InvertedDirection), 0.f);
@@ -92,21 +105,13 @@ float3 GetBlinnPhongLight(float3 aPosition, float3 aPixelNormal, float3 aColor)
 #ifdef _DEBUG
     if(LB_LightMode == 5)
     {
-        return aColor;
+        result = aColor;
     }
     
     if(LB_LightMode == 0 || LB_LightMode == 1)
     {
 #endif
-    const float3 reflection = normalize(reflect(-v, aPixelNormal));
-
-    const uint cubeMips = GetNumMips(EnvironmentCubeMap);
-    float mipLvl = clamp(cubeMips * (1 - MB_Shininess * 0.001f), 0, cubeMips - 1);
-    const float3 ambientKD = EnvironmentCubeMap.SampleLevel(DefaultSampler, aPixelNormal, mipLvl).rgb;
-    const float3 ambientKS = EnvironmentCubeMap.SampleLevel(DefaultSampler, reflection, mipLvl).rgb;
-    const float3 ambientLight = (ambientKD + ambientKS) * LB_AmbientlightIntensity;
-    
-    result = aColor * ambientLight;
+    result = GetPhongAmbientlight(aPixelNormal, v, aColor);
 #ifdef _DEBUG
     }
     if(LB_LightMode == 0 || LB_LightMode == 2)

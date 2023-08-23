@@ -6,6 +6,9 @@
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
 #include "Vector3.hpp"
+#include <External/jsonCpp/json.h>
+#include "InterOp/Helpers.h"
+#include <fstream>
 
 bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 {
@@ -28,25 +31,34 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			return false;
 		}
 
-		if (!RHI::LoadTexture(&myDefaultMaterialTexture, L"Content/Textures/Default/T_Default_M.dds"))
+		Settings settings = LoadSettings();
+		myBackgroundColor = settings.backgroundColor;
+
+		if (!CreateLUTTexture())
+		{
+			GELogger.Err("Failed to create LUT texture!");
+		}
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 96, &myBrdfLUTTexture);
+
+		if (!RHI::LoadTexture(&myDefaultMaterialTexture, Helpers::string_cast<std::wstring>(settings.defaultMaterialTexture)))
 		{
 			GELogger.Err("Failed to load default material texture!");
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 97, &myDefaultMaterialTexture);
 
-		if (!RHI::LoadTexture(&myDefaultNormalTexture, L"Content/Textures/Default/T_Default_N_Flat.dds"))
+		if (!RHI::LoadTexture(&myDefaultNormalTexture, Helpers::string_cast<std::wstring>(settings.defaultNormalTexture)))
 		{
 			GELogger.Err("Failed to load default normal texture!");
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 98, &myDefaultNormalTexture);
 
-		if (!RHI::LoadTexture(&myMissingTexture, L"Content/Textures/Default/T_Missing_C.dds"))
+		if (!RHI::LoadTexture(&myMissingTexture, Helpers::string_cast<std::wstring>(settings.defaultMissingTexture)))
 		{
 			GELogger.Err("Failed to load default missing texture!");
 		}
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
 
-		if (!RHI::LoadTexture(&myDefaultCubeMap, L"Content/Textures/CubeMaps/skansen_cubemap.dds"))
+		if (!RHI::LoadTexture(&myDefaultCubeMap, Helpers::string_cast<std::wstring>(settings.defaultCubeMap)))
 		{
 			GELogger.Err("Failed to load default cubemap!");
 		}
@@ -58,7 +70,13 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 		RHI::SetSamplerState(myDefaultSampler, 0);
 
-		myDefaultMaterial = AssetManager::GetAsset<Material>("Content/Materials/Default/Default_Material.mat");
+		if (!CreateLUTSampler())
+		{
+			GELogger.Err("Failed to create LUT sampler!");
+		}
+		RHI::SetSamplerState(myLUTSampler, 15);
+
+		myDefaultMaterial = AssetManager::GetAsset<Material>(settings.defaultMaterial);
 		if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
 		{
 			GELogger.Err("Failed to create InputLayout!");
@@ -96,7 +114,7 @@ void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
 
 void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
 {
-	myBackGroundColor = aColor;
+	myBackgroundColor = aColor;
 }
 
 #ifdef _DEBUG
@@ -288,7 +306,7 @@ GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 
 void GraphicsEngine::BeginFrame()
 {
-	RHI::ClearRenderTarget(&myBackBuffer, { myBackGroundColor.x, myBackGroundColor.y, myBackGroundColor.z, myBackGroundColor.w });
+	RHI::ClearRenderTarget(&myBackBuffer, { myBackgroundColor.x, myBackgroundColor.y, myBackgroundColor.z, myBackgroundColor.w });
 	RHI::ClearDepthStencil(&myDepthBuffer);
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
@@ -383,4 +401,134 @@ bool GraphicsEngine::CreateDefaultSampler()
 		return false;
 	}
 	return true;
+}
+
+bool GraphicsEngine::CreateLUTSampler()
+{
+	D3D11_SAMPLER_DESC desc{};
+	desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.MipLODBias = 0.f;
+	desc.MaxAnisotropy = 1;
+	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	desc.BorderColor[0] = 1.f;
+	desc.BorderColor[1] = 1.f;
+	desc.BorderColor[2] = 1.f;
+	desc.BorderColor[3] = 1.f;
+	desc.MinLOD = 0;
+	desc.MaxLOD = 0;
+
+	if (!RHI::CreateSamplerState(myLUTSampler, desc))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool GraphicsEngine::CreateLUTTexture()
+{
+	if (!RHI::CreateTexture(&myBrdfLUTTexture, L"brdfLUT", 512, 512, DXGI_FORMAT_R16G16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	{
+		return false;
+	}
+	RHI::ClearRenderTarget(&myBrdfLUTTexture);
+	
+	Shader brdfVS;	
+#ifdef _DEBUG
+	std::wstring vsPath = L"Content/Shaders/Debug/BrdfLUT_VS.cso";
+#elif _RELEASE
+	std::wstring vsPath = L"Content/Shaders/Release/BrdfLUT_VS.cso";
+#elif _RETAIL
+	std::wstring vsPath = L"Content/Shaders/Retail/BrdfLUT_VS.cso";
+#endif // _DEBUG
+	if (!RHI::LoadShader(&brdfVS, vsPath))
+	{
+		return false;
+	}
+
+	Shader brdfPS;
+#ifdef _DEBUG
+	std::wstring psPath = L"Content/Shaders/Debug/BrdfLUT_PS.cso";
+#elif _RELEASE
+	std::wstring psPath = L"Content/Shaders/Release/BrdfLUT_PS.cso";
+#elif _RETAIL
+	std::wstring psPath = L"Content/Shaders/Retail/BrdfLUT_PS.cso";
+#endif // _DEBUG
+	if (!RHI::LoadShader(&brdfPS, psPath))
+	{
+		return false;
+	}
+
+	RHI::SetVertexShader(&brdfVS);
+	RHI::SetPixelShader(&brdfPS);
+	RHI::SetRenderTarget(&myBrdfLUTTexture, nullptr);
+	RHI::ConfigureInputAssembler(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, nullptr, nullptr, 0, nullptr);
+
+	RHI::Draw(4);
+
+	RHI::SetRenderTarget(nullptr, nullptr);
+	brdfVS.DeleteData();
+	brdfPS.DeleteData();
+
+	return true;
+}
+
+GraphicsEngine::Settings GraphicsEngine::LoadSettings()
+{
+	Settings settings;
+	Json::Value json;
+	std::fstream fileStream(mySettingsPath, std::ios::in);
+	if (fileStream)
+	{
+		fileStream >> json;
+		fileStream.flush();
+		fileStream.close();
+	}
+	else
+	{
+		GELogger.Err("Could not load settings!");
+		fileStream.close();
+		return settings;
+	}	
+
+	settings.defaultMaterialTexture = json["MaterialTexture"].asString();
+	settings.defaultNormalTexture = json["NormalTexture"].asString();
+	settings.defaultMissingTexture = json["MissingTexture"].asString();
+	settings.defaultCubeMap = json["CubeMap"].asString();
+	settings.defaultMaterial = json["DefaultMaterial"].asString();
+	settings.backgroundColor.x = json["BackgroundColor"]["R"].asFloat();
+	settings.backgroundColor.y = json["BackgroundColor"]["G"].asFloat();
+	settings.backgroundColor.z = json["BackgroundColor"]["B"].asFloat();
+	settings.backgroundColor.w = json["BackgroundColor"]["A"].asFloat();
+	return settings;
+}
+
+void GraphicsEngine::SaveSettings(Settings someSettings)
+{
+	Json::Value json;
+	json["MaterialTexture"] = someSettings.defaultMaterialTexture;
+	json["NormalTexture"] = someSettings.defaultNormalTexture;
+	json["MissingTexture"] = someSettings.defaultMissingTexture;
+	json["CubeMap"] = someSettings.defaultCubeMap;
+	json["DefaultMaterial"] = someSettings.defaultMaterial;
+	json["BackgroundColor"]["R"] = someSettings.backgroundColor.x;
+	json["BackgroundColor"]["G"] = someSettings.backgroundColor.y;
+	json["BackgroundColor"]["B"] = someSettings.backgroundColor.z;
+	json["BackgroundColor"]["A"] = someSettings.backgroundColor.w;
+
+	std::fstream fileStream(mySettingsPath, std::ios::out);
+	if (fileStream)
+	{
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(json, &fileStream);
+		fileStream.flush();
+	}
+	else
+	{
+		GELogger.Err("Could not save settings!");
+	}
+	fileStream.close();
 }

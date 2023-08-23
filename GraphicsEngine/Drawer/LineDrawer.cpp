@@ -182,7 +182,7 @@ void LineDrawer::Render()
 
 		RHI::SetVertexShader(&myVertexShader);
 		RHI::SetPixelShader(&myPixelShader);
-		RHI::DrawIndexed(myIndexCount);
+		RHI::DrawIndexed(static_cast<unsigned>(myIndexCount));
 
 		RHI::SetVertexShader(nullptr);
 		RHI::SetPixelShader(nullptr);
@@ -194,7 +194,7 @@ void LineDrawer::Render()
 
 		RHI::SetVertexShader(&myUIVertexShader);
 		RHI::SetPixelShader(&myPixelShader);
-		RHI::DrawIndexed(myUIIndexCount);
+		RHI::DrawIndexed(static_cast<unsigned>(myUIIndexCount));
 
 		RHI::SetVertexShader(nullptr);
 		RHI::SetPixelShader(nullptr);

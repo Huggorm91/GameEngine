@@ -22,4 +22,6 @@ public:
 	FORCEINLINE size_t GetBlobSize() const { return myBlobSize; }
 	FORCEINLINE const ShaderInfo& GetShaderInfo() const { return myShaderInfo; }
 	FORCEINLINE const std::wstring& GetName() const { return myName; }
+
+	void DeleteData();
 };
