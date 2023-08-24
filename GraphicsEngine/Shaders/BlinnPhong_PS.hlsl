@@ -1,4 +1,4 @@
-#include "Default/DefaultMaterialData.hlsli"
+#include "Default/PhongFunctions.hlsli"
 
 DefaultPixelOutput main(DefaultVertexToPixel input)
 {

@@ -1,4 +1,4 @@
-#include "Default/DefaultMaterialData.hlsli"
+#include "Default/PBLFunctions.hlsli"
 
 DefaultPixelOutput main(DefaultVertexToPixel input)
 {
@@ -29,8 +29,6 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     LightData data;
     data.position = input.WorldPosition.xyz;
     data.pixelNormal = pixelNormal;
-    data.albedoColor = result.Color.rgb;
-    data.occlusion = materialMap.r; 
     data.roughness = materialMap.g;
     data.metalness = materialMap.b;
     
@@ -42,8 +40,9 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     data.k = 0;
     data.kInverse = 0;
     data.aPow2 = 0;
+    data.nDotV = 0;
     
-    result.Color.rgb = GetPblLight(data);
+    result.Color.rgb = GetPblLight(data, result.Color.rgb, materialMap.r);
     
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
 #ifdef _DEBUG

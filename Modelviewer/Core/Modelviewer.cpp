@@ -177,7 +177,7 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 200.f });
-	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
+	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
@@ -190,7 +190,7 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
 	myGameObjects.back().SetPosition({ 100.f, 0.f, 200.f });
-	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
+	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
@@ -203,12 +203,22 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 200.f });
-	//myModels.back().SetRotation({ 0.f, 180.f, 0.f });
+	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
+	}
+
+	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
+	myGameObjects.back().SetPosition({ 0.f, 200.f, 500.f });
+	myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
+	{
+		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Buddha_C.dds"));
+		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Buddha_N.dds"));
+		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Buddha_M.dds"));
 	}
 
 	myGameObjects.emplace_back();
@@ -269,7 +279,7 @@ void ModelViewer::Init()
 	myGameObjects.emplace_back();
 	{
 		DirectionallightComponent light({ 0.f, -1.f, -1.f });
-		light.SetIntensity(1.f);
+		light.SetIntensity(.25f);
 		myGameObjects.back().AddComponent(light);
 	}
 
@@ -295,7 +305,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
 	myCamera.Update();
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 0.5f));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();

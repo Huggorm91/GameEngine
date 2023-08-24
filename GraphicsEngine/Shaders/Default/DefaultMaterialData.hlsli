@@ -6,6 +6,8 @@
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
 #include "DefaultVertexInput.hlsli"
 #include "ShaderFunctions.hlsli"
+static const float PI = 3.1415926535f;
+static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
 
 struct DefaultVertexToPixel
 {
@@ -43,9 +45,4 @@ Texture2D DefaultNormalTexture : register(t98);
 Texture2D MissingTexture : register(t99);
 
 TextureCube EnvironmentCubeMap : register(t100);
-
-// Included last in order to see Texture declarations
-#include "PhongFunctions.hlsli" 
-#include "PBLFunctions.hlsli"
-
 #endif // DEFAULTMATERIALDATA_HLSLI
