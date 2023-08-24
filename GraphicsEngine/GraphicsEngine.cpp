@@ -326,6 +326,7 @@ struct ShadowData
 {
 	std::shared_ptr<GfxCmd_RenderMeshShadow> myCommand;
 	float myDistanceFromLight;
+unsigned myIndex; // Used to check if distance has been calculated for current light
 
 	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, float aDistance): myCommand(aCommand), myDistanceFromLight(aDistance){}
 	bool operator<(const ShadowData& someData) { return myDistanceFromLight < someData.myDistanceFromLight;	}
