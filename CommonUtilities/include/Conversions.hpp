@@ -9,7 +9,7 @@ namespace CommonUtilities
 	float DegreeToRadian(T aDegree)
 	{
 		return static_cast<float>(aDegree * globalDegreeToRadianMultiplier);
-	}
+	}	
 
 	template <typename T>
 	double DegreeToRadianPrecise(T aDegree)

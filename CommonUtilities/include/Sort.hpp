@@ -13,6 +13,8 @@ namespace CommonUtilities
 
 	template <class T>
 	void QuickSort(std::vector<T>& aVector);
+	template <class T>
+	void QuickSort(std::vector<T>& aVector, std::function<bool(T&, T&)> aCompareFunction);
 
 	template <class T>
 	void MergeSort(std::vector<T>& aVector);
@@ -65,7 +67,7 @@ namespace CommonUtilities
 	void QuickSort(std::vector<T>& aVector)
 	{
 		auto median = [](std::vector<T>& aVector, int aFrom, int aTo) -> T& {
-			int middle = (aTo + aFrom) * 0.5f;
+			int middle = static_cast<int>((aTo + aFrom) * 0.5f);;
 
 			if (aVector[middle] < aVector[aFrom])
 			{
@@ -110,6 +112,85 @@ namespace CommonUtilities
 						T comparison = aVector[i];
 						int index = i;
 						while (index > aFrom && comparison < aVector[index - 1])
+						{
+							aVector[index] = aVector[index - 1];
+							--index;
+						}
+						aVector[index] = comparison;
+					}
+					break;
+				}
+				else
+				{
+					int pivot = partition(aVector, aFrom, aTo);
+
+					if (pivot - aFrom < aTo - pivot) // Sort the smaller part first
+					{
+						quickSort(aVector, aFrom, pivot - 1);
+						aFrom = pivot + 1;
+					}
+					else
+					{
+						quickSort(aVector, pivot + 1, aTo);
+						aTo = pivot - 1;
+					}
+				}
+			}
+		};
+
+		quickSort(aVector, 0, static_cast<int>(aVector.size()) - 1);
+	}
+
+	template<class T>
+	void QuickSort(std::vector<T>& aVector, std::function<bool(T&, T&)> aCompareFunction)
+	{
+		auto median = [&aCompareFunction](std::vector<T>& aVector, int aFrom, int aTo) -> T& {
+			int middle = static_cast<int>((aTo + aFrom) * 0.5f);;
+
+			
+			if (aCompareFunction(aVector[middle], aVector[aFrom]))
+			{
+				Swap(aVector[middle], aVector[aFrom]);
+			}
+			if (aCompareFunction(aVector[aTo], aVector[aFrom]))
+			{
+				Swap(aVector[aTo], aVector[aFrom]);
+			}
+			if (aCompareFunction(aVector[middle], aVector[aTo]))
+			{
+				Swap(aVector[middle], aVector[aTo]);
+			}
+
+			return aVector[aTo];
+		};
+
+		auto partition = [&median, &aCompareFunction](std::vector<T>& aVector, int aFrom, int aTo) {
+			T& pivot = median(aVector, aFrom, aTo);
+			int lowIndex = aFrom - 1;
+
+			for (int index = aFrom; index < aTo; index++)
+			{
+				if (aCompareFunction(aVector[index], pivot))
+				{
+					++lowIndex;
+					Swap(aVector[lowIndex], aVector[index]);
+				}
+			}
+			++lowIndex;
+			Swap(aVector[lowIndex], aVector[aTo]);
+			return lowIndex;
+		};
+
+		std::function<void(std::vector<T>&, int, int)> quickSort = [&partition, &quickSort, &aCompareFunction](std::vector<T>& aVector, int aFrom, int aTo) {
+			while (aFrom < aTo)
+			{
+				if (aTo - aFrom + 1 < 32) // Using insertionsort when size is small
+				{
+					for (int i = aFrom + 1; i <= aTo; i++)
+					{
+						T comparison = aVector[i];
+						int index = i;
+						while (index > aFrom && aCompareFunction(comparison, aVector[index - 1]))
 						{
 							aVector[index] = aVector[index - 1];
 							--index;
@@ -188,7 +269,7 @@ namespace CommonUtilities
 		std::function<void(std::vector<T>&, int, int)> mergeSort = [&merge, &mergeSort](std::vector<T>& aVector, int aStart, int anEnd) {
 			if (aStart < anEnd)
 			{
-				int middle = (aStart + anEnd) * 0.5f;
+				int middle = static_cast<int>((aStart + anEnd) * 0.5f);
 
 				mergeSort(aVector, aStart, middle);
 				mergeSort(aVector, middle + 1, anEnd);
@@ -239,7 +320,7 @@ namespace CommonUtilities
 	template<class T>
 	void ShellSort(std::vector<T>& aVector)
 	{
-		for (int interval = aVector.size() * 0.5f; interval > 0; interval *= 0.5f)
+		for (int interval = static_cast<int>(aVector.size() * 0.5f); interval > 0; interval = static_cast<int>(interval * 0.5f))
 		{
 			for (int index = interval; index < aVector.size(); index++)
 			{

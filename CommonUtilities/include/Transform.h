@@ -1,5 +1,5 @@
 #pragma once
-#include <Matrix4x4.hpp>
+#include  "../HeaderFiles/Matrix4x4.hpp"
 
 namespace CommonUtilities
 {
@@ -25,11 +25,11 @@ namespace CommonUtilities
 
 	private:
 		bool myHasChanged;
-		CommonUtilities::Vector3<float> myPosition;
-		CommonUtilities::Vector3<float> myRotation;
-		CommonUtilities::Vector3<float> myScale;
+		Vector3<float> myPosition;
+		Vector3<float> myRotation;
+		Vector3<float> myScale;
 
-		CommonUtilities::Matrix4x4<float> myTransform;
+		Matrix4x4<float> myTransform;
 
 		void UpdateTransform();
 	};

@@ -33,27 +33,39 @@ namespace CommonUtilities
 		static Matrix4x4<T> CreateRotationMatrix(const Vector3<T>& aRotation);
 		static Matrix4x4<T> CreateTranslationMatrix(const Vector3<T>& aPosition);
 
-		static Matrix4x4<T> Transpose(const Matrix4x4<T>& aMatrixToTranspose);
+		static Matrix4x4<T> CreatePerspectiveMatrix(float aFoVRadian, float aNearPlane, float aFarPlane, const Vector2f& aScreenSize);
+		static Matrix4x4<T> CreateOrthographicMatrix(float aLeftPlane, float aRightPlane, float aBottomPlane, float aTopPlane, float aNearPlane, float aFarPlane);
+
 		// Assumes aTransform is made up of nothing but rotations and translations.
 		static Matrix4x4<T> GetFastInverse(const Matrix4x4<T>& aTransform);
+		inline Matrix4x4<T> GetFastInverse() const;
+		static Matrix4x4<T> Transpose(const Matrix4x4<T>& aMatrixToTranspose);
+		inline Matrix4x4<T> Transpose() const;
+
+		static Vector4<T> Forward(const Matrix4x4<T>& aMatrix);
+		inline Vector4<T> Forward() const;
+		static Vector4<T> Up(const Matrix4x4<T>& aMatrix);
+		inline Vector4<T> Up() const;
+		static Vector4<T> Right(const Matrix4x4<T>& aMatrix);
+		inline Vector4<T> Right() const;
 
 		inline Matrix4x4<T>& operator+=(const Matrix4x4<T>& aMatrix);
 		inline Matrix4x4<T> operator+(const Matrix4x4<T>& aMatrix) const;
 		inline Matrix4x4<T>& operator+=(const T& aScalar);
 		inline Matrix4x4<T> operator+(const T& aScalar) const;
-			   		
+
 		inline Matrix4x4<T>& operator-=(const Matrix4x4<T>& aMatrix);
 		inline Matrix4x4<T> operator-(const Matrix4x4<T>& aMatrix) const;
 		inline Matrix4x4<T>& operator-=(const T& aScalar);
 		inline Matrix4x4<T> operator-(const T& aScalar) const;
-			   		
+
 		inline Matrix4x4<T>& operator*= (const Matrix4x4<T>& aMatrix);
 		inline Matrix4x4<T> operator*(const Matrix4x4<T>& aMatrix) const;
 		inline Matrix4x4<T>& operator*=(const T& aScalar);
 		inline Matrix4x4<T> operator*(const T& aScalar) const;
-		
+
 		inline Vector4<T> operator*(const Vector4<T>& aRowVector) const;
-			   		
+
 		inline Matrix4x4<T>& operator/=(const T& aScalar);
 		inline Matrix4x4<T> operator/(const T& aScalar) const;
 
@@ -70,11 +82,15 @@ namespace CommonUtilities
 	typedef Matrix4x4<int>  Matrix4x4i;
 
 	template<typename T>
-	Vector4<T>& operator*=(Vector4<T>& aRowVector, const Matrix4x4<T>& aMatrix) { return aRowVector = aMatrix * aRowVector; }
+	Vector4<T>& operator*=(Vector4<T>& aRowVector, const Matrix4x4<T>& aMatrix) {
+		return aRowVector = aMatrix * aRowVector;
+	}
 	template<typename T>
-	Vector4<T> operator*(const Vector4<T>& aRowVector, const Matrix4x4<T>& aMatrix) { return aMatrix * aRowVector; }
+	Vector4<T> operator*(const Vector4<T>& aRowVector, const Matrix4x4<T>& aMatrix) {
+		return aMatrix * aRowVector;
+	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
 	inline Matrix4x4<T>::Matrix4x4() : myValues{ {{ T(1), T(), T(), T() }, { T(), T(1), T(), T() }, { T(), T(), T(1), T() }, { T(), T(), T(), T(1) }} }
@@ -82,7 +98,7 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
-	inline Matrix4x4<T>::Matrix4x4(std::array<std::array<T, 4>, 4> anArray): myValues(anArray)
+	inline Matrix4x4<T>::Matrix4x4(std::array<std::array<T, 4>, 4> anArray) : myValues(anArray)
 	{
 	}
 
@@ -91,7 +107,7 @@ namespace CommonUtilities
 		{aFirstRow.x, aFirstRow.y, aFirstRow.z, aFirstRow.w},
 		{aSecondRow.x, aSecondRow.y, aSecondRow.z, aSecondRow.w},
 		{aThirdRow.x, aThirdRow.y, aThirdRow.z, aThirdRow.w},
-		{aFourthRow.x, aFourthRow.y, aFourthRow.z, aFourthRow.w}}}
+		{aFourthRow.x, aFourthRow.y, aFourthRow.z, aFourthRow.w}} }
 	{
 	}
 
@@ -113,30 +129,30 @@ namespace CommonUtilities
 	inline Matrix4x4<T> Matrix4x4<T>::CreateRotationAroundX(const T& anAngleInRadians)
 	{
 		return Matrix4x4<T>{
-				{ T(1), T(), T() , T() },
-				{ T(), T(cos(anAngleInRadians)), T(sin(anAngleInRadians)) , T()},
-				{ T(), T(-sin(anAngleInRadians)), T(cos(anAngleInRadians)) , T() },
-				{ T(), T(), T(), T(1) }	};
+			{ T(1), T(), T(), T() },
+			{ T(), T(cos(anAngleInRadians)), T(sin(anAngleInRadians)) , T() },
+			{ T(), T(-sin(anAngleInRadians)), T(cos(anAngleInRadians)) , T() },
+			{ T(), T(), T(), T(1) }	};
 	}
 
 	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::CreateRotationAroundY(const T& anAngleInRadians)
 	{
 		return Matrix4x4<T>{
-				{ T(cos(anAngleInRadians)), T(), T(-sin(anAngleInRadians)), T()},
-				{ T(), T(1), T(), T() },
-				{ T(sin(anAngleInRadians)), T(), T(cos(anAngleInRadians)), T() },
-				{ T(), T(), T(), T(1) }	};
+			{ T(cos(anAngleInRadians)), T(), T(-sin(anAngleInRadians)), T()},
+			{ T(), T(1), T(), T() },
+			{ T(sin(anAngleInRadians)), T(), T(cos(anAngleInRadians)), T() },
+			{ T(), T(), T(), T(1) }	};
 	}
 
 	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::CreateRotationAroundZ(const T& anAngleInRadians)
 	{
 		return Matrix4x4<T>{
-				{ T(cos(anAngleInRadians)), T(sin(anAngleInRadians)), T(), T()},
-				{ T(-sin(anAngleInRadians)), T(cos(anAngleInRadians)), T(), T() },
-				{ T(), T(), T(1), T() },
-				{ T(), T(), T(), T(1) }	};
+			{ T(cos(anAngleInRadians)), T(sin(anAngleInRadians)), T(), T()},
+			{ T(-sin(anAngleInRadians)), T(cos(anAngleInRadians)), T(), T() },
+			{ T(), T(), T(1), T() },
+			{ T(), T(), T(), T(1) }	};
 	}
 
 	template<typename T>
@@ -160,11 +176,38 @@ namespace CommonUtilities
 	inline Matrix4x4<T> Matrix4x4<T>::CreateTranslationMatrix(const Vector3<T>& aPosition)
 	{
 		return Matrix4x4<T>{
-			{ T(1), T(), T(), T() }, 
-			{ T(), T(1), T(), T() }, 
-			{ T(), T(), T(1), T() }, 
+			{ T(1), T(), T(), T() },
+			{ T(), T(1), T(), T() },
+			{ T(), T(), T(1), T() },
 			{ T(aPosition.x), T(aPosition.y), T(aPosition.z), T(1) }
 		};
+	}
+
+	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::CreatePerspectiveMatrix(float aFoVRadian, float aNearPlane, float aFarPlane, const Vector2f& aScreenSize)
+	{
+		const float divideInverse = 1.f / (aFarPlane - aNearPlane);
+		const float fov = 1.f / tan(aFoVRadian * 0.5f);
+
+		return Matrix4x4<T>{
+			{ T(fov), T(), T(), T() },
+			{ T(), T(fov * (aScreenSize.x / aScreenSize.y)), T(), T() },
+			{ T(), T(), T(aFarPlane * divideInverse), T(1) },
+			{ T(), T(), T(-aNearPlane * aFarPlane * divideInverse), T(0) }};
+	}
+
+	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::CreateOrthographicMatrix(float aLeftPlane, float aRightPlane, float aBottomPlane, float aTopPlane, float aNearPlane, float aFarPlane)
+	{
+		const float reciprocalWidth = 1.0f / (aRightPlane - aLeftPlane);
+		const float reciprocalHeight = 1.0f / (aTopPlane - aBottomPlane);
+		const float fRange = 1.0f / (aFarPlane - aNearPlane);
+
+		return Matrix4x4<T>{
+			{ T(reciprocalWidth + reciprocalWidth), T(), T(), T() },
+			{ T(), T(reciprocalHeight + reciprocalHeight), T(), T() },
+			{ T(), T(), T(fRange), T() },
+			{ T(-(aLeftPlane + aRightPlane) * reciprocalWidth), T(-(aTopPlane + aBottomPlane) * reciprocalHeight), T(-fRange * aNearPlane), T(1) }};
 	}
 
 	template<typename T>
@@ -181,19 +224,67 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::Transpose() const
+	{
+		return Transpose(*this);
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Forward(const Matrix4x4<T>& aMatrix)
+	{
+		return Vector4<T>(aMatrix.myValues[0][2], aMatrix.myValues[1][2], aMatrix.myValues[2][2], 0.f).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Forward() const
+	{
+		return Forward(*this);
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Up(const Matrix4x4<T>& aMatrix)
+	{
+		return Vector4<T>(aMatrix.myValues[0][1], aMatrix.myValues[1][1], aMatrix.myValues[2][1], 0.f).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Up() const
+	{
+		return Up(*this);
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Right(const Matrix4x4<T>& aMatrix)
+	{
+		return Vector4<T>(aMatrix.myValues[0][0], aMatrix.myValues[1][0], aMatrix.myValues[2][0], 0.f).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector4<T> Matrix4x4<T>::Right() const
+	{
+		return Right(*this);
+	}
+
+	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::GetFastInverse(const Matrix4x4<T>& aTransform)
 	{
-		Matrix4x4<T> result{ 
-			{aTransform(1,1),aTransform(2,1),aTransform(3,1),aTransform(1,4)},
-			{aTransform(1,2),aTransform(2,2),aTransform(3,2),aTransform(2,4)},
-			{aTransform(1,3),aTransform(2,3),aTransform(3,3),aTransform(3,4)},
-			{T(),T(),T(),T(1)}};
+		Matrix4x4<T> result{
+			{ aTransform(1,1), aTransform(2,1), aTransform(3,1), aTransform(1,4)},
+			{ aTransform(1,2), aTransform(2,2), aTransform(3,2), aTransform(2,4) },
+			{ aTransform(1,3), aTransform(2,3), aTransform(3,3), aTransform(3,4) },
+			{ T(),T(),T(),T(1) }};
 		Vector4<T> translate(-aTransform(4, 1), -aTransform(4, 2), -aTransform(4, 3), aTransform(4, 4));
 		translate = translate * result;
 		result(4, 1) = translate.x;
 		result(4, 2) = translate.y;
 		result(4, 3) = translate.z;
 		return result;
+	}
+
+	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::GetFastInverse() const
+	{
+		return GetFastInverse(*this);
 	}
 
 	template<typename T>
@@ -303,7 +394,7 @@ namespace CommonUtilities
 		myValues[2][1] = thirdRow.Dot(secondColumn);
 		myValues[2][2] = thirdRow.Dot(thirdColumn);
 		myValues[2][3] = thirdRow.Dot(fourthColumn);
-				 
+
 		myValues[3][0] = fourthRow.Dot(firstColumn);
 		myValues[3][1] = fourthRow.Dot(secondColumn);
 		myValues[3][2] = fourthRow.Dot(thirdColumn);

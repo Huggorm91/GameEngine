@@ -2,8 +2,7 @@
 #include "AnimatedMeshComponent.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
-#include "GraphicsEngine/Commands/GfxCmd_SetObjectBuffer.h"
-#include "GraphicsEngine/Commands/GfxCmd_SetTextureResource.h"
+#include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include <Timer.h>
 
 AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(nullptr), myAnimationTimer(), myCurrentFrame(1),
@@ -64,8 +63,10 @@ void AnimatedMeshComponent::Update()
 		}
 	}
 
-	//GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetTextureResource>(myAlbedoTexture, myNormalTexture));
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetObjectBuffer>(*this));
+	if (myRenderShadow)
+	{
+		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
+	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this));
 }
 

@@ -3,7 +3,7 @@
 #include "InterOp/RHI.h"
 #include "Rendering/Texture.h"
 #include "Rendering/Material.h"
-#include "Commands/GraphicsCommand.h"
+#include "Commands/GfxCmd_RenderMeshShadow.h"
 #include "Commands/Light/LightCommand.h"
 #include "Drawer/LineDrawer.h"
 
@@ -81,6 +81,7 @@ public:
 	void RenderFrame();	
 	void AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand);
+	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand);
 
 	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const { return myWindowHandle; }
 	[[nodiscard]] SIZE FORCEINLINE GetWindowSize() const { return myWindowSize; }
@@ -137,6 +138,7 @@ private:
 	LineDrawer myLineDrawer{};
 
 	std::vector<std::shared_ptr<LightCommand>> myLightCommands {};
+	std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> myShadowCommands {};
 	std::vector<std::shared_ptr<GraphicsCommand>> myRenderCommands {};
 
 	// We're a container singleton, no instancing this outside the class.

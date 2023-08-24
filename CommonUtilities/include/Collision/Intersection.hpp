@@ -9,23 +9,24 @@ namespace CommonUtilities
 {
 	template <typename T>
 	bool IntersectionPlaneRay(const Plane<T>& aPlane, const Ray<T>& aRay, Vector3<T>& anOutIntersectionPoint);
+
 	template <typename T>
 	bool IntersectionPlaneFrontRay(const Plane<T>& aPlane, const Ray<T>& aRay, Vector3<T>& anOutIntersectionPoint);
 
 	template <typename T>
 	bool IntersectionAABBRay(const AABB3D<T>& anAABB, const Ray<T>& aRay);
+
 	template <typename T>
 	bool IntersectionAABBRay(const AABB3D<T>& anAABB, const Ray<T>& aRay, Vector3<T>& aOutIntersectionPoint);
 
 	template <typename T>
 	bool IntersectionSphereRay(const Sphere<T>& aSphere, const Ray<T>& aRay);
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	template <typename T>
 	bool IntersectionAABBAABB(const AABB3D<T>& anAABB3D0, const AABB3D<T>& anAABB3D1);
 
 	template <typename T>
-	bool AABBIntersect(const AABB3D<T>& aBoxA, const AABB3D<T>& aBoxB, CommonUtilities::Vector3<float>& aOutCollisionNormal, float& aOutIntersectionDepth);
+	bool IntersectionAABBAABB(const AABB3D<T>& aBoxA, const AABB3D<T>& aBoxB, CommonUtilities::Vector3<float>& outCollisionNormal, float& outIntersectionDepth);
 
 	template <typename T>
 	bool IntersectionAABBSphere(const AABB3D<T>& anAABB3D, const Sphere<T>& aSphere);
@@ -403,8 +404,7 @@ namespace CommonUtilities
 	}
 
 	template <typename T>
-	bool AABBIntersect(const AABB3D<T>& aBoxA, const AABB3D<T>& aBoxB,
-					   CommonUtilities::Vector3<float>& aOutCollisionNormal, float& aOutIntersectionDepth)
+	bool IntersectionAABBAABB(const AABB3D<T>& aBoxA, const AABB3D<T>& aBoxB, CommonUtilities::Vector3<float>& outCollisionNormal, float& outIntersectionDepth)
 	{
 		CommonUtilities::Vector3<float> faces[6] =
 		{
@@ -430,16 +430,16 @@ namespace CommonUtilities
 		{
 			if (distances[i] < -0.001f) return false;
 
-			if ((i == 0) || (distances[i] < aOutIntersectionDepth))
+			if ((i == 0) || (distances[i] < outIntersectionDepth))
 			{
-				aOutCollisionNormal = faces[i];
-				aOutIntersectionDepth = distances[i];
+				outCollisionNormal = faces[i];
+				outIntersectionDepth = distances[i];
 			}
 		}
 
-		if (aOutIntersectionDepth <= 0.001f)
+		if (outIntersectionDepth <= 0.001f)
 		{
-			aOutIntersectionDepth = 0.f;
+			outIntersectionDepth = 0.f;
 		}
 
 		return true;

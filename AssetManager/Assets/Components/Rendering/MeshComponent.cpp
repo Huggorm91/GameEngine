@@ -3,13 +3,13 @@
 #include "Assets/GameObject.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
-#include "GraphicsEngine/Commands/GfxCmd_SetObjectBuffer.h"
+#include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 
-MeshComponent::MeshComponent() : Component(), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds()
+MeshComponent::MeshComponent() : Component(), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true)
 {
 }
 
-MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh) : myElements(), myName(aMesh.Name), myColor{ 0.f, 0.f, 0.f, 1.f }, myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform()
+MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh) : myElements(), myName(aMesh.Name), myColor{ 0.f, 0.f, 0.f, 1.f }, myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true)
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
 	{
@@ -17,7 +17,7 @@ MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh) : myElements(), myName
 	}
 }
 
-MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), myName(aMeshComponent.myName)
+MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), myName(aMeshComponent.myName), myRenderShadow(aMeshComponent.myRenderShadow)
 {
 }
 
@@ -28,7 +28,10 @@ void MeshComponent::Update()
 		return;
 	}
 
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetObjectBuffer>(*this));
+	if (myRenderShadow)
+	{
+		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
+	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this));
 }
 
@@ -55,7 +58,12 @@ void MeshComponent::SetOffsetScale(const CommonUtilities::Vector3f& aScale)
 CommonUtilities::Matrix4x4f MeshComponent::GetTransform() const
 {
 	assert(myParent != nullptr && "MeshComponent is not Initialized!");
-	return myParent->GetTransformMatrix() * myTransform.GetTransform();
+	return myParent->GetTransformMatrix() * myTransform.GetTransformMatrix();
+}
+
+CommonUtilities::Vector4f MeshComponent::GetWorldPosition() const
+{
+	return myParent->GetTransformMatrix() * CommonUtilities::Vector4f{ myTransform.GetWorldPosition(), 1.f };
 }
 
 const std::vector<MeshElement>& MeshComponent::GetElements() const
@@ -100,6 +108,16 @@ void MeshComponent::SetColor(const CommonUtilities::Vector4f& aColor)
 const CommonUtilities::Vector4f& MeshComponent::GetColor() const
 {
 	return myColor;
+}
+
+void MeshComponent::SetRenderShadow(bool aState)
+{
+	myRenderShadow = aState;
+}
+
+void MeshComponent::ToogleRenderShadow()
+{
+	myRenderShadow = !myRenderShadow;
 }
 
 const std::string& MeshComponent::GetName() const

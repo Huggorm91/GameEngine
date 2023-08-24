@@ -50,7 +50,7 @@ const CommonUtilities::Vector3f& Transform::GetWorldPosition() const
 	return myWorldPosition;
 }
 
-const CommonUtilities::Matrix4x4f& Transform::GetTransform() const
+const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
 {
 	if (myHasChanged)
 	{

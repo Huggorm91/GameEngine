@@ -37,9 +37,18 @@ namespace CommonUtilities
 		static Matrix3x3<T> CreateScaleMatrix(const Vector3<T>& aScale);
 		static Matrix3x3<T> CreateRotationMatrix(const Vector3<T>& aRotation);
 
-		static Matrix3x3<T> Transpose(const Matrix3x3<T>& aMatrixToTranspose);
 		// Assumes aTransform is made up of nothing but rotations and translations.
 		static Matrix3x3<T> GetFastInverse2D(const Matrix3x3<T>& aTransform);
+		inline Matrix3x3<T> GetFastInverse2D() const;
+		static Matrix3x3<T> Transpose(const Matrix3x3<T>& aMatrixToTranspose);
+		inline Matrix3x3<T> Transpose() const;
+
+		static Vector3<T> Forward(const Matrix3x3<T>& aMatrix);
+		inline Vector3<T> Forward() const;
+		static Vector3<T> Up(const Matrix3x3<T>& aMatrix);
+		inline Vector3<T> Up() const;
+		static Vector3<T> Right(const Matrix3x3<T>& aMatrix);
+		inline Vector3<T> Right() const;
 
 		inline Matrix3x3<T>& operator+=(const Matrix3x3<T>& aMatrix);
 		inline Matrix3x3<T> operator+(const Matrix3x3<T>& aMatrix) const;
@@ -181,6 +190,48 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
+	inline Matrix3x3<T> Matrix3x3<T>::Transpose() const
+	{
+		return Transpose(*this);
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Forward(const Matrix3x3<T>& aMatrix)
+	{
+		return Vector3<T>(aMatrix.myValues[0][2], aMatrix.myValues[1][2], aMatrix.myValues[2][2]).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Forward() const
+	{
+		return Forward(*this);
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Up(const Matrix3x3<T>& aMatrix)
+	{
+		return Vector3<T>(aMatrix.myValues[0][1], aMatrix.myValues[1][1], aMatrix.myValues[2][1]).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Up() const
+	{
+		return Up(*this);
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Right(const Matrix3x3<T>& aMatrix)
+	{
+		return Vector3<T>(aMatrix.myValues[0][0], aMatrix.myValues[1][0], aMatrix.myValues[2][0]).GetNormalized();
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::Right() const
+	{
+		return Right(*this);
+	}
+
+	template<typename T>
 	inline Matrix3x3<T> Matrix3x3<T>::GetFastInverse2D(const Matrix3x3<T>& aTransform)
 	{
 		Matrix3x3<T> result{
@@ -192,6 +243,12 @@ namespace CommonUtilities
 		result(3, 1) = translate.x;
 		result(3, 2) = translate.y;
 		return result;
+	}
+
+	template<typename T>
+	inline Matrix3x3<T> Matrix3x3<T>::GetFastInverse2D() const
+	{
+		return GetFastInverse2D(*this);
 	}
 
 	template<typename T>

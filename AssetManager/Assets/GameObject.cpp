@@ -48,7 +48,7 @@ const Transform& GameObject::GetTransform() const
 
 const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
-	return myTransform.GetTransform();
+	return myTransform.GetTransformMatrix();
 }
 
 const CommonUtilities::Vector3f& GameObject::GetWorldPosition() const

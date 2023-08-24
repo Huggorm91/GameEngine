@@ -5,10 +5,12 @@
 #include <utility>
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
-#include "Vector3.hpp"
+#include <Vector3.hpp>
+#include <Container/MinHeap.hpp>
 #include <External/jsonCpp/json.h>
 #include "InterOp/Helpers.h"
 #include <fstream>
+#include <Sort.hpp>
 
 bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 {
@@ -317,7 +319,17 @@ void GraphicsEngine::EndFrame()
 	RHI::Present();
 	myRenderCommands.clear();
 	myLightCommands.clear();
+	myShadowCommands.clear();
 }
+
+struct ShadowData
+{
+	std::shared_ptr<GfxCmd_RenderMeshShadow> myCommand;
+	float myDistanceFromLight;
+
+	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, float aDistance): myCommand(aCommand), myDistanceFromLight(aDistance){}
+	bool operator<(const ShadowData& someData) { return myDistanceFromLight < someData.myDistanceFromLight;	}
+};
 
 void GraphicsEngine::RenderFrame()
 {
@@ -358,6 +370,24 @@ void GraphicsEngine::RenderFrame()
 			}
 			command->~LightCommand();
 		}
+
+		std::vector<ShadowData> objectList;
+		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
+		{
+			for (auto& command : myShadowCommands)
+			{
+				objectList.emplace_back(command, (command->GetWorldPosition() - CommonUtilities::Vector3f::Null/*directionalCamera.GetPosition()*/).LengthSqr());
+			}
+
+			CommonUtilities::Vector3f position = { 10.f, 10.f, 10.f };
+			std::function<bool(ShadowData&, ShadowData&)> compare = [&position](ShadowData& aFirst, ShadowData& aSecond) -> bool{
+				aFirst.myDistanceFromLight = (aFirst.myCommand->GetWorldPosition() - position).LengthSqr();
+				aSecond.myDistanceFromLight = (aSecond.myCommand->GetWorldPosition() - position).LengthSqr();
+				return aFirst < aSecond;
+			};
+			CommonUtilities::QuickSort(objectList, compare);
+			objectList.at(0);
+		}
 	}
 
 	for (auto& command : myRenderCommands)
@@ -377,6 +407,11 @@ void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aComman
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand)
 {
 	myLightCommands.emplace_back(aCommand);
+}
+
+void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand)
+{
+	myShadowCommands.emplace_back(aCommand);
 }
 
 bool GraphicsEngine::CreateDefaultSampler()

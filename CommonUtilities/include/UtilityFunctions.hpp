@@ -3,7 +3,7 @@
 #include <vector>
 #include <sstream>
 #include "Conversions.hpp" // Adds conversion with a single include
-constexpr auto Pi = 3.14159;
+constexpr auto Pi = 3.1415926535897932384626433832795;
 
 namespace CommonUtilities
 {

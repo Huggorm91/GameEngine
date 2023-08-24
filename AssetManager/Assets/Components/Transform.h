@@ -18,7 +18,7 @@ public:
 	const CommonUtilities::Vector3f& GetScale() const;
 
 	const CommonUtilities::Vector3f& GetWorldPosition() const;
-	const CommonUtilities::Matrix4x4f& GetTransform() const;
+	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
 
 	bool HasChanged() const;
 

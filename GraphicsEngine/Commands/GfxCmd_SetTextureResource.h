@@ -6,8 +6,11 @@
 class GfxCmd_SetTextureResource : public GraphicsCommand
 {
 public:
-	enum class TextureSlot: unsigned
+	enum class TextureSlot : unsigned
 	{
+		Albedo = 0,
+		Normal = 1,
+		Material = 2,
 		EnvironmentCubeMap = 100
 	};
 

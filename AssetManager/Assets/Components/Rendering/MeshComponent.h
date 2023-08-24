@@ -22,6 +22,8 @@ public:
 	void SetOffsetScale(const CommonUtilities::Vector3f& aScale);
 
 	CommonUtilities::Matrix4x4f GetTransform() const;
+	CommonUtilities::Vector4f GetWorldPosition() const;
+
 	const std::vector<MeshElement>& GetElements() const;
 	std::vector<MeshElement>& GetElements();
 
@@ -32,15 +34,19 @@ public:
 	void SetColor(const CommonUtilities::Vector4f& aColor);
 	const CommonUtilities::Vector4f& GetColor() const;
 
+	void SetRenderShadow(bool aState);
+	void ToogleRenderShadow();
+
 	const std::string& GetName() const;
 
 	const MeshComponent* GetTypePointer() const override;
 
 protected:
-	std::vector<MeshElement> myElements;
-	std::string myName;
+	bool myRenderShadow;
 	CommonUtilities::Vector4f myColor;
+	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
+	std::vector<MeshElement> myElements;
 	Transform myTransform;
 
 	friend class ModelManager;

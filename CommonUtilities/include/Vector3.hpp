@@ -88,6 +88,27 @@ namespace CommonUtilities
 	typedef Vector3<unsigned int> Vector3ui;
 	typedef Vector3<int>  Vector3i;
 
+	template <typename T>
+	Vector3<float> DegreeToRadian(const Vector3<T>& aDegree)
+	{
+		return static_cast<Vector3<float>>(aDegree) * static_cast<float>(globalDegreeToRadianMultiplier);
+	}
+	template <typename T>
+	Vector3<double> DegreeToRadianPrecise(const Vector3<T>& aDegree)
+	{
+		return static_cast<Vector3<double>>(aDegree) * globalDegreeToRadianMultiplier;
+	}
+	template <typename T>
+	Vector3<float> RadianToDegree(const Vector3<T>& aRadian)
+	{
+		return static_cast<Vector3<float>>(aRadian) * static_cast<float>(globalRadianToDegreeMultiplier);
+	}
+	template <typename T>
+	Vector3<double> RadianToDegreePrecise(const Vector3<T>& aRadian)
+	{
+		return static_cast<Vector3<double>>(aRadian) * globalRadianToDegreeMultiplier;
+	}
+
 	template <typename T> Vector3<T> operator+(const T& aScalar, const Vector3<T>& aVector) {
 		return aVector + aScalar;
 	}
@@ -99,30 +120,6 @@ namespace CommonUtilities
 	}
 	template <typename T> Vector3<T> operator/(const T& aScalar, const Vector3<T>& aVector) {
 		return aVector / aScalar;
-	}
-
-	template <typename T>
-	Vector3<float> DegreeToRadian(Vector3<T> aDegree)
-	{
-		return aDegree * static_cast<float>(globalDegreeToRadianMultiplier);
-	}
-
-	template <typename T>
-	Vector3<double> DegreeToRadianPrecise(Vector3<T> aDegree)
-	{
-		return aDegree * globalDegreeToRadianMultiplier;
-	}
-
-	template <typename T>
-	Vector3<float> RadianToDegree(Vector3<T> aRadian)
-	{
-		return aRadian * static_cast<float>(globalRadianToDegreeMultiplier);
-	}
-
-	template <typename T>
-	Vector3<double> RadianToDegreePrecise(Vector3<T> aRadian)
-	{
-		return aRadian * globalRadianToDegreeMultiplier;
 	}
 
 	template<typename T>

@@ -8,6 +8,7 @@ namespace CommonUtilities
 {
 	template <typename T>
 	bool IntersectionLineRay2D(const Line<T>& aLine, const Ray2D<T>& aRay2D, Vector2<T>& anOutIntersectionPoint);
+
 	template <typename T>
 	bool IntersectionLineFrontRay2D(const Line<T>& aLine, const Ray2D<T>& aRay2D, Vector2<T>& anOutIntersectionPoint);
 
