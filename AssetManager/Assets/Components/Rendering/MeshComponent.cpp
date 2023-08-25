@@ -120,6 +120,11 @@ void MeshComponent::ToogleRenderShadow()
 	myRenderShadow = !myRenderShadow;
 }
 
+bool MeshComponent::IsRenderingShadow()
+{
+	return myRenderShadow;
+}
+
 const std::string& MeshComponent::GetName() const
 {
 	return myName;

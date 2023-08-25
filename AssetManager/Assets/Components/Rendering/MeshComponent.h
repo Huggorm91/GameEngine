@@ -36,6 +36,7 @@ public:
 
 	void SetRenderShadow(bool aState);
 	void ToogleRenderShadow();
+	bool IsRenderingShadow();
 
 	const std::string& GetName() const;
 

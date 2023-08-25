@@ -114,6 +114,7 @@ private:
 
 	HWND myWindowHandle{};
 	ComPtr<ID3D11SamplerState> myDefaultSampler {};
+	ComPtr<ID3D11SamplerState> myShadowSampler {};
 	ComPtr<ID3D11SamplerState> myLUTSampler {};
 
 	SIZE myWindowSize{0,0};
@@ -145,6 +146,7 @@ private:
 	GraphicsEngine() = default;
 
 	bool CreateDefaultSampler();
+	bool CreateShadowSampler();
 	bool CreateLUTSampler();
 	bool CreateLUTTexture();
 	Settings LoadSettings();

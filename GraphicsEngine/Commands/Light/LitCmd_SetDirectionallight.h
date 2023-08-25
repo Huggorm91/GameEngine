@@ -13,6 +13,7 @@ public:
 private:
 	CommonUtilities::Vector3f myInvertedLightDirection;
 	CommonUtilities::Vector3f myColor;
+	std::shared_ptr<Texture> myShadowMap;
 	float myIntensity;
 };
 

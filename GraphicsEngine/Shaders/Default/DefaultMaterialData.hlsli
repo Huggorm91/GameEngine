@@ -33,11 +33,14 @@ struct DefaultPixelOutput
 };
 
 SamplerState DefaultSampler : register(s0);
+SamplerState ShadowSampler : register(s14);
 SamplerState LUTSampler : register(s15);
 
 Texture2D AlbedoTexture : register(t0);
 Texture2D NormalTexture : register(t1);
 Texture2D MaterialTexture : register(t2);
+
+Texture2D DirectionallightMap : register(t95);
 
 Texture2D LUTTexture : register(t96);
 Texture2D DefaultMaterialTexture : register(t97);

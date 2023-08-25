@@ -1,16 +1,16 @@
 #pragma once
 #include "../Component.h"
-#include <Vector3.hpp>
 #include <Matrix4x4.hpp>
+#include "GraphicsEngine/Rendering/Texture.h"
 
 class PointlightComponent : public Component
 {
 public:
 	PointlightComponent();
-	PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
+	PointlightComponent(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	~PointlightComponent() = default;
 
-	void Init(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f });
+	void Init(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	void Update() override;
 
 	void SetRadius(float aRadius);
@@ -24,11 +24,20 @@ public:
 	const CommonUtilities::Vector3f& GetColor() const;
 	CommonUtilities::Matrix4x4f GetTransform() const;
 
+	void SetCastShadows(bool aState);
+	void ToogleCastShadows();
+	bool IsCastingShadows() const;
+	std::shared_ptr<Texture> GetShadowMap() const;
+
 	const PointlightComponent* GetTypePointer() const override;
 
 private:
-	float myRadius;
-	float myIntensity;
 	CommonUtilities::Vector3f myPosition;
 	CommonUtilities::Vector3f myColor;
+	std::shared_ptr<Texture> myShadowMap;
+	float myRadius;
+	float myIntensity;
+	bool myCastShadows;
+
+	void CreateShadowMap();
 };

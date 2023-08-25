@@ -1,7 +1,7 @@
 #include "GraphicsEngine.pch.h"
 #include "LitCmd_AddPointlight.h"
 
-LitCmd_AddPointlight::LitCmd_AddPointlight(const PointlightComponent& aLight) : LightCommand(Type::PointLight), myRadius(aLight.GetRadius()), myIntensity(aLight.GetIntensity()), myPosition(CommonUtilities::Vector4f{aLight.GetPosition(), 1.f} *aLight.GetTransform()), myColor(aLight.GetColor())
+LitCmd_AddPointlight::LitCmd_AddPointlight(const PointlightComponent& aLight) : LightCommand(Type::PointLight), myRadius(aLight.GetRadius()), myIntensity(aLight.GetIntensity()), myPosition(CommonUtilities::Vector4f{aLight.GetPosition(), 1.f} *aLight.GetTransform()), myColor(aLight.GetColor()), myShadowMap(aLight.GetShadowMap())
 {
 }
 

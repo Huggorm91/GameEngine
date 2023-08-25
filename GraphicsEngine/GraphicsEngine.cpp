@@ -72,6 +72,12 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 		RHI::SetSamplerState(myDefaultSampler, 0);
 
+		if (!CreateShadowSampler())
+		{
+			GELogger.Err("Failed to create shadow sampler!");
+		}
+		RHI::SetSamplerState(myShadowSampler, 14);
+
 		if (!CreateLUTSampler())
 		{
 			GELogger.Err("Failed to create LUT sampler!");
@@ -432,6 +438,26 @@ bool GraphicsEngine::CreateDefaultSampler()
 	desc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	if (!RHI::CreateSamplerState(myDefaultSampler, desc))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool GraphicsEngine::CreateShadowSampler()
+{
+	D3D11_SAMPLER_DESC desc{};
+	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	desc.BorderColor[0] = 0.f;
+	desc.BorderColor[1] = 0.f;
+	desc.BorderColor[2] = 0.f;
+	desc.BorderColor[3] = 0.f;
+
+	if (!RHI::CreateSamplerState(myLUTSampler, desc))
 	{
 		return false;
 	}

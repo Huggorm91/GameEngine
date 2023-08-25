@@ -20,6 +20,7 @@ void GfxCmd_RenderMeshShadow::Execute()
 	SetObjectBuffer();
 	for (auto& element : myMeshElements)
 	{
+		RHI::SetVertexShader(element.myMaterial.GetVertexShader());
 		RHI::ConfigureInputAssembler(element.myData->myPrimitiveTopology, element.myData->myVertexBuffer, element.myData->myIndexBuffer, element.myData->myStride, Vertex::InputLayout);
 		RHI::DrawIndexed(element.myData->myIndexCount);
 	}

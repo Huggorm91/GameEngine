@@ -4,16 +4,20 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddSpotlight.h"
 
-SpotlightComponent::SpotlightComponent() : myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myConeIntensityDifference(), myPosition(), myLightDirection(), myColor()
+SpotlightComponent::SpotlightComponent() : myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myConeIntensityDifference(), myPosition(), myLightDirection(), myColor(), myCastShadows(false), myShadowMap(nullptr)
 {
 }
 
-SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor) :
-	myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection.GetNormalized()), myColor(aColor)
+SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows) :
+	myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myConeIntensityDifference(aDifference), myPosition(aPosition), myLightDirection(aDirection.GetNormalized()), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
+	if (aCastShadows)
+	{
+		CreateShadowMap();
+	}
 }
 
-void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor)
+void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows)
 {
 	myRange = aRange;
 	myIntensity = anIntensity;
@@ -23,6 +27,12 @@ void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngl
 	myPosition = aPosition;
 	myLightDirection = aDirection.GetNormalized();
 	myColor = aColor;
+	myCastShadows = aCastShadows;
+
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
 }
 
 void SpotlightComponent::Update()
@@ -80,6 +90,17 @@ const SpotlightComponent* SpotlightComponent::GetTypePointer() const
 	return this;
 }
 
+void SpotlightComponent::CreateShadowMap()
+{
+	myShadowMap = std::make_shared<Texture>();
+	if (!RHI::CreateTexture(myShadowMap.get(), L"Spotlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
+	{
+		AMLogger.Err("SpotlightComponent: Failed to create shadowmap!");
+		return;
+	}
+	RHI::ClearDepthStencil(myShadowMap.get());
+}
+
 float SpotlightComponent::GetRange() const
 {
 	return myRange;
@@ -124,5 +145,29 @@ CommonUtilities::Matrix4x4f SpotlightComponent::GetTransform() const
 {
 	assert(myParent != nullptr && "PointlightComponent is not Initialized!");
 	return myParent->GetTransformMatrix() * CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+}
+
+void SpotlightComponent::SetCastShadows(bool aState)
+{
+	myCastShadows = aState;
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
+}
+
+void SpotlightComponent::ToogleCastShadows()
+{
+	SetCastShadows(!myCastShadows);
+}
+
+bool SpotlightComponent::IsCastingShadows() const
+{
+	return myCastShadows;
+}
+
+std::shared_ptr<Texture> SpotlightComponent::GetShadowMap() const
+{
+	return myShadowMap;
 }
 

@@ -12,6 +12,7 @@ public:
 private:
 	float myRadius;
 	float myIntensity;
+	std::shared_ptr<Texture> myShadowMap;
 	CommonUtilities::Vector3f myPosition;
 	CommonUtilities::Vector3f myColor;
 };

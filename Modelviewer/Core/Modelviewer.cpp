@@ -225,7 +225,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ -100.f, 150.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 1.f, 0.f, 0.f });
+		PointlightComponent pointlight(200.f, 1.f, { 1.f, 0.f, 0.f });
 		myGameObjects.back().AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -236,7 +236,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 100.f, 150.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 0.f, 1.f, 0.f });
+		PointlightComponent pointlight(200.f, 1.f, { 0.f, 1.f, 0.f });
 		myGameObjects.back().AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -247,7 +247,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 150.f, 600.f });
 
-		PointlightComponent pointlight(200.f, 1.f, CommonUtilities::Vector3f::Null, { 0.f, 0.f, 1.f });
+		PointlightComponent pointlight(200.f, 1.f, { 0.f, 0.f, 1.f });
 		myGameObjects.back().AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();

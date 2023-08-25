@@ -1,11 +1,11 @@
 #include "GraphicsEngine.pch.h"
 #include "LitCmd_SetDirectionallight.h"
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const DirectionallightComponent& aLight): LightCommand(), myInvertedLightDirection(aLight.GetInvertedLightDirection()), myColor(aLight.GetColor()), myIntensity(aLight.GetIntensity())
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const DirectionallightComponent& aLight): LightCommand(), myInvertedLightDirection(aLight.GetInvertedLightDirection()), myColor(aLight.GetColor()), myIntensity(aLight.GetIntensity()), myShadowMap(aLight.GetShadowMap())
 {
 }
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity)
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity), myShadowMap(nullptr)
 {
 }
 

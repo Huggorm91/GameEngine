@@ -4,20 +4,30 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddPointlight.h"
 
-PointlightComponent::PointlightComponent(): myRadius(), myIntensity(), myPosition(), myColor(1.f, 1.f, 1.f)
+PointlightComponent::PointlightComponent(): myRadius(), myIntensity(), myPosition(), myColor(1.f, 1.f, 1.f), myCastShadows(false), myShadowMap(nullptr)
 {
 }
 
-PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor) : myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor)
+PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows) : myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
+	if (aCastShadows)
+	{
+		CreateShadowMap();
+	}
 }
 
-void PointlightComponent::Init(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor)
+void PointlightComponent::Init(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows)
 {
 	myRadius = aRadius;
 	myIntensity = anIntensity;
 	myPosition = aPosition;
 	myColor = aColor;
+	myCastShadows = aCastShadows;
+
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
 }
 
 void PointlightComponent::Update()
@@ -76,7 +86,42 @@ CommonUtilities::Matrix4x4f PointlightComponent::GetTransform() const
 	return myParent->GetTransformMatrix() * CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
 }
 
+void PointlightComponent::SetCastShadows(bool aState)
+{
+	myCastShadows = aState;
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
+}
+
+void PointlightComponent::ToogleCastShadows()
+{
+	SetCastShadows(!myCastShadows);
+}
+
+bool PointlightComponent::IsCastingShadows() const
+{
+	return myCastShadows;
+}
+
+std::shared_ptr<Texture> PointlightComponent::GetShadowMap() const
+{
+	return myShadowMap;
+}
+
 const PointlightComponent* PointlightComponent::GetTypePointer() const
 {
 	return this;
+}
+
+void PointlightComponent::CreateShadowMap()
+{
+	myShadowMap = std::make_shared<Texture>();
+	if (!RHI::CreateTexture(myShadowMap.get(), L"Pointlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
+	{
+		AMLogger.Err("PointlightComponent: Failed to create shadowmap!");
+		return;
+	}
+	RHI::ClearDepthStencil(myShadowMap.get());
 }

@@ -3,12 +3,29 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
 
-DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f)
+DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f), myCastShadows(false), myShadowMap(nullptr)
 {
 }
 
-DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity): myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity)
+DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) : myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
+	if (aCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+void DirectionallightComponent::Init(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows)
+{
+	myInvertedLightDirection = aDirection;
+	myColor = aColor;
+	myIntensity = anIntensity;
+	myCastShadows = aCastShadows;
+
+	if (myCastShadows && myShadowMap.get() == nullptr)
+	{
+		CreateShadowMap();
+	}
 }
 
 void DirectionallightComponent::Update()
@@ -56,7 +73,42 @@ float DirectionallightComponent::GetIntensity() const
 	return myIntensity;
 }
 
+void DirectionallightComponent::SetCastShadows(bool aState)
+{
+	myCastShadows = aState;
+	if (myCastShadows && myShadowMap.get() == nullptr)
+	{
+		CreateShadowMap();
+	}
+}
+
+void DirectionallightComponent::ToogleCastShadows()
+{
+	SetCastShadows(!myCastShadows);
+}
+
+bool DirectionallightComponent::IsCastingShadows() const
+{
+	return myCastShadows;
+}
+
+std::shared_ptr<Texture> DirectionallightComponent::GetShadowMap() const
+{
+	return myShadowMap;
+}
+
 const DirectionallightComponent* DirectionallightComponent::GetTypePointer() const
 {
 	return this;
+}
+
+void DirectionallightComponent::CreateShadowMap()
+{
+	myShadowMap = std::make_shared<Texture>();
+	if (!RHI::CreateTexture(myShadowMap.get(), L"Directionallight_Shadow_Map", 1024, 1024, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
+	{
+		AMLogger.Err("DirectionallightComponent: Failed to create shadowmap!");
+		return;
+	}
+	RHI::ClearDepthStencil(myShadowMap.get());
 }
