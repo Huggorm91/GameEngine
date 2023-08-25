@@ -128,6 +128,10 @@ private:
 	CommonUtilities::Vector4f myBackgroundColor {};
 	std::string mySettingsPath {"Settings/ge_settings.json"};
 
+Texture* myDirectionalShadowMap;
+Texture* myPointShadowMap[MAX_LIGHTS];
+Texture* mySpotShadowMap[MAX_LIGHTS];
+
 	Texture myBackBuffer{};
 	Texture myDepthBuffer{};
 	Texture myBrdfLUTTexture{};
