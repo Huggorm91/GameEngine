@@ -285,13 +285,13 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
 	myGameObjects.back().SetPosition({ 0.f, -10.f, 0.f });
-	myGameObjects.back().SetScale({ 20.f, 20.f, 20.f });
+	myGameObjects.back().SetScale({ 20.f, 1.f, 20.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
 
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
 	myGameObjects.back().SetPosition({ 0.f, 240.f, 1000.f });
-	myGameObjects.back().SetScale({ 20.f, 20.f, 5.f });
+	myGameObjects.back().SetScale({ 20.f, 1.f, 5.f });
 	myGameObjects.back().SetRotation({ 90.f, 0.f, 0.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));

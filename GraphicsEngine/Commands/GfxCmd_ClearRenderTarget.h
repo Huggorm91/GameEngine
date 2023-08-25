@@ -6,6 +6,7 @@ class GfxCmd_ClearRenderTarget : public GraphicsCommand
 {
 public:
 	GfxCmd_ClearRenderTarget(const Texture* aTarget, const CommonUtilities::Vector4f& aColor = CommonUtilities::Vector4f::Null);
+	~GfxCmd_ClearRenderTarget() override = default;
 
 	void Execute() override;
 

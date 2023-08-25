@@ -26,6 +26,22 @@ BoxSphereBounds::BoxSphereBounds(const TGA::FBX::Box& aBounds) :
 	myRadius = myBoxExtents.Length();*/
 }
 
+void BoxSphereBounds::Init(const CommonUtilities::Vector3f& aCenter, const CommonUtilities::Vector3f& aSize)
+{
+	myCenter = aCenter;
+	myBoxExtents = aSize * 0.5f;
+	myRadius = myBoxExtents.Length();
+	myIsValid = true;
+}
+
+void BoxSphereBounds::Init(const CommonUtilities::Vector3f& aCenter, float aRadius)
+{
+	myCenter = aCenter;
+	myBoxExtents = { aRadius, aRadius, aRadius };
+	myRadius = aRadius;
+	myIsValid = true;
+}
+
 CommonUtilities::Vector3f BoxSphereBounds::GetMin() const
 {
 	return myCenter - myBoxExtents;

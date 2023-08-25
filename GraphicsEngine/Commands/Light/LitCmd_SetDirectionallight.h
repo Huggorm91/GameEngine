@@ -5,10 +5,12 @@
 class LitCmd_SetDirectionallight : public LightCommand
 {
 public:
-	LitCmd_SetDirectionallight(const DirectionallightComponent& aLight);
+	LitCmd_SetDirectionallight(DirectionallightComponent& aLight);
 	LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity = 1.f);
+	~LitCmd_SetDirectionallight() override = default;
 
 	void Execute(const int anIndex) override;
+	void SetShadowMap(const int anIndex) override;
 
 private:
 	CommonUtilities::Vector3f myInvertedLightDirection;

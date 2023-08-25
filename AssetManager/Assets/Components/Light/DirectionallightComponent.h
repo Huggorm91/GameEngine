@@ -8,7 +8,9 @@ class DirectionallightComponent : public Component
 public:
 	DirectionallightComponent();
 	DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
+	DirectionallightComponent(const DirectionallightComponent& aLight);
 	~DirectionallightComponent() = default;
+	DirectionallightComponent& operator=(const DirectionallightComponent& aLight);
 
 	void Init(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
 	void Update() override;
@@ -25,7 +27,7 @@ public:
 	void SetCastShadows(bool aState);
 	void ToogleCastShadows();
 	bool IsCastingShadows() const;
-	std::shared_ptr<Texture> GetShadowMap() const;
+	std::shared_ptr<Texture>& GetShadowMap();
 
 	const DirectionallightComponent* GetTypePointer() const override;
 

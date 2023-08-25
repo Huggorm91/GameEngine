@@ -10,12 +10,12 @@ class MeshComponent : public Component
 {
 public:
 	MeshComponent();
-	MeshComponent(const TGA::FBX::Mesh& aMesh);
+	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList);
 	MeshComponent(const MeshComponent& aMeshComponent);
 	virtual ~MeshComponent() = default;
 
 	void Update() override;
-	void Init(const std::vector<MeshElement>& anElementList);
+	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName);
 
 	void SetOffsetPosition(const CommonUtilities::Vector3f& aPosition);
 	void SetOffsetRotation(const CommonUtilities::Vector3f& aRotation);
@@ -38,6 +38,7 @@ public:
 	void ToogleRenderShadow();
 	bool IsRenderingShadow();
 
+	void BoundsHasChanged() const;
 	const std::string& GetName() const;
 
 	const MeshComponent* GetTypePointer() const override;
@@ -49,6 +50,4 @@ protected:
 	BoxSphereBounds myBoxSphereBounds;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
-
-	friend class ModelManager;
 };

@@ -17,6 +17,34 @@ SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float an
 	}
 }
 
+SpotlightComponent::SpotlightComponent(const SpotlightComponent& aLight) : myRange(aLight.myRange), myIntensity(aLight.myIntensity), myInnerAngle(aLight.myInnerAngle), myOuterAngle(aLight.myOuterAngle), myConeIntensityDifference(aLight.myConeIntensityDifference), 
+myPosition(aLight.myPosition), myLightDirection(aLight.myLightDirection), myColor(aLight.myColor), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+{
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLight)
+{
+	myRange = aLight.myRange;
+	myIntensity = aLight.myIntensity;
+	myInnerAngle = aLight.myInnerAngle;
+	myOuterAngle = aLight.myOuterAngle;
+	myConeIntensityDifference = aLight.myConeIntensityDifference;
+	myPosition = aLight.myPosition;
+	myLightDirection = aLight.myLightDirection;
+	myColor = aLight.myColor;
+	myCastShadows = aLight.myCastShadows;
+
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
+	return *this;
+}
+
 void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows)
 {
 	myRange = aRange;
@@ -166,7 +194,7 @@ bool SpotlightComponent::IsCastingShadows() const
 	return myCastShadows;
 }
 
-std::shared_ptr<Texture> SpotlightComponent::GetShadowMap() const
+std::shared_ptr<Texture>& SpotlightComponent::GetShadowMap()
 {
 	return myShadowMap;
 }

@@ -22,8 +22,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("cube", std::vector<MeshData>{ CreateCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "Cube";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Cube");
 	}
 
 	{
@@ -31,8 +30,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("sphere", std::vector<MeshData>{ CreateSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "Sphere";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Sphere");
 	}
 
 	{
@@ -40,8 +38,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("pyramid", std::vector<MeshData>{ CreatePyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "Pyramid";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Pyramid");
 	}
 
 	{
@@ -49,8 +46,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedcube", std::vector<MeshData>{ CreateInvertedCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "InvertedCube";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedCube");
 	}
 
 	{
@@ -58,8 +54,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedsphere", std::vector<MeshData>{ CreateInvertedSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "InvertedSphere";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedSphere");
 	}
 
 	{
@@ -67,8 +62,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedpyramid", std::vector<MeshData>{ CreateInvertedPyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "InvertedPyramid";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedPyramid");
 	}
 
 	{
@@ -76,8 +70,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("plane", std::vector<MeshData>{ CreatePlaneMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) });
-		mesh.myName = "Plane";
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Plane");
 	}
 }
 
@@ -203,13 +196,12 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 			auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
 			model.AddComponent(SkeletonComponent(skeletonIter.first->second));
 
-			AnimatedMeshComponent& animatedMesh = model.AddComponent(AnimatedMeshComponent(tgaMesh));
-			animatedMesh.Init(elements, 0);
+			AnimatedMeshComponent& animatedMesh = model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, 0));
+			animatedMesh.Init();
 		}
 		else
 		{
-			MeshComponent& mesh = model.AddComponent(MeshComponent(tgaMesh));
-			mesh.Init(elements);
+			model.AddComponent(MeshComponent(tgaMesh, elements));
 		}
 
 		myModels.emplace(aPath, model);

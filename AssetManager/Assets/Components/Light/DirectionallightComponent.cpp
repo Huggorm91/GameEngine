@@ -7,7 +7,7 @@ DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirectio
 {
 }
 
-DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) : myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr)
+DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) : myInvertedLightDirection(-aDirection.GetNormalized()), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
 	if (aCastShadows)
 	{
@@ -15,14 +15,36 @@ DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vect
 	}
 }
 
+DirectionallightComponent::DirectionallightComponent(const DirectionallightComponent& aLight) : myInvertedLightDirection(aLight.myInvertedLightDirection), myColor(aLight.myColor), myIntensity(aLight.myIntensity), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+{
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+DirectionallightComponent& DirectionallightComponent::operator=(const DirectionallightComponent& aLight)
+{
+	myInvertedLightDirection = aLight.myInvertedLightDirection;
+	myColor = aLight.myColor;
+	myIntensity = aLight.myIntensity;
+	myCastShadows = aLight.myCastShadows;
+
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
+	return *this;
+}
+
 void DirectionallightComponent::Init(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows)
 {
-	myInvertedLightDirection = aDirection;
+	myInvertedLightDirection = -aDirection.GetNormalized();
 	myColor = aColor;
 	myIntensity = anIntensity;
 	myCastShadows = aCastShadows;
 
-	if (myCastShadows && myShadowMap.get() == nullptr)
+	if (myCastShadows && myShadowMap == nullptr)
 	{
 		CreateShadowMap();
 	}
@@ -40,7 +62,7 @@ void DirectionallightComponent::Update()
 
 void DirectionallightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDirection)
 {
-	myInvertedLightDirection = -aDirection;
+	myInvertedLightDirection = -aDirection.GetNormalized();
 }
 
 void DirectionallightComponent::SeColor(const CommonUtilities::Vector3f& aColor)
@@ -92,7 +114,7 @@ bool DirectionallightComponent::IsCastingShadows() const
 	return myCastShadows;
 }
 
-std::shared_ptr<Texture> DirectionallightComponent::GetShadowMap() const
+std::shared_ptr<Texture>& DirectionallightComponent::GetShadowMap()
 {
 	return myShadowMap;
 }

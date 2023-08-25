@@ -6,13 +6,16 @@ class LightCommand
 public:
 	enum class Type
 	{
+		Other,
 		PointLight,
 		SpotLight,
-		Other
+		Directional
 	};
 	LightCommand();
 	virtual ~LightCommand() = default;
+
 	virtual void Execute(const int anIndex) = 0;
+	virtual void SetShadowMap(const int anIndex) = 0;
 
 	Type GetType();
 

@@ -120,6 +120,9 @@
     <ClInclude Include="Commands\GfxCmd_RenderMeshShadow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Commands\GfxCmd_UpdateWorldBounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsEngine.pch.cpp">
@@ -204,6 +207,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Commands\GfxCmd_RenderMeshShadow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands\GfxCmd_UpdateWorldBounds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

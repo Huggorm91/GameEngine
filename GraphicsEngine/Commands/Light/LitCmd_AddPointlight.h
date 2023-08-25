@@ -5,9 +5,11 @@
 class LitCmd_AddPointlight : public LightCommand
 {
 public:
-	LitCmd_AddPointlight(const PointlightComponent& aLight);
+	LitCmd_AddPointlight(PointlightComponent& aLight);
+	~LitCmd_AddPointlight() override = default;
 
 	void Execute(const int anIndex) override;
+	void SetShadowMap(const int anIndex) override;
 
 private:
 	float myRadius;

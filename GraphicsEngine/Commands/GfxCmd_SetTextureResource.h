@@ -14,12 +14,13 @@ public:
 		EnvironmentCubeMap = 100
 	};
 
-	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, PIPELINE_STAGE aStage);
+	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, UINT aStage);
+	~GfxCmd_SetTextureResource() override = default;
 
 	void Execute() override;
 
 private:
-	const PIPELINE_STAGE myStage;
+	const UINT myStage;
 	const TextureSlot mySlot;
 	const Texture* myTexture;
 };

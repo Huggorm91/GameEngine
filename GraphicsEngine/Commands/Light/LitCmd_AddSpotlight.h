@@ -5,9 +5,11 @@
 class LitCmd_AddSpotlight : public LightCommand
 {
 public:
-	LitCmd_AddSpotlight(const SpotlightComponent& aLight);
+	LitCmd_AddSpotlight(SpotlightComponent& aLight);
+	~LitCmd_AddSpotlight() override = default;
 
 	void Execute(const int anIndex) override;
+	void SetShadowMap(const int anIndex) override;
 
 private:
 	float myRange;

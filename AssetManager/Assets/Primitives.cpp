@@ -13,6 +13,7 @@ MeshData CreateCubeMesh(const CommonUtilities::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Cube";
+	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
 	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
@@ -146,6 +147,7 @@ MeshData CreatePyramidMesh(const CommonUtilities::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Pyramid";
+	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
 	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
 
 	CommonUtilities::Vector3f Top = { 0.f, aSize.y, 0.f };
@@ -253,6 +255,7 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 {
 	MeshData result;
 	result.myMeshName = "Sphere";
+	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
 	const float pi = 3.1415926535f;
 	const float pi2 = 2.f * pi;
 	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
@@ -360,6 +363,7 @@ MeshData CreateInvertedCubeMesh(const CommonUtilities::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "InvertedCube";
+	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
 	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
@@ -493,6 +497,7 @@ MeshData CreateInvertedPyramidMesh(const CommonUtilities::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "InvertedPyramid";
+	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
 	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
 
 	CommonUtilities::Vector3f Top = { 0.f, aSize.y, 0.f };
@@ -600,6 +605,7 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 {
 	MeshData result;
 	result.myMeshName = "InvertedSphere";
+	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
 	const float pi = 3.1415926535f;
 	const float pi2 = 2.f * pi;
 	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
@@ -713,6 +719,7 @@ MeshData CreatePlaneMesh(const CommonUtilities::Vector2f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Plane";
+	result.myBoxSphereBounds.Init(CommonUtilities::Vector3f::Null, { aSize.x, 0.f, aSize.y });
 	CommonUtilities::Vector2f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left

@@ -1,5 +1,6 @@
 #include "AssetManager.pch.h"
 #include "GameObject.h"
+#include "Components/Rendering/AnimatedMeshComponent.h"
 
 unsigned int GameObject::localIDCount = 0;
 
@@ -48,6 +49,25 @@ const Transform& GameObject::GetTransform() const
 
 const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
+	if (myTransform.HasChanged())
+	{
+		if (HasComponent<MeshComponent>())
+		{
+			auto componentList = GetComponents<MeshComponent>();
+			for (auto& component : componentList)
+			{
+				component->BoundsHasChanged();
+			}
+		}
+		else if (HasComponent<AnimatedMeshComponent>())
+		{
+			auto componentList = GetComponents<AnimatedMeshComponent>();
+			for (auto& component : componentList)
+			{
+				component->BoundsHasChanged();
+			}
+		}		
+	}
 	return myTransform.GetTransformMatrix();
 }
 

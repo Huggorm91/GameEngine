@@ -6,6 +6,7 @@ class GfxCmd_ClearDepthStencil : public GraphicsCommand
 {
 public:
 	GfxCmd_ClearDepthStencil(const Texture* aDepthStencil);
+	~GfxCmd_ClearDepthStencil() override = default;
 
 	void Execute() override;
 

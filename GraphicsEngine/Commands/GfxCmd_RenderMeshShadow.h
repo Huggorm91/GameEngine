@@ -7,6 +7,7 @@ class GfxCmd_RenderMeshShadow : public GraphicsCommand
 public:
 	GfxCmd_RenderMeshShadow(const MeshComponent& aMesh);
 	GfxCmd_RenderMeshShadow(const AnimatedMeshComponent& aMesh);
+	~GfxCmd_RenderMeshShadow() override = default;
 
 	void Execute() override;
 

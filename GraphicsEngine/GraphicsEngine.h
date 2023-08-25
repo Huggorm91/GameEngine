@@ -85,9 +85,14 @@ public:
 
 	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const { return myWindowHandle; }
 	[[nodiscard]] SIZE FORCEINLINE GetWindowSize() const { return myWindowSize; }
+
 	inline const Material& GetDefaultMaterial() const { return myDefaultMaterial; }
 	inline const Texture* GetDefaultCubeMap() const {	return &myDefaultCubeMap; }
+
 	inline LineDrawer& GetLineDrawer() { return myLineDrawer; }
+
+	inline const CommonUtilities::Vector3f& GetWorldBoundsMax() const { return myWorldMax; }
+	inline const CommonUtilities::Vector3f& GetWorldBoundsMin() const { return myWorldMin; }
 
 private:
 	friend class LightCommand;
@@ -118,6 +123,8 @@ private:
 	ComPtr<ID3D11SamplerState> myLUTSampler {};
 
 	SIZE myWindowSize{0,0};
+	CommonUtilities::Vector3f myWorldMax {};
+	CommonUtilities::Vector3f myWorldMin {};
 	CommonUtilities::Vector4f myBackgroundColor {};
 	std::string mySettingsPath {"Settings/ge_settings.json"};
 

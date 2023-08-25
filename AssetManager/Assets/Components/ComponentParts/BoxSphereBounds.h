@@ -9,6 +9,9 @@ public:
 	BoxSphereBounds(const TGA::FBX::BoxSphereBounds& aBounds);
 	BoxSphereBounds(const TGA::FBX::Box& aBounds);
 
+	void Init(const CommonUtilities::Vector3f& aCenter, const CommonUtilities::Vector3f& aSize);
+	void Init(const CommonUtilities::Vector3f& aCenter, float aRadius);
+
 	CommonUtilities::Vector3f GetMin() const;
 	CommonUtilities::Vector3f GetMax() const;
 	CommonUtilities::Vector3f GetBoxSize() const;

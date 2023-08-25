@@ -22,4 +22,7 @@ protected:
 	Texture* GetDefaultNormalTexture();
 	Texture* GetDefaultMaterialTexture();
 	Material* GetDefaultMaterial();
+
+	CommonUtilities::Vector3f& GetWorldBoundsMin();
+	CommonUtilities::Vector3f& GetWorldBoundsMax();
 };

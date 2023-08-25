@@ -8,6 +8,7 @@
 #include "ShaderFunctions.hlsli"
 static const float PI = 3.1415926535f;
 static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
+static const int MAX_LIGHTSOURCES = 8;
 
 struct DefaultVertexToPixel
 {
@@ -40,7 +41,8 @@ Texture2D AlbedoTexture : register(t0);
 Texture2D NormalTexture : register(t1);
 Texture2D MaterialTexture : register(t2);
 
-Texture2D DirectionallightMap : register(t95);
+Texture2D SpotShadowMap[MAX_LIGHTSOURCES] : register(t87);
+Texture2D DirectionalShadowMap : register(t95);
 
 Texture2D LUTTexture : register(t96);
 Texture2D DefaultMaterialTexture : register(t97);
@@ -48,4 +50,5 @@ Texture2D DefaultNormalTexture : register(t98);
 Texture2D MissingTexture : register(t99);
 
 TextureCube EnvironmentCubeMap : register(t100);
+TextureCube PointShadowMap[MAX_LIGHTSOURCES] : register(t120);
 #endif // DEFAULTMATERIALDATA_HLSLI

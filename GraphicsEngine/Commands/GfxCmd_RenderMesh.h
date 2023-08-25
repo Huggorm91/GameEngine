@@ -7,6 +7,7 @@ class GfxCmd_RenderMesh : public GraphicsCommand
 public:
 	GfxCmd_RenderMesh(const MeshComponent& aMesh);
 	GfxCmd_RenderMesh(const AnimatedMeshComponent& aMesh);
+	~GfxCmd_RenderMesh() override = default;
 
 	void Execute() override;
 

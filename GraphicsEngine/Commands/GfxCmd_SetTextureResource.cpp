@@ -2,7 +2,7 @@
 #include "GfxCmd_SetTextureResource.h"
 #include "AssetManager/Managers/TextureManager.h"
 
-GfxCmd_SetTextureResource::GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, PIPELINE_STAGE aStage) : myTexture(aTexture), mySlot(aSlot), myStage(aStage)
+GfxCmd_SetTextureResource::GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, UINT aStage) : myTexture(aTexture), mySlot(aSlot), myStage(aStage)
 {
 }
 

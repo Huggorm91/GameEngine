@@ -42,3 +42,13 @@ Material* GraphicsCommand::GetDefaultMaterial()
 {
     return &GraphicsEngine::Get().myDefaultMaterial;
 }
+
+CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMin()
+{
+    return GraphicsEngine::Get().myWorldMin;
+}
+
+CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMax()
+{
+    return GraphicsEngine::Get().myWorldMax;
+}

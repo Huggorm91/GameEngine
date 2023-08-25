@@ -8,7 +8,9 @@ class PointlightComponent : public Component
 public:
 	PointlightComponent();
 	PointlightComponent(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
+	PointlightComponent(const PointlightComponent& aLight);
 	~PointlightComponent() = default;
+	PointlightComponent& operator=(const PointlightComponent& aLight);
 
 	void Init(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	void Update() override;
@@ -27,7 +29,7 @@ public:
 	void SetCastShadows(bool aState);
 	void ToogleCastShadows();
 	bool IsCastingShadows() const;
-	std::shared_ptr<Texture> GetShadowMap() const;
+	std::shared_ptr<Texture>& GetShadowMap();
 
 	const PointlightComponent* GetTypePointer() const override;
 

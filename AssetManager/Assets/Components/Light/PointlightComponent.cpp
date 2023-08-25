@@ -16,6 +16,29 @@ PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const
 	}
 }
 
+PointlightComponent::PointlightComponent(const PointlightComponent& aLight) : myRadius(aLight.myRadius), myIntensity(aLight.myIntensity), myPosition(aLight.myPosition), myColor(aLight.myColor), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+{
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+PointlightComponent& PointlightComponent::operator=(const PointlightComponent& aLight)
+{
+	myRadius = aLight.myRadius;
+	myIntensity = aLight.myIntensity;
+	myPosition = aLight.myPosition;
+	myColor = aLight.myColor;
+	myCastShadows = aLight.myCastShadows;
+
+	if (myCastShadows && myShadowMap == nullptr)
+	{
+		CreateShadowMap();
+	}
+	return *this;
+}
+
 void PointlightComponent::Init(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows)
 {
 	myRadius = aRadius;
@@ -105,7 +128,7 @@ bool PointlightComponent::IsCastingShadows() const
 	return myCastShadows;
 }
 
-std::shared_ptr<Texture> PointlightComponent::GetShadowMap() const
+std::shared_ptr<Texture>& PointlightComponent::GetShadowMap()
 {
 	return myShadowMap;
 }
@@ -118,7 +141,7 @@ const PointlightComponent* PointlightComponent::GetTypePointer() const
 void PointlightComponent::CreateShadowMap()
 {
 	myShadowMap = std::make_shared<Texture>();
-	if (!RHI::CreateTexture(myShadowMap.get(), L"Pointlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
+	if (!RHI::CreateTextureCube(myShadowMap.get(), L"Pointlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
 	{
 		AMLogger.Err("PointlightComponent: Failed to create shadowmap!");
 		return;

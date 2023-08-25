@@ -332,16 +332,17 @@ struct ShadowData
 {
 	std::shared_ptr<GfxCmd_RenderMeshShadow> myCommand;
 	float myDistanceFromLight;
-unsigned myIndex; // Used to check if distance has been calculated for current light
+	unsigned myIndex; // Used to check if distance has been calculated for current light
 
-	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, float aDistance): myCommand(aCommand), myDistanceFromLight(aDistance){}
-	bool operator<(const ShadowData& someData) { return myDistanceFromLight < someData.myDistanceFromLight;	}
+	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, unsigned anIndex) : myCommand(aCommand), myIndex(anIndex), myDistanceFromLight(){}
+	bool operator<(const ShadowData& someData) {
+		return myDistanceFromLight < someData.myDistanceFromLight;
+	}
 };
 
 void GraphicsEngine::RenderFrame()
 {
-	RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
-
+	RHI::SetPixelShader(nullptr);
 	{
 		int pointIndex = 0;
 		int spotIndex = 0;
@@ -375,32 +376,87 @@ void GraphicsEngine::RenderFrame()
 			default:
 				break;
 			}
-			command->~LightCommand();
 		}
+		myWorldMin;
+		myWorldMax;
 
 		std::vector<ShadowData> objectList;
-		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
+		for (unsigned i = 0; i < myShadowCommands.size(); i++)
 		{
-			for (auto& command : myShadowCommands)
+			objectList.emplace_back(myShadowCommands[i], i);
+		}
+
+		std::unordered_set<unsigned> updatedDistance;
+		CommonUtilities::Vector3f position = { 10.f, 10.f, 10.f };
+
+		std::function<bool(ShadowData&, ShadowData&)> compare = [&position, &updatedDistance](ShadowData& aFirst, ShadowData& aSecond) -> bool{
+			if (updatedDistance.find(aFirst.myIndex) == updatedDistance.end())
 			{
-				objectList.emplace_back(command, (command->GetWorldPosition() - CommonUtilities::Vector3f::Null/*directionalCamera.GetPosition()*/).LengthSqr());
+				aFirst.myDistanceFromLight = (aFirst.myCommand->GetWorldPosition() - position).LengthSqr();
+				updatedDistance.emplace(aFirst.myIndex);
+			}
+			if (updatedDistance.find(aSecond.myIndex) == updatedDistance.end())
+			{
+				aSecond.myDistanceFromLight = (aSecond.myCommand->GetWorldPosition() - position).LengthSqr();
+				updatedDistance.emplace(aSecond.myIndex);
 			}
 
-			CommonUtilities::Vector3f position = { 10.f, 10.f, 10.f };
-			std::function<bool(ShadowData&, ShadowData&)> compare = [&position](ShadowData& aFirst, ShadowData& aSecond) -> bool{
-				aFirst.myDistanceFromLight = (aFirst.myCommand->GetWorldPosition() - position).LengthSqr();
-				aSecond.myDistanceFromLight = (aSecond.myCommand->GetWorldPosition() - position).LengthSqr();
-				return aFirst < aSecond;
-			};
+			return aFirst < aSecond;
+		};
+
+		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
+		{
+			RHI::SetRenderTarget(nullptr, &myDepthBuffer);
+			//position = directLightPos;
 			CommonUtilities::QuickSort(objectList, compare);
-			objectList.at(0);
+			updatedDistance.clear();
+
+			for (auto& data : objectList)
+			{
+				//data.myCommand->Execute();
+			}
+		}
+
+		pointIndex = 0;
+		spotIndex = 0;
+		for (auto& command : myLightCommands)
+		{
+			switch (command->GetType())
+			{
+			case LightCommand::Type::PointLight:
+			{
+				command->SetShadowMap(pointIndex);
+				if (pointIndex < 8)
+				{
+					++pointIndex;
+				}
+				break;
+			}
+			case LightCommand::Type::SpotLight:
+			{
+				command->SetShadowMap(spotIndex);
+				if (spotIndex < 8)
+				{
+					++spotIndex;
+				}
+				break;
+			}
+			case LightCommand::Type::Directional:
+			{
+				command->SetShadowMap(0);
+				break;
+			}
+			default:
+				break;
+			}
 		}
 	}
+
+	RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
 
 	for (auto& command : myRenderCommands)
 	{
 		command->Execute();
-		command->~GraphicsCommand();
 	}
 
 	myLineDrawer.Render();
@@ -496,8 +552,8 @@ bool GraphicsEngine::CreateLUTTexture()
 		return false;
 	}
 	RHI::ClearRenderTarget(&myBrdfLUTTexture);
-	
-	Shader brdfVS;	
+
+	Shader brdfVS;
 #ifdef _DEBUG
 	std::wstring vsPath = L"Content/Shaders/Debug/BrdfLUT_VS.cso";
 #elif _RELEASE
@@ -553,7 +609,7 @@ GraphicsEngine::Settings GraphicsEngine::LoadSettings()
 		GELogger.Err("Could not load settings!");
 		fileStream.close();
 		return settings;
-	}	
+	}
 
 	settings.defaultMaterialTexture = json["MaterialTexture"].asString();
 	settings.defaultNormalTexture = json["NormalTexture"].asString();

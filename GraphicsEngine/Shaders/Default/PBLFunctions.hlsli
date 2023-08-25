@@ -124,7 +124,7 @@ float3 GetPblLight(LightData someData, float3 anAlbedoColor, float anOcclusion)
     }
 #endif
     [unroll]
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < MAX_LIGHTSOURCES; i++)
     {
 #ifdef _DEBUG
     if(LB_LightMode == 0 || LB_LightMode == 3)

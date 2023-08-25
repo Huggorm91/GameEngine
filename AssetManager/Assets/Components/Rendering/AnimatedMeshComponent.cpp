@@ -10,8 +10,8 @@ myAnimationState(AnimationState::Stopped), mySkeletonIndex(-1)
 {
 }
 
-AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh) : MeshComponent(aMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(nullptr), myAnimationTimer(), myCurrentFrame(1),
-myAnimationState(AnimationState::Stopped), mySkeletonIndex(-1)
+AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, int aSkeletonIndex) : MeshComponent(aMesh, anElementList), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(nullptr), myAnimationTimer(), myCurrentFrame(1),
+myAnimationState(AnimationState::Stopped), mySkeletonIndex(aSkeletonIndex)
 {
 }
 
@@ -70,9 +70,14 @@ void AnimatedMeshComponent::Update()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this));
 }
 
-void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, int aSkeletonIndex)
+void AnimatedMeshComponent::Init()
 {
-	MeshComponent::Init(anElementList);
+	ComponentPointersInvalidated();
+}
+
+void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const std::string& aName, int aSkeletonIndex)
+{
+	MeshComponent::Init(anElementList, aName);
 	mySkeletonIndex = aSkeletonIndex;
 	ComponentPointersInvalidated();
 }

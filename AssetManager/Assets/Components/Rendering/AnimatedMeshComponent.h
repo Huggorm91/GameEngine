@@ -13,12 +13,15 @@ public:
 	};
 
 	AnimatedMeshComponent();
-	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh);
+	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, int aSkeletonIndex);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	~AnimatedMeshComponent() = default;
 
 	void Update() override;
-	void Init(std::vector<MeshElement>& anElementList, int aSkeletonIndex);
+
+	// Call after binding it to a GameObject
+	void Init();
+	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, int aSkeletonIndex);
 
 	void SetAnimation(Animation& anAnimation);
 	void SetAnimation(Animation* anAnimation);

@@ -67,36 +67,6 @@ float3 GetPhongDirectionallight(float3 aPosition, float3 aPixelNormal, float3 aV
     return (kD + kS) * LB_DirectionallightIntensity;
 }
 
-float3 GetPhongPointlights(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
-{
-    float3 result = 0;
-    [unroll]
-    for (int i = 0; i < 8; i++)
-    {
-        [flatten]
-        if (LB_Pointlights[i].Intensity > 0)
-        {
-            result += GetPhongPointlightValue(aPosition, aPixelNormal, aV, LB_Pointlights[i], aColor);
-        }
-    }
-    return result;
-}
-
-float3 GetPhongSpotlights(float3 aPosition, float3 aPixelNormal, float3 aV, float3 aColor)
-{
-    float3 result = 0;
-    [unroll]
-    for (int i = 0; i < 8; i++)
-    {
-        [flatten]
-        if (LB_Spotlights[i].Intensity > 0)
-        {
-            result += GetPhongSpotLightValue(aPosition, aPixelNormal, aV, LB_Spotlights[i], aColor);
-        }
-    }
-    return result;
-}
-
 float3 GetBlinnPhongLight(float3 aPosition, float3 aPixelNormal, float3 aColor)
 {
     float3 result = 0;
@@ -122,7 +92,7 @@ float3 GetBlinnPhongLight(float3 aPosition, float3 aPixelNormal, float3 aColor)
     }
 #endif
     [unroll]
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < MAX_LIGHTSOURCES; i++)
     {
 #ifdef _DEBUG
     if(LB_LightMode == 0 || LB_LightMode == 3)
