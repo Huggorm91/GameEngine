@@ -346,25 +346,35 @@ void GraphicsEngine::RenderFrame()
 	{
 		int pointIndex = 0;
 		int spotIndex = 0;
+		bool hasDirectional = false;
 		for (auto& command : myLightCommands)
 		{
 			switch (command->GetType())
 			{
 			case LightCommand::Type::PointLight:
 			{
-				command->Execute(pointIndex);
 				if (pointIndex < 8)
 				{
+					command->Execute(pointIndex);
 					++pointIndex;
 				}
 				break;
 			}
 			case LightCommand::Type::SpotLight:
 			{
-				command->Execute(spotIndex);
 				if (spotIndex < 8)
 				{
+					command->Execute(spotIndex);
 					++spotIndex;
+				}
+				break;
+			}
+			case LightCommand::Type::Directional:
+			{
+				if (!hasDirectional)
+				{
+					command->Execute(0);
+					hasDirectional = true;
 				}
 				break;
 			}
@@ -377,8 +387,6 @@ void GraphicsEngine::RenderFrame()
 				break;
 			}
 		}
-		myWorldMin;
-		myWorldMax;
 
 		std::vector<ShadowData> objectList;
 		for (unsigned i = 0; i < myShadowCommands.size(); i++)
@@ -419,31 +427,36 @@ void GraphicsEngine::RenderFrame()
 
 		pointIndex = 0;
 		spotIndex = 0;
+		hasDirectional = false;
 		for (auto& command : myLightCommands)
 		{
 			switch (command->GetType())
 			{
 			case LightCommand::Type::PointLight:
 			{
-				command->SetShadowMap(pointIndex);
 				if (pointIndex < 8)
 				{
+					command->SetShadowMap(pointIndex);
 					++pointIndex;
 				}
 				break;
 			}
 			case LightCommand::Type::SpotLight:
 			{
-				command->SetShadowMap(spotIndex);
 				if (spotIndex < 8)
 				{
+					command->SetShadowMap(spotIndex);
 					++spotIndex;
 				}
 				break;
 			}
 			case LightCommand::Type::Directional:
 			{
-				command->SetShadowMap(0);
+				if (!hasDirectional)
+				{
+					command->SetShadowMap(0);
+					hasDirectional = true;
+				}
 				break;
 			}
 			default:
