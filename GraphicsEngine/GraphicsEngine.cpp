@@ -414,7 +414,7 @@ void GraphicsEngine::RenderFrame()
 
 		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
 		{
-			RHI::SetRenderTarget(nullptr, &myDepthBuffer);
+			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
 			//position = directLightPos;
 			CommonUtilities::QuickSort(objectList, compare);
 			updatedDistance.clear();
@@ -424,6 +424,21 @@ void GraphicsEngine::RenderFrame()
 				//data.myCommand->Execute();
 			}
 		}
+
+for(int i =0; i < MAX_LIGHTS; i++)
+{
+if(mySpotShadowMap[i])
+{
+RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
+// calculate spotlight shadows
+}
+
+if(myPointShadowMap[i])
+{
+RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
+// calculate point light shadows
+}
+}
 
 		pointIndex = 0;
 		spotIndex = 0;
