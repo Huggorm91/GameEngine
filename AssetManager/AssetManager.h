@@ -17,7 +17,6 @@ public:
 	template<class T> static T GetAsset(const std::string& anIdentifier);
 
 	inline static GameObject GetAsset(Primitives anIdentifier) { return *myModelManager.GetModel(anIdentifier); }
-	inline static GameObject GetAsset(const std::string& aModelIdentifier, const std::string& aMaterialIdentifier);
 	template<> static GameObject GetAsset(const std::string& anIdentifier);
 
 	template<> static Animation& GetAsset(const std::string& anIdentifier);

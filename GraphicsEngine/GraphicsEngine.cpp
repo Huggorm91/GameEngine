@@ -318,6 +318,8 @@ void GraphicsEngine::BeginFrame()
 	RHI::ClearDepthStencil(&myDepthBuffer);
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
+	myRenderCommands.emplace_back();
+	myMeshCommands.emplace_back();
 }
 
 void GraphicsEngine::EndFrame()
@@ -326,6 +328,7 @@ void GraphicsEngine::EndFrame()
 	myRenderCommands.clear();
 	myLightCommands.clear();
 	myShadowCommands.clear();
+	myMeshCommands.clear();
 }
 
 struct ShadowData
@@ -337,6 +340,17 @@ struct ShadowData
 	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, unsigned anIndex) : myCommand(aCommand), myIndex(anIndex), myDistanceFromLight(){}
 	bool operator<(const ShadowData& someData) {
 		return myDistanceFromLight < someData.myDistanceFromLight;
+	}
+};
+
+struct MeshCommandData
+{
+	std::shared_ptr<GfxCmd_RenderMesh> myCommand;
+	float myDistanceFromCamera;
+
+	MeshCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
+	bool operator<(const MeshCommandData& someData) {
+		return myDistanceFromCamera < someData.myDistanceFromCamera;
 	}
 };
 
@@ -389,6 +403,7 @@ void GraphicsEngine::RenderFrame()
 		}
 
 		std::vector<ShadowData> objectList;
+		objectList.reserve(myShadowCommands.size());
 		for (unsigned i = 0; i < myShadowCommands.size(); i++)
 		{
 			objectList.emplace_back(myShadowCommands[i], i);
@@ -465,11 +480,29 @@ void GraphicsEngine::RenderFrame()
 		}
 	}
 
-	RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
-
-	for (auto& command : myRenderCommands)
 	{
-		command->Execute();
+		RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
+
+		std::vector<MeshCommandData> meshes;
+		meshes.reserve(myMeshCommands[0].size());
+		for (size_t i = 0; i < myRenderCommands.size(); i++)
+		{
+			for (auto& command : myRenderCommands[i])
+			{
+				command->Execute();
+			}
+			for (auto& command : myMeshCommands[i])
+			{
+				meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
+			}
+
+			CommonUtilities::QuickSort(meshes);
+
+			for (auto& mesh : meshes)
+			{
+				mesh.myCommand->Execute();
+			}
+		}
 	}
 
 	myLineDrawer.Render();
@@ -477,7 +510,7 @@ void GraphicsEngine::RenderFrame()
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
 {
-	myRenderCommands.emplace_back(aCommand);
+	myRenderCommands.back().emplace_back(aCommand);
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand)
@@ -489,6 +522,18 @@ void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow>
 {
 	myShadowCommands.emplace_back(aCommand);
 }
+
+void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand)
+{
+	myMeshCommands.back().emplace_back(aCommand);
+}
+
+void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_NewRenderlist> aCommand)
+{
+	myRenderCommands.emplace_back();
+	myMeshCommands.emplace_back();
+}
+
 
 bool GraphicsEngine::CreateDefaultSampler()
 {

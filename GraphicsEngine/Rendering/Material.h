@@ -44,7 +44,7 @@ public:
 
 	void SetName(const std::string& aName);
 
-	void AddTexture(Texture* aTexture, unsigned aPipelineStage, eTextureSlot aSlot);
+	void AddTexture(Texture* aTexture, unsigned aPipelineStage, unsigned aSlot);
 
 	const Shader* GetVertexShader() const;
 	const Shader* GetPixelShader() const;
@@ -66,11 +66,15 @@ public:
 	Json::Value ToJson() const;
 
 private:
+	friend class GfxCmd_RenderMesh;
+
 	struct TextureBinding
 	{
 		unsigned slot {};
 		unsigned stage {};
 		Texture* texture = nullptr;
+
+		TextureBinding(Texture* aTexture, unsigned aStage, unsigned aSlot): texture(aTexture), stage(aStage), slot(aSlot) {}
 	};
 
 	Shader* myVertexShader;

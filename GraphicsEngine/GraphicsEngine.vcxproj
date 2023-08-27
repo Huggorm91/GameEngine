@@ -284,6 +284,7 @@
     <ClInclude Include="Commands\GfxCmd_ClearRenderTarget.h" />
     <ClInclude Include="Commands\GfxCmd_RenderMeshShadow.h" />
     <ClInclude Include="Commands\GfxCmd_UpdateWorldBounds.h" />
+    <ClInclude Include="Commands\GfxCmd_NewRenderlist.h" />
     <ClInclude Include="InterOp\ShaderInfo.h" />
     <ClInclude Include="Drawer\LineDrawer.h" />
     <ClInclude Include="Commands\Light\LightCommand.h" />
@@ -327,6 +328,7 @@
     <ClCompile Include="Commands\GfxCmd_ClearRenderTarget.cpp" />
     <ClCompile Include="Commands\GfxCmd_RenderMeshShadow.cpp" />
     <ClCompile Include="Commands\GfxCmd_UpdateWorldBounds.cpp" />
+    <ClCompile Include="Commands\GfxCmd_NewRenderlist.cpp" />
     <ClCompile Include="Rendering\LineVertex.cpp" />
     <ClCompile Include="Rendering\Material.cpp" />
     <ClCompile Include="Rendering\Color.cpp" />

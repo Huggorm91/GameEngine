@@ -3,7 +3,9 @@
 #include "InterOp/RHI.h"
 #include "Rendering/Texture.h"
 #include "Rendering/Material.h"
+#include "Commands/GfxCmd_RenderMesh.h"
 #include "Commands/GfxCmd_RenderMeshShadow.h"
+#include "Commands/GfxCmd_NewRenderlist.h"
 #include "Commands/Light/LightCommand.h"
 #include "Drawer/LineDrawer.h"
 
@@ -84,6 +86,8 @@ public:
 	void AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand);
+	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand);
+	void AddGraphicsCommand(std::shared_ptr<GfxCmd_NewRenderlist> aCommand);
 
 	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const {
 		return myWindowHandle;
@@ -167,7 +171,8 @@ private:
 
 	std::vector<std::shared_ptr<LightCommand>> myLightCommands {};
 	std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> myShadowCommands {};
-	std::vector<std::shared_ptr<GraphicsCommand>> myRenderCommands {};
+	std::vector<std::vector<std::shared_ptr<GraphicsCommand>>> myRenderCommands {};
+	std::vector<std::vector<std::shared_ptr<GfxCmd_RenderMesh>>> myMeshCommands {};
 
 	// We're a container singleton, no instancing this outside the class.
 	GraphicsEngine() = default;

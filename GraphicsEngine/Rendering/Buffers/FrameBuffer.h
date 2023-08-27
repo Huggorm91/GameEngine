@@ -6,7 +6,7 @@ struct FrameBufferData
 {
 	CommonUtilities::Matrix4x4f View{};
 	CommonUtilities::Matrix4x4f Projection{};
-	CommonUtilities::Vector3f Position{};
+	CommonUtilities::Vector3f CameraPosition{};
 	float DeltaTime = 0.f;
 	double TotalTime = 0.f;
 

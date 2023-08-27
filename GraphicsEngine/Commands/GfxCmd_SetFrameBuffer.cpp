@@ -12,7 +12,7 @@ void GfxCmd_SetFrameBuffer::Execute()
 	FrameBuffer& buffer = GetFrameBuffer();
 	buffer.Data.View = myViewMatrix;
 	buffer.Data.Projection = myProjectionMatrix;
-	buffer.Data.Position = myCameraPosition;
+	buffer.Data.CameraPosition = myCameraPosition;
 	buffer.Data.DeltaTime = CommonUtilities::Timer::GetDeltaTime();
 	buffer.Data.TotalTime = CommonUtilities::Timer::GetTotalTime();
 
