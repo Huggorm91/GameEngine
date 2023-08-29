@@ -43,12 +43,13 @@ namespace CommonUtilities
 		static Matrix3x3<T> Transpose(const Matrix3x3<T>& aMatrixToTranspose);
 		inline Matrix3x3<T> Transpose() const;
 
-		static Vector3<T> Forward(const Matrix3x3<T>& aMatrix);
-		inline Vector3<T> Forward() const;
-		static Vector3<T> Up(const Matrix3x3<T>& aMatrix);
-		inline Vector3<T> Up() const;
-		static Vector3<T> Right(const Matrix3x3<T>& aMatrix);
-		inline Vector3<T> Right() const;
+		inline Vector3<T> GetForward() const;
+		inline Vector3<T> GetUp() const;
+		inline Vector3<T> GetRight() const;
+
+		inline void SetForward(const Vector3<T>& aVector);
+		inline void SetUp(const Vector3<T>& aVector);
+		inline void SetRight(const Vector3<T>& aVector);
 
 		inline Matrix3x3<T>& operator+=(const Matrix3x3<T>& aMatrix);
 		inline Matrix3x3<T> operator+(const Matrix3x3<T>& aMatrix) const;
@@ -196,39 +197,45 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Forward(const Matrix3x3<T>& aMatrix)
+	inline Vector3<T> Matrix3x3<T>::GetForward() const
 	{
-		return Vector3<T>(aMatrix.myValues[0][2], aMatrix.myValues[1][2], aMatrix.myValues[2][2]).GetNormalized();
+		return Vector3<T>(myValues[0][2], myValues[1][2], myValues[2][2]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Forward() const
+	inline Vector3<T> Matrix3x3<T>::GetUp() const
 	{
-		return Forward(*this);
+		return Vector3<T>(myValues[0][1], myValues[1][1], myValues[2][1]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Up(const Matrix3x3<T>& aMatrix)
+	inline Vector3<T> Matrix3x3<T>::GetRight() const
 	{
-		return Vector3<T>(aMatrix.myValues[0][1], aMatrix.myValues[1][1], aMatrix.myValues[2][1]).GetNormalized();
+		return Vector3<T>(myValues[0][0], myValues[1][0], myValues[2][0]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Up() const
+	inline void Matrix3x3<T>::SetForward(const Vector3<T>& aVector)
 	{
-		return Up(*this);
+		myValues[0][2] = aVector.x;
+		myValues[1][2] = aVector.y;
+		myValues[2][2] = aVector.z;
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Right(const Matrix3x3<T>& aMatrix)
+	inline void Matrix3x3<T>::SetUp(const Vector3<T>& aVector)
 	{
-		return Vector3<T>(aMatrix.myValues[0][0], aMatrix.myValues[1][0], aMatrix.myValues[2][0]).GetNormalized();
+		myValues[0][1] = aVector.x;
+		myValues[1][1] = aVector.y;
+		myValues[2][1] = aVector.z;
 	}
 
 	template<typename T>
-	inline Vector3<T> Matrix3x3<T>::Right() const
+	inline void Matrix3x3<T>::SetRight(const Vector3<T>& aVector)
 	{
-		return Right(*this);
+		myValues[0][0] = aVector.x;
+		myValues[1][0] = aVector.y;
+		myValues[2][0] = aVector.z;
 	}
 
 	template<typename T>

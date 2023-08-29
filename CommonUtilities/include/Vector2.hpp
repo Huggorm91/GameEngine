@@ -23,6 +23,8 @@ namespace CommonUtilities
 		T y;
 
 		static const Vector2<T> Null;
+		static const Vector2<T> Up;
+		static const Vector2<T> Right;
 
 		Vector2();
 		Vector2(const T& aX, const T& aY);
@@ -86,6 +88,8 @@ namespace CommonUtilities
 	};
 
 	template<typename T> const Vector2<T> Vector2<T>::Null{};
+	template<typename T> const Vector2<T> Vector2<T>::Up{T(), T(1)};
+	template<typename T> const Vector2<T> Vector2<T>::Right{T(1), T()};
 
 	typedef Vector2<float> Vector2f;
 	typedef Vector2<unsigned int> Vector2ui;

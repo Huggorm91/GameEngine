@@ -22,6 +22,9 @@ namespace CommonUtilities
 		T z;
 
 		static const Vector3<T> Null;
+		static const Vector3<T> Up;
+		static const Vector3<T> Right;
+		static const Vector3<T> Forward;
 
 		Vector3();
 		Vector3(const T& aX, const T& aY, const T& aZ);
@@ -83,6 +86,9 @@ namespace CommonUtilities
 	};
 
 	template<typename T> const Vector3<T> Vector3<T>::Null{};
+	template<typename T> const Vector3<T> Vector3<T>::Up{T(), T(1), T()};
+	template<typename T> const Vector3<T> Vector3<T>::Right{T(1), T(), T()};
+	template<typename T> const Vector3<T> Vector3<T>::Forward{T(), T(), T(1)};
 
 	typedef Vector3<float> Vector3f;
 	typedef Vector3<unsigned int> Vector3ui;
