@@ -35,6 +35,7 @@ namespace CommonUtilities
 
 		static Matrix4x4<T> CreatePerspectiveMatrix(float aFoVRadian, float aNearPlane, float aFarPlane, const Vector2f& aScreenSize);
 		static Matrix4x4<T> CreateOrthographicMatrix(float aLeftPlane, float aRightPlane, float aBottomPlane, float aTopPlane, float aNearPlane, float aFarPlane);
+		static Matrix4x4<T> LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget, const Vector3<T>& anUpVector = Vector3<T>::Up);
 
 		// Assumes aTransform is made up of nothing but rotations and translations.
 		static Matrix4x4<T> GetFastInverse(const Matrix4x4<T>& aTransform);
@@ -42,12 +43,13 @@ namespace CommonUtilities
 		static Matrix4x4<T> Transpose(const Matrix4x4<T>& aMatrixToTranspose);
 		inline Matrix4x4<T> Transpose() const;
 
-		static Vector4<T> Forward(const Matrix4x4<T>& aMatrix);
-		inline Vector4<T> Forward() const;
-		static Vector4<T> Up(const Matrix4x4<T>& aMatrix);
-		inline Vector4<T> Up() const;
-		static Vector4<T> Right(const Matrix4x4<T>& aMatrix);
-		inline Vector4<T> Right() const;
+		inline Vector3<T> GetForward() const;
+		inline Vector3<T> GetUp() const;
+		inline Vector3<T> GetRight() const;
+
+		inline void SetForward(const Vector3<T>& aVector);
+		inline void SetUp(const Vector3<T>& aVector);
+		inline void SetRight(const Vector3<T>& aVector);
 
 		inline Matrix4x4<T>& operator+=(const Matrix4x4<T>& aMatrix);
 		inline Matrix4x4<T> operator+(const Matrix4x4<T>& aMatrix) const;
@@ -211,6 +213,27 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget, const Vector3<T>& anUpVector)
+	{
+		Vector3<T> zAxis = (aTarget - aCameraPosition).GetNormalized();
+		Vector3<T> xAxis = Vector3<T>::Null;
+		if (zAxis == anUpVector)
+		{
+			xAxis = (zAxis.Cross({ anUpVector.x, anUpVector.z, anUpVector.y })).GetNormalized();
+		}
+		else
+		{
+			xAxis = (zAxis.Cross(anUpVector)).GetNormalized();
+		}
+
+		Vector3<T> yAxis = zAxis.Cross(xAxis);
+		return Matrix4x4<T>{{ xAxis.x, yAxis.x, zAxis.x, T() },
+							{ xAxis.y, yAxis.y, zAxis.y, T() },
+							{ xAxis.z, yAxis.z, zAxis.z, T() },
+							{ -(xAxis.Dot(aCameraPosition)), -(yAxis.Dot(aCameraPosition)), -(zAxis.Dot(aCameraPosition)), T(1) }};
+	}
+
+	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::Transpose(const Matrix4x4<T>& aMatrixToTranspose)
 	{
 		Matrix4x4<T> transpose = aMatrixToTranspose;
@@ -230,46 +253,52 @@ namespace CommonUtilities
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Forward(const Matrix4x4<T>& aMatrix)
+	inline Vector3<T> Matrix4x4<T>::GetForward() const
 	{
-		return Vector4<T>(aMatrix.myValues[0][2], aMatrix.myValues[1][2], aMatrix.myValues[2][2], 0.f).GetNormalized();
+		return Vector3<T>(myValues[0][2], myValues[1][2], myValues[2][2]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Forward() const
+	inline Vector3<T> Matrix4x4<T>::GetUp() const
 	{
-		return Forward(*this);
+		return Vector3<T>(myValues[0][1], myValues[1][1], myValues[2][1]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Up(const Matrix4x4<T>& aMatrix)
+	inline Vector3<T> Matrix4x4<T>::GetRight() const
 	{
-		return Vector4<T>(aMatrix.myValues[0][1], aMatrix.myValues[1][1], aMatrix.myValues[2][1], 0.f).GetNormalized();
+		return Vector3<T>(myValues[0][0], myValues[1][0], myValues[2][0]).GetNormalized();
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Up() const
+	inline void Matrix4x4<T>::SetForward(const Vector3<T>& aVector)
 	{
-		return Up(*this);
+		myValues[0][2] = aVector.x;
+		myValues[1][2] = aVector.y;
+		myValues[2][2] = aVector.z;
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Right(const Matrix4x4<T>& aMatrix)
+	inline void Matrix4x4<T>::SetUp(const Vector3<T>& aVector)
 	{
-		return Vector4<T>(aMatrix.myValues[0][0], aMatrix.myValues[1][0], aMatrix.myValues[2][0], 0.f).GetNormalized();
+		myValues[0][1] = aVector.x;
+		myValues[1][1] = aVector.y;
+		myValues[2][1] = aVector.z;
 	}
 
 	template<typename T>
-	inline Vector4<T> Matrix4x4<T>::Right() const
+	inline void Matrix4x4<T>::SetRight(const Vector3<T>& aVector)
 	{
-		return Right(*this);
+		myValues[0][0] = aVector.x;
+		myValues[1][0] = aVector.y;
+		myValues[2][0] = aVector.z;
 	}
 
 	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::GetFastInverse(const Matrix4x4<T>& aTransform)
 	{
 		Matrix4x4<T> result{
-			{ aTransform(1,1), aTransform(2,1), aTransform(3,1), aTransform(1,4)},
+			{ aTransform(1, 1), aTransform(2, 1), aTransform(3, 1), aTransform(1, 4)},
 			{ aTransform(1,2), aTransform(2,2), aTransform(3,2), aTransform(2,4) },
 			{ aTransform(1,3), aTransform(2,3), aTransform(3,3), aTransform(3,4) },
 			{ T(),T(),T(),T(1) }};

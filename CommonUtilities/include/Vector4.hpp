@@ -23,6 +23,10 @@ namespace CommonUtilities
 		T w;
 
 		static const Vector4<T> Null;
+		static const Vector4<T> NullPosition;
+		static const Vector4<T> Up;
+		static const Vector4<T> Right;
+		static const Vector4<T> Forward;
 
 		Vector4();
 		Vector4(const T& aX, const T& aY, const T& aZ, const T& aW);
@@ -82,6 +86,10 @@ namespace CommonUtilities
 	};
 
 	template<typename T> const Vector4<T> Vector4<T>::Null{};
+	template<typename T> const Vector4<T> Vector4<T>::NullPosition{T(), T(), T(), T(1)};
+	template<typename T> const Vector4<T> Vector4<T>::Up{T(), T(1), T(), T()};
+	template<typename T> const Vector4<T> Vector4<T>::Right{T(1), T(), T(), T()};
+	template<typename T> const Vector4<T> Vector4<T>::Forward{T(), T(), T(1), T()};
 
 	typedef Vector4<float> Vector4f;
 	typedef Vector4<unsigned int> Vector4ui;

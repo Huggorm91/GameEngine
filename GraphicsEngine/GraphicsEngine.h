@@ -75,6 +75,9 @@ public:
 	void SetLoggingWindow(HANDLE aHandle);
 	void SetBackGroundColor(const CommonUtilities::Vector4f& aColor);
 
+	// Swaps the render buffers. Should be called before BeginFrame or after EndFrame
+	void Swap();
+
 	// Prepares the next frame for rendering by resetting states and clearing all render targets.
 	void BeginFrame();
 
@@ -129,13 +132,23 @@ private:
 
 	};
 
+	struct CommandContainer
+	{
+		std::vector<std::shared_ptr<LightCommand>> lightCommands {};
+		std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> shadowCommands {};
+		std::vector<std::vector<std::shared_ptr<GraphicsCommand>>> renderCommands {};
+		std::vector<std::vector<std::shared_ptr<GfxCmd_RenderMesh>>> meshCommands {};
+	};
+
 #ifdef _DEBUG
 	DebugMode myDebugMode = DebugMode::Default;
 	LightMode myLightMode = LightMode::Default;
 	RenderMode myRenderMode = RenderMode::Mesh;
 #endif // _DEBUG
 
+#ifndef _RETAIL
 	LineDrawer::LineHandle myGrid;
+#endif // !_RETAIL	
 
 	HWND myWindowHandle{};
 	ComPtr<ID3D11SamplerState> myDefaultSampler {};
@@ -147,6 +160,9 @@ private:
 	CommonUtilities::Vector3f myWorldMin {};
 	CommonUtilities::Vector4f myBackgroundColor {};
 	std::string mySettingsPath {"Settings/ge_settings.json"};
+
+	CommandContainer* myRenderCommands;
+	CommandContainer* myUpdateCommands;
 
 	Texture* myDirectionalShadowMap{nullptr};
 	Texture* myPointShadowMap[MAX_LIGHTS]{ nullptr };
@@ -169,13 +185,11 @@ private:
 
 	LineDrawer myLineDrawer{};
 
-	std::vector<std::shared_ptr<LightCommand>> myLightCommands {};
-	std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> myShadowCommands {};
-	std::vector<std::vector<std::shared_ptr<GraphicsCommand>>> myRenderCommands {};
-	std::vector<std::vector<std::shared_ptr<GfxCmd_RenderMesh>>> myMeshCommands {};
+	CommandContainer myFirstCommandlist;
+	CommandContainer mySecondCommandlist;
 
 	// We're a container singleton, no instancing this outside the class.
-	GraphicsEngine() = default;
+	GraphicsEngine();
 
 	bool CreateDefaultSampler();
 	bool CreateShadowSampler();

@@ -12,6 +12,18 @@
 #include <fstream>
 #include <Sort.hpp>
 
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"), myRenderCommands(&myFirstCommandlist), 
+myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(),
+myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
+#ifdef _DEBUG
+,myDebugMode(DebugMode::Default), myLightMode (LightMode::Default), myRenderMode (RenderMode::Mesh)
+#endif // _DEBUG
+#ifndef _RETAIL
+,myGrid()
+#endif // !_RETAIL	
+{
+}
+
 bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 {
 	GELogger = Logger::Create("GraphicsEngine");
@@ -123,6 +135,11 @@ void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
 void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
 {
 	myBackgroundColor = aColor;
+}
+
+void GraphicsEngine::Swap()
+{
+
 }
 
 #ifdef _DEBUG
@@ -318,17 +335,17 @@ void GraphicsEngine::BeginFrame()
 	RHI::ClearDepthStencil(&myDepthBuffer);
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
-	myRenderCommands.emplace_back();
-	myMeshCommands.emplace_back();
+	myRenderCommands->renderCommands.emplace_back();
+	myRenderCommands->meshCommands.emplace_back();
 }
 
 void GraphicsEngine::EndFrame()
 {
 	RHI::Present();
-	myRenderCommands.clear();
-	myLightCommands.clear();
-	myShadowCommands.clear();
-	myMeshCommands.clear();
+	myRenderCommands->renderCommands.clear();
+	myRenderCommands->lightCommands.clear();
+	myRenderCommands->shadowCommands.clear();
+	myRenderCommands->meshCommands.clear();
 }
 
 struct ShadowData
@@ -361,7 +378,7 @@ void GraphicsEngine::RenderFrame()
 		int pointIndex = 0;
 		int spotIndex = 0;
 		bool hasDirectional = false;
-		for (auto& command : myLightCommands)
+		for (auto& command : myRenderCommands->lightCommands)
 		{
 			switch (command->GetType())
 			{
@@ -403,10 +420,10 @@ void GraphicsEngine::RenderFrame()
 		}
 
 		std::vector<ShadowData> objectList;
-		objectList.reserve(myShadowCommands.size());
-		for (unsigned i = 0; i < myShadowCommands.size(); i++)
+		objectList.reserve(myRenderCommands->shadowCommands.size());
+		for (unsigned i = 0; i < myRenderCommands->shadowCommands.size(); i++)
 		{
-			objectList.emplace_back(myShadowCommands[i], i);
+			objectList.emplace_back(myRenderCommands->shadowCommands[i], i);
 		}
 
 		std::unordered_set<unsigned> updatedDistance;
@@ -440,25 +457,25 @@ void GraphicsEngine::RenderFrame()
 			}
 		}
 
-for(int i =0; i < MAX_LIGHTS; i++)
-{
-if(mySpotShadowMap[i])
-{
-RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
-// calculate spotlight shadows
-}
+		for (int i = 0; i < MAX_LIGHTS; i++)
+		{
+			if (mySpotShadowMap[i])
+			{
+				RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
+				// calculate spotlight shadows
+			}
 
-if(myPointShadowMap[i])
-{
-RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
-// calculate point light shadows
-}
-}
+			if (myPointShadowMap[i])
+			{
+				RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
+				// calculate point light shadows
+			}
+		}
 
 		pointIndex = 0;
 		spotIndex = 0;
 		hasDirectional = false;
-		for (auto& command : myLightCommands)
+		for (auto& command : myRenderCommands->lightCommands)
 		{
 			switch (command->GetType())
 			{
@@ -499,14 +516,14 @@ RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
 		RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
 
 		std::vector<MeshCommandData> meshes;
-		meshes.reserve(myMeshCommands[0].size());
-		for (size_t i = 0; i < myRenderCommands.size(); i++)
+		meshes.reserve(myRenderCommands->meshCommands[0].size());
+		for (size_t i = 0; i < myRenderCommands->renderCommands.size(); i++)
 		{
-			for (auto& command : myRenderCommands[i])
+			for (auto& command : myRenderCommands->renderCommands[i])
 			{
 				command->Execute();
 			}
-			for (auto& command : myMeshCommands[i])
+			for (auto& command : myRenderCommands->meshCommands[i])
 			{
 				meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
 			}
@@ -525,30 +542,29 @@ RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
 {
-	myRenderCommands.back().emplace_back(aCommand);
+	myRenderCommands->renderCommands.back().emplace_back(aCommand);
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand)
 {
-	myLightCommands.emplace_back(aCommand);
+	myRenderCommands->lightCommands.emplace_back(aCommand);
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand)
 {
-	myShadowCommands.emplace_back(aCommand);
+	myRenderCommands->shadowCommands.emplace_back(aCommand);
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand)
 {
-	myMeshCommands.back().emplace_back(aCommand);
+	myRenderCommands->meshCommands.back().emplace_back(aCommand);
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_NewRenderlist> aCommand)
 {
-	myRenderCommands.emplace_back();
-	myMeshCommands.emplace_back();
+	myRenderCommands->renderCommands.emplace_back();
+	myRenderCommands->meshCommands.emplace_back();
 }
-
 
 bool GraphicsEngine::CreateDefaultSampler()
 {

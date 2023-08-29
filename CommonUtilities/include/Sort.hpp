@@ -13,8 +13,8 @@ namespace CommonUtilities
 
 	template <class T>
 	void QuickSort(std::vector<T>& aVector);
-	template <class T>
-	void QuickSort(std::vector<T>& aVector, std::function<bool(T&, T&)> aCompareFunction);
+	template <class T, class U>
+	void QuickSort(std::vector<T>& aVector, std::function<bool(U, U)> aCompareFunction);
 
 	template <class T>
 	void MergeSort(std::vector<T>& aVector);
@@ -141,8 +141,8 @@ namespace CommonUtilities
 		quickSort(aVector, 0, static_cast<int>(aVector.size()) - 1);
 	}
 
-	template<class T>
-	void QuickSort(std::vector<T>& aVector, std::function<bool(T&, T&)> aCompareFunction)
+	template<class T, class U>
+	void QuickSort(std::vector<T>& aVector, std::function<bool(U, U)> aCompareFunction)
 	{
 		auto median = [&aCompareFunction](std::vector<T>& aVector, int aFrom, int aTo) -> T& {
 			int middle = static_cast<int>((aTo + aFrom) * 0.5f);;
