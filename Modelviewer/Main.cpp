@@ -3,9 +3,13 @@
 #include "resource.h"
 #include "Core/Modelviewer.h"
 #include <InputHandler.h>
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
 
 CommonUtilities::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -40,11 +44,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+    {
+        return true;
+    }
     if (uMsg == WM_DESTROY || uMsg == WM_CLOSE)
     {
         PostQuitMessage(0);
     }
-    else if (globalInputHandler.UpdateEvents(uMsg, wParam, lParam))
+    if (globalInputHandler.UpdateEvents(uMsg, wParam, lParam))
     {
         return 0;
     }

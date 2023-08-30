@@ -47,6 +47,10 @@ class ModelViewer
 	void Init();
 	void Update();
 
+	void InitImgui();
+	void UpdateImgui();
+	void RenderImgui();
+
 public:
 
 	// Singleton Getter.

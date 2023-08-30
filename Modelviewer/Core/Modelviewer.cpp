@@ -3,6 +3,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
 
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+
 #include "Modelviewer.h"
 #include "Windows/SplashWindow.h"
 
@@ -70,6 +74,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 	myCamera.Init({ static_cast<float>(aWindowSize.cx), static_cast<float>(aWindowSize.cy) });
 	AssetManager::GeneratePrimitives();
 
+	InitImgui();
+
 #ifdef _DEBUG
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
@@ -109,6 +115,10 @@ int ModelViewer::Run()
 		// the update several times per frame (once for each message).
 		Update();
 	}
+
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
 	return 0;
 }
@@ -304,17 +314,53 @@ void ModelViewer::Update()
 	CommonUtilities::Timer::Update();
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
+	UpdateImgui();
+
 	myCamera.Update();
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
+
+	RenderImgui();
+
 	engine.EndFrame();
+}
+
+void ModelViewer::ModelViewer::InitImgui()
+{
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(myMainWindowHandle);
+	ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
+}
+
+void ModelViewer::ModelViewer::UpdateImgui()
+{
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::ShowDemoWindow();
+}
+
+void ModelViewer::ModelViewer::RenderImgui()
+{
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 void ModelViewer::UpdateScene()
 {
+	// Imgui::ShowDemoWindow();
+
 	for (auto& model : myGameObjects)
 	{
 		model.Update();
