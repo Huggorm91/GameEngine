@@ -23,7 +23,7 @@ std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aP
 	return result;
 }
 
-std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDirectory)
+std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDirectory, bool aLogErrors)
 {
 	if (fs::exists(aPath))
 	{
@@ -33,13 +33,16 @@ std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDi
 
 	if (!fs::exists(fullPath))
 	{
-		AMLogger.Err("Incorrect path: " + aPath);
+		if (aLogErrors)
+		{
+			AMLogger.Err("Incorrect path: " + aPath);
+		}		
 		return "";
 	}
 	return fullPath;
 }
 
-std::string CreateValidPath(const std::string& aPath, const std::string& aDefaultDirectory)
+std::string CreateValidPath(const std::string& aPath, const std::string& aDefaultDirectory, bool aLogErrors)
 {
 	if (fs::exists(aPath))
 	{
@@ -58,7 +61,10 @@ std::string CreateValidPath(const std::string& aPath, const std::string& aDefaul
 	{
 		if (!fs::exists(directoryPath))
 		{
-			AMLogger.Err("Failed to create directories for path: " + aPath);
+			if (aLogErrors)
+			{
+				AMLogger.Err("Failed to create directories for path: " + aPath);
+			}			
 			return "";
 		}
 	}

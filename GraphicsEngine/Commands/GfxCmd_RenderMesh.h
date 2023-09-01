@@ -11,7 +11,7 @@ public:
 
 	void Execute() override;
 
-	const CommonUtilities::Vector3f& GetWorldPosition() const;
+	const CommonUtilities::Vector4f& GetWorldPosition() const;
 
 private:
 	std::array<CommonUtilities::Matrix4x4f, 128> myBoneTransforms;

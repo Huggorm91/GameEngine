@@ -7,7 +7,9 @@ class PerspectiveCameraComponent: public Component
 public:
 	PerspectiveCameraComponent() = default;
 	~PerspectiveCameraComponent() = default;
+	PerspectiveCameraComponent(const Json::Value& aJson, GameObject* aParent);
 
+	//Json::Value ToJson() const override;
 	const PerspectiveCameraComponent* GetTypePointer() const override;
 
 private:

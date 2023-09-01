@@ -1,13 +1,19 @@
 #pragma once
 #include "Components/Component.h"
 #include "Components/Transform.h"
+#include <fstream>
 
 class GameObject
 {
 public:
 	GameObject();
 	GameObject(const GameObject& aGameObject);
+	GameObject(GameObject&& aGameObject) noexcept;
+	GameObject(const Json::Value& aJson);
 	~GameObject() = default;
+
+	GameObject& operator=(const GameObject& aGameObject);
+	GameObject& operator=(GameObject&& aGameObject);
 
 	void Update();
 
@@ -41,20 +47,30 @@ public:
 	void ToogleActive();
 	bool IsActive() const;
 
-	unsigned int GetComponentCount() const;
-	unsigned int GetID() const;
+	unsigned GetComponentCount() const;
+	unsigned GetID() const;
+
+	Json::Value ToJson() const;
+	void ToBinary(std::ofstream& aStream) const;
+
+	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
+	static unsigned GetIDCount() { return localIDCount; }
 
 private:
 	friend class Component;
 
-	CommonUtilities::Blackboard<unsigned int> myComponents;
-	std::unordered_multimap<const std::type_info*, unsigned int> myIndexList;
+	CommonUtilities::Blackboard<unsigned> myComponents;
+	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
+#ifdef _DEBUG
+	std::vector<const Component*> myDebugPointers;
+#endif // _DEBUG
+
 	Transform myTransform;
-	unsigned int myCount;
-	const unsigned int myID;
+	unsigned myCount;
+	const unsigned myID;
 	bool myIsActive;
 
-	static unsigned int localIDCount;
+	static unsigned localIDCount;
 };
 
 template<class T>
@@ -69,6 +85,9 @@ inline T& GameObject::AddComponent()
 	}
 	myIndexList.emplace(&typeid(T), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
+#ifdef _DEBUG
+	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
+#endif // _DEBUG
 	return myComponents.ChangeValue<T>(myCount++);
 }
 
@@ -84,6 +103,9 @@ inline T& GameObject::AddComponent(const T& aComponent)
 	}
 	myIndexList.emplace(&typeid(aComponent), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
+#ifdef _DEBUG
+	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
+#endif // _DEBUG
 	return myComponents.ChangeValue<T>(myCount++);
 }
 

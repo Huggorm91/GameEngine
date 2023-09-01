@@ -33,6 +33,7 @@ class ModelViewer
 	PerspectiveCamera myCamera;
 
 	std::vector<GameObject> myGameObjects;
+	// std::unordered_map<unsigned, GameObject> myGameObjects;
 
 	ModelViewer() = default;
 
@@ -40,7 +41,8 @@ class ModelViewer
 	void HideSplashScreen() const;
 	size_t LoadAllAssets();
 
-	void LoadScene();
+	void SaveScene(const std::string& aPath);
+	void LoadScene(const std::string& aPath);
 
 	void UpdateScene();
 

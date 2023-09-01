@@ -244,12 +244,15 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\ComponentInclude.h" />
+    <ClInclude Include="Assets\Components\ComponentTemplate.h" />
     <ClInclude Include="Assets\Components\Rendering\AnimatedMeshComponent.h" />
     <ClInclude Include="Assets\Animation.h" />
     <ClInclude Include="Assets\Components\Camera\PerspectiveCameraComponent.h" />
     <ClInclude Include="Assets\Components\InputComponent.h" />
     <ClInclude Include="Assets\Components\Light\DirectionallightComponent.h" />
     <ClInclude Include="Assets\Components\Debugging\DebugDrawComponent.h" />
+    <ClInclude Include="Assets\Components\ComponentType.h" />
     <ClInclude Include="DirectoryFunctions.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
@@ -265,7 +268,6 @@
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Assets\Primitives.h" />
     <ClInclude Include="Assets\Components\Transform.h" />
-    <ClInclude Include="Assets\Components\Rendering\SkeletonComponent.h" />
     <ClInclude Include="Assets\Components\ComponentParts\TgaImporterConversions.h" />
     <ClInclude Include="Assets\Components\ComponentParts\Skeleton.h" />
     <ClInclude Include="Managers\TextureManager.h" />
@@ -282,6 +284,7 @@
     <ClCompile Include="Assets\Components\InputComponent.cpp" />
     <ClCompile Include="Assets\Components\Light\DirectionallightComponent.cpp" />
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
+    <ClCompile Include="Assets\Components\ComponentType.cpp" />
     <ClCompile Include="DirectoryFunctions.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
@@ -304,7 +307,6 @@
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Assets\Primitives.cpp" />
     <ClCompile Include="Assets\Components\Transform.cpp" />
-    <ClCompile Include="Assets\Components\Rendering\SkeletonComponent.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\TgaImporterConversions.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\Skeleton.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />

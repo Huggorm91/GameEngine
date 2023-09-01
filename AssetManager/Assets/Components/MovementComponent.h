@@ -8,8 +8,11 @@ public:
 	MovementComponent() = default;
 	~MovementComponent() = default;
 
+	MovementComponent(const Json::Value& aJson, GameObject* aParent);
+
 	void Update() override;
 
+	//Json::Value ToJson() const override;
 	const MovementComponent* GetTypePointer() const override;
 
 private:

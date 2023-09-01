@@ -31,6 +31,8 @@ namespace CommonUtilities
 		template<typename value>
 		value* ChangeValueUnsafe(const key& aKey);
 
+		// Can only increase the size
+		void Resize(unsigned int aByteSize);
 		void Clear();
 
 	private:
@@ -130,5 +132,15 @@ namespace CommonUtilities
 		myCurrentIndex = 0;
 		myDataPointers.clear();
 		myDataTypes.clear();
+	}
+
+	template<typename key>
+	inline void Blackboard<key>::Resize(unsigned int aByteSize)
+	{
+		if (myCurrentSize < aByteSize)
+		{
+			myData.resize(aByteSize);
+			myCurrentSize = aByteSize;
+		}		
 	}
 }

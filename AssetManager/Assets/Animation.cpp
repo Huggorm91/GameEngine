@@ -19,7 +19,8 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : myGlo
 	}
 }
 
-AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : myFrames(), myEventNames(anAnimation.EventNames), myName(anAnimation.Name), myDuration(anAnimation.Duration), myFramesPerSecond(anAnimation.FramesPerSecond), myFrameDelta(1.f / myFramesPerSecond), myLength(anAnimation.Length)
+AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : myFrames(), myEventNames(anAnimation.EventNames), myName(anAnimation.Name), myDuration(anAnimation.Duration), myFramesPerSecond(anAnimation.FramesPerSecond), 
+myFrameDelta(1.f / myFramesPerSecond), myLength(anAnimation.Length), myPath(nullptr)
 {
 	for (auto& frame : anAnimation.Frames)
 	{
@@ -50,6 +51,16 @@ const AnimationFrame& Animation::GetFrame(unsigned int anIndex) const
 	return myData->myFrames[anIndex];
 }
 
+const std::string& Animation::GetName() const
+{
+	return myData->myName;
+}
+
+const std::string& Animation::GetPath() const
+{
+	return *myData->myPath;
+}
+
 bool Animation::GetNextIndex(unsigned int& outIndex) const
 {
 	if (++outIndex >= myData->myLength)
@@ -60,3 +71,7 @@ bool Animation::GetNextIndex(unsigned int& outIndex) const
 	return false;
 }
 
+bool Animation::HasData() const
+{
+	return myData != nullptr;
+}

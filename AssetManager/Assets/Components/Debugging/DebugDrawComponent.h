@@ -8,6 +8,7 @@ public:
 
 	DebugDrawComponent();
 	~DebugDrawComponent() = default;
+	DebugDrawComponent(const Json::Value& aJson, GameObject* aParent);
 
 	void Update() override;
 
@@ -28,8 +29,29 @@ public:
 	//void SetCapsule(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, float aHeadSize, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
 	//void SetCone(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, float aHeadSize, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
 
+	//Json::Value ToJson() const override;
 	const DebugDrawComponent* GetTypePointer() const override;
 
 private:
 	LineDrawer::LineHandle myHandle;
+	/*enum class DrawType
+	{
+		Line,
+		Axis,
+		Arrow,
+		Square,
+		Circle,
+		Triangle,
+		Cube,
+		Sphere,
+		Cylinder,
+		Capsule,
+		Cone
+	};
+	DrawType myType;*/
+	// int myValueCount;
+	// CommonUtilities::Blackboard<int> myValues;
+
+	// void AddToValues(Json::Value aJson); // Adds a value to blackboard, ["Key"] ["Value"]
+	// void CreateHandleFromValues(); // Calls the appropiate Set-function depending on myType
 };

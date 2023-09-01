@@ -8,29 +8,35 @@ Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextur
 {
 }
 
-Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), myPixelShader(aMaterial.myPixelShader), myTextures(aMaterial.myTextures), myBuffer(aMaterial.myBuffer), myName(aMaterial.myName), myAlbedoTexture(aMaterial.myAlbedoTexture),
+Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), 
+myPixelShader(aMaterial.myPixelShader), 
+myTextures(aMaterial.myTextures), 
+myBuffer(aMaterial.myBuffer), 
+myName(aMaterial.myName), 
+myAlbedoTexture(aMaterial.myAlbedoTexture),
 myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMaterialTexture), myShininess(aMaterial.myShininess), myMetalness(aMaterial.myMetalness), myNormalStrength(aMaterial.myNormalStrength), myUVTiling(aMaterial.myUVTiling), myAlbedoColor(aMaterial.myAlbedoColor)
 {
 	myBuffer.Initialize();
 }
 
-Material::Material(const Json::Value& aJsonValue) : myVertexShader(aJsonValue["VertexShader"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["VertexShader"].asString())), 
-myPixelShader(aJsonValue["PixelShader"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["PixelShader"].asString())), myTextures(), myBuffer(), myName(aJsonValue["Name"].asString()), 
-myAlbedoTexture(aJsonValue["AlbedoTexture"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["AlbedoTexture"].asString())), 
-myNormalTexture(aJsonValue["NormalTexture"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["NormalTexture"].asString())),
-myMaterialTexture(aJsonValue["MaterialTexture"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["MaterialTexture"].asString())), myShininess(aJsonValue["Shininess"].asFloat()), myMetalness(aJsonValue["Metalness"].asFloat()), 
+Material::Material(const Json::Value& aJsonValue) : myVertexShader(aJsonValue["VertexShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["VertexShader"].asString())), 
+myPixelShader(aJsonValue["PixelShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["PixelShader"].asString())), myTextures(), myBuffer(), myName(aJsonValue["Name"].asString()),
+myAlbedoTexture(aJsonValue["AlbedoTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["AlbedoTexture"].asString())), 
+myNormalTexture(aJsonValue["NormalTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["NormalTexture"].asString())),
+myMaterialTexture(aJsonValue["MaterialTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["MaterialTexture"].asString())), myShininess(aJsonValue["Shininess"].asFloat()), myMetalness(aJsonValue["Metalness"].asFloat()), 
 myNormalStrength(aJsonValue["NormalStrength"].asFloat()), myUVTiling(aJsonValue["UVTiling"]["X"].asFloat(), aJsonValue["UVTiling"]["Y"].asFloat()),
 myAlbedoColor(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat())
 {
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
 	{
 		const Json::Value& texture = aJsonValue["Textures"][i];
-		myTextures.emplace_back(texture["Texture"].asString() == "Null" ? nullptr : AssetManager::GetAsset<Texture*>(texture["Texture"].asString()), texture["Stage"].asUInt(), texture["Slot"].asUInt());
+		myTextures.emplace_back(texture["Texture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(texture["Texture"].asString()), texture["Stage"].asUInt(), texture["Slot"].asUInt());
 	}
 	myBuffer.Initialize();
 }
 
-Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(), myBuffer(), myName(aName), myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial)
+Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(), myBuffer(), myName(aName), 
+myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial), myShininess(62.f), myMetalness(), myNormalStrength(1.f), myUVTiling(1.f, 1.f), myAlbedoColor()
 {
 	myBuffer.Initialize();
 }
@@ -185,7 +191,7 @@ Json::Value Material::ToJson() const
 		}
 		else
 		{
-			texture["Texture"] = "Null";
+			texture["Texture"] = Json::nullValue;
 		}		
 		texture["Slot"] = binding.slot;
 		texture["Stage"] = binding.stage;
@@ -198,7 +204,7 @@ Json::Value Material::ToJson() const
 	}
 	else
 	{
-		result["VertexShader"] = "Null";
+		result["VertexShader"] = Json::nullValue;
 	}	
 	if (myPixelShader)
 	{
@@ -206,7 +212,7 @@ Json::Value Material::ToJson() const
 	}
 	else
 	{
-		result["PixelShader"] = "Null";
+		result["PixelShader"] = Json::nullValue;
 	}
 
 	if (myAlbedoTexture)
@@ -215,7 +221,7 @@ Json::Value Material::ToJson() const
 	}
 	else
 	{
-		result["AlbedoTexture"] = "Null";
+		result["AlbedoTexture"] = Json::nullValue;
 	}
 	if (myNormalTexture)
 	{
@@ -223,7 +229,7 @@ Json::Value Material::ToJson() const
 	}
 	else
 	{
-		result["NormalTexture"] = "Null";
+		result["NormalTexture"] = Json::nullValue;
 	}
 	if (myMaterialTexture)
 	{
@@ -231,7 +237,7 @@ Json::Value Material::ToJson() const
 	}
 	else
 	{
-		result["MaterialTexture"] = "Null";
+		result["MaterialTexture"] = Json::nullValue;
 	}	
 	
 	//result["Buffer"]["Data"] = myBuffer.Data;  // Add all values to separate sub names

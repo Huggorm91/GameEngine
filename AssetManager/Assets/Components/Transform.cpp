@@ -1,8 +1,13 @@
 #include "AssetManager.pch.h"
 #include "Transform.h"
 #include <Conversions.hpp>
+#include <JsonVector.hpp>
 
 Transform::Transform(): myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform()
+{
+}
+
+Transform::Transform(const Json::Value& aJson): myPosition(aJson["Position"]), myRotation(aJson["Rotation"]), myScale(aJson["Scale"]), myHasChanged(true), myTransform()
 {
 }
 
@@ -57,6 +62,15 @@ const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
 	return myTransform;
+}
+
+Json::Value Transform::ToJson() const
+{
+	Json::Value result;
+	result["Position"] = static_cast<Json::Value>(myPosition);
+	result["Rotation"] = static_cast<Json::Value>(myRotation);
+	result["Scale"] = static_cast<Json::Value>(myScale);
+	return result;
 }
 
 bool Transform::HasChanged() const

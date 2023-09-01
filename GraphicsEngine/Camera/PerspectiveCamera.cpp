@@ -124,7 +124,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.z = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition += static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition += movement;
 			break;
 		}
 		case CommonUtilities::eKey::S:
@@ -132,7 +132,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.z = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition -= static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition -= movement;
 			break;
 		}
 		case CommonUtilities::eKey::A:
@@ -140,7 +140,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.x = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition -= static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition -= movement;
 			break;
 		}
 		case CommonUtilities::eKey::D:
@@ -148,7 +148,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.x = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition += static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition += movement;
 			break;
 		}
 		case CommonUtilities::eKey::SpaceBar:
@@ -156,7 +156,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.y = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition += static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition += movement;
 			break;
 		}
 		case CommonUtilities::eKey::Ctrl:
@@ -164,7 +164,7 @@ void PerspectiveCamera::ReceiveEvent(CommonUtilities::eInputEvent anEvent, Commo
 			CommonUtilities::Vector4f movement = {};
 			movement.y = myMovementSpeed * timeDelta * multiplier;
 			movement *= CommonUtilities::Matrix4x4f::CreateRotationAroundX(myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(myRotation.y);
-			myPosition -= static_cast<CommonUtilities::Vector3f>(movement);
+			myPosition -= movement;
 			break;
 		}
 		default:

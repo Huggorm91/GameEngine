@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshComponent.h"
 #include "../../Animation.h"	
+#include "../ComponentParts/Skeleton.h"
 
 class AnimatedMeshComponent: public MeshComponent
 {
@@ -13,41 +14,37 @@ public:
 	};
 
 	AnimatedMeshComponent();
-	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, int aSkeletonIndex);
+	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	~AnimatedMeshComponent() = default;
 
 	void Update() override;
 
-	// Call after binding it to a GameObject
-	void Init();
-	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, int aSkeletonIndex);
+	void Init(const Json::Value& aJson) override;
+	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton);
 
-	void SetAnimation(Animation& anAnimation);
-	void SetAnimation(Animation* anAnimation);
+	void SetAnimation(const Animation& anAnimation);
 
 	void StartAnimation(bool aIsLooping = false);
 	void StopAnimation();
 	void PauseAnimation();
 
 	bool HasSkeleton() const;
-	void BindSkelton(int aSkeletonIndex);
-	const SkeletonComponent& GetSkeleton() const;
+	void SetSkeleton(Skeleton* aSkeleton);
+	const Skeleton& GetSkeleton() const;
 	const std::array<CommonUtilities::Matrix4x4f, 128>& GetBoneTransforms() const;
 
-	void ComponentPointersInvalidated() override;
+	Json::Value ToJson() const override;
 	const AnimatedMeshComponent* GetTypePointer() const override;
 
 private:
 	std::array<CommonUtilities::Matrix4x4f, 128> myBoneTransformCache;
-	SkeletonComponent* mySkeleton;
+	Skeleton* mySkeleton;
 
-	Animation* myAnimation;
+	Animation myAnimation;
 	float myAnimationTimer;
 	unsigned int myCurrentFrame;
 	AnimationState myAnimationState;
-
-	int mySkeletonIndex;
 
 	void UpdateCache();
 	void UpdateHeirarchy(unsigned int anIndex, const CommonUtilities::Matrix4x4f& aParentMatrix);

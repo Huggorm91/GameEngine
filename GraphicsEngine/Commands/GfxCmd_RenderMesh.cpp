@@ -26,7 +26,7 @@ void GfxCmd_RenderMesh::Execute()
 	}
 }
 
-const CommonUtilities::Vector3f& GfxCmd_RenderMesh::GetWorldPosition() const
+const CommonUtilities::Vector4f& GfxCmd_RenderMesh::GetWorldPosition() const
 {
 	return myWorldPosition;
 }

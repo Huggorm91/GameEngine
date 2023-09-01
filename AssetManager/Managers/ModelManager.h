@@ -28,6 +28,11 @@ public:
 	GameObject* GetModel(const std::string& aPath);
 	GameObject* GetModel(Primitives aPrimitive);
 
+	Skeleton* GetSkeleton(const std::string& aPath);
+
+	MeshComponent* GetMesh(const std::string& aPath);
+	AnimatedMeshComponent* GetAnimatedMesh(const std::string& aPath);
+
 private:
 	std::unordered_map<std::string, GameObject> myModels;
 	std::unordered_map<std::string, std::vector<MeshData>> myMeshData;
@@ -36,4 +41,5 @@ private:
 	const std::string myPath = "Content/Models/";
 
 	GameObject* LoadModel(const std::string& aPath);
+	Skeleton* LoadSkeleton(const std::string& aPath);
 };

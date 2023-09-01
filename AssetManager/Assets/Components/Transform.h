@@ -1,10 +1,12 @@
 #pragma once
 #include <Matrix4x4.hpp>
+#include <External/jsonCpp/json-forwards.h>
 
 class Transform
 {
 public:
 	Transform();
+	Transform(const Json::Value& aJson);
 	Transform(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aRotation = {}, const CommonUtilities::Vector3f& aScale = {1.f, 1.f, 1.f});
 	~Transform() = default;
 
@@ -20,6 +22,7 @@ public:
 	const CommonUtilities::Vector3f& GetWorldPosition() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
 
+	Json::Value ToJson() const;
 	bool HasChanged() const;
 
 private:

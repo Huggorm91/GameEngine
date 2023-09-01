@@ -50,9 +50,11 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 	if (success)
 	{
 		auto dataIter = myAnimationData.emplace(aPath, tgaAnimation);
+		dataIter.first->second.myPath = &dataIter.first->first;
 		auto iter = myAnimations.emplace(aPath, dataIter.first->second);
 		return &iter.first->second;
 	}
+
 	AMLogger.Err("AnimationManager: Something went wrong when loading animation at: " + aPath);
 	return nullptr;
 }

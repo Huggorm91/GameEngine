@@ -11,6 +11,7 @@ public:
 	SpotlightComponent(const SpotlightComponent& aLight);
 	~SpotlightComponent() = default;
 	SpotlightComponent& operator=(const SpotlightComponent& aLight);
+	//SpotlightComponent(const Json::Value& aJson, GameObject* aParent);
 
 	void Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
 	void Update() override;
@@ -39,6 +40,7 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
+	//Json::Value ToJson() const override;
 	const SpotlightComponent* GetTypePointer() const override;
 
 private:

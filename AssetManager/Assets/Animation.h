@@ -17,6 +17,7 @@ struct AnimationData
 	std::vector<std::string> myEventNames;
 	std::string myName;
 	double myDuration;
+	const std::string* myPath;
 	float myFramesPerSecond;
 	float myFrameDelta;
 	unsigned int myLength;
@@ -34,9 +35,13 @@ public:
 	float GetFPS() const;
 	float GetFrameDelta() const;
 	const AnimationFrame& GetFrame(unsigned int anIndex) const;
+	const std::string& GetName() const;
+	const std::string& GetPath() const;
 
 	// Returns true if next frame is first frame
 	bool GetNextIndex(unsigned int& outIndex) const;
+
+	bool HasData() const;
 
 private:
 	AnimationData* myData;

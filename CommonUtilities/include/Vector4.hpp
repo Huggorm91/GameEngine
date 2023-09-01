@@ -3,9 +3,6 @@
 #include <cmath>
 #include "Vector3.hpp"
 
-//
-// Define USE_UNSAFE_CONVERSION to allow conversion to anything with Constructor(T, T, T, T)
-// #define USE_UNSAFE_CONVERSION
 // 
 // Also define USE_INIT_LIST_CONVERSION to allow conversion to anything with 4 public <T> variables
 // #define USE_INIT_LIST_CONVERSION
@@ -29,6 +26,7 @@ namespace CommonUtilities
 		static const Vector4<T> Forward;
 
 		Vector4();
+		explicit Vector4(const T& aScalar);
 		Vector4(const T& aX, const T& aY, const T& aZ, const T& aW);
 		Vector4(const Vector2<T>& aVector2, const T& aZ = T(), const T& aW = T());
 		Vector4(const Vector2<T>& aVector2XY, const Vector2<T>& aVector2ZW);
@@ -41,9 +39,7 @@ namespace CommonUtilities
 
 		template <class U>operator Vector3<U>() const;
 		template <class U>operator Vector4<U>() const;
-#ifdef USE_UNSAFE_CONVERSION
-		template <class U> operator U() const;
-#endif
+		template <class U> explicit operator U() const;
 
 		inline T LengthSqr() const;
 		inline T Length() const;
@@ -83,6 +79,10 @@ namespace CommonUtilities
 
 		inline bool operator==(const Vector4<T>& aVector) const;
 		inline bool operator!=(const Vector4<T>& aVector) const;
+
+		// In order to convert to and from Json you need to include "JsonVector.hpp"
+		explicit Vector4(Json::Value aJson);
+		explicit operator Json::Value() const;
 	};
 
 	template<typename T> const Vector4<T> Vector4<T>::Null{};
@@ -110,6 +110,11 @@ namespace CommonUtilities
 
 	template<typename T>
 	inline Vector4<T>::Vector4() : x(), y(), z(), w()
+	{
+	}
+
+	template<typename T>
+	inline Vector4<T>::Vector4(const T& aScalar) : x(aScalar), y(aScalar), z(aScalar), w(aScalar)
 	{
 	}
 
@@ -413,7 +418,7 @@ namespace CommonUtilities
 		}
 		return true;
 	}
-#ifdef USE_UNSAFE_CONVERSION
+
 	template <typename T>
 	template<class U>
 	inline Vector4<T>::operator U() const
@@ -424,5 +429,4 @@ namespace CommonUtilities
 		return U(x, y, z, w); // Convertible to classes with Constructor(T, T, T, T)
 #endif	
 	}
-#endif
 }

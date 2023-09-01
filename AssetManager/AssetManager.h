@@ -19,8 +19,13 @@ public:
 	inline static GameObject GetAsset(Primitives anIdentifier) { return *myModelManager.GetModel(anIdentifier); }
 	template<> static GameObject GetAsset(const std::string& anIdentifier);
 
-	template<> static Animation& GetAsset(const std::string& anIdentifier);
-	template<> static Animation* GetAsset(const std::string& anIdentifier);
+	template<> static MeshComponent GetAsset(const std::string& anIdentifier);
+	template<> static AnimatedMeshComponent GetAsset(const std::string& anIdentifier);
+
+	template<> static Animation GetAsset(const std::string& anIdentifier);
+
+	template<> static Skeleton& GetAsset(const std::string& anIdentifier);
+	template<> static Skeleton* GetAsset(const std::string& anIdentifier);
 
 	template<> static Texture& GetAsset(const std::string& anIdentifier);
 	template<> static Texture* GetAsset(const std::string& anIdentifier);
@@ -64,15 +69,33 @@ inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)
 }
 
 template<>
-inline Animation& AssetManager::GetAsset(const std::string& anIdentifier)
+inline MeshComponent AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return *myModelManager.GetMesh(anIdentifier);
+}
+
+template<>
+inline AnimatedMeshComponent AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return *myModelManager.GetAnimatedMesh(anIdentifier);
+}
+
+template<>
+inline Animation AssetManager::GetAsset(const std::string& anIdentifier)
 {
 	return *myAnimationManager.GetAnimation(anIdentifier);
 }
 
 template<>
-inline Animation* AssetManager::GetAsset(const std::string& anIdentifier)
+inline Skeleton& AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return myAnimationManager.GetAnimation(anIdentifier);
+	return *myModelManager.GetSkeleton(anIdentifier);
+}
+
+template<>
+inline Skeleton* AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return myModelManager.GetSkeleton(anIdentifier);
 }
 
 template<>

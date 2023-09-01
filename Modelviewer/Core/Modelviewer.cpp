@@ -17,6 +17,7 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/DirectoryFunctions.h"
 #include "AssetManager/Assets/Components/Light/DirectionallightComponent.h"
 #include "AssetManager/Assets/Components/Light/PointlightComponent.h"
 #include "AssetManager/Assets/Components/Light/SpotlightComponent.h"
@@ -140,8 +141,72 @@ void ModelViewer::HideSplashScreen() const
 	SetForegroundWindow(myMainWindowHandle);
 }
 
+void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
+{
+	std::string path = AddExtensionIfMissing(aPath, ".lvl");
+	path = CreateValidPath(path, "Content/Scenes/", false);
+	if (path.empty())
+	{
+		myLogger.Err("Could not create filepath: " + aPath);
+	}
+	Json::Value scene;
+	scene["GameObjectIDCount"] = GameObject::GetIDCount();
+	scene["GameObjects"] = Json::arrayValue;
+
+	for (int i = 0; i < myGameObjects.size(); i++)
+	{
+		scene["GameObjects"][i] = myGameObjects[i].ToJson();
+		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(myGameObjects[i].GetID()), Json::commentBefore);
+	}
+
+	std::fstream fileStream(path, std::ios::out);
+	if (fileStream)
+	{
+		Json::StreamWriterBuilder builder;
+		builder["commentStyle"] = "All";
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(scene, &fileStream);
+		fileStream.flush();
+	}
+	else
+	{
+		myLogger.Err("Could not open file at: " + aPath);
+	}
+	fileStream.close();
+}
+
+void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
+{
+	std::string path = AddExtensionIfMissing(aPath, ".lvl");
+	path = GetValidPath(path, "Content/Scenes/", false);
+	if (path.empty())
+	{
+		myLogger.Err("Could not find filepath: " + aPath);
+	}
+
+	Json::Value json;
+	std::fstream fileStream(path, std::ios::in);
+	if (fileStream)
+	{
+		fileStream >> json;
+	}
+	else
+	{
+		myLogger.Err("Could not open file at: " + aPath);
+	}
+	fileStream.close();
+
+	GameObject::SetIDCount(json["GameObjectIDCount"].asUInt());
+	for (auto& object : json["GameObjects"])
+	{
+		myGameObjects.emplace_back(object);
+	}
+}
+
 void ModelViewer::Init()
 {
+	//LoadScene("Default");
+
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Cube"));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 500.f });
 	{
@@ -185,7 +250,7 @@ void ModelViewer::Init()
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
+	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
 	myGameObjects.back().SetPosition({ 0.f, 0.f, 200.f });
 	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
@@ -193,7 +258,7 @@ void ModelViewer::Init()
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M_Updated.dds"));
-		mesh.SetAnimation(AssetManager::GetAsset<Animation&>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Wave.fbx"));
+		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Wave.fbx"));
 		mesh.StartAnimation();
 		mesh.SetColor({ 1.f,0.f,0.f,.5f });
 	}
@@ -203,10 +268,10 @@ void ModelViewer::Init()
 	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
 		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
-		mesh.SetAnimation(AssetManager::GetAsset<Animation&>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
+		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
 		mesh.StartAnimation(true);
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
 	}
@@ -305,6 +370,8 @@ void ModelViewer::Init()
 	myGameObjects.back().SetRotation({ 90.f, 0.f, 0.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
+
+	//SaveScene("Default");
 }
 
 void ModelViewer::Update()
@@ -314,7 +381,7 @@ void ModelViewer::Update()
 	CommonUtilities::Timer::Update();
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
-	UpdateImgui();
+	//UpdateImgui();
 
 	myCamera.Update();
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
@@ -323,7 +390,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
-	RenderImgui();
+	//RenderImgui();
 
 	engine.EndFrame();
 }
@@ -359,8 +426,6 @@ void ModelViewer::ModelViewer::RenderImgui()
 
 void ModelViewer::UpdateScene()
 {
-	// Imgui::ShowDemoWindow();
-
 	for (auto& model : myGameObjects)
 	{
 		model.Update();

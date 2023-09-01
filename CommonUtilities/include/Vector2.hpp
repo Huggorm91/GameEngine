@@ -4,11 +4,11 @@
 #include <Windows.h>
 #include "UtilityFunctions.hpp"
 
-//
-// Define USE_UNSAFE_CONVERSION to allow conversion to anything with Constructor(T, T)
-// #define USE_UNSAFE_CONVERSION
+// In order to convert to and from Json you need to include "JsonVector.hpp"
+namespace Json{	class Value; }
+
 // 
-// Also define USE_INIT_LIST_CONVERSION to allow conversion to anything with 2 public <T> variables
+// Define USE_INIT_LIST_CONVERSION to allow conversion to anything with 2 public <T> variables
 // #define USE_INIT_LIST_CONVERSION
 //
 
@@ -27,6 +27,7 @@ namespace CommonUtilities
 		static const Vector2<T> Right;
 
 		Vector2();
+		explicit Vector2(const T& aScalar);
 		Vector2(const T& aX, const T& aY);
 		Vector2(const POINT& aPoint);
 		Vector2(const POINTS& aPoints);
@@ -38,10 +39,8 @@ namespace CommonUtilities
 
 		operator POINT() const;
 		operator POINTS() const;
-		template <class U>operator Vector2<U>() const;
-#ifdef USE_UNSAFE_CONVERSION
-		template <class U> operator U() const;
-#endif
+		template <class U> operator Vector2<U>() const;
+		template <class U> explicit operator U() const;
 
 		inline T LengthSqr() const;
 		inline T Length() const;
@@ -85,6 +84,10 @@ namespace CommonUtilities
 
 		inline bool operator==(const Vector2<T>& aVector) const;
 		inline bool operator!=(const Vector2<T>& aVector) const;
+
+		// In order to convert to and from Json you need to include "JsonVector.hpp"
+		explicit Vector2(Json::Value aJson);
+		explicit operator Json::Value() const;
 	};
 
 	template<typename T> const Vector2<T> Vector2<T>::Null{};
@@ -110,6 +113,11 @@ namespace CommonUtilities
 
 	template<typename T>
 	inline Vector2<T>::Vector2() : x(), y()
+	{
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(const T& aScalar) : x(aScalar), y(aScalar)
 	{
 	}
 
@@ -431,7 +439,7 @@ namespace CommonUtilities
 		}
 		return true;
 	}
-#ifdef USE_UNSAFE_CONVERSION
+
 	template <typename T>
 	template<class U>
 	inline Vector2<T>::operator U() const
@@ -442,5 +450,4 @@ namespace CommonUtilities
 		return U(x, y); // Convertible to classes with Constructor(T, T)
 #endif
 	}
-#endif
 }
