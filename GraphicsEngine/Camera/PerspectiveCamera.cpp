@@ -5,11 +5,11 @@
 #include "../GraphicsEngine.h"
 #include "../Commands/GfxCmd_SetFrameBuffer.h"
 
-PerspectiveCamera::PerspectiveCamera() : myTransform(), myMovementSpeed(), myRotationSpeed(), myRotation(), myPosition(), myScreenResolution(), myIsAcceptingInput(false), myMouseSensitivity(1.f), myHasChanged(true), myCompassTransform(), myCompass(), myCompassOffset()
+PerspectiveCamera::PerspectiveCamera() : myTransform(), myMovementSpeed(), myRotationSpeed(), myRotation(), myPosition(), myScreenResolution(), myIsAcceptingInput(false), myMouseSensitivity(), myHasChanged(true), myCompassTransform(), myCompass(), myCompassOffset()
 {
 }
 
-void PerspectiveCamera::Init(const CommonUtilities::Vector2f& aScreenSize)
+void PerspectiveCamera::Init(const CommonUtilities::Vector2f& aScreenSize, float aSpeed, float aRotationSpeed, float aMouseSensitivity)
 {
 	myScreenResolution = aScreenSize;
 
@@ -17,8 +17,9 @@ void PerspectiveCamera::Init(const CommonUtilities::Vector2f& aScreenSize)
 	myClipMatrix(4, 4) = 0.f;
 
 	myPosition = { 0.f, 200.f, 0.f };
-	myRotationSpeed = 2.f;
-	myMovementSpeed = 100.f;
+	myRotationSpeed = aRotationSpeed;
+	myMovementSpeed = aSpeed;
+	myMouseSensitivity = aMouseSensitivity;
 
 	const float nearplane = 1.f;
 	const float farplane = 10000.f;
@@ -254,9 +255,9 @@ void PerspectiveCamera::UpdateTransform()
 	// Transform if using UI
 	//myCompassTransform = CommonUtilities::Matrix4x4f::CreateRotationAroundX(-myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(-myRotation.y);
 	//myCompassTransform(4, 3) = 0.5f;
-	
+
 	// Transform if using worldspace
-	CommonUtilities::Vector3f forward = CommonUtilities::Vector4f{ myCompassOffset, 1.f } * myTransform;
+	CommonUtilities::Vector3f forward = CommonUtilities::Vector4f{ myCompassOffset, 1.f } *myTransform;
 	myCompassTransform(4, 1) = forward.x;
 	myCompassTransform(4, 2) = forward.y;
 	myCompassTransform(4, 3) = forward.z;

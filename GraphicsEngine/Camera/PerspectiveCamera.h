@@ -9,7 +9,7 @@ public:
 	PerspectiveCamera();
 	~PerspectiveCamera() = default;
 
-	void Init(const CommonUtilities::Vector2f& aScreenSize);
+	void Init(const CommonUtilities::Vector2f& aScreenSize, float aSpeed, float aRotationSpeed, float aMouseSensitivity);
 	void Update();
 
 	void ReceiveEvent(CommonUtilities::eInputEvent anEvent, CommonUtilities::eKey aKey) override;
