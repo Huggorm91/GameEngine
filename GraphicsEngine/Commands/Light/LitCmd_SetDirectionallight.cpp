@@ -19,6 +19,12 @@ void LitCmd_SetDirectionallight::Execute(const int anIndex)
 	buffer.Data.myDirectionallightColor = myColor;
 	buffer.Data.myDirectionallightIntensity = myIntensity;
 
+	if (myShadowMap != nullptr)
+	{
+		RHI::ClearDepthStencil(myShadowMap.get());
+		GetDirectionalShadowMap() = myShadowMap.get();
+	}	
+
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);	
 }

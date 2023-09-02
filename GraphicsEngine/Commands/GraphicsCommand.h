@@ -25,4 +25,6 @@ protected:
 
 	CommonUtilities::Vector3f& GetWorldBoundsMin();
 	CommonUtilities::Vector3f& GetWorldBoundsMax();
+	CommonUtilities::Vector3f& GetWorldBoundsOrigin();
+	float& GetWorldBoundsRadius();
 };

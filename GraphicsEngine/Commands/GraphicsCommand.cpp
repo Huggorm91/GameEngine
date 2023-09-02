@@ -52,3 +52,13 @@ CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMax()
 {
     return GraphicsEngine::Get().myWorldMax;
 }
+
+CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsOrigin()
+{
+    return GraphicsEngine::Get().myWorldCenter;
+}
+
+float& GraphicsCommand::GetWorldBoundsRadius()
+{
+    return GraphicsEngine::Get().myWorldRadius;
+}

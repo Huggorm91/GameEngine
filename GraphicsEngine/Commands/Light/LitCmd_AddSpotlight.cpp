@@ -21,6 +21,12 @@ void LitCmd_AddSpotlight::Execute(const int anIndex)
 	data.myOuterAngle = myOuterAngle;
 	data.myConeIntensityDifference = myConeIntensityDifference;
 
+	if (myShadowMap != nullptr)
+	{
+		RHI::ClearDepthStencil(myShadowMap.get());
+		GetSpotlightShadowMap()[anIndex] = myShadowMap.get();
+	}
+
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);	
 }
@@ -29,6 +35,7 @@ void LitCmd_AddSpotlight::SetShadowMap(const int anIndex)
 {
 	if (myShadowMap != nullptr)
 	{
+		RHI::ClearDepthStencil(myShadowMap.get());
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 87 + anIndex, myShadowMap.get());
 	}
 }

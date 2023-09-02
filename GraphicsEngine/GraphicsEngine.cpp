@@ -12,14 +12,14 @@
 #include <fstream>
 #include <Sort.hpp>
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"), myRenderCommands(&myFirstCommandlist), 
-myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(),
-myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(),
+myDefaultMaterialTexture(), myDefaultCubeMap(), myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
 #ifdef _DEBUG
-,myDebugMode(DebugMode::Default), myLightMode (LightMode::Default), myRenderMode (RenderMode::Mesh)
+, myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh)
 #endif // _DEBUG
 #ifndef _RETAIL
-,myGrid()
+, myGrid()
 #endif // !_RETAIL	
 {
 }
@@ -346,6 +346,13 @@ void GraphicsEngine::EndFrame()
 	myRenderCommands->lightCommands.clear();
 	myRenderCommands->shadowCommands.clear();
 	myRenderCommands->meshCommands.clear();
+
+	myDirectionalShadowMap = nullptr;
+	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	{
+		myPointShadowMap[i] = nullptr;
+		mySpotShadowMap[i] = nullptr;
+	}
 }
 
 struct ShadowData
@@ -373,8 +380,9 @@ struct MeshCommandData
 
 void GraphicsEngine::RenderFrame()
 {
-	RHI::SetPixelShader(nullptr);
 	{
+		RHI::SetPixelShader(nullptr);
+
 		int pointIndex = 0;
 		int spotIndex = 0;
 		bool hasDirectional = false;
@@ -427,8 +435,10 @@ void GraphicsEngine::RenderFrame()
 		}
 
 		std::unordered_set<unsigned> updatedDistance;
-		CommonUtilities::Vector3f position = { 10.f, 10.f, 10.f };
+		updatedDistance.reserve(myRenderCommands->shadowCommands.size());
+		CommonUtilities::Vector3f position = CommonUtilities::Vector3f::Null;
 
+		// Update position before calling a sorting algorithm with this function, and clear updatedDistance after
 		std::function<bool(ShadowData&, ShadowData&)> compare = [&position, &updatedDistance](ShadowData& aFirst, ShadowData& aSecond) -> bool{
 			if (updatedDistance.find(aFirst.myIndex) == updatedDistance.end())
 			{
@@ -447,30 +457,53 @@ void GraphicsEngine::RenderFrame()
 		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
 		{
 			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
-			//position = directLightPos;
+			position = 2.f * myWorldRadius * myLightBuffer.Data.myInvertedDirection;
 			CommonUtilities::QuickSort(objectList, compare);
 			updatedDistance.clear();
 
+			const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, myWorldCenter);
+			const CommonUtilities::Vector3f& center = CommonUtilities::Vector4f(myWorldCenter, 1.f) * view;
+			const CommonUtilities::Vector3f& leftBotNear = center - myWorldRadius;
+			const CommonUtilities::Vector3f& rightTopFar = center + myWorldRadius;
+			const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreateOrthographicMatrix(leftBotNear.x, rightTopFar.x, leftBotNear.y, rightTopFar.y, 1.f, myWorldRadius * 4.f);
+
+			myFrameBuffer.Data.View = view;
+			myFrameBuffer.Data.Projection = projection;
+			myFrameBuffer.Data.CameraPosition = position;
+
+			RHI::UpdateConstantBufferData(myFrameBuffer);
+			RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+
 			for (auto& data : objectList)
 			{
-				//data.myCommand->Execute();
+				data.myCommand->Execute();
 			}
 		}
 
-		for (int i = 0; i < MAX_LIGHTS; i++)
-		{
-			if (mySpotShadowMap[i])
-			{
-				RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
-				// calculate spotlight shadows
-			}
+		//for (int i = 0; i < MAX_LIGHTS; i++)
+		//{
+		//	if (mySpotShadowMap[i])
+		//	{
+		//		RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
+		//		// calculate spotlight shadows
 
-			if (myPointShadowMap[i])
-			{
-				RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
-				// calculate point light shadows
-			}
-		}
+		//		for (auto& data : objectList)
+		//		{
+		//			data.myCommand->Execute();
+		//		}
+		//	}
+
+		//	if (myPointShadowMap[i])
+		//	{
+		//		RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
+		//		// calculate point light shadows
+
+		//		for (auto& data : objectList)
+		//		{
+		//			data.myCommand->Execute();
+		//		}
+		//	}
+		//}
 
 		pointIndex = 0;
 		spotIndex = 0;

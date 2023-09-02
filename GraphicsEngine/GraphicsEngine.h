@@ -116,6 +116,9 @@ public:
 	inline const CommonUtilities::Vector3f& GetWorldBoundsMin() const {
 		return myWorldMin;
 	}
+	inline const CommonUtilities::Vector3f& GetWorldBoundsOrigin() const {
+		return myWorldCenter;
+	}
 
 private:
 	friend class LightCommand;
@@ -150,40 +153,42 @@ private:
 	LineDrawer::LineHandle myGrid;
 #endif // !_RETAIL	
 
-	HWND myWindowHandle{};
-	ComPtr<ID3D11SamplerState> myDefaultSampler {};
-	ComPtr<ID3D11SamplerState> myShadowSampler {};
-	ComPtr<ID3D11SamplerState> myLUTSampler {};
+	HWND myWindowHandle;
+	ComPtr<ID3D11SamplerState> myDefaultSampler;
+	ComPtr<ID3D11SamplerState> myShadowSampler;
+	ComPtr<ID3D11SamplerState> myLUTSampler;
 
-	SIZE myWindowSize{ 0,0 };
-	CommonUtilities::Vector3f myWorldMax {};
-	CommonUtilities::Vector3f myWorldMin {};
-	CommonUtilities::Vector4f myBackgroundColor {};
-	std::string mySettingsPath {"Settings/ge_settings.json"};
+	float myWorldRadius;
+	SIZE myWindowSize;
+	CommonUtilities::Vector3f myWorldMax;
+	CommonUtilities::Vector3f myWorldMin;
+	CommonUtilities::Vector3f myWorldCenter;
+	CommonUtilities::Vector4f myBackgroundColor;
+	std::string mySettingsPath;
 
 	CommandContainer* myRenderCommands;
 	CommandContainer* myUpdateCommands;
 
-	Texture* myDirectionalShadowMap{nullptr};
-	Texture* myPointShadowMap[MAX_LIGHTS]{ nullptr };
-	Texture* mySpotShadowMap[MAX_LIGHTS]{ nullptr };
+	Texture* myDirectionalShadowMap;
+	std::array<Texture*, MAX_LIGHTS> myPointShadowMap;
+	std::array<Texture*, MAX_LIGHTS> mySpotShadowMap;
 
-	Texture myBackBuffer{};
-	Texture myDepthBuffer{};
-	Texture myBrdfLUTTexture{};
+	Texture myBackBuffer;
+	Texture myDepthBuffer;
+	Texture myBrdfLUTTexture;
 
-	Texture myMissingTexture{};
-	Texture myDefaultNormalTexture{};
-	Texture myDefaultMaterialTexture{};
-	Texture myDefaultCubeMap{};
-	Material myDefaultMaterial{};
+	Texture myMissingTexture;
+	Texture myDefaultNormalTexture;
+	Texture myDefaultMaterialTexture;
+	Texture myDefaultCubeMap;
+	Material myDefaultMaterial;
 
-	FrameBuffer myFrameBuffer{};
-	ObjectBuffer myObjectBuffer{};
-	LightBuffer myLightBuffer{};
-	MaterialBuffer myMaterialBuffer{};
+	FrameBuffer myFrameBuffer;
+	ObjectBuffer myObjectBuffer;
+	LightBuffer myLightBuffer;
+	MaterialBuffer myMaterialBuffer;
 
-	LineDrawer myLineDrawer{};
+	LineDrawer myLineDrawer;
 
 	CommandContainer myFirstCommandlist;
 	CommandContainer mySecondCommandlist;

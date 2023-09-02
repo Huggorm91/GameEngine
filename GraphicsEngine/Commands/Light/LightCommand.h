@@ -25,4 +25,7 @@ protected:
 	LightCommand(Type aType);
 	LightBuffer& GetLightBuffer();
 	const Texture* GetDefaultCubemap();
+	Texture*& GetDirectionalShadowMap();
+	std::array<Texture*, MAX_LIGHTS>& GetPointlightShadowMap();
+	std::array<Texture*, MAX_LIGHTS>& GetSpotlightShadowMap();
 };

@@ -16,6 +16,12 @@ void LitCmd_AddPointlight::Execute(const int anIndex)
 	data.myColor = myColor;
 	data.myIntensity = myIntensity;
 
+	if (myShadowMap != nullptr)
+	{
+		RHI::ClearDepthStencil(myShadowMap.get());
+		GetPointlightShadowMap()[anIndex] = myShadowMap.get();
+	}
+
 	RHI::UpdateConstantBufferData(buffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);		
 }
