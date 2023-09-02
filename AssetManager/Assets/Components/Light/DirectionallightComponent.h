@@ -8,8 +8,8 @@ class DirectionallightComponent : public Component
 public:
 	DirectionallightComponent();
 	DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
+	DirectionallightComponent(const Json::Value& aJson);
 	DirectionallightComponent(const DirectionallightComponent& aLight);
-	//DirectionallightComponent(const Json::Value& aJson, GameObject* aParent);
 	~DirectionallightComponent() = default;
 	DirectionallightComponent& operator=(const DirectionallightComponent& aLight);
 
@@ -30,7 +30,7 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
-	//Json::Value ToJson() const override;
+	Json::Value ToJson() const override;
 	const DirectionallightComponent* GetTypePointer() const override;
 
 private:

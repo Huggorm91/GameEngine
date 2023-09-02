@@ -72,6 +72,9 @@ public:
  */
 	bool Initialize(HWND windowHandle, bool enableDeviceDebug);
 
+	// Saves current settings to file
+	void SaveSettings() const;
+
 	void SetLoggingWindow(HANDLE aHandle);
 	void SetBackGroundColor(const CommonUtilities::Vector4f& aColor);
 
@@ -132,7 +135,6 @@ private:
 		std::string defaultCubeMap;
 		std::string defaultMaterial;
 		CommonUtilities::Vector4f backgroundColor;
-
 	};
 
 	struct CommandContainer
@@ -201,6 +203,6 @@ private:
 	bool CreateLUTSampler();
 	bool CreateLUTTexture();
 	Settings LoadSettings();
-	void SaveSettings(Settings someSettings);
+	void SaveSettings(const Settings& someSettings) const;
 };
 

@@ -3,11 +3,11 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
 
-DirectionallightComponent::DirectionallightComponent() : myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f), myCastShadows(false), myShadowMap(nullptr)
+DirectionallightComponent::DirectionallightComponent() : Component(ComponentType::Directionallight), myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f), myCastShadows(false), myShadowMap(nullptr)
 {
 }
 
-DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) : myInvertedLightDirection(-aDirection.GetNormalized()), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr)
+DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) :Component(ComponentType::Directionallight), myInvertedLightDirection(-aDirection.GetNormalized()), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
 	if (aCastShadows)
 	{
@@ -15,7 +15,16 @@ DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vect
 	}
 }
 
-DirectionallightComponent::DirectionallightComponent(const DirectionallightComponent& aLight) : myInvertedLightDirection(aLight.myInvertedLightDirection), myColor(aLight.myColor), myIntensity(aLight.myIntensity), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+DirectionallightComponent::DirectionallightComponent(const Json::Value& aJson) :Component(aJson), myIntensity(aJson["Intensity"].asFloat()), myInvertedLightDirection(aJson["InvertedLightDirection"]), myColor(aJson["Color"]), 
+myCastShadows(aJson["CastShadows"].asBool()), myShadowMap(nullptr)
+{
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+DirectionallightComponent::DirectionallightComponent(const DirectionallightComponent& aLight) :Component(aLight), myInvertedLightDirection(aLight.myInvertedLightDirection), myColor(aLight.myColor), myIntensity(aLight.myIntensity), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
 {
 	if (myCastShadows)
 	{
@@ -25,6 +34,7 @@ DirectionallightComponent::DirectionallightComponent(const DirectionallightCompo
 
 DirectionallightComponent& DirectionallightComponent::operator=(const DirectionallightComponent& aLight)
 {
+	Component::operator=(aLight);
 	myInvertedLightDirection = aLight.myInvertedLightDirection;
 	myColor = aLight.myColor;
 	myIntensity = aLight.myIntensity;
@@ -117,6 +127,16 @@ bool DirectionallightComponent::IsCastingShadows() const
 std::shared_ptr<Texture>& DirectionallightComponent::GetShadowMap()
 {
 	return myShadowMap;
+}
+
+Json::Value DirectionallightComponent::ToJson() const
+{
+	Json::Value result = Component::ToJson();
+	result["InvertedLightDirection"] = static_cast<Json::Value>(myInvertedLightDirection);
+	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Intensity"] = myIntensity;
+	result["CastShadows"] = myCastShadows;
+	return result;
 }
 
 const DirectionallightComponent* DirectionallightComponent::GetTypePointer() const
