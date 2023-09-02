@@ -14,19 +14,46 @@ class SplashWindow;
 #include <InputHandler.h>
 class ModelViewer: public CommonUtilities::InputObserver
 {
-	GraphicsEngine::DebugMode myDebugMode;
-	GraphicsEngine::LightMode myLightMode;
-	GraphicsEngine::RenderMode myRenderMode;
 #else
 class ModelViewer
 {
 #endif // _DEBUG
+public:
+// Singleton Getter.
+	static ModelViewer& Get() {
+		static ModelViewer myInstance; return myInstance;
+	}
 
-	HINSTANCE myModuleHandle = nullptr;
-	HWND myMainWindowHandle = nullptr;
+// Acceleration Getters for components.
+	FORCEINLINE static ApplicationState& GetApplicationState() {
+		return Get().myApplicationState;
+	}
+	FORCEINLINE static Logger& GetLogger() {
+		return Get().myLogger;
+	}
 
-	SplashWindow* mySplashWindow = nullptr;
+	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
+	int Run();
 
+	void SaveState() const;
+
+#ifdef _DEBUG
+	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
+	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
+#endif // _DEBUG
+
+private:
+#ifdef _DEBUG
+	GraphicsEngine::DebugMode myDebugMode;
+	GraphicsEngine::LightMode myLightMode;
+	GraphicsEngine::RenderMode myRenderMode;
+#endif // _DEBUG
+	HINSTANCE myModuleHandle{ nullptr };
+	HWND myMainWindowHandle{ nullptr };
+
+	SplashWindow* mySplashWindow{ nullptr };
+
+	std::string mySettingsPath{"Settings/mw_settings.json"};
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
@@ -35,7 +62,7 @@ class ModelViewer
 	std::vector<GameObject> myGameObjects;
 	// std::unordered_map<unsigned, GameObject> myGameObjects;
 
-	ModelViewer() = default;
+	ModelViewer();
 
 	void ShowSplashScreen();
 	void HideSplashScreen() const;
@@ -43,6 +70,7 @@ class ModelViewer
 
 	void SaveScene(const std::string& aPath);
 	void LoadScene(const std::string& aPath);
+	void LoadState();
 
 	void UpdateScene();
 
@@ -52,22 +80,4 @@ class ModelViewer
 	void InitImgui();
 	void UpdateImgui();
 	void RenderImgui();
-
-public:
-
-	// Singleton Getter.
-	static ModelViewer& Get() { static ModelViewer myInstance; return myInstance; }
-
-	// Acceleration Getters for components.
-	FORCEINLINE static ApplicationState& GetApplicationState() { return Get().myApplicationState; }
-	FORCEINLINE static Logger& GetLogger() { return Get().myLogger; }
-
-	bool Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWindowProcess, LPCWSTR aWindowTitle);
-	int Run();
-
-#ifdef _DEBUG
-	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
-#endif // _DEBUG
-
 };

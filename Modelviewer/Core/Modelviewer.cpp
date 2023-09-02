@@ -26,11 +26,18 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWindowProcess, LPCWSTR aWindowTitle)
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
+#ifdef _DEBUG
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh)
+#endif // _DEBUG
+{
+}
+
+bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 {
 	myLogger = Logger::Create("ModelViewer");
-
 	myModuleHandle = aHInstance;
+	LoadState();
 
 	constexpr LPCWSTR windowClassName = L"ModelViewerMainWindow";
 
@@ -42,23 +49,40 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
+	LPCWSTR title{ Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle).c_str() };
+
+	DWORD flags;
+	if (myApplicationState.StartMaximized)
+	{
+		flags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_MAXIMIZE;
+	}
+	else
+	{
+		flags = WS_OVERLAPPEDWINDOW | WS_POPUP;
+	}
+
 	// Get center of screen
 	RECT windowRect;
-	GetClientRect(GetDesktopWindow(), &windowRect);
-	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (aWindowSize.cx * 0.5f));
-	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (aWindowSize.cy * 0.5f));
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
+	//GetClientRect(GetDesktopWindow(), &windowRect);
 
-	// Then we use the class to create our window
+	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (myApplicationState.WindowSize.x * 0.5f));
+	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (myApplicationState.WindowSize.y * 0.5f));
+	windowRect.right = myApplicationState.WindowSize.x;
+	windowRect.bottom = myApplicationState.WindowSize.y;
+
 	myMainWindowHandle = CreateWindow(
-		windowClassName,                                // Classname
-		aWindowTitle,                                    // Window Title
-		WS_OVERLAPPEDWINDOW | WS_POPUP,    // Flags
-		windowRect.left,
-		windowRect.top,
-		aWindowSize.cx,
-		aWindowSize.cy,
-		nullptr, nullptr, nullptr,
-		nullptr
+		windowClassName,	// Classname
+		title,				// Window Title
+		flags,				// Flags / Style
+		windowRect.left,	// x coord
+		windowRect.top,		// y coord
+		windowRect.right,	// width
+		windowRect.bottom,	// height
+		nullptr,			// Parent hwnd
+		nullptr,			// hMenu
+		nullptr,			// hInstance
+		nullptr				// lpParam
 	);
 
 	ShowSplashScreen();
@@ -72,7 +96,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 #else
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, true);
 #endif // _RETAIL	
-	myCamera.Init({ static_cast<float>(aWindowSize.cx), static_cast<float>(aWindowSize.cy) });
+	//myCamera.Init({ static_cast<float>(windowSize.cx), static_cast<float>(windowSize.cy) });
+	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
 	AssetManager::GeneratePrimitives();
 
 	InitImgui();
@@ -122,6 +147,40 @@ int ModelViewer::Run()
 	ImGui::DestroyContext();
 
 	return 0;
+}
+
+void ModelViewer::ModelViewer::SaveState() const
+{
+	std::fstream fileStream(mySettingsPath, std::ios::out);
+	if (fileStream)
+	{
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(myApplicationState, &fileStream);
+		fileStream.flush();
+	}
+	else
+	{
+		myLogger.Err("Could not save settings!");
+	}
+	fileStream.close();
+}
+
+void ModelViewer::ModelViewer::LoadState()
+{
+	std::fstream fileStream(mySettingsPath, std::ios::in);
+	if (fileStream)
+	{
+		Json::Value json;
+		fileStream >> json;
+		fileStream.flush();
+		myApplicationState = json;
+	}
+	else
+	{
+		myLogger.Err("Could not load settings!");
+	}
+	fileStream.close();
 }
 
 void ModelViewer::ShowSplashScreen()
@@ -217,13 +276,13 @@ void ModelViewer::Init()
 		mesh.SetColor(GetColor(eColor::White));
 		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
-	
+
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
 	myGameObjects.back().SetPosition({ 200.f, 0.f, 500.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	
+
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
@@ -381,7 +440,7 @@ void ModelViewer::Update()
 	CommonUtilities::Timer::Update();
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
-	//UpdateImgui();
+	UpdateImgui();
 
 	myCamera.Update();
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
@@ -390,7 +449,7 @@ void ModelViewer::Update()
 	CommonUtilities::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
-	//RenderImgui();
+	RenderImgui();
 
 	engine.EndFrame();
 }
@@ -404,6 +463,8 @@ void ModelViewer::ModelViewer::InitImgui()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+	//ImGui::StyleColorsLight();
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(myMainWindowHandle);
