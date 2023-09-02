@@ -8,10 +8,10 @@ class PointlightComponent : public Component
 public:
 	PointlightComponent();
 	PointlightComponent(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
+	PointlightComponent(const Json::Value& aJson);
 	PointlightComponent(const PointlightComponent& aLight);
 	~PointlightComponent() = default;
 	PointlightComponent& operator=(const PointlightComponent& aLight);
-	//PointlightComponent(const Json::Value& aJson, GameObject* aParent);
 
 	void Init(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	void Update() override;
@@ -32,7 +32,7 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
-	//Json::Value ToJson() const override;
+	Json::Value ToJson() const override;
 	const PointlightComponent* GetTypePointer() const override;
 
 private:

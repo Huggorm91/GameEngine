@@ -8,12 +8,7 @@ Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextur
 {
 }
 
-Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), 
-myPixelShader(aMaterial.myPixelShader), 
-myTextures(aMaterial.myTextures), 
-myBuffer(aMaterial.myBuffer), 
-myName(aMaterial.myName), 
-myAlbedoTexture(aMaterial.myAlbedoTexture),
+Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), myPixelShader(aMaterial.myPixelShader), myTextures(aMaterial.myTextures), myBuffer(aMaterial.myBuffer), myName(aMaterial.myName), myAlbedoTexture(aMaterial.myAlbedoTexture),
 myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMaterialTexture), myShininess(aMaterial.myShininess), myMetalness(aMaterial.myMetalness), myNormalStrength(aMaterial.myNormalStrength), myUVTiling(aMaterial.myUVTiling), myAlbedoColor(aMaterial.myAlbedoColor)
 {
 	myBuffer.Initialize();

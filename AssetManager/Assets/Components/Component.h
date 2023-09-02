@@ -17,7 +17,7 @@ public:
 	Component();
 	Component(ComponentType aType);
 	Component(const Component& aComponent);
-	Component(const Json::Value& aJson, GameObject* aParent);
+	Component(const Json::Value& aJson);
 	virtual ~Component() = default;
 
 	virtual Component& operator=(const Component& aComponent);

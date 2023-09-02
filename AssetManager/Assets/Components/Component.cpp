@@ -8,14 +8,13 @@ Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentTy
 
 Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType)
 {
-
 }
 
 Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType)
 {
 }
 
-Component::Component(const Json::Value& aJson, GameObject* aParent) : myParent(aParent), myIsActive(aJson["IsActive"].asBool()), myType(static_cast<ComponentType>(aJson["Type"].asInt()))
+Component::Component(const Json::Value& aJson) : myParent(nullptr), myIsActive(aJson["IsActive"].asBool()), myType(static_cast<ComponentType>(aJson["Type"].asInt()))
 {
 }
 

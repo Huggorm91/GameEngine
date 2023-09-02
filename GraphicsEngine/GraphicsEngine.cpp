@@ -127,6 +127,18 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 	return true;
 }
 
+void GraphicsEngine::SaveSettings() const
+{
+	Settings settings;
+	settings.defaultMissingTexture = Helpers::string_cast<std::string>(myMissingTexture.GetName());
+	settings.defaultNormalTexture = Helpers::string_cast<std::string>(myDefaultNormalTexture.GetName());
+	settings.defaultMaterialTexture = Helpers::string_cast<std::string>(myDefaultMaterialTexture.GetName());
+	settings.defaultCubeMap = Helpers::string_cast<std::string>(myDefaultCubeMap.GetName());
+	settings.defaultMaterial = myDefaultMaterial.GetName();
+	settings.backgroundColor = myBackgroundColor;
+	SaveSettings(settings);
+}
+
 void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
 {
 	GELogger.SetConsoleHandle(aHandle);
@@ -139,7 +151,9 @@ void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
 
 void GraphicsEngine::Swap()
 {
-
+	assert(false && "Not Implemented!");
+	//CommonUtilities::Swap(myRenderCommands, myUpdateCommands);
+	// Not threadsafe until LineDrawer also swaps buffers!
 }
 
 #ifdef _DEBUG
@@ -712,7 +726,7 @@ GraphicsEngine::Settings GraphicsEngine::LoadSettings()
 	return settings;
 }
 
-void GraphicsEngine::SaveSettings(Settings someSettings)
+void GraphicsEngine::SaveSettings(const Settings& someSettings) const
 {
 	Json::Value json;
 	json["MaterialTexture"] = someSettings.defaultMaterialTexture;

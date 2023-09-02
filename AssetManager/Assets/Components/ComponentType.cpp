@@ -97,14 +97,17 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	case ComponentType::Directionallight:
 	{
+		aParent.AddComponent(DirectionallightComponent(aJson));
 		break;
 	}
 	case ComponentType::Pointlight:
 	{
+		aParent.AddComponent(PointlightComponent(aJson));
 		break;
 	}
 	case ComponentType::Spotlight:
 	{
+		aParent.AddComponent(SpotlightComponent(aJson));
 		break;
 	}
 	case ComponentType::DebugDraw:

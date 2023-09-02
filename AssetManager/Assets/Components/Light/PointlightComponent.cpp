@@ -4,11 +4,11 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddPointlight.h"
 
-PointlightComponent::PointlightComponent(): myRadius(), myIntensity(), myPosition(), myColor(1.f, 1.f, 1.f), myCastShadows(false), myShadowMap(nullptr)
+PointlightComponent::PointlightComponent():Component(ComponentType::Pointlight), myRadius(), myIntensity(), myPosition(), myColor(1.f, 1.f, 1.f), myCastShadows(false), myShadowMap(nullptr)
 {
 }
 
-PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows) : myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
+PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows) :Component(ComponentType::Pointlight), myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
 	if (aCastShadows)
 	{
@@ -16,7 +16,16 @@ PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const
 	}
 }
 
-PointlightComponent::PointlightComponent(const PointlightComponent& aLight) : myRadius(aLight.myRadius), myIntensity(aLight.myIntensity), myPosition(aLight.myPosition), myColor(aLight.myColor), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+PointlightComponent::PointlightComponent(const Json::Value& aJson) :Component(aJson), myRadius(aJson["Radius"].asFloat()), myIntensity(aJson["Intensity"].asFloat()), myPosition(aJson["Position"]), myColor(aJson["Color"]), 
+myCastShadows(aJson["CastShadows"].asBool()), myShadowMap(nullptr)
+{
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
+}
+
+PointlightComponent::PointlightComponent(const PointlightComponent& aLight) :Component(aLight), myRadius(aLight.myRadius), myIntensity(aLight.myIntensity), myPosition(aLight.myPosition), myColor(aLight.myColor), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
 {
 	if (myCastShadows)
 	{
@@ -26,6 +35,7 @@ PointlightComponent::PointlightComponent(const PointlightComponent& aLight) : my
 
 PointlightComponent& PointlightComponent::operator=(const PointlightComponent& aLight)
 {
+	Component::operator=(aLight);
 	myRadius = aLight.myRadius;
 	myIntensity = aLight.myIntensity;
 	myPosition = aLight.myPosition;
@@ -131,6 +141,17 @@ bool PointlightComponent::IsCastingShadows() const
 std::shared_ptr<Texture>& PointlightComponent::GetShadowMap()
 {
 	return myShadowMap;
+}
+
+Json::Value PointlightComponent::ToJson() const
+{
+	Json::Value result = Component::ToJson();
+	result["Position"] = static_cast<Json::Value>(myPosition);
+	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Radius"] = myRadius;
+	result["Intensity"] = myIntensity;
+	result["CastShadows"] = myCastShadows;
+	return result;
 }
 
 const PointlightComponent* PointlightComponent::GetTypePointer() const

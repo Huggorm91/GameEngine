@@ -66,9 +66,11 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 	std::fstream fileStream(path, std::ios::out);
 	if (fileStream)
 	{
+		Json::Value material = aMaterial->ToJson();
+		material["Name"] = path;
 		Json::StreamWriterBuilder builder;
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-		writer->write(aMaterial->ToJson(), &fileStream);
+		writer->write(material, &fileStream);
 		fileStream.flush();
 	}
 	else
