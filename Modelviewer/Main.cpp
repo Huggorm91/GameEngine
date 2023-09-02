@@ -34,10 +34,54 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     setvbuf(consoleOut, nullptr, _IONBF, 1024);
 
 	HWND consoleWindow = GetConsoleWindow();
-    RECT consoleSize;
-    GetWindowRect(consoleWindow, &consoleSize);
-    MoveWindow(consoleWindow, consoleSize.left, consoleSize.top, 1280, 720, true);
+    const CommonUtilities::Vector2i consoleSize = { 1280, 720 };
+    int monitorCount = GetSystemMetrics(SM_CMONITORS);
+    if (monitorCount > 1)
+    {
+        RECT virtualSize;
+        virtualSize.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        virtualSize.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        virtualSize.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        virtualSize.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
+        RECT desktopSize;
+        GetWindowRect(GetDesktopWindow(), &desktopSize);
+        
+        CommonUtilities::Vector2i consolePos;
+        if (virtualSize.left < 0 && desktopSize.right < virtualSize.right) // Secondary monitor to the left
+        {
+            consolePos.x = desktopSize.left - consoleSize.x;
+            consolePos.y = desktopSize.top;
+        }
+        else if (desktopSize.right < virtualSize.right)// Secondary monitor to the right
+        {
+            consolePos.x = virtualSize.right - desktopSize.right;
+            consolePos.y = desktopSize.top;
+        } 
+        else if (virtualSize.top < 0) // Secondary monitor on top
+        {
+            // I am too lazy too account for anything else than the taskbar being on the bottom of the screen
+            RECT taskbar;
+            GetWindowRect(FindWindow(L"Shell_traywnd", NULL), &taskbar);
+            const int taskbarHeight = taskbar.bottom - taskbar.top;
+            consolePos.x = desktopSize.left;
+            consolePos.y = desktopSize.top - consoleSize.y - taskbarHeight;
+        }
+        else // Secondary monitor below
+        {
+            consolePos.x = desktopSize.left;
+            consolePos.y = virtualSize.bottom - desktopSize.bottom;
+        }
+        
+        SetWindowPos(consoleWindow, HWND_TOP, consolePos.x, consolePos.y, consoleSize.x, consoleSize.y, 0);
+    }
+    else
+    {
+        RECT consolePos;
+        GetWindowRect(consoleWindow, &consolePos);
+        MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
+    }
+    
     MV.Initialize(hInstance, windowSize, WinProc, windowTitle);
     return MV.Run();
 }
