@@ -26,10 +26,10 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
-#ifdef _DEBUG
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedIndex(0)
+#ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh)
-#endif // _DEBUG
+#endif // _RETAIL
 {
 }
 
@@ -49,7 +49,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle = Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle);
+	std::wstring stdTitle { Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle)};
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
@@ -103,12 +103,12 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	InitImgui();
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
-#endif // _DEBUG
+#endif // _RETAIL
 
 	HideSplashScreen();
 
@@ -164,6 +164,7 @@ void ModelViewer::ModelViewer::SaveState() const
 	{
 		myLogger.Err("Could not save settings!");
 	}
+	myLogger.Log("Successfully saved settings");
 	fileStream.close();
 }
 
@@ -232,6 +233,7 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 	{
 		myLogger.Err("Could not open file at: " + aPath);
 	}
+	myLogger.Log("Successfully saved scene to: " + path);
 	fileStream.close();
 }
 
@@ -332,7 +334,8 @@ void ModelViewer::Init()
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
 		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
-		mesh.StartAnimation(true);
+		mesh.SetLooping(true);
+		mesh.StartAnimation();
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
 	}
 
@@ -477,13 +480,56 @@ void ModelViewer::ModelViewer::UpdateImgui()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+
+	//ImGui::ShowDemoWindow();
+	CreatePreferenceWindow();
+
+	ImGui::Begin("Selected GameObject");
+	myGameObjects[mySelectedIndex].CreateImGuiWindow("Selected GameObject");
+	ImGui::End();
 }
 
 void ModelViewer::ModelViewer::RenderImgui()
 {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ModelViewer::CreatePreferenceWindow()
+{
+	ImGui::Begin("Preferences");
+	ImGui::SeparatorText("Selected Object");
+	ImGui::DragInt("Index", &mySelectedIndex, 1.f, 0, myGameObjects.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp);
+
+	ImGui::SeparatorText("Launch Settings");
+	ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
+	ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
+
+	ImGui::SeparatorText("Camera Settings");
+	if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
+	{
+		myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
+	}
+	if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
+	{
+		myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
+	}
+	if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
+	{
+		myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
+	}
+	ImGui::Separator();
+	if (ImGui::Button("Save Preferences"))
+	{
+		SaveState();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Save Scene"))
+	{
+		SaveScene("Default");
+	}
+	ImGui::End();
 }
 
 void ModelViewer::UpdateScene()
@@ -493,7 +539,7 @@ void ModelViewer::UpdateScene()
 		model.Update();
 	}
 }
-#ifdef _DEBUG
+#ifndef _RETAIL
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();

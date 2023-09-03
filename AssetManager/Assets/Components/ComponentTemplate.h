@@ -15,10 +15,12 @@ class ExampleComponent : public Component
 public:
 	ExampleComponent(); // Use base constructor: Component(ComponentType::Example)
 	ExampleComponent(const Component& aComponent);
-	// ExampleComponent(const Json::Value& aJson);
+	ExampleComponent(ExampleComponent&& aComponent) noexcept;
+	ExampleComponent(const Json::Value& aJson);
 	~ExampleComponent() = default;
 
-	// ExampleComponent& operator=(const ExampleComponent& aComponent);
+	ExampleComponent& operator=(const ExampleComponent& aComponent);
+	ExampleComponent& operator=(ExampleComponent&& aComponent) noexcept;
 
 	// void Init(const Json::Value& aJson) override;
 	// void Init(GameObject* aParent) override;
@@ -28,7 +30,7 @@ public:
 	// void ToogleActive() override;
 
 	// void ComponentPointersInvalidated() override;
-
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 	const ExampleComponent* GetTypePointer() const override; // return this;
 	Json::Value ToJson() const override;
 

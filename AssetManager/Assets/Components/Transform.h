@@ -22,8 +22,10 @@ public:
 	const CommonUtilities::Vector3f& GetWorldPosition() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
 
-	Json::Value ToJson() const;
 	bool HasChanged() const;
+
+	void CreateImGuiComponents(const std::string& aWindowName);
+	Json::Value ToJson() const;
 
 private:
 	bool myHasChanged;

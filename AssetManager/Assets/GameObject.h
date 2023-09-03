@@ -13,7 +13,7 @@ public:
 	~GameObject() = default;
 
 	GameObject& operator=(const GameObject& aGameObject);
-	GameObject& operator=(GameObject&& aGameObject);
+	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
 	void Update();
 
@@ -47,9 +47,13 @@ public:
 	void ToogleActive();
 	bool IsActive() const;
 
+	void SetName(const std::string& aName);
+	const std::string& GetName() const;
+
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
 
+	void CreateImGuiWindow(const std::string& aWindowName);
 	Json::Value ToJson() const;
 	void ToBinary(std::ofstream& aStream) const;
 
@@ -58,19 +62,20 @@ public:
 
 private:
 	friend class Component;
+	static unsigned localIDCount;
 
-	CommonUtilities::Blackboard<unsigned> myComponents;
-	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
+	bool myIsActive;
+	const unsigned myID;
+	unsigned myCount;
+	std::string myName;
+	std::string myImguiText;
+	Transform myTransform;
+
 #ifdef _DEBUG
 	std::vector<const Component*> myDebugPointers;
 #endif // _DEBUG
-
-	Transform myTransform;
-	unsigned myCount;
-	const unsigned myID;
-	bool myIsActive;
-
-	static unsigned localIDCount;
+	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
+	CommonUtilities::Blackboard<unsigned> myComponents;
 };
 
 template<class T>

@@ -43,6 +43,7 @@ public:
 	void BoundsHasChanged() const;
 	const std::string& GetName() const;
 
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	const MeshComponent* GetTypePointer() const override;
 

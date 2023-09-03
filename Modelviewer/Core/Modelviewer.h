@@ -10,14 +10,14 @@
 
 class SplashWindow;
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 #include <InputHandler.h>
 class ModelViewer: public CommonUtilities::InputObserver
 {
 #else
 class ModelViewer
 {
-#endif // _DEBUG
+#endif // _RETAIL
 public:
 // Singleton Getter.
 	static ModelViewer& Get() {
@@ -37,17 +37,18 @@ public:
 
 	void SaveState() const;
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
 	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
-#endif // _DEBUG
+#endif // _RETAIL
 
 private:
-#ifdef _DEBUG
+#ifndef _RETAIL
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
-#endif // _DEBUG
+	int mySelectedIndex;
+#endif // _RETAIL
 	HINSTANCE myModuleHandle{ nullptr };
 	HWND myMainWindowHandle{ nullptr };
 
@@ -80,4 +81,6 @@ private:
 	void InitImgui();
 	void UpdateImgui();
 	void RenderImgui();
+
+	void CreatePreferenceWindow();
 };

@@ -199,6 +199,15 @@ const std::string& MeshComponent::GetName() const
 	return myName;
 }
 
+void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	Component::CreateImGuiComponents(aWindowName);
+	ImGui::Checkbox("Render Shadow", &myRenderShadow);
+	ImGui::ColorEdit4("Color", (float*)&myColor);
+	// Add editor for Elements
+	myTransform.CreateImGuiComponents(aWindowName);
+}
+
 Json::Value MeshComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();

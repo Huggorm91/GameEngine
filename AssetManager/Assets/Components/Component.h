@@ -2,6 +2,8 @@
 #include <Container/Blackboard.hpp>
 #include <JsonVector.hpp>
 #include "ComponentType.h"
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
 
 // A template to build new components can be found in ComponentTemplate.h
 
@@ -17,10 +19,12 @@ public:
 	Component();
 	Component(ComponentType aType);
 	Component(const Component& aComponent);
+	Component(Component&& aComponent) noexcept;
 	Component(const Json::Value& aJson);
 	virtual ~Component() = default;
 
 	virtual Component& operator=(const Component& aComponent);
+	virtual Component& operator=(Component&& aComponent) noexcept;
 
 	virtual void Init(const Json::Value& aJson);
 	virtual void Init(GameObject* aParent);
@@ -30,20 +34,27 @@ public:
 	GameObject& GetParent();
 
 	ComponentType GetType() const;
+	unsigned GetID() const;
 
 	virtual void SetActive(bool aIsActive);
 	virtual void ToogleActive();
 	bool IsActive() const;
 
 	virtual void ComponentPointersInvalidated();
-
+	virtual void CreateImGuiComponents(const std::string& aWindowName);
 	virtual Json::Value ToJson() const;
 	virtual const Component* GetTypePointer() const;
+
+	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
+	static unsigned GetIDCount() { return localIDCount; }
 
 protected:
 	GameObject* myParent;
 	ComponentType myType;
+	const int myID;
 	bool myIsActive;
+
+	static unsigned localIDCount;
 
 	const CommonUtilities::Blackboard<unsigned int>& GetComponentContainer() const;
 	CommonUtilities::Blackboard<unsigned int>& GetComponentContainer();

@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include <Conversions.hpp>
 #include <JsonVector.hpp>
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
 
 Transform::Transform(): myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform()
 {
@@ -64,6 +65,32 @@ const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
 	return myTransform;
 }
 
+bool Transform::HasChanged() const
+{
+	return myHasChanged;
+}
+
+void Transform::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+	if (ImGui::TreeNode("Transform"))
+	{
+		if (ImGui::DragFloat3("Position", &myPosition.x))
+		{
+			myHasChanged = true;
+		}
+		if (ImGui::DragFloat3("Rotation", &myRotation.x))
+		{
+			myHasChanged = true;
+		}
+		if (ImGui::DragFloat3("Scale", &myScale.x))
+		{
+			myHasChanged = true;
+		}
+		ImGui::TreePop();
+	}	
+}
+
 Json::Value Transform::ToJson() const
 {
 	Json::Value result;
@@ -71,11 +98,6 @@ Json::Value Transform::ToJson() const
 	result["Rotation"] = static_cast<Json::Value>(myRotation);
 	result["Scale"] = static_cast<Json::Value>(myScale);
 	return result;
-}
-
-bool Transform::HasChanged() const
-{
-	return myHasChanged;
 }
 
 void Transform::UpdateTransform()
