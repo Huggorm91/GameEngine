@@ -4,6 +4,7 @@
 struct ApplicationState
 {
 	bool StartMaximized{};
+	float AmbientIntensity{};
 	float CameraSpeed{};
 	float CameraRotationSpeed{};
 	float CameraMouseSensitivity{};

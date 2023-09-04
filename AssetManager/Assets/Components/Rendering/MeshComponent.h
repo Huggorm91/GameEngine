@@ -53,6 +53,7 @@ protected:
 	CommonUtilities::Vector4f myColor;
 	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
+	CommonUtilities::Matrix4x4f myTransformMatrix;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 };

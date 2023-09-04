@@ -18,9 +18,8 @@ struct SpotlightData
     float3 LightDirection;
     float InnerAngle;
     float OuterAngle;
-    float ConeIntensityDifference; // Potentially remove
 
-    float2 padding;
+    float3 padding;
 };
 
 cbuffer LightBuffer : register(b2)
@@ -32,10 +31,5 @@ cbuffer LightBuffer : register(b2)
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];
-    
-#ifdef _DEBUG
-    int LB_LightMode;
-    float3 paddinglb;
-#endif // _DEBUG
 }
 #endif // LIGHTBUFFER_HLSLI

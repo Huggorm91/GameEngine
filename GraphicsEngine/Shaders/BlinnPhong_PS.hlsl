@@ -4,7 +4,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
 {
     DefaultPixelOutput result;
     
-#ifdef _DEBUG
+#ifndef _RETAIL
     switch(FB_DebugMode)
     {
     default:
@@ -29,7 +29,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
     
-#ifdef _DEBUG
+#ifndef _RETAIL
         break;
     }
     case 1:

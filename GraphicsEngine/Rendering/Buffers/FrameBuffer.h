@@ -10,9 +10,9 @@ struct FrameBufferData
 	float DeltaTime = 0.f;
 	double TotalTime = 0.f;
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	int myDebugMode;
-	float padding;
+	int myLightMode;
 #else
 	double padding;
 #endif // _DEBUG

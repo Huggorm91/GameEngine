@@ -31,7 +31,6 @@ float3 GetPhongSpotLightValue(float3 aPosition, float3 aPixelNormal, float3 aV, 
     const float3 kS = lerp(aSpotLight.Color, aColor, MB_Metalness) * pow(nDotH, MB_Shininess);
     
     const float widthAttenuation = saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(cos(aSpotLight.InnerAngle) - cos(aSpotLight.OuterAngle), 0.00001f));
-    //const float widthAttenuation = Pow2(saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(aSpotLight.ConeIntensityDifference, 0.00001f)));
     const float attenuation = saturate(widthAttenuation * GetRangeAttenuation(distance(aPosition, aSpotLight.Position), max(aSpotLight.Range, 0.00001f)));
     
     return (kD + kS) * attenuation * aSpotLight.Intensity;
@@ -72,40 +71,40 @@ float3 GetBlinnPhongLight(float3 aPosition, float3 aPixelNormal, float3 aColor)
     float3 result = 0;
     const float3 v = normalize(FB_CameraPosition - aPosition);
     
-#ifdef _DEBUG
-    if(LB_LightMode == 5)
+#ifndef _RETAIL
+    if(FB_LightMode == 5)
     {
         result = aColor;
     }
     
-    if(LB_LightMode == 0 || LB_LightMode == 1)
+    if(FB_LightMode == 0 || FB_LightMode == 1)
     {
 #endif
     result = GetPhongAmbientlight(aPixelNormal, v, aColor);
-#ifdef _DEBUG
+#ifndef _RETAIL
     }
-    if(LB_LightMode == 0 || LB_LightMode == 2)
+    if(FB_LightMode == 0 || FB_LightMode == 2)
     {
 #endif
     result += GetPhongDirectionallight(aPosition, aPixelNormal, v, aColor);
-    #ifdef _DEBUG
+    #ifndef _RETAIL
     }
 #endif
     [unroll]
     for (int i = 0; i < MAX_LIGHTSOURCES; i++)
     {
-#ifdef _DEBUG
-    if(LB_LightMode == 0 || LB_LightMode == 3)
+#ifndef _RETAIL
+    if(FB_LightMode == 0 || FB_LightMode == 3)
     {
 #endif    
         result += GetPhongPointlightValue(aPosition, aPixelNormal, v, LB_Pointlights[i], aColor);
-#ifdef _DEBUG
+#ifndef _RETAIL
     }
-    if(LB_LightMode == 0 || LB_LightMode == 4)
+    if(FB_LightMode == 0 || FB_LightMode == 4)
     {
 #endif
         result += GetPhongSpotLightValue(aPosition, aPixelNormal, v, LB_Spotlights[i], aColor);
-#ifdef _DEBUG
+#ifndef _RETAIL
     }
 #endif
     }

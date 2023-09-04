@@ -32,6 +32,7 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	const PointlightComponent* GetTypePointer() const override;
 

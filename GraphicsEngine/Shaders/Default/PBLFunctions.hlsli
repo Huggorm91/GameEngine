@@ -104,41 +104,41 @@ float3 GetPblLight(LightData someData, float3 anAlbedoColor, float anOcclusion)
     someData.kInverse = 1 - someData.k;
     someData.nDotV = saturate(dot(someData.pixelNormal, someData.v));
     
-#ifdef _DEBUG
-    if(LB_LightMode == 5)
+#ifndef _RETAIL
+    if(FB_LightMode == 5)
     {
         result = anAlbedoColor;
     }
     
-    if(LB_LightMode == 0 || LB_LightMode == 1)
+    if (FB_LightMode == 0 || FB_LightMode == 1)
     {
 #endif    
     result = GetPblAmbientlight(someData, anOcclusion, diffuseColor);
-#ifdef _DEBUG
+#ifndef _RETAIL
     }
-    if(LB_LightMode == 0 || LB_LightMode == 2)
+    if (FB_LightMode == 0 || FB_LightMode == 2)
     {
 #endif
     result += GetPblDirectionallight(someData);
-#ifdef _DEBUG
+#ifndef _RETAIL
     }
 #endif
     [unroll]
     for (int i = 0; i < MAX_LIGHTSOURCES; i++)
     {
-#ifdef _DEBUG
-    if(LB_LightMode == 0 || LB_LightMode == 3)
+#ifndef _RETAIL
+    if(FB_LightMode == 0 || FB_LightMode == 3)
     {
 #endif    
         result += GetPblPointlightValue(someData, LB_Pointlights[i]);    
-#ifdef _DEBUG
-    }
-    if(LB_LightMode == 0 || LB_LightMode == 4)
+#ifndef _RETAIL
+        }
+    if(FB_LightMode == 0 || FB_LightMode == 4)
     {
 #endif
         result += GetPblSpotlightValue(someData, LB_Spotlights[i]);
-#ifdef _DEBUG
-    }
+#ifndef _RETAIL
+        }
 #endif
     }
     return result;

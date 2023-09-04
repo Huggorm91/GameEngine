@@ -120,7 +120,8 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	Init();
+	LoadScene("Default");
+	//Init();
 	CommonUtilities::Timer::Init();
 
 	bool isRunning = true;
@@ -396,7 +397,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, 1.f });
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -407,7 +408,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 200.f, 300.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, -1.f });
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -447,7 +448,7 @@ void ModelViewer::Update()
 	UpdateImgui();
 
 	myCamera.Update();
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();
@@ -519,7 +520,11 @@ void ModelViewer::CreatePreferenceWindow()
 	{
 		myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
 	}
-	ImGui::Separator();
+
+	ImGui::SeparatorText("Scene Settings");
+	ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.001f, 0.f);
+
+	ImGui::SeparatorText("");
 	if (ImGui::Button("Save Preferences"))
 	{
 		SaveState();
