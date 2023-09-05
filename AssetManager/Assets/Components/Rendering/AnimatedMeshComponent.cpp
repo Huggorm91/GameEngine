@@ -6,19 +6,18 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include <Timer.h>
 
-AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myCurrentFrame(1),
-myAnimationState(AnimationState::Stopped)
+AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped), myIsLooping(false)
 {
 }
 
 AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton) : MeshComponent(aMesh, anElementList, aPath, ComponentType::AnimatedMesh), myBoneTransformCache(),
-mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped)
+mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped), myIsLooping(false)
 {
 }
 
 AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aComponent) : MeshComponent(aComponent), myBoneTransformCache(aComponent.myBoneTransformCache),
 mySkeleton(aComponent.mySkeleton), myAnimation(aComponent.myAnimation), myAnimationTimer(aComponent.myAnimationTimer), myCurrentFrame(aComponent.myCurrentFrame),
-myAnimationState(aComponent.myAnimationState)
+myAnimationState(aComponent.myAnimationState), myIsLooping(aComponent.myIsLooping)
 {
 }
 
@@ -93,15 +92,38 @@ void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const 
 	ComponentPointersInvalidated();
 }
 
+void AnimatedMeshComponent::SetLooping(bool aIsLooping)
+{
+	myIsLooping = aIsLooping;
+	if (myAnimationState != AnimationState::Stopped)
+	{
+		StartAnimation();
+	}
+}
+
+void AnimatedMeshComponent::ToogleLooping()
+{
+	myIsLooping = !myIsLooping;
+	if (myAnimationState != AnimationState::Stopped)
+	{
+		StartAnimation();
+	}
+}
+
+bool AnimatedMeshComponent::IsLooping() const
+{
+	return myIsLooping;
+}
+
 void AnimatedMeshComponent::SetAnimation(const Animation& anAnimation)
 {
 	myAnimation = anAnimation;
 	UpdateCache();
 }
 
-void AnimatedMeshComponent::StartAnimation(bool aIsLooping)
+void AnimatedMeshComponent::StartAnimation()
 {
-	if (aIsLooping)
+	if (myIsLooping)
 	{
 		myAnimationState = AnimationState::Looping;
 	}
@@ -142,6 +164,38 @@ const Skeleton& AnimatedMeshComponent::GetSkeleton() const
 const std::array<CommonUtilities::Matrix4x4f, 128>& AnimatedMeshComponent::GetBoneTransforms() const
 {
 	return myBoneTransformCache;
+}
+
+void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	MeshComponent::CreateImGuiComponents(aWindowName);
+	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation.GetName()), ImGuiInputTextFlags_ReadOnly);
+	if (ImGui::Checkbox("Loop", &myIsLooping) && myAnimationState != AnimationState::Stopped)
+	{
+		StartAnimation();
+	}
+
+	ImGui::PushItemWidth(100.f);
+	ImGui::InputFloat("Timer", &myAnimationTimer, 0.f, 0.f, "%.4f", ImGuiInputTextFlags_ReadOnly);
+	ImGui::SameLine();
+	std::string frame = std::to_string(myCurrentFrame);
+	ImGui::InputText("Frame", &frame, ImGuiInputTextFlags_ReadOnly);
+	ImGui::PopItemWidth();
+
+	if (ImGui::Button("Start"))
+	{
+		StartAnimation();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Stop"))
+	{
+		StopAnimation();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Pause"))
+	{
+		PauseAnimation();
+	}
 }
 
 Json::Value AnimatedMeshComponent::ToJson() const

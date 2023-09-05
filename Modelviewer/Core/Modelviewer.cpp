@@ -26,11 +26,18 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWindowProcess, LPCWSTR aWindowTitle)
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedIndex(0)
+#ifndef _RETAIL
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh)
+#endif // _RETAIL
+{
+}
+
+bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 {
 	myLogger = Logger::Create("ModelViewer");
-
 	myModuleHandle = aHInstance;
+	LoadState();
 
 	constexpr LPCWSTR windowClassName = L"ModelViewerMainWindow";
 
@@ -42,23 +49,41 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
+	std::wstring stdTitle { Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle)};
+	LPCWSTR title{ stdTitle.c_str() };
+
+	DWORD flags;
+	if (myApplicationState.StartMaximized)
+	{
+		flags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_MAXIMIZE;
+	}
+	else
+	{
+		flags = WS_OVERLAPPEDWINDOW | WS_POPUP;
+	}
+
 	// Get center of screen
 	RECT windowRect;
-	GetClientRect(GetDesktopWindow(), &windowRect);
-	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (aWindowSize.cx * 0.5f));
-	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (aWindowSize.cy * 0.5f));
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
+	//GetClientRect(GetDesktopWindow(), &windowRect);
 
-	// Then we use the class to create our window
+	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (myApplicationState.WindowSize.x * 0.5f));
+	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (myApplicationState.WindowSize.y * 0.5f));
+	windowRect.right = myApplicationState.WindowSize.x;
+	windowRect.bottom = myApplicationState.WindowSize.y;
+
 	myMainWindowHandle = CreateWindow(
-		windowClassName,                                // Classname
-		aWindowTitle,                                    // Window Title
-		WS_OVERLAPPEDWINDOW | WS_POPUP,    // Flags
-		windowRect.left,
-		windowRect.top,
-		aWindowSize.cx,
-		aWindowSize.cy,
-		nullptr, nullptr, nullptr,
-		nullptr
+		windowClassName,	// Classname
+		title,				// Window Title
+		flags,				// Flags / Style
+		windowRect.left,	// x coord
+		windowRect.top,		// y coord
+		windowRect.right,	// width
+		windowRect.bottom,	// height
+		nullptr,			// Parent hwnd
+		nullptr,			// hMenu
+		nullptr,			// hInstance
+		nullptr				// lpParam
 	);
 
 	ShowSplashScreen();
@@ -72,17 +97,18 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, SIZE aWindowSize, WNDPROC aWi
 #else
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, true);
 #endif // _RETAIL	
-	myCamera.Init({ static_cast<float>(aWindowSize.cx), static_cast<float>(aWindowSize.cy) });
+	//myCamera.Init({ static_cast<float>(windowSize.cx), static_cast<float>(windowSize.cy) });
+	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
 	AssetManager::GeneratePrimitives();
 
 	InitImgui();
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
-#endif // _DEBUG
+#endif // _RETAIL
 
 	HideSplashScreen();
 
@@ -94,7 +120,8 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	Init();
+	LoadScene("Default");
+	//Init();
 	CommonUtilities::Timer::Init();
 
 	bool isRunning = true;
@@ -122,6 +149,41 @@ int ModelViewer::Run()
 	ImGui::DestroyContext();
 
 	return 0;
+}
+
+void ModelViewer::ModelViewer::SaveState() const
+{
+	std::fstream fileStream(mySettingsPath, std::ios::out);
+	if (fileStream)
+	{
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(myApplicationState, &fileStream);
+		fileStream.flush();
+	}
+	else
+	{
+		myLogger.Err("Could not save settings!");
+	}
+	myLogger.Log("Successfully saved settings");
+	fileStream.close();
+}
+
+void ModelViewer::ModelViewer::LoadState()
+{
+	std::fstream fileStream(mySettingsPath, std::ios::in);
+	if (fileStream)
+	{
+		Json::Value json;
+		fileStream >> json;
+		fileStream.flush();
+		myApplicationState = json;
+	}
+	else
+	{
+		myLogger.Err("Could not load settings!");
+	}
+	fileStream.close();
 }
 
 void ModelViewer::ShowSplashScreen()
@@ -172,6 +234,7 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 	{
 		myLogger.Err("Could not open file at: " + aPath);
 	}
+	myLogger.Log("Successfully saved scene to: " + path);
 	fileStream.close();
 }
 
@@ -217,13 +280,13 @@ void ModelViewer::Init()
 		mesh.SetColor(GetColor(eColor::White));
 		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
-	
+
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
 	myGameObjects.back().SetPosition({ 200.f, 0.f, 500.f });
 	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	
+
 	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
 	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
 	//myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
@@ -272,7 +335,8 @@ void ModelViewer::Init()
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
 		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
-		mesh.StartAnimation(true);
+		mesh.SetLooping(true);
+		mesh.StartAnimation();
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
 	}
 
@@ -333,7 +397,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, 1.f });
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -344,7 +408,7 @@ void ModelViewer::Init()
 	{
 		myGameObjects.back().SetPosition({ 0.f, 200.f, 300.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, 1.f, { 0.f, -1.f, -1.f });
+		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
 		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
@@ -381,16 +445,16 @@ void ModelViewer::Update()
 	CommonUtilities::Timer::Update();
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
-	//UpdateImgui();
+	UpdateImgui();
 
 	myCamera.Update();
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, 1.f));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
-	//RenderImgui();
+	RenderImgui();
 
 	engine.EndFrame();
 }
@@ -405,6 +469,8 @@ void ModelViewer::ModelViewer::InitImgui()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 
+	//ImGui::StyleColorsLight();
+
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(myMainWindowHandle);
 	ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
@@ -415,13 +481,60 @@ void ModelViewer::ModelViewer::UpdateImgui()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+
+	//ImGui::ShowDemoWindow();
+	CreatePreferenceWindow();
+
+	ImGui::Begin("Selected GameObject");
+	myGameObjects[mySelectedIndex].CreateImGuiWindow("Selected GameObject");
+	ImGui::End();
 }
 
 void ModelViewer::ModelViewer::RenderImgui()
 {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ModelViewer::CreatePreferenceWindow()
+{
+	ImGui::Begin("Preferences");
+	ImGui::SeparatorText("Selected Object");
+	ImGui::DragInt("Index", &mySelectedIndex, 1.f, 0, myGameObjects.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp);
+
+	ImGui::SeparatorText("Launch Settings");
+	ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
+	ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
+
+	ImGui::SeparatorText("Camera Settings");
+	if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
+	{
+		myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
+	}
+	if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
+	{
+		myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
+	}
+	if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
+	{
+		myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
+	}
+
+	ImGui::SeparatorText("Scene Settings");
+	ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.001f, 0.f);
+
+	ImGui::SeparatorText("");
+	if (ImGui::Button("Save Preferences"))
+	{
+		SaveState();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Save Scene"))
+	{
+		SaveScene("Default");
+	}
+	ImGui::End();
 }
 
 void ModelViewer::UpdateScene()
@@ -431,7 +544,7 @@ void ModelViewer::UpdateScene()
 		model.Update();
 	}
 }
-#ifdef _DEBUG
+#ifndef _RETAIL
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();

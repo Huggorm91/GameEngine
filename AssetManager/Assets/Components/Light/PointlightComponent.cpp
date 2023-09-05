@@ -143,6 +143,16 @@ std::shared_ptr<Texture>& PointlightComponent::GetShadowMap()
 	return myShadowMap;
 }
 
+void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	Component::CreateImGuiComponents(aWindowName);
+	ImGui::Checkbox("Cast Shadow", &myCastShadows);
+	ImGui::DragFloat("Intensity", &myIntensity);
+	ImGui::ColorEdit3("Color", &myColor.x);
+	ImGui::DragFloat("Radius", &myRadius);
+	ImGui::DragFloat3("Position", &myPosition.x);
+}
+
 Json::Value PointlightComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();

@@ -8,9 +8,9 @@ cbuffer FrameBuffer : register(b0)
 	float FB_DeltaTime;
 	double FB_TotalTime;
 	
-#ifdef _DEBUG
+#ifndef _RETAIL
 	int FB_DebugMode;
-	float paddingfb;
+    int FB_LightMode;
 #else
     double paddingfb;	
 #endif

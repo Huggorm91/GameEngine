@@ -16,7 +16,6 @@ private:
 	float myIntensity;
 	float myInnerAngle;
 	float myOuterAngle;
-	float myConeIntensityDifference;
 	std::shared_ptr<Texture> myShadowMap;
 	CommonUtilities::Vector3f myPosition;
 	CommonUtilities::Vector3f myLightDirection;

@@ -19,7 +19,7 @@ public:
 		static GraphicsEngine myInstance; return myInstance;
 	}
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	enum class DebugMode
 	{
 		Default,
@@ -63,7 +63,7 @@ public:
 
 	RenderMode SetRenderMode(RenderMode aMode);
 	RenderMode NextRenderMode();
-#endif // _DEBUG
+#endif // !_RETAIL
 
 /**
  * Initializes the Graphics Engine with the specified settings.
@@ -145,13 +145,10 @@ private:
 		std::vector<std::vector<std::shared_ptr<GfxCmd_RenderMesh>>> meshCommands {};
 	};
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	DebugMode myDebugMode = DebugMode::Default;
 	LightMode myLightMode = LightMode::Default;
 	RenderMode myRenderMode = RenderMode::Mesh;
-#endif // _DEBUG
-
-#ifndef _RETAIL
 	LineDrawer::LineHandle myGrid;
 #endif // !_RETAIL	
 

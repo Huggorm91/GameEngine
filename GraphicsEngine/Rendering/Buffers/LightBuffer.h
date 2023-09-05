@@ -25,9 +25,8 @@ struct SpotlightData
 	CommonUtilities::Vector3f myLightDirection;
 	float myInnerAngle;
 	float myOuterAngle;
-	float myConeIntensityDifference;
 
-	CommonUtilities::Vector2f padding;
+	CommonUtilities::Vector3f padding;
 };
 
 struct LightBufferData
@@ -41,11 +40,6 @@ struct LightBufferData
 
 	PointlightData myPointlights[MAX_LIGHTS];
 	SpotlightData mySpotlights[MAX_LIGHTS];
-
-#ifdef _DEBUG
-	int myLightMode;
-	CommonUtilities::Vector3f padding;
-#endif // _DEBUG
 };
 
 typedef ConstantBuffer<LightBufferData> LightBuffer;

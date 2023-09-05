@@ -8,9 +8,9 @@ class AnimatedMeshComponent: public MeshComponent
 public:
 	enum class AnimationState
 	{
-		Stopped,
+		PlayOnce,
 		Looping,
-		PlayOnce
+		Stopped
 	};
 
 	AnimatedMeshComponent();
@@ -23,9 +23,12 @@ public:
 	void Init(const Json::Value& aJson) override;
 	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton);
 
-	void SetAnimation(const Animation& anAnimation);
+	void SetLooping(bool aIsLooping);
+	void ToogleLooping();
+	bool IsLooping() const;
 
-	void StartAnimation(bool aIsLooping = false);
+	void SetAnimation(const Animation& anAnimation);
+	void StartAnimation();
 	void StopAnimation();
 	void PauseAnimation();
 
@@ -34,6 +37,7 @@ public:
 	const Skeleton& GetSkeleton() const;
 	const std::array<CommonUtilities::Matrix4x4f, 128>& GetBoneTransforms() const;
 
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	const AnimatedMeshComponent* GetTypePointer() const override;
 
@@ -45,6 +49,7 @@ private:
 	float myAnimationTimer;
 	unsigned int myCurrentFrame;
 	AnimationState myAnimationState;
+	bool myIsLooping;
 
 	void UpdateCache();
 	void UpdateHeirarchy(unsigned int anIndex, const CommonUtilities::Matrix4x4f& aParentMatrix);

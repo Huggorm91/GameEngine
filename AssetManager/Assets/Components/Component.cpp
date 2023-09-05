@@ -2,23 +2,37 @@
 #include "Component.h"
 #include "../GameObject.h"
 
-Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentType::Unknown)
+unsigned int Component::localIDCount = 0;
+
+Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentType::Unknown), myID(localIDCount++)
 {
 }
 
-Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType)
+Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType), myID(localIDCount++)
 {
 }
 
-Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType)
+Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(localIDCount++)
 {
 }
 
-Component::Component(const Json::Value& aJson) : myParent(nullptr), myIsActive(aJson["IsActive"].asBool()), myType(static_cast<ComponentType>(aJson["Type"].asInt()))
+Component::Component(Component&& aComponent) noexcept : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(aComponent.myID)
+{
+}
+
+Component::Component(const Json::Value& aJson) : myParent(nullptr), myIsActive(aJson["IsActive"].asBool()), myType(static_cast<ComponentType>(aJson["Type"].asInt())), myID(aJson["ID"].asUInt())
 {
 }
 
 Component& Component::operator=(const Component& aComponent)
+{
+	myParent = aComponent.myParent;
+	myIsActive = aComponent.myIsActive;
+	myType = aComponent.myType;
+	return *this;
+}
+
+Component& Component::operator=(Component&& aComponent) noexcept
 {
 	myParent = aComponent.myParent;
 	myIsActive = aComponent.myIsActive;
@@ -56,6 +70,11 @@ ComponentType Component::GetType() const
 	return myType;
 }
 
+unsigned Component::GetID() const
+{
+	return myID;
+}
+
 void Component::SetActive(bool aIsActive)
 {
 	myIsActive = aIsActive;
@@ -75,11 +94,18 @@ void Component::ComponentPointersInvalidated()
 {
 }
 
+void Component::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
+	ImGui::Checkbox("Active", &myIsActive);
+}
+
 Json::Value Component::ToJson() const
 {
 	Json::Value result;
 	result["IsActive"] = myIsActive;
 	result["Type"] = static_cast<int>(myType);
+	result["ID"] = myID;
 #ifdef _DEBUG
 	result["TypeName"] = ComponentTypeToString(myType);
 #endif // _DEBUG

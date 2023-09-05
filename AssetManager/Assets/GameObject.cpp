@@ -4,11 +4,17 @@
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(localIDCount++)
+GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(localIDCount++), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+#ifdef _DEBUG
+, myDebugPointers()
+#endif // _DEBUG
 {
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(localIDCount++)
+GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(localIDCount++), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+#ifdef _DEBUG
+, myDebugPointers()
+#endif // _DEBUG
 {
 	const Component* pointer = nullptr;
 	for (auto [type, index] : aGameObject.myIndexList)
@@ -18,7 +24,10 @@ GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexL
 	}
 }
 
-GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), myID(aGameObject.myID)
+GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
+#ifdef _DEBUG
+, myDebugPointers()
+#endif // _DEBUG
 {
 	for (auto [type, index] : myIndexList)
 	{
@@ -29,7 +38,10 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameOb
 	}
 }
 
-GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt())
+GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName)
+#ifdef _DEBUG
+, myDebugPointers()
+#endif // _DEBUG
 {
 	for (auto& jsonComponent : aJson["Components"])
 	{
@@ -42,8 +54,13 @@ GameObject& GameObject::operator=(const GameObject& aGameObject)
 	myCount = 0;
 	myComponents.Clear();
 	myIndexList.clear();
+#ifdef _DEBUG
+	myDebugPointers.clear();
+#endif // _DEBUG
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
+	myName = aGameObject.myName;
+	myImguiText = myName;
 
 	const Component* pointer = nullptr;
 	for (auto [type, index] : aGameObject.myIndexList)
@@ -54,13 +71,18 @@ GameObject& GameObject::operator=(const GameObject& aGameObject)
 	return *this;
 }
 
-GameObject& GameObject::operator=(GameObject&& aGameObject)
+GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 {
+#ifdef _DEBUG
+	myDebugPointers.clear();
+#endif // _DEBUG
 	myCount = aGameObject.myCount;
 	myComponents = aGameObject.myComponents;
 	myIndexList = aGameObject.myIndexList;
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
+	myName = aGameObject.myName;
+	myImguiText = myName;
 
 	for (auto [type, index] : myIndexList)
 	{
@@ -147,6 +169,16 @@ bool GameObject::IsActive() const
 	return myIsActive;
 }
 
+void GameObject::SetName(const std::string& aName)
+{
+	myName = aName;
+}
+
+const std::string& GameObject::GetName() const
+{
+	return myName;
+}
+
 unsigned int GameObject::GetComponentCount() const
 {
 	return myCount;
@@ -157,17 +189,46 @@ unsigned int GameObject::GetID() const
 	return myID;
 }
 
+void GameObject::CreateImGuiWindow(const std::string& aWindowName)
+{
+	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		std::string id = "ID: " + std::to_string(myID);
+		ImGui::Text(id.c_str());
+		ImGui::Checkbox("Active", &myIsActive);
+		if (ImGui::InputText("Name", &myImguiText, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			myName = myImguiText;
+		}
+		myTransform.CreateImGuiComponents(aWindowName);
+		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Component* component = nullptr;
+			std::string text;
+			for (auto [type, index] : myIndexList)
+			{
+				component = myComponents.ChangeValueUnsafe<Component>(index);
+				text = ComponentTypeToString(component->GetType()) + " " + std::to_string(component->GetID());
+				ImGui::SetNextItemOpen(true, ImGuiCond_::ImGuiCond_Appearing);
+				if (ImGui::TreeNode(text.c_str(), ComponentTypeToString(component->GetType()).c_str()))
+				{
+					component->CreateImGuiComponents(aWindowName);
+					ImGui::TreePop();
+				}
+			}
+		}
+	}
+}
+
 Json::Value GameObject::ToJson() const
 {
 	Json::Value result;
-	Json::String comment("// ID: " + std::to_string(myID));
-	result["Components"].setComment(comment, Json::CommentPlacement::commentBefore);
-
 	result["IsActive"] = myIsActive;
 	result["ID"] = myID;
+	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();
-	result["Components"] = Json::arrayValue;
 
+	result["Components"] = Json::arrayValue;
 	const Component* component = nullptr;
 	unsigned i = 0;
 	for (auto [type, index] : myIndexList)

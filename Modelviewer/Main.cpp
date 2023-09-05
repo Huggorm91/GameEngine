@@ -82,7 +82,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
     }
     
-    MV.Initialize(hInstance, windowSize, WinProc, windowTitle);
+    MV.Initialize(hInstance, WinProc);
     return MV.Run();
 }
 

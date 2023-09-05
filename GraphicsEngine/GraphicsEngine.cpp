@@ -12,14 +12,11 @@
 #include <fstream>
 #include <Sort.hpp>
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(),
-myDefaultMaterialTexture(), myDefaultCubeMap(), myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
-#ifdef _DEBUG
-, myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh)
-#endif // _DEBUG
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"), myRenderCommands(&myFirstCommandlist), 
+myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(),
+myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
 #ifndef _RETAIL
-, myGrid()
+,myDebugMode(DebugMode::Default), myLightMode (LightMode::Default), myRenderMode (RenderMode::Mesh) ,myGrid()
 #endif // !_RETAIL	
 {
 }
@@ -156,7 +153,7 @@ void GraphicsEngine::Swap()
 	// Not threadsafe until LineDrawer also swaps buffers!
 }
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 {
 	myDebugMode = aMode;
@@ -293,7 +290,7 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 		return myLightMode;
 	}
 
-	myLightBuffer.Data.myLightMode = static_cast<int>(myLightMode);
+	myFrameBuffer.Data.myLightMode = static_cast<int>(myLightMode);
 	RHI::UpdateConstantBufferData(myLightBuffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, myLightBuffer);
 
@@ -341,7 +338,7 @@ GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 {
 	return SetRenderMode(static_cast<RenderMode>(static_cast<int>(myRenderMode) + 1));
 }
-#endif // _DEBUG
+#endif // _RETAIL
 
 void GraphicsEngine::BeginFrame()
 {

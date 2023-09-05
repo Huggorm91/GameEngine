@@ -43,6 +43,7 @@ public:
 	void BoundsHasChanged() const;
 	const std::string& GetName() const;
 
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	const MeshComponent* GetTypePointer() const override;
 
@@ -52,6 +53,7 @@ protected:
 	CommonUtilities::Vector4f myColor;
 	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
+	CommonUtilities::Matrix4x4f myTransformMatrix;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 };

@@ -4,13 +4,19 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddSpotlight.h"
 
-SpotlightComponent::SpotlightComponent() :Component(ComponentType::Spotlight), myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myConeIntensityDifference(), myPosition(), myLightDirection(), myColor(), myCastShadows(false), myShadowMap(nullptr)
+SpotlightComponent::SpotlightComponent() :Component(ComponentType::Spotlight), myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myPosition(), myLightDirection(), myColor(), myCastShadows(false), myShadowMap(nullptr)
+#ifndef _RETAIL
+, myEditDirection(myLightDirection)
+#endif // !_RETAIL
 {
 }
 
-SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows) :
-	Component(ComponentType::Spotlight), myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myConeIntensityDifference(aDifference), myPosition(aPosition),
+SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows) :
+	Component(ComponentType::Spotlight), myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myPosition(aPosition),
 	myLightDirection(aDirection.GetNormalized()), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
+#ifndef _RETAIL
+	, myEditDirection(myLightDirection)
+#endif // !_RETAIL
 {
 	if (aCastShadows)
 	{
@@ -19,7 +25,10 @@ SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float an
 }
 
 SpotlightComponent::SpotlightComponent(const Json::Value& aJson) :Component(aJson), myRange(aJson["Range"].asFloat()), myIntensity(aJson["Intensity"].asFloat()), myInnerAngle(aJson["InnerAngle"].asFloat()), myOuterAngle(aJson["OuterAngle"].asFloat()),
-myConeIntensityDifference(), myPosition(aJson["Position"]), myLightDirection(aJson["LightDirection"]), myColor(aJson["Color"]), myCastShadows(aJson["CastShadows"].asBool()), myShadowMap(nullptr)
+myPosition(aJson["Position"]), myLightDirection(aJson["LightDirection"]), myColor(aJson["Color"]), myCastShadows(aJson["CastShadows"].asBool()), myShadowMap(nullptr)
+#ifndef _RETAIL
+, myEditDirection(myLightDirection)
+#endif // !_RETAIL
 {
 	if (myCastShadows)
 	{
@@ -27,8 +36,11 @@ myConeIntensityDifference(), myPosition(aJson["Position"]), myLightDirection(aJs
 	}
 }
 
-SpotlightComponent::SpotlightComponent(const SpotlightComponent& aLight) :Component(aLight), myRange(aLight.myRange), myIntensity(aLight.myIntensity), myInnerAngle(aLight.myInnerAngle), myOuterAngle(aLight.myOuterAngle), myConeIntensityDifference(aLight.myConeIntensityDifference),
+SpotlightComponent::SpotlightComponent(const SpotlightComponent& aLight) :Component(aLight), myRange(aLight.myRange), myIntensity(aLight.myIntensity), myInnerAngle(aLight.myInnerAngle), myOuterAngle(aLight.myOuterAngle),
 myPosition(aLight.myPosition), myLightDirection(aLight.myLightDirection), myColor(aLight.myColor), myCastShadows(aLight.myCastShadows), myShadowMap(nullptr)
+#ifndef _RETAIL
+, myEditDirection(aLight.myLightDirection)
+#endif // !_RETAIL
 {
 	if (myCastShadows)
 	{
@@ -43,11 +55,13 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 	myIntensity = aLight.myIntensity;
 	myInnerAngle = aLight.myInnerAngle;
 	myOuterAngle = aLight.myOuterAngle;
-	myConeIntensityDifference = aLight.myConeIntensityDifference;
 	myPosition = aLight.myPosition;
 	myLightDirection = aLight.myLightDirection;
 	myColor = aLight.myColor;
 	myCastShadows = aLight.myCastShadows;
+#ifndef _RETAIL
+	myEditDirection = aLight.myLightDirection;
+#endif // !_RETAIL
 
 	if (myCastShadows && myShadowMap == nullptr)
 	{
@@ -56,17 +70,19 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 	return *this;
 }
 
-void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, float aDifference, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows)
+void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows)
 {
 	myRange = aRange;
 	myIntensity = anIntensity;
 	myInnerAngle = CommonUtilities::DegreeToRadian(anInnerAngle);
 	myOuterAngle = CommonUtilities::DegreeToRadian(anOuterAngle);
-	myConeIntensityDifference = aDifference;
 	myPosition = aPosition;
 	myLightDirection = aDirection.GetNormalized();
 	myColor = aColor;
 	myCastShadows = aCastShadows;
+#ifndef _RETAIL
+	myEditDirection = myLightDirection;
+#endif // !_RETAIL
 
 	if (myCastShadows && myShadowMap == nullptr)
 	{
@@ -104,11 +120,6 @@ void SpotlightComponent::SetOuterAngle(float anAngle)
 	myOuterAngle = anAngle;
 }
 
-void SpotlightComponent::SetConeIntensityDifference(float aDifference)
-{
-	myConeIntensityDifference = aDifference;
-}
-
 void SpotlightComponent::SetPosition(const CommonUtilities::Vector3f& aPosition)
 {
 	myPosition = aPosition;
@@ -117,11 +128,33 @@ void SpotlightComponent::SetPosition(const CommonUtilities::Vector3f& aPosition)
 void SpotlightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDirection)
 {
 	myLightDirection = aDirection.GetNormalized();
+#ifndef _RETAIL
+	myEditDirection = myLightDirection;
+#endif // !_RETAIL
 }
 
 void SpotlightComponent::SetColor(const CommonUtilities::Vector3f& aColor)
 {
 	myColor = aColor;
+}
+
+void SpotlightComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	Component::CreateImGuiComponents(aWindowName);
+	ImGui::Checkbox("Cast Shadow", &myCastShadows);
+	ImGui::DragFloat("Intensity", &myIntensity);
+	ImGui::ColorEdit3("Color", &myColor.x);
+	ImGui::DragFloat("Range", &myRange);
+	ImGui::DragFloat3("Position", &myPosition.x);
+	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x))
+	{
+		myLightDirection = myEditDirection.GetNormalized();
+	}
+	ImGui::PushItemWidth(100.f);
+	ImGui::SliderAngle("Inner Angle", &myInnerAngle, 0.f);
+	ImGui::SameLine();
+	ImGui::SliderAngle("Outer Angle", &myOuterAngle, 0.f);
+	ImGui::PopItemWidth();
 }
 
 Json::Value SpotlightComponent::ToJson() const
@@ -172,11 +205,6 @@ float SpotlightComponent::GetInnerAngle() const
 float SpotlightComponent::GetOuterAngle() const
 {
 	return myOuterAngle;
-}
-
-float SpotlightComponent::GetConeIntensityDifference() const
-{
-	return myConeIntensityDifference;
 }
 
 const CommonUtilities::Vector3f& SpotlightComponent::GetPosition() const
