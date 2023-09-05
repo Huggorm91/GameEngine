@@ -2,6 +2,7 @@
 #include "Vector4.hpp"
 #include "UtilityFunctions.hpp"
 #include <array>
+#include <math.h>
 
 namespace CommonUtilities
 {
@@ -35,7 +36,8 @@ namespace CommonUtilities
 
 		static Matrix4x4<T> CreatePerspectiveMatrix(float aFoVRadian, float aNearPlane, float aFarPlane, const Vector2f& aScreenSize);
 		static Matrix4x4<T> CreateOrthographicMatrix(float aLeftPlane, float aRightPlane, float aBottomPlane, float aTopPlane, float aNearPlane, float aFarPlane);
-		static Matrix4x4<T> LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget, const Vector3<T>& anUpVector = Vector3<T>::Up);
+		static Matrix4x4<T> LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget, const Vector3<T>& anUpVector);
+		static Matrix4x4<T> LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget);
 
 		// Assumes aTransform is made up of nothing but rotations and translations.
 		static Matrix4x4<T> GetFastInverse(const Matrix4x4<T>& aTransform);
@@ -219,11 +221,32 @@ namespace CommonUtilities
 		Vector3<T> xAxis = Vector3<T>::Null;
 		if (zAxis == anUpVector)
 		{
-			xAxis = (zAxis.Cross({ anUpVector.x, anUpVector.z, anUpVector.y })).GetNormalized();
+			xAxis = (Vector3<T>{ anUpVector.x, anUpVector.z, anUpVector.y }.Cross(zAxis)).GetNormalized();
 		}
 		else
 		{
-			xAxis = (zAxis.Cross(anUpVector)).GetNormalized();
+			xAxis = (anUpVector.Cross(zAxis)).GetNormalized();
+		}
+
+		Vector3<T> yAxis = zAxis.Cross(xAxis);
+		return Matrix4x4<T>{{ xAxis.x, yAxis.x, zAxis.x, T() },
+							{ xAxis.y, yAxis.y, zAxis.y, T() },
+							{ xAxis.z, yAxis.z, zAxis.z, T() },
+							{ -(xAxis.Dot(aCameraPosition)), -(yAxis.Dot(aCameraPosition)), -(zAxis.Dot(aCameraPosition)), T(1) }};
+	}
+
+	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::LookAt(const Vector3<T>& aCameraPosition, const Vector3<T>& aTarget)
+	{
+		Vector3<T> zAxis = (aTarget - aCameraPosition).GetNormalized();
+		Vector3<T> xAxis = Vector3<T>::Null;
+		if (Abs(zAxis.y) < (1.f - 0.00001f))
+		{
+			xAxis = (Vector3<T>::Up.Cross(zAxis)).GetNormalized();
+		}
+		else
+		{
+			xAxis = (Vector3<T>::Forward.Cross(zAxis)).GetNormalized();
 		}
 
 		Vector3<T> yAxis = zAxis.Cross(xAxis);

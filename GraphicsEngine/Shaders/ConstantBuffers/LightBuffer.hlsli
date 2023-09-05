@@ -3,6 +3,8 @@
 
 struct PointlightData
 {
+    float4x4 View;
+    float4x4 Projection;
     float3 Position;
     float Radius;
     float3 Color;
@@ -11,6 +13,8 @@ struct PointlightData
 
 struct SpotlightData
 {
+    float4x4 View;
+    float4x4 Projection;
     float3 Position;
     float Range;
     float3 Color;
@@ -25,6 +29,8 @@ struct SpotlightData
 
 cbuffer LightBuffer : register(b2)
 {
+    float4x4 LB_DirectionalView;
+    float4x4 LB_DirectionalProjection;
 	float3 LB_InvertedDirection;
     float LB_DirectionallightIntensity;
     float3 LB_DirectionallightColor;

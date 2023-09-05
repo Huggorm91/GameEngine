@@ -471,11 +471,12 @@ void GraphicsEngine::RenderFrame()
 		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
 		{
 			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
-			position = 2.f * myWorldRadius * myLightBuffer.Data.myInvertedDirection;
+			position = 3.f * myWorldRadius * myLightBuffer.Data.myInvertedDirection;
 			CommonUtilities::QuickSort(objectList, compare);
 			updatedDistance.clear();
 
 			const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, myWorldCenter);
+
 			const CommonUtilities::Vector3f& center = CommonUtilities::Vector4f(myWorldCenter, 1.f) * view;
 			const CommonUtilities::Vector3f& leftBotNear = center - myWorldRadius;
 			const CommonUtilities::Vector3f& rightTopFar = center + myWorldRadius;

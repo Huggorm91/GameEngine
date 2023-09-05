@@ -6,6 +6,8 @@ const unsigned MAX_LIGHTS = 8;
 
 struct PointlightData
 {
+	CommonUtilities::Matrix4x4f myView;
+	CommonUtilities::Matrix4x4f myProjection;
 	CommonUtilities::Vector3f myPosition;
 	float myRadius;
 	CommonUtilities::Vector3f myColor;
@@ -14,6 +16,8 @@ struct PointlightData
 
 struct SpotlightData
 {
+	CommonUtilities::Matrix4x4f myView;
+	CommonUtilities::Matrix4x4f myProjection;
 	CommonUtilities::Vector3f myPosition;
 	float myRange;
 	CommonUtilities::Vector3f myColor;
@@ -28,6 +32,8 @@ struct SpotlightData
 
 struct LightBufferData
 {
+	CommonUtilities::Matrix4x4f myDirectionalView;
+	CommonUtilities::Matrix4x4f myDirectionalProjection;
 	CommonUtilities::Vector3f myInvertedDirection;
 	float myDirectionallightIntensity;
 	CommonUtilities::Vector3f myDirectionallightColor;
