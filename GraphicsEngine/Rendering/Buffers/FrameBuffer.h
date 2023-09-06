@@ -11,8 +11,8 @@ struct FrameBufferData
 	double TotalTime = 0.f;
 
 #ifndef _RETAIL
-	int myDebugMode;
-	int myLightMode;
+	int DebugMode;
+	int LightMode;
 #else
 	double padding;
 #endif // _DEBUG

@@ -142,14 +142,16 @@ void SpotlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Cast Shadow", &myCastShadows);
-	ImGui::DragFloat("Intensity", &myIntensity);
+	ImGui::DragFloat("Intensity", &myIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::ColorEdit3("Color", &myColor.x);
 	ImGui::DragFloat("Range", &myRange);
 	ImGui::DragFloat3("Position", &myPosition.x);
+#ifndef _RETAIL
 	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x))
 	{
 		myLightDirection = myEditDirection.GetNormalized();
 	}
+#endif // _RETAIL
 	ImGui::PushItemWidth(100.f);
 	ImGui::SliderAngle("Inner Angle", &myInnerAngle, 0.f);
 	ImGui::SameLine();

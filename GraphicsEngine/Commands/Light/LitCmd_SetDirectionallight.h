@@ -17,5 +17,7 @@ private:
 	CommonUtilities::Vector3f myColor;
 	std::shared_ptr<Texture> myShadowMap;
 	float myIntensity;
+	bool myCastsShadow;
 };
 
+typedef LitCmd_SetDirectionallight GfxCmd_SetDirectionallight;

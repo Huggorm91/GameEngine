@@ -6,40 +6,49 @@ const unsigned MAX_LIGHTS = 8;
 
 struct PointlightData
 {
-	CommonUtilities::Matrix4x4f myView;
-	CommonUtilities::Matrix4x4f myProjection;
-	CommonUtilities::Vector3f myPosition;
-	float myRadius;
-	CommonUtilities::Vector3f myColor;
-	float myIntensity;
-};
-
-struct SpotlightData
-{
-	CommonUtilities::Matrix4x4f myView;
-	CommonUtilities::Matrix4x4f myProjection;
-	CommonUtilities::Vector3f myPosition;
-	float myRange;
-	CommonUtilities::Vector3f myColor;
-	float myIntensity;
-	CommonUtilities::Vector3f myLightDirection;
-	float myInnerAngle;
-	float myOuterAngle;
+	CommonUtilities::Matrix4x4f View;
+	CommonUtilities::Matrix4x4f Projection;
+	CommonUtilities::Vector3f Position;
+	float Radius;
+	CommonUtilities::Vector3f Color;
+	float Intensity;
+	alignas(4) bool CastShadows;
 
 	CommonUtilities::Vector3f padding;
 };
 
+struct SpotlightData
+{
+	CommonUtilities::Matrix4x4f View;
+	CommonUtilities::Matrix4x4f Projection;
+	CommonUtilities::Vector3f Position;
+	float Range;
+	CommonUtilities::Vector3f Color;
+	float Intensity;
+	CommonUtilities::Vector3f LightDirection;
+	float InnerAngle;
+	float OuterAngle;
+	alignas(4) bool CastShadows;
+
+	CommonUtilities::Vector2f padding;
+};
+
 struct LightBufferData
 {
-	CommonUtilities::Matrix4x4f myDirectionalView;
-	CommonUtilities::Matrix4x4f myDirectionalProjection;
-	CommonUtilities::Vector3f myInvertedDirection;
-	float myDirectionallightIntensity;
-	CommonUtilities::Vector3f myDirectionallightColor;
-	float myAmbientlightIntensity;
+	CommonUtilities::Matrix4x4f DirectionalView;
+	CommonUtilities::Matrix4x4f DirectionalProjection;
+	CommonUtilities::Vector3f InvertedDirection;
+	float DirectionallightIntensity;
+	CommonUtilities::Vector3f DirectionallightColor;
+	float AmbientlightIntensity;
+	float ShadowBias;
+	alignas(4) bool CastDirectionalShadows;
 
-	PointlightData myPointlights[MAX_LIGHTS];
-	SpotlightData mySpotlights[MAX_LIGHTS];
+
+	CommonUtilities::Vector2f paddinglb;
+
+	PointlightData Pointlights[MAX_LIGHTS];
+	SpotlightData Spotlights[MAX_LIGHTS];
 };
 
 typedef ConstantBuffer<LightBufferData> LightBuffer;

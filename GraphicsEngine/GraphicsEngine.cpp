@@ -12,9 +12,9 @@
 #include <fstream>
 #include <Sort.hpp>
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"), myRenderCommands(&myFirstCommandlist), 
-myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(),
-myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{0,0}, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), 
+myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(), myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
 #ifndef _RETAIL
 ,myDebugMode(DebugMode::Default), myLightMode (LightMode::Default), myRenderMode (RenderMode::Mesh) ,myGrid()
 #endif // !_RETAIL	
@@ -158,7 +158,6 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 {
 	myDebugMode = aMode;
 
-	// TODO: Set the correct Shaders as active shaders for each DebugMode
 	switch (myDebugMode)
 	{
 	case GraphicsEngine::DebugMode::Count:
@@ -226,12 +225,17 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 		GELogger.Log("DebugMode: NormalMap");
 		break;
 	}
+	case GraphicsEngine::DebugMode::DirectionallightUV:
+	{
+		GELogger.Log("DebugMode: Directionallight UV");
+		break;
+	}
 	default:
 		GELogger.Err("DebugMode: Invalid option");
 		return myDebugMode;
 	}
 
-	myFrameBuffer.Data.myDebugMode = static_cast<int>(myDebugMode);
+	myFrameBuffer.Data.DebugMode = static_cast<int>(myDebugMode);
 	RHI::UpdateConstantBufferData(myFrameBuffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
 
@@ -247,7 +251,6 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 {
 	myLightMode = aMode;
 
-	// TODO: Set the correct Shaders as active shaders for each LightMode
 	switch (myLightMode)
 	{
 	case GraphicsEngine::LightMode::Count:
@@ -290,7 +293,7 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 		return myLightMode;
 	}
 
-	myFrameBuffer.Data.myLightMode = static_cast<int>(myLightMode);
+	myFrameBuffer.Data.LightMode = static_cast<int>(myLightMode);
 	RHI::UpdateConstantBufferData(myLightBuffer);
 	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, myLightBuffer);
 
@@ -306,7 +309,6 @@ GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
 {
 	myRenderMode = aMode;
 
-	// TODO: Set the correct Shaders as active shaders for each RenderMode
 	switch (myRenderMode)
 	{
 	case GraphicsEngine::RenderMode::Count:
@@ -465,10 +467,10 @@ void GraphicsEngine::RenderFrame()
 			return aFirst < aSecond;
 		};
 
-		if (myLightBuffer.Data.myDirectionallightIntensity > 0.f)
+		if (myLightBuffer.Data.CastDirectionalShadows &&  myLightBuffer.Data.DirectionallightIntensity > 0.f)
 		{
 			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
-			position = 3.f * myWorldRadius * myLightBuffer.Data.myInvertedDirection;
+			position = 3.f * myWorldRadius * myLightBuffer.Data.InvertedDirection;
 			CommonUtilities::QuickSort(objectList, compare);
 			updatedDistance.clear();
 
@@ -479,13 +481,15 @@ void GraphicsEngine::RenderFrame()
 			const CommonUtilities::Vector3f& rightTopFar = center + myWorldRadius;
 			const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreateOrthographicMatrix(leftBotNear.x, rightTopFar.x, leftBotNear.y, rightTopFar.y, 1.f, myWorldRadius * 4.f);
 
+			myLightBuffer.Data.DirectionalView = view;
+			myLightBuffer.Data.DirectionalProjection = projection;
+
 			myFrameBuffer.Data.View = view;
 			myFrameBuffer.Data.Projection = projection;
-			myFrameBuffer.Data.CameraPosition = position;
 
 			RHI::UpdateConstantBufferData(myFrameBuffer);
 			RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
-
+			
 			for (auto& data : objectList)
 			{
 				data.myCommand->Execute();
@@ -494,7 +498,7 @@ void GraphicsEngine::RenderFrame()
 
 		//for (int i = 0; i < MAX_LIGHTS; i++)
 		//{
-		//	if (mySpotShadowMap[i])
+		//	if (myLightBuffer.Data.mySpotlights[i].myCastShadows && mySpotShadowMap[i])
 		//	{
 		//		RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
 		//		// calculate spotlight shadows
@@ -505,7 +509,7 @@ void GraphicsEngine::RenderFrame()
 		//		}
 		//	}
 
-		//	if (myPointShadowMap[i])
+		//	if (myLightBuffer.Data.myPointlights[i].myCastShadows && myPointShadowMap[i])
 		//	{
 		//		RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
 		//		// calculate point light shadows
@@ -516,6 +520,8 @@ void GraphicsEngine::RenderFrame()
 		//		}
 		//	}
 		//}
+		RHI::UpdateConstantBufferData(myLightBuffer);
+		RHI::SetRenderTarget(nullptr, nullptr);
 
 		pointIndex = 0;
 		spotIndex = 0;
@@ -647,8 +653,12 @@ bool GraphicsEngine::CreateShadowSampler()
 	desc.BorderColor[1] = 0.f;
 	desc.BorderColor[2] = 0.f;
 	desc.BorderColor[3] = 0.f;
+	desc.MipLODBias = 0.f;
+	desc.MaxAnisotropy = 1;
+	desc.MinLOD = 0;
+	desc.MaxLOD = 0;
 
-	if (!RHI::CreateSamplerState(myLUTSampler, desc))
+	if (!RHI::CreateSamplerState(myShadowSampler, desc))
 	{
 		return false;
 	}

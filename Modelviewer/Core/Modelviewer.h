@@ -78,9 +78,11 @@ private:
 	void Init();
 	void Update();
 
+#ifndef _RETAIL
 	void InitImgui();
 	void UpdateImgui();
 	void RenderImgui();
 
 	void CreatePreferenceWindow();
+#endif // _RETAIL
 };

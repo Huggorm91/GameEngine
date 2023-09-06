@@ -12,6 +12,7 @@ public:
 	void SetShadowMap(const int anIndex) override;
 
 private:
+	bool myCastsShadow;
 	float myRange;
 	float myIntensity;
 	float myInnerAngle;
@@ -21,3 +22,5 @@ private:
 	CommonUtilities::Vector3f myLightDirection;
 	CommonUtilities::Vector3f myColor;
 };
+
+typedef LitCmd_AddSpotlight GfxCmd_AddSpotlight;

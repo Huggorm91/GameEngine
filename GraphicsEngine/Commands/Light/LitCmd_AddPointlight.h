@@ -12,9 +12,12 @@ public:
 	void SetShadowMap(const int anIndex) override;
 
 private:
+	bool myCastsShadow;
 	float myRadius;
 	float myIntensity;
 	std::shared_ptr<Texture> myShadowMap;
 	CommonUtilities::Vector3f myPosition;
 	CommonUtilities::Vector3f myColor;
 };
+
+typedef LitCmd_AddPointlight GfxCmd_AddPointlight;

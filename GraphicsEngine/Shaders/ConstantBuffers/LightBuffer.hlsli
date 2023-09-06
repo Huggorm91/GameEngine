@@ -9,6 +9,9 @@ struct PointlightData
     float Radius;
     float3 Color;
     float Intensity;
+    bool CastShadows;
+    
+    float3 padding;
 };
 
 struct SpotlightData
@@ -22,8 +25,9 @@ struct SpotlightData
     float3 LightDirection;
     float InnerAngle;
     float OuterAngle;
+    bool CastShadows;
 
-    float3 padding;
+    float2 padding;
 };
 
 cbuffer LightBuffer : register(b2)
@@ -34,6 +38,10 @@ cbuffer LightBuffer : register(b2)
     float LB_DirectionallightIntensity;
     float3 LB_DirectionallightColor;
     float LB_AmbientlightIntensity;
+    float LB_ShadowBias;
+    bool LB_CastDirectionalShadows;
+    
+    float2 paddinglb;
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];

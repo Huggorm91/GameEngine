@@ -27,7 +27,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     float3 materialMap = MaterialTexture.Sample(DefaultSampler, scaledUV).rgb;
     
     LightData data;
-    data.position = input.WorldPosition.xyz;
+    data.position = input.WorldPosition;
     data.pixelNormal = pixelNormal;
     data.roughness = materialMap.g;
     data.metalness = materialMap.b;
@@ -51,8 +51,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     case 1:
     {
         float2 scaledUV = input.UVs[0] * MB_UVTiling;
-        result.Color.x = scaledUV.x;
-        result.Color.y = scaledUV.y;
+        result.Color.xy = scaledUV.xy;
         result.Color.z = 0;
         result.Color.w = 1;
         break;
@@ -128,6 +127,23 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     {
         float2 scaledUV = input.UVs[0] * MB_UVTiling;
         result.Color = NormalTexture.Sample(DefaultSampler, scaledUV);
+        break;
+    }
+    case 12:
+    {
+        float3 uv = GetShadowMapUV(LB_DirectionalView, LB_DirectionalProjection, input.WorldPosition);
+        if (uv.x < 0.f || uv.x > 1.f || uv.y < 0.f || uv.y > 1.f)
+        {
+            result.Color.xyz = 0;
+            result.Color.w = 1;
+        }
+        else
+        {
+            result.Color.xy = uv.xy;
+            result.Color.z = 0;
+            result.Color.w = 1;
+        }
+        
         break;
     }
     }

@@ -34,7 +34,7 @@ struct DefaultPixelOutput
 };
 
 SamplerState DefaultSampler : register(s0);
-SamplerState ShadowSampler : register(s14);
+SamplerComparisonState ShadowSampler : register(s14);
 SamplerState LUTSampler : register(s15);
 
 Texture2D AlbedoTexture : register(t0);

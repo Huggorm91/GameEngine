@@ -34,6 +34,7 @@ public:
 		VertexColors,
 		AlbedoMap,
 		NormalMap,
+		DirectionallightUV,
 		Count
 	};
 
@@ -146,9 +147,9 @@ private:
 	};
 
 #ifndef _RETAIL
-	DebugMode myDebugMode = DebugMode::Default;
-	LightMode myLightMode = LightMode::Default;
-	RenderMode myRenderMode = RenderMode::Mesh;
+	DebugMode myDebugMode;
+	LightMode myLightMode;
+	RenderMode myRenderMode;
 	LineDrawer::LineHandle myGrid;
 #endif // !_RETAIL	
 

@@ -15,6 +15,7 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/InterOp/Helpers.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
+#include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/DirectoryFunctions.h"
@@ -26,9 +27,9 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedIndex(0)
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh)
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), mySelectedIndex(0)
 #endif // _RETAIL
 {
 }
@@ -101,9 +102,9 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
 	AssetManager::GeneratePrimitives();
 
+#ifndef _RETAIL
 	InitImgui();
 
-#ifndef _RETAIL
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
@@ -120,8 +121,8 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	LoadScene("Default");
-	//Init();
+	//LoadScene("Default");
+	Init();
 	CommonUtilities::Timer::Init();
 
 	bool isRunning = true;
@@ -144,9 +145,11 @@ int ModelViewer::Run()
 		Update();
 	}
 
+#ifndef _RETAIL
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+#endif // _RETAIL
 
 	return 0;
 }
@@ -268,6 +271,8 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 
 void ModelViewer::Init()
 {
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	//LoadScene("Default");
 
 	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Cube"));
@@ -417,8 +422,7 @@ void ModelViewer::Init()
 
 	myGameObjects.emplace_back();
 	{
-		DirectionallightComponent light({ 0.f, -1.f, -1.f });
-		light.SetIntensity(.25f);
+		DirectionallightComponent light({ 0.f, -1.f, -1.f }, { 1.f, 1.f, 1.f }, 1.f);
 		myGameObjects.back().AddComponent(light);
 	}
 
@@ -445,20 +449,24 @@ void ModelViewer::Update()
 	CommonUtilities::Timer::Update();
 	CommonUtilities::InputMapper::GetInstance()->Notify();
 
+#ifndef _RETAIL
 	UpdateImgui();
+#endif // _RETAIL
 
 	myCamera.Update();
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	UpdateScene();
 
 	CommonUtilities::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
+#ifndef _RETAIL
 	RenderImgui();
+#endif // _RETAIL
 
 	engine.EndFrame();
 }
 
+#ifndef _RETAIL
 void ModelViewer::ModelViewer::InitImgui()
 {
 	// Setup Dear ImGui context
@@ -522,7 +530,14 @@ void ModelViewer::CreatePreferenceWindow()
 	}
 
 	ImGui::SeparatorText("Scene Settings");
-	ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.001f, 0.f);
+	if (ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
+	}
+	if (ImGui::DragFloat("Shadow Bias", &myApplicationState.ShadowBias, 0.0001f, 0.f, 1.f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
+	}
 
 	ImGui::SeparatorText("");
 	if (ImGui::Button("Save Preferences"))
@@ -536,6 +551,7 @@ void ModelViewer::CreatePreferenceWindow()
 	}
 	ImGui::End();
 }
+#endif // _RETAIL
 
 void ModelViewer::UpdateScene()
 {

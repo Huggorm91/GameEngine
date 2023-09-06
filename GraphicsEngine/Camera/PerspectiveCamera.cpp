@@ -33,7 +33,9 @@ void PerspectiveCamera::Init(const CommonUtilities::Vector2f& aScreenSize, float
 	//myCompass = GraphicsEngine::Get().GetLineDrawer().AddAxisLines({ 0.f, 0.f, 0.f }, .1f, false, { 1.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 1.f }, GetColor(eColor::Red), GetColor(eColor::Green), GetColor(eColor::Blue), CommonUtilities::Matrix4x4f::Null);
 
 	// Using worldspace
+#ifndef _RETAIL
 	myCompass = GraphicsEngine::Get().GetLineDrawer().AddAxisLines({ 0.f, 0.f, 0.f }, .1f, false);
+#endif // _RETAIL
 
 	UpdateTransform();
 
@@ -252,6 +254,7 @@ void PerspectiveCamera::UpdateTransform()
 	myTransform(4, 2) = myPosition.y;
 	myTransform(4, 3) = myPosition.z;
 
+#ifndef _RETAIL
 	// Transform if using UI
 	//myCompassTransform = CommonUtilities::Matrix4x4f::CreateRotationAroundX(-myRotation.x) * CommonUtilities::Matrix4x4f::CreateRotationAroundY(-myRotation.y);
 	//myCompassTransform(4, 3) = 0.5f;
@@ -262,6 +265,7 @@ void PerspectiveCamera::UpdateTransform()
 	myCompassTransform(4, 2) = forward.y;
 	myCompassTransform(4, 3) = forward.z;
 	myCompass.UpdateTransform(myCompassTransform);
+#endif // _RETAIL
 
 	myTransform = CommonUtilities::Matrix4x4f::GetFastInverse(myTransform);
 	myHasChanged = false;

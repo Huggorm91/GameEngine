@@ -1,22 +1,23 @@
 #include "GraphicsEngine.pch.h"
 #include "LitCmd_AddPointlight.h"
 
-LitCmd_AddPointlight::LitCmd_AddPointlight(PointlightComponent& aLight) : LightCommand(Type::PointLight), myRadius(aLight.GetRadius()), myIntensity(aLight.GetIntensity()), myPosition(CommonUtilities::Vector4f{aLight.GetPosition(), 1.f} *aLight.GetTransform()), myColor(aLight.GetColor()), myShadowMap()
+LitCmd_AddPointlight::LitCmd_AddPointlight(PointlightComponent& aLight) : LightCommand(Type::PointLight), myRadius(aLight.GetRadius()), myIntensity(aLight.GetIntensity()), myPosition(CommonUtilities::Vector4f{aLight.GetPosition(), 1.f} *aLight.GetTransform()), 
+myColor(aLight.GetColor()), myShadowMap(aLight.GetShadowMap()), myCastsShadow(aLight.IsCastingShadows())
 {
-	myShadowMap = aLight.GetShadowMap();
 }
 
 void LitCmd_AddPointlight::Execute(const int anIndex)
 {
 	LightBuffer& buffer = GetLightBuffer();
 
-	PointlightData& data = buffer.Data.myPointlights[anIndex];
-	data.myPosition = myPosition;
-	data.myRadius = myRadius;
-	data.myColor = myColor;
-	data.myIntensity = myIntensity;
+	PointlightData& data = buffer.Data.Pointlights[anIndex];
+	data.Position = myPosition;
+	data.Radius = myRadius;
+	data.Color = myColor;
+	data.Intensity = myIntensity;
+	data.CastShadows = myCastsShadow;
 
-	if (myShadowMap != nullptr)
+	if (myCastsShadow && myShadowMap != nullptr)
 	{
 		RHI::ClearDepthStencil(myShadowMap.get());
 		GetPointlightShadowMap()[anIndex] = myShadowMap.get();
@@ -28,7 +29,7 @@ void LitCmd_AddPointlight::Execute(const int anIndex)
 
 void LitCmd_AddPointlight::SetShadowMap(const int anIndex)
 {
-	if (myShadowMap != nullptr)
+	if (myCastsShadow && myShadowMap != nullptr)
 	{
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 120 + anIndex, myShadowMap.get());
 	}

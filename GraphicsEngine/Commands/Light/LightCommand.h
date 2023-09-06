@@ -15,7 +15,7 @@ public:
 	virtual ~LightCommand() = default;
 
 	virtual void Execute(const int anIndex) = 0;
-	virtual void SetShadowMap(const int anIndex) = 0;
+	virtual void SetShadowMap(const int anIndex);
 
 	Type GetType();
 

@@ -11,9 +11,10 @@ public:
 	~LitCmd_SetAmbientlight() override = default;
 
 	void Execute(const int anIndex) override;
-	void SetShadowMap(const int anIndex) override;
 
 private:
 	const Texture* myCubemap;
 	float myIntensity;
 };
+
+typedef LitCmd_SetAmbientlight GfxCmd_SetAmbientlight;

@@ -6,6 +6,10 @@ LightCommand::LightCommand(): myType(Type::Other)
 {
 }
 
+void LightCommand::SetShadowMap(const int)
+{
+}
+
 LightCommand::Type LightCommand::GetType()
 {
     return myType;

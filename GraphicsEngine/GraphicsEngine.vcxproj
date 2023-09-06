@@ -293,6 +293,7 @@
     <ClInclude Include="Commands\Light\LitCmd_SetDirectionallight.h" />
     <ClInclude Include="Commands\Light\LitCmd_ResetLightBuffer.h" />
     <ClInclude Include="Commands\Light\LitCmd_SetAmbientlight.h" />
+    <ClInclude Include="Commands\Light\LitCmd_SetShadowBias.h" />
     <ClInclude Include="Rendering\LineVertex.h" />
     <ClInclude Include="Rendering\Buffers\MaterialBuffer.h" />
     <ClInclude Include="Rendering\Material.h" />
@@ -329,6 +330,7 @@
     <ClCompile Include="Commands\GfxCmd_RenderMeshShadow.cpp" />
     <ClCompile Include="Commands\GfxCmd_UpdateWorldBounds.cpp" />
     <ClCompile Include="Commands\GfxCmd_NewRenderlist.cpp" />
+    <ClCompile Include="Commands\Light\LitCmd_SetShadowBias.cpp" />
     <ClCompile Include="Rendering\LineVertex.cpp" />
     <ClCompile Include="Rendering\Material.cpp" />
     <ClCompile Include="Rendering\Color.cpp" />

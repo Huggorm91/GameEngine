@@ -8,5 +8,6 @@ public:
 	~LitCmd_ResetLightBuffer() override = default;
 
 	void Execute(const int anIndex) override;
-	void SetShadowMap(const int anIndex) override;
 };
+
+typedef LitCmd_ResetLightBuffer GfxCmd_ResetLightBuffer;
