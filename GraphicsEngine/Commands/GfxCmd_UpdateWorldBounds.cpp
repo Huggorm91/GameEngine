@@ -2,7 +2,7 @@
 #include "GfxCmd_UpdateWorldBounds.h"
 #include "GraphicsEngine.h"
 
-GfxCmd_UpdateWorldBounds::GfxCmd_UpdateWorldBounds(const CommonUtilities::Vector3f& aMin, const CommonUtilities::Vector3f& aMax): myMin(aMin), myMax(aMax)
+GfxCmd_UpdateWorldBounds::GfxCmd_UpdateWorldBounds(const CommonUtilities::Vector3f& aMin, const CommonUtilities::Vector3f& aMax): GraphicsCommand(RenderStage::Light), myMin(aMin), myMax(aMax)
 {
 }
 

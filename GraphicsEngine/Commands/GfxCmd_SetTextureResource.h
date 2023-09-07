@@ -14,7 +14,7 @@ public:
 		EnvironmentCubeMap = 100
 	};
 
-	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, UINT aStage);
+	GfxCmd_SetTextureResource(const Texture* aTexture, TextureSlot aSlot, UINT aStage, RenderStage aRenderStage = RenderStage::Deferred);
 	~GfxCmd_SetTextureResource() override = default;
 
 	void Execute() override;

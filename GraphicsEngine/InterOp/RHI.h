@@ -145,6 +145,21 @@ public:
 	static void SetSamplerState(const ComPtr<ID3D11SamplerState>& aSamplerState, unsigned aSlot);
 
 	/**
+	 * Creates a Blend State with the provided description.
+	 * @param outBlendState The resulting Blend State pointer.
+	 * @param aDescription A Direct3D 11 Blend Description detailing how this blend state should operate.
+	 */
+	static bool CreateBlendState(ComPtr<ID3D11BlendState>& outBlendState, const D3D11_BLEND_DESC& aDescription);
+
+	/**
+	 * Instructs the Output Merger on how to assemble rendered pixels.
+	 * @param aBlendState The Blend State to use.
+	 * @param aBlendFactor How we should blend RGBA pixels, depends on the Blend State settings.
+	 * @param aSamplerMask A mask controlling how a multisample render target should be written.
+	 */
+	static void SetBlendState(const ComPtr<ID3D11BlendState>& aBlendState, const std::array<float, 4>& aBlendFactor= { 0, 0, 0, 0 }, unsigned aSamplerMask = 0xffffffff);
+
+	/**
 	 * Attempts to load a Vertex Shader from the specified file name, then create a Vertex Shader object and an Input Layout object on the Graphics Card.
 	 * @param outVxShader The resulting Vertex Shader pointer.
 	 * @param outInputLayout The resulting Input Layout pointer.
@@ -318,6 +333,9 @@ public:
 	 */
 	static void SetTextureResource(UINT aPipelineStages, unsigned aSlot, const Texture* aTexture);
 
+	static void SetTextureResources(UINT aPipelineStages, unsigned aStartSlot, const std::vector<std::shared_ptr<Texture>>& aTextureList);
+	static void SetTextureResources(UINT aPipelineStages, unsigned aStartSlot, const std::vector<Texture*>& aTextureList);
+
 	/**
 	 * Removes a Texture Resource from the specified slot, for the specified shader stages. Only affects those shader stages!
 	 * @param aPipelineStages The pipeline stages to clear, can be concatenated with a pipe | character.
@@ -330,6 +348,8 @@ public:
 	 * @param aTarget The texture we should draw on.
 	 */
 	static void SetRenderTarget(const Texture* aTarget, const Texture* aDepthStencil);
+
+	static void SetRenderTargets(const std::vector<std::shared_ptr<Texture>>& aTargetList, const std::shared_ptr<Texture>& aDepthStencil);
 
 	/**
 	 * Sets multiple Textures as active targets in the Output Merger.

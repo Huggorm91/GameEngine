@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include "DDSTextureLoader11.h"
-#include "Helpers.h"
 #include "Rendering/Vertex.h"
 #include "Rendering/Texture.h"
 #include "Rendering/Buffers/ConstantBuffer.h"
@@ -13,6 +12,9 @@
 #include "d3d11shader.h"
 #include "d3dcompiler.h"
 #include "Rendering/Shader.h"
+
+#include "d3d11_2.h"
+//#include "Rendering/Commands/GraphicsCommand.h"
 
 template<typename T, typename STRINGTYPE>
 inline static T string_cast(const STRINGTYPE& someString) = delete;
@@ -23,6 +25,8 @@ template<>
 inline std::string string_cast<std::string>(const std::wstring& someString)
 {
 	const int sLength = static_cast<int>(someString.length());
+	if(sLength == 0)
+		return std::string();
 	const int len = WideCharToMultiByte(CP_ACP, 0, someString.c_str(), sLength, 0, 0, 0, 0);
 	std::string result(len, L'\0');
 	WideCharToMultiByte(CP_ACP, 0, someString.c_str(), -1, result.data(), len, 0, 0);
@@ -33,6 +37,8 @@ template<>
 inline std::wstring string_cast<std::wstring>(const std::string& someString)
 {
 	const int sLength = static_cast<int>(someString.length());
+	if(sLength == 0)
+		return std::wstring();
 	const int len = MultiByteToWideChar(CP_ACP, 0, someString.c_str(), sLength, 0, 0);
 	std::wstring result(len, L'\0');
 	MultiByteToWideChar(CP_ACP, 0, someString.c_str(), -1, result.data(), len);
@@ -57,7 +63,7 @@ void RHI::ReportError(HRESULT aHresult, const std::wstring& aMessage)
 {
 	const _com_error error(aHresult);
 	const LPCWSTR errorMessage = error.ErrorMessage();
-	std::wcerr << aMessage + L" " + errorMessage + L"\n";
+	std::wcerr << aMessage + L" " + errorMessage;
 }
 
 bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBackBuffer, Texture* outDepthBuffer)
@@ -205,6 +211,42 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	Device->CreateDepthStencilState(&depthStencilDesc, myDepthStates[DS_LessEqual].GetAddressOf());
 
 	Context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), &myAnnotationObject);
+
+	//D3D11_FEATURE_DATA_D3D11_OPTIONS1 data;
+ //   RHI::Device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &data, sizeof(D3D11_FEATURE_DATA_D3D11_OPTIONS1));
+
+	//ComPtr<ID3D11DeviceContext2> test;
+	//Context.As(&test);
+
+	//ComPtr<ID3D11Device2> testDevice;
+	//Device.As(&testDevice);
+
+	//D3D11_BUFFER_DESC poolDesc = {};
+	//poolDesc.ByteWidth = 128 MB;
+	//poolDesc.Usage = D3D11_USAGE_DEFAULT;
+	//poolDesc.MiscFlags = D3D11_RESOURCE_MISC_TILE_POOL;
+	////poolDesc.BindFlags = ; Tile Pool cannot have BindFlags.
+
+	//ComPtr<ID3D11Buffer> poolBuffer;
+	//HRESULT poolResult = testDevice->CreateBuffer(&poolDesc, nullptr, poolBuffer.GetAddressOf());
+
+	//D3D11_TEXTURE2D_DESC tileDesc = {};
+	//tileDesc.Width = 16384;
+	//tileDesc.Height = 16384;
+	//tileDesc.MipLevels = 1;
+	//tileDesc.ArraySize = 1;
+	//tileDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//tileDesc.SampleDesc.Count = 1;
+	//tileDesc.SampleDesc.Quality = 0;
+	//tileDesc.Usage = D3D11_USAGE_DEFAULT;
+	//tileDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	//tileDesc.CPUAccessFlags = 0;
+	//tileDesc.MiscFlags = D3D11_RESOURCE_MISC_TILED;
+
+	//ComPtr<ID3D11Texture2D> tiledTexture;
+	//HRESULT tiledTextureResult = testDevice->CreateTexture2D(&tileDesc, nullptr, tiledTexture.GetAddressOf());
+
+	//test->UpdateTileMappings()
 
 	return true;
 }
@@ -356,6 +398,24 @@ bool RHI::CreateSamplerState(ComPtr<ID3D11SamplerState>& outSamplerState, const 
 void RHI::SetSamplerState(const ComPtr<ID3D11SamplerState>& aSamplerState, unsigned aSlot)
 {
 	Context->PSSetSamplers(aSlot, 1, aSamplerState.GetAddressOf());
+}
+
+bool RHI::CreateBlendState(ComPtr<ID3D11BlendState>& outBlendState, const D3D11_BLEND_DESC& aDescription)
+{
+	const HRESULT result = Device->CreateBlendState(&aDescription, outBlendState.GetAddressOf());
+	if(FAILED(result))
+	{
+		ReportError(result, L"Failed to create blend state!");
+		return false;
+	}
+
+	return true;
+}
+
+void RHI::SetBlendState(const ComPtr<ID3D11BlendState>& aBlendState, const std::array<float, 4>& aBlendFactor,
+	unsigned aSamplerMask)
+{
+	Context->OMSetBlendState(aBlendState.Get(), aBlendFactor.data(), aSamplerMask);
 }
 
 bool RHI::LoadVertexShaderAndInputLayout(ComPtr<ID3D11VertexShader>& outVxShader, ComPtr<ID3D11InputLayout>& outInputLayout, const std::wstring& aFileName, const std::vector<D3D11_INPUT_ELEMENT_DESC>& anInputLayoutDesc)
@@ -660,6 +720,7 @@ bool RHI::LoadPixelShader(ComPtr<ID3D11PixelShader>& outPxShader, const std::wst
 bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 {
 	assert(outTexture && "Please initialize the Texture Object before calling this function!");
+	//outTexture = std::make_shared<Texture>();
 	outTexture->myName = aFileName;
 	outTexture->myBindFlags = D3D11_BIND_SHADER_RESOURCE;
 	outTexture->myUsageFlags = D3D11_USAGE_DEFAULT;
@@ -685,15 +746,14 @@ bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 		return false;
 	}
 
-	/*std::wstring textureName = aFileName;
+	std::wstring textureName = aFileName;
 	if(const size_t pos = textureName.find_last_of(L'\\'); pos != std::wstring::npos)
 	{
 		textureName = textureName.substr(pos + 1);
 	}
 
 	textureName = textureName.substr(0, textureName.size() - 4);
-	outTexture->myName = textureName;*/
-	outTexture->myName = aFileName;
+	outTexture->myName = textureName;
 
 	return true;
 }
@@ -706,16 +766,15 @@ bool RHI::LoadShader(Shader* outShader, const std::wstring& aFileName)
 	const std::vector<uint8_t> shData = { std::istreambuf_iterator<char>(shFile), std::istreambuf_iterator<char>() };
 	shFile.close();
 
-	/*std::wstring shaderName = aFileName;
+	std::wstring shaderName = aFileName;
 	if(const size_t pos = shaderName.find_last_of(L'\\'); pos != std::wstring::npos)
 	{
 		shaderName = shaderName.substr(pos + 1);
 	}
 
-	const size_t pos = shaderName.find_last_of(L'.');
-	shaderName = shaderName.substr(0, pos);*/
+	shaderName = shaderName.substr(0, shaderName.size() - 4);
 
-	return LoadShaderFromMemory(outShader, aFileName, shData.data(), shData.size());
+	return LoadShaderFromMemory(outShader, shaderName, shData.data(), shData.size());
 }
 
 bool RHI::LoadShaderFromMemory(Shader* outShader, const std::wstring& aName, const BYTE* someShaderData,
@@ -763,6 +822,7 @@ bool RHI::LoadShaderFromMemory(Shader* outShader, const std::wstring& aName, con
 bool RHI::LoadTextureFromMemory(Texture* outTexture, const std::wstring& aName, const BYTE* someImageData, size_t anImageDataSize, const D3D11_SHADER_RESOURCE_VIEW_DESC* aSRVDesc)
 {
 	assert(outTexture && "Please initialize the Texture Object before calling this function!");
+	//outTexture = std::make_shared<Texture>();
 	outTexture->myName = aName;
 	outTexture->myBindFlags = D3D11_BIND_SHADER_RESOURCE;
 	outTexture->myUsageFlags = D3D11_USAGE_DEFAULT;
@@ -1112,6 +1172,58 @@ void RHI::SetTextureResource(UINT aPipelineStages, unsigned aSlot, const Texture
 	}
 }
 
+void RHI::SetTextureResources(UINT aPipelineStages, unsigned aStartSlot,
+	const std::vector<std::shared_ptr<Texture>>& aTextureList)
+{
+	std::vector<ID3D11ShaderResourceView*> mySRVs;
+	mySRVs.resize(aTextureList.size());
+	for(size_t i = 0; i < aTextureList.size(); i++)
+	{
+		mySRVs[i] = aTextureList[i] ? aTextureList[i]->mySRV.Get() : nullptr;
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_VERTEX_SHADER)
+	{
+		Context->VSSetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_GEOMETERY_SHADER)
+	{
+		Context->GSGetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_PIXEL_SHADER)
+	{
+		Context->PSSetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+}
+
+void RHI::SetTextureResources(UINT aPipelineStages, unsigned aStartSlot,
+							  const std::vector<Texture*>& aTextureList)
+{
+	std::vector<ID3D11ShaderResourceView*> mySRVs;
+	mySRVs.resize(aTextureList.size());
+	for (size_t i = 0; i < aTextureList.size(); i++)
+	{
+		mySRVs[i] = aTextureList[i] ? aTextureList[i]->mySRV.Get() : nullptr;
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_VERTEX_SHADER)
+	{
+		Context->VSSetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_GEOMETERY_SHADER)
+	{
+		Context->GSGetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+
+	if (aPipelineStages & PIPELINE_STAGE_PIXEL_SHADER)
+	{
+		Context->PSSetShaderResources(aStartSlot, static_cast<unsigned>(aTextureList.size()), mySRVs.data());
+	}
+}
+
 void RHI::RemoveTextureResource(UINT aPipelineStages, unsigned aSlot)
 {
 	ComPtr<ID3D11ShaderResourceView> empty = nullptr;
@@ -1138,6 +1250,34 @@ void RHI::SetRenderTarget(const Texture* aTarget, const Texture* aDepthStencil)
 	if(aTarget)
 	{
 		Context->RSSetViewports(1, &aTarget->myViewport);
+	}
+	else if(aDepthStencil)
+	{
+		Context->RSSetViewports(1, &aDepthStencil->myViewport);
+	}
+}
+
+void RHI::SetRenderTargets(const std::vector<std::shared_ptr<Texture>>& aTargetList,
+	const std::shared_ptr<Texture>& aDepthStencil)
+{
+	std::vector<ID3D11RenderTargetView*> myRTVs;
+	myRTVs.reserve(aTargetList.size());
+
+	for (size_t t = 0; t < aTargetList.size(); t++)
+	{
+		if(!aTargetList[t] || (aTargetList[t]->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
+		{
+			std::throw_with_nested(std::invalid_argument("Attempted to set an invalid or read only texture as Render Target!"));
+		}
+		myRTVs.push_back(aTargetList[t]->myRTV.Get());
+	}
+
+	const UINT numRenderTargets = static_cast<UINT>(aTargetList.size());
+
+	Context->OMSetRenderTargets(numRenderTargets, myRTVs.empty() ? nullptr : myRTVs.data(), aDepthStencil ? aDepthStencil->myDSV.Get() : nullptr);
+	if(aTargetList[0])
+	{
+		Context->RSSetViewports(1, &aTargetList[0]->myViewport);
 	}
 	else if(aDepthStencil)
 	{

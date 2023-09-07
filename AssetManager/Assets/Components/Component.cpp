@@ -70,7 +70,12 @@ ComponentType Component::GetType() const
 	return myType;
 }
 
-unsigned Component::GetID() const
+unsigned Component::GetParentID() const
+{
+	return myParent->myID;
+}
+
+unsigned Component::GetComponentID() const
 {
 	return myID;
 }

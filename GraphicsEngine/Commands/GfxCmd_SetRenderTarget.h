@@ -5,7 +5,7 @@
 class GfxCmd_SetRenderTarget : public GraphicsCommand
 {
 public:
-	GfxCmd_SetRenderTarget(const Texture* aTarget, const Texture* aDepthStencil);
+	GfxCmd_SetRenderTarget(const Texture* aTarget, const Texture* aDepthStencil, RenderStage aRenderStage = RenderStage::Deferred);
 	~GfxCmd_SetRenderTarget() override = default;
 
 	void Execute() override;

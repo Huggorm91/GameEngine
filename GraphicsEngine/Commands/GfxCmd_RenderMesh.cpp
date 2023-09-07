@@ -1,14 +1,16 @@
 #include "GraphicsEngine.pch.h"
 #include "GfxCmd_RenderMesh.h"
 
-GfxCmd_RenderMesh::GfxCmd_RenderMesh(const MeshComponent& aMesh): myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(false), myBoneTransforms()
+GfxCmd_RenderMesh::GfxCmd_RenderMesh(const MeshComponent& aMesh, bool aIsDeferred) : GraphicsCommand(aIsDeferred ? RenderStage::Deferred : RenderStage::Forward), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), 
+myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(false), myBoneTransforms(), myID(aMesh.GetParentID())
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG
 {
 }
 
-GfxCmd_RenderMesh::GfxCmd_RenderMesh(const AnimatedMeshComponent& aMesh) : myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms())
+GfxCmd_RenderMesh::GfxCmd_RenderMesh(const AnimatedMeshComponent& aMesh, bool aIsDeferred) : GraphicsCommand(aIsDeferred ? RenderStage::Deferred : RenderStage::Forward), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), 
+myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms()), myID(aMesh.GetParentID())
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG
@@ -49,7 +51,11 @@ void GfxCmd_RenderMesh::SetObjectBuffer()
 void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 {
 	RHI::SetVertexShader(aMaterial.myVertexShader);
-	RHI::SetPixelShader(aMaterial.myPixelShader);
+	if (myStage == RenderStage::Forward)
+	{
+		RHI::SetPixelShader(aMaterial.myPixelShader);
+	}
+	
 	auto& buffer = GetMaterialBuffer();
 	buffer.Data.AlbedoColor = aMaterial.myAlbedoColor;
 	buffer.Data.UVTiling = aMaterial.myUVTiling;

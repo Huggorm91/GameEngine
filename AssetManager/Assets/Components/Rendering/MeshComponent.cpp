@@ -6,16 +6,16 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include "GraphicsEngine/Commands/GfxCmd_UpdateWorldBounds.h"
 
-MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix()
+MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix(), myIsDeferred(true)
 {
 }
 
-MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix()
+MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix(), myIsDeferred(true)
 {
 }
 
 MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f }, 
-myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix()
+myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix(), myIsDeferred(true)
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
 	{
@@ -24,7 +24,7 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 }
 
 MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), 
-myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix()
+myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
 {
 }
 
@@ -39,7 +39,7 @@ void MeshComponent::Update()
 	{
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
 	}
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this, myIsDeferred));
 }
 
 void MeshComponent::Init(const Json::Value& aJson)
@@ -48,6 +48,7 @@ void MeshComponent::Init(const Json::Value& aJson)
 	myRenderShadow = aJson["RenderShadow"].asBool();
 	myColor = CommonUtilities::Vector4f(aJson["Color"]);
 	myTransform = aJson["Transform"];
+	myIsDeferred = aJson["IsDeferred"].asBool();
 	for (auto& element : aJson["Elements"])
 	{
 		myElements[element["Index"].asInt()].myMaterial = element["Material"];
@@ -183,9 +184,19 @@ void MeshComponent::ToogleRenderShadow()
 	myRenderShadow = !myRenderShadow;
 }
 
-bool MeshComponent::IsRenderingShadow()
+bool MeshComponent::IsRenderingShadow() const
 {
 	return myRenderShadow;
+}
+
+void MeshComponent::SetIsDeferred(bool aState)
+{
+	myIsDeferred = aState;
+}
+
+bool MeshComponent::IsDeferred() const
+{
+	return myIsDeferred;
 }
 
 void MeshComponent::BoundsHasChanged() const
@@ -205,6 +216,7 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
+	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
 	ImGui::ColorEdit4("Color", (float*)&myColor);
 	// Add editor for Elements
 	myTransform.CreateImGuiComponents(aWindowName);
@@ -214,6 +226,7 @@ Json::Value MeshComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
 	result["RenderShadow"] = myRenderShadow;
+	result["IsDeferred"]= myIsDeferred;
 	result["Color"] = static_cast<Json::Value>(myColor);
 	result["Transform"] = myTransform.ToJson();
 	result["Path"] = *myPath;

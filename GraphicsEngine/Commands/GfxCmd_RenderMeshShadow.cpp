@@ -1,14 +1,14 @@
 #include "GraphicsEngine.pch.h"
 #include "GfxCmd_RenderMeshShadow.h"
 
-GfxCmd_RenderMeshShadow::GfxCmd_RenderMeshShadow(const MeshComponent& aMesh) : myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myHasBones(false), myBoneTransforms()
+GfxCmd_RenderMeshShadow::GfxCmd_RenderMeshShadow(const MeshComponent& aMesh) : GraphicsCommand(RenderStage::Shadow), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myHasBones(false), myBoneTransforms()
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG
 {
 }
 
-GfxCmd_RenderMeshShadow::GfxCmd_RenderMeshShadow(const AnimatedMeshComponent& aMesh) : myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms())
+GfxCmd_RenderMeshShadow::GfxCmd_RenderMeshShadow(const AnimatedMeshComponent& aMesh) : GraphicsCommand(RenderStage::Shadow), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms())
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG

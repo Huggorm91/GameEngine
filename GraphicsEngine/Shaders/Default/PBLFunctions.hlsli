@@ -68,7 +68,15 @@ float3 GetPblSpotlightValue(LightData someData, SpotlightData aSpotLight)
     
     const float3 kS = CalculateSpecular(someData.k, someData.kInverse, someData.aPow2, nDotL, someData.nDotV, someData.pixelNormal, someData.v, invertedDirection, someData.specularColor, someData.invertedSpecular);
     const float3 kD = someData.brdfDiffuse * (1.f - kS);
-    const float3 lightColor = aSpotLight.Color * aSpotLight.Intensity;
+    
+    float shadowMultiplier = 1.f;
+    if (LB_CastDirectionalShadows)
+    {
+        const float3 uv = GetShadowMapUV(aSpotLight.View, aSpotLight.Projection, someData.position);
+        const float depth = uv.z - LB_ShadowBias;
+        shadowMultiplier = DirectionalShadowMap.SampleCmpLevelZero(ShadowSampler, uv.xy, depth).r;
+    }
+    const float3 lightColor = aSpotLight.Color * aSpotLight.Intensity * shadowMultiplier;
     
     const float widthAttenuation = saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(cos(aSpotLight.InnerAngle) - cos(aSpotLight.OuterAngle), 0.00001f));
     const float attenuation = saturate(widthAttenuation * GetRangeAttenuation(distance((float3) someData.position, aSpotLight.Position), max(aSpotLight.Range, 0.00001f)));

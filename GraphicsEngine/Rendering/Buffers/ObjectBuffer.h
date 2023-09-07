@@ -7,8 +7,9 @@ struct ObjectBufferData
 	CommonUtilities::Matrix4x4f BoneTransforms[128]{};
 	CommonUtilities::Matrix4x4f Transform{};
 	CommonUtilities::Vector4f Color{};
+	unsigned ObjectID{};
 	alignas(4) bool HasBones = false;
-	CommonUtilities::Vector3f padding{};
+	CommonUtilities::Vector2f padding{};
 };
 
 typedef ConstantBuffer<ObjectBufferData> ObjectBuffer;

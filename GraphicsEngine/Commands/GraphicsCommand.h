@@ -9,10 +9,23 @@ class Material;
 class GraphicsCommand
 {
 public:
+	enum class RenderStage
+	{
+		Light,
+		Shadow,
+		Deferred,
+		Forward,
+		PostProcess
+	};
+
+	GraphicsCommand(RenderStage aStage = RenderStage::Deferred);
 	virtual ~GraphicsCommand() = default;
 	virtual void Execute() = 0;
+	RenderStage GetRenderStage() const;
 
 protected:
+	RenderStage myStage;
+
 	FrameBuffer& GetFrameBuffer();
 	ObjectBuffer& GetObjectBuffer();
 	LightBuffer& GetLightBuffer();

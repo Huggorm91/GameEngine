@@ -6,8 +6,6 @@
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
 #include "DefaultVertexInput.hlsli"
 #include "ShaderFunctions.hlsli"
-static const float PI = 3.1415926535f;
-static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
 static const int MAX_LIGHTSOURCES = 8;
 
 struct DefaultVertexToPixel

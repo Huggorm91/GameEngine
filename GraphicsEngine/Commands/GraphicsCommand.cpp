@@ -3,6 +3,15 @@
 #include "GraphicsEngine.h"
 #include "Rendering/Material.h"
 
+GraphicsCommand::GraphicsCommand(RenderStage aStage): myStage(aStage)
+{
+}
+
+GraphicsCommand::RenderStage GraphicsCommand::GetRenderStage() const
+{
+    return myStage;
+}
+
 FrameBuffer& GraphicsCommand::GetFrameBuffer()
 {
     return GraphicsEngine::Get().myFrameBuffer;

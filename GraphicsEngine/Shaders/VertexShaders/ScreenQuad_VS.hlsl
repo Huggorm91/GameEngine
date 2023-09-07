@@ -1,5 +1,5 @@
-#include "Default/BrdfData.hlsli"
-BrdfVSToPS main(unsigned int aVertexIndex : SV_VertexID)
+#include "../Default/QuadData.hlsli"
+QuadVSToPS main(unsigned int aVertexIndex : SV_VertexID)
 {
     const float4 position[4] =
     {
@@ -16,7 +16,7 @@ BrdfVSToPS main(unsigned int aVertexIndex : SV_VertexID)
         float2(1, 0)
     };
     
-    BrdfVSToPS output;
+    QuadVSToPS output;
     output.Position = position[aVertexIndex];
     output.UV = uv[aVertexIndex];
     return output;

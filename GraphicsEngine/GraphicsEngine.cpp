@@ -12,11 +12,11 @@
 #include <fstream>
 #include <Sort.hpp>
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{0,0}, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(), 
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(),
 myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(), myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
 #ifndef _RETAIL
-,myDebugMode(DebugMode::Default), myLightMode (LightMode::Default), myRenderMode (RenderMode::Mesh) ,myGrid()
+, myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
 #endif // !_RETAIL	
 {
 }
@@ -45,58 +45,88 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.backgroundColor;
 
-		if (!CreateLUTTexture())
+		// Textures
 		{
-			GELogger.Err("Failed to create LUT texture!");
-		}
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 96, &myBrdfLUTTexture);
+			if (!CreateLUTTexture())
+			{
+				GELogger.Err("Failed to create LUT texture!");
+			}
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 96, &myBrdfLUTTexture);
 
-		if (!RHI::LoadTexture(&myDefaultMaterialTexture, Helpers::string_cast<std::wstring>(settings.defaultMaterialTexture)))
+			if (!RHI::LoadTexture(&myDefaultMaterialTexture, Helpers::string_cast<std::wstring>(settings.defaultMaterialTexture)))
+			{
+				GELogger.Err("Failed to load default material texture!");
+			}
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 97, &myDefaultMaterialTexture);
+
+			if (!RHI::LoadTexture(&myDefaultNormalTexture, Helpers::string_cast<std::wstring>(settings.defaultNormalTexture)))
+			{
+				GELogger.Err("Failed to load default normal texture!");
+			}
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 98, &myDefaultNormalTexture);
+
+			if (!RHI::LoadTexture(&myMissingTexture, Helpers::string_cast<std::wstring>(settings.defaultMissingTexture)))
+			{
+				GELogger.Err("Failed to load default missing texture!");
+			}
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
+
+			if (!RHI::LoadTexture(&myDefaultCubeMap, Helpers::string_cast<std::wstring>(settings.defaultCubeMap)))
+			{
+				GELogger.Err("Failed to load default cubemap!");
+			}
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 100, &myDefaultCubeMap);
+
+			if (!myGBuffer.Init())
+			{
+				GELogger.Err("Failed to initialize GBuffer!");
+			}
+		}
+
+		// Samplers
 		{
-			GELogger.Err("Failed to load default material texture!");
-		}
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 97, &myDefaultMaterialTexture);
+			if (!CreateDefaultSampler())
+			{
+				GELogger.Err("Failed to create default sampler!");
+			}
+			RHI::SetSamplerState(myDefaultSampler, 0);
 
-		if (!RHI::LoadTexture(&myDefaultNormalTexture, Helpers::string_cast<std::wstring>(settings.defaultNormalTexture)))
+			if (!CreateShadowSampler())
+			{
+				GELogger.Err("Failed to create shadow sampler!");
+			}
+			RHI::SetSamplerState(myShadowSampler, 14);
+
+			if (!CreateLUTSampler())
+			{
+				GELogger.Err("Failed to create LUT sampler!");
+			}
+			RHI::SetSamplerState(myLUTSampler, 15);
+		}
+
+		// Blends
 		{
-			GELogger.Err("Failed to load default normal texture!");
-		}
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 98, &myDefaultNormalTexture);
+			if (!CreateAlphaBlend())
+			{
+				GELogger.Err("Failed to create Alpha Blend");
+			}
 
-		if (!RHI::LoadTexture(&myMissingTexture, Helpers::string_cast<std::wstring>(settings.defaultMissingTexture)))
-		{
-			GELogger.Err("Failed to load default missing texture!");
+			if (!CreateAdditiveBlend())
+			{
+				GELogger.Err("Failed to create Additive Blend");
+			}
 		}
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
 
-		if (!RHI::LoadTexture(&myDefaultCubeMap, Helpers::string_cast<std::wstring>(settings.defaultCubeMap)))
-		{
-			GELogger.Err("Failed to load default cubemap!");
-		}
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 100, &myDefaultCubeMap);
-
-		if (!CreateDefaultSampler())
-		{
-			GELogger.Err("Failed to create default sampler!");
-		}
-		RHI::SetSamplerState(myDefaultSampler, 0);
-
-		if (!CreateShadowSampler())
-		{
-			GELogger.Err("Failed to create shadow sampler!");
-		}
-		RHI::SetSamplerState(myShadowSampler, 14);
-
-		if (!CreateLUTSampler())
-		{
-			GELogger.Err("Failed to create LUT sampler!");
-		}
-		RHI::SetSamplerState(myLUTSampler, 15);
-
+		// Material & Shaders
 		myDefaultMaterial = AssetManager::GetAsset<Material>(settings.defaultMaterial);
 		if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
 		{
 			GELogger.Err("Failed to create InputLayout!");
+			return false;
+		}
+		if (!RHI::LoadShader(&myGBufferShader, Helpers::string_cast<std::wstring>(settings.defaultGBufferPSShader)))
+		{
+			GELogger.Err("Failed to load GBuffer Shader!");
 			return false;
 		}
 
@@ -132,6 +162,7 @@ void GraphicsEngine::SaveSettings() const
 	settings.defaultMaterialTexture = Helpers::string_cast<std::string>(myDefaultMaterialTexture.GetName());
 	settings.defaultCubeMap = Helpers::string_cast<std::string>(myDefaultCubeMap.GetName());
 	settings.defaultMaterial = myDefaultMaterial.GetName();
+	settings.defaultGBufferPSShader = Helpers::string_cast<std::string>(myGBufferShader.GetName());
 	settings.backgroundColor = myBackgroundColor;
 	SaveSettings(settings);
 }
@@ -346,19 +377,26 @@ void GraphicsEngine::BeginFrame()
 {
 	RHI::ClearRenderTarget(&myBackBuffer, { myBackgroundColor.x, myBackgroundColor.y, myBackgroundColor.z, myBackgroundColor.w });
 	RHI::ClearDepthStencil(&myDepthBuffer);
+	myGBuffer.ClearTextures();
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
-	myRenderCommands->renderCommands.emplace_back();
-	myRenderCommands->meshCommands.emplace_back();
 }
 
 void GraphicsEngine::EndFrame()
 {
 	RHI::Present();
-	myRenderCommands->renderCommands.clear();
+	myRenderCommands->lightRenderCommands.clear();
 	myRenderCommands->lightCommands.clear();
+	myRenderCommands->shadowRenderCommands.clear();
 	myRenderCommands->shadowCommands.clear();
-	myRenderCommands->meshCommands.clear();
+	myRenderCommands->deferredRenderCommands.clear();
+	myRenderCommands->deferredMeshCommands.clear();
+	myRenderCommands->forwardRenderCommands.clear();
+	myRenderCommands->forwardMeshCommands.clear();
+	myRenderCommands->postProcessRenderCommands.clear();
+
+	myPointLights.clear();
+	mySpotLights.clear();
 
 	myDirectionalShadowMap = nullptr;
 	for (size_t i = 0; i < MAX_LIGHTS; i++)
@@ -380,14 +418,29 @@ struct ShadowData
 	}
 };
 
-struct MeshCommandData
+struct DeferredCommandData
 {
 	std::shared_ptr<GfxCmd_RenderMesh> myCommand;
 	float myDistanceFromCamera;
 
-	MeshCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
-	bool operator<(const MeshCommandData& someData) {
+	DeferredCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
+
+	// Sorts Front to Back
+	bool operator<(const DeferredCommandData& someData) {
 		return myDistanceFromCamera < someData.myDistanceFromCamera;
+	}
+};
+
+struct ForwardCommandData
+{
+	std::shared_ptr<GfxCmd_RenderMesh> myCommand;
+	float myDistanceFromCamera;
+
+	ForwardCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
+
+	// Sorts Back to Front
+	bool operator<(const ForwardCommandData& someData) {
+		return myDistanceFromCamera > someData.myDistanceFromCamera;
 	}
 };
 
@@ -396,16 +449,25 @@ void GraphicsEngine::RenderFrame()
 	{
 		RHI::SetPixelShader(nullptr);
 
-		int pointIndex = 0;
-		int spotIndex = 0;
+		unsigned pointIndex = 0;
+		unsigned spotIndex = 0;
 		bool hasDirectional = false;
+
+		std::shared_ptr<LightCommand> directionalLight;
+
+		// Light Commands
+		for (auto& command : myRenderCommands->lightRenderCommands)
+		{
+			command->Execute();
+		}
 		for (auto& command : myRenderCommands->lightCommands)
 		{
 			switch (command->GetType())
 			{
 			case LightCommand::Type::PointLight:
 			{
-				if (pointIndex < 8)
+				myPointLights.emplace_back(command);
+				if (pointIndex < MAX_LIGHTS)
 				{
 					command->Execute(pointIndex);
 					++pointIndex;
@@ -414,8 +476,10 @@ void GraphicsEngine::RenderFrame()
 			}
 			case LightCommand::Type::SpotLight:
 			{
-				if (spotIndex < 8)
+				mySpotLights.emplace_back(command);
+				if (spotIndex < MAX_LIGHTS)
 				{
+
 					command->Execute(spotIndex);
 					++spotIndex;
 				}
@@ -425,6 +489,7 @@ void GraphicsEngine::RenderFrame()
 			{
 				if (!hasDirectional)
 				{
+					directionalLight = command;
 					command->Execute(0);
 					hasDirectional = true;
 				}
@@ -438,6 +503,12 @@ void GraphicsEngine::RenderFrame()
 			default:
 				break;
 			}
+		}
+
+		// Shadow Commands
+		for (auto& command : myRenderCommands->shadowRenderCommands)
+		{
+			command->Execute();
 		}
 
 		std::vector<ShadowData> objectList;
@@ -467,7 +538,8 @@ void GraphicsEngine::RenderFrame()
 			return aFirst < aSecond;
 		};
 
-		if (myLightBuffer.Data.CastDirectionalShadows &&  myLightBuffer.Data.DirectionallightIntensity > 0.f)
+		// Create Directionallight shadows
+		if (myLightBuffer.Data.CastDirectionalShadows && myLightBuffer.Data.DirectionallightIntensity > 0.f)
 		{
 			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
 			position = 3.f * myWorldRadius * myLightBuffer.Data.InvertedDirection;
@@ -489,50 +561,68 @@ void GraphicsEngine::RenderFrame()
 
 			RHI::UpdateConstantBufferData(myFrameBuffer);
 			RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
-			
+
 			for (auto& data : objectList)
 			{
 				data.myCommand->Execute();
 			}
 		}
 
-		//for (int i = 0; i < MAX_LIGHTS; i++)
-		//{
-		//	if (myLightBuffer.Data.mySpotlights[i].myCastShadows && mySpotShadowMap[i])
-		//	{
-		//		RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
-		//		// calculate spotlight shadows
+		// Create Point- and Spotlight shadows
+		for (int i = 0; i < MAX_LIGHTS; i++)
+		{
+			if (auto& spotLight = myLightBuffer.Data.Spotlights[i]; spotLight.CastShadows && mySpotShadowMap[i])
+			{
+				RHI::SetRenderTarget(nullptr, mySpotShadowMap[i]);
+				position = spotLight.Position;
+				CommonUtilities::QuickSort(objectList, compare);
+				updatedDistance.clear();
 
-		//		for (auto& data : objectList)
-		//		{
-		//			data.myCommand->Execute();
-		//		}
-		//	}
+				const CommonUtilities::Vector3f& target = position + spotLight.LightDirection * spotLight.Range;
+				const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, target);
+				const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreatePerspectiveMatrix(spotLight.OuterAngle * 2.f, 1.f, spotLight.Range, { 1.f, 1.f });
 
-		//	if (myLightBuffer.Data.myPointlights[i].myCastShadows && myPointShadowMap[i])
-		//	{
-		//		RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
-		//		// calculate point light shadows
+				spotLight.View = view;
+				spotLight.Projection = projection;
 
-		//		for (auto& data : objectList)
-		//		{
-		//			data.myCommand->Execute();
-		//		}
-		//	}
-		//}
+				myFrameBuffer.Data.View = view;
+				myFrameBuffer.Data.Projection = projection;
+
+				RHI::UpdateConstantBufferData(myFrameBuffer);
+				RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+
+				for (auto& data : objectList)
+				{
+					data.myCommand->Execute();
+				}
+			}
+
+			//if (myLightBuffer.Data.Pointlights[i].myCastShadows && myPointShadowMap[i])
+			//{
+			//	RHI::SetRenderTarget(nullptr, myPointShadowMap[i]);
+			//	// calculate point light shadows
+
+			//	for (auto& data : objectList)
+			//	{
+			//		data.myCommand->Execute();
+			//	}
+			//}
+		}
 		RHI::UpdateConstantBufferData(myLightBuffer);
 		RHI::SetRenderTarget(nullptr, nullptr);
 
+
+		// Set ShadowMaps
 		pointIndex = 0;
 		spotIndex = 0;
-		hasDirectional = false;
+		directionalLight->SetShadowMap(0);
 		for (auto& command : myRenderCommands->lightCommands)
 		{
 			switch (command->GetType())
 			{
 			case LightCommand::Type::PointLight:
 			{
-				if (pointIndex < 8)
+				if (pointIndex < MAX_LIGHTS)
 				{
 					command->SetShadowMap(pointIndex);
 					++pointIndex;
@@ -541,19 +631,10 @@ void GraphicsEngine::RenderFrame()
 			}
 			case LightCommand::Type::SpotLight:
 			{
-				if (spotIndex < 8)
+				if (spotIndex < MAX_LIGHTS)
 				{
 					command->SetShadowMap(spotIndex);
 					++spotIndex;
-				}
-				break;
-			}
-			case LightCommand::Type::Directional:
-			{
-				if (!hasDirectional)
-				{
-					command->SetShadowMap(0);
-					hasDirectional = true;
 				}
 				break;
 			}
@@ -563,37 +644,98 @@ void GraphicsEngine::RenderFrame()
 		}
 	}
 
+	// Deferred Rendering
+	{
+		myGBuffer.SetAsTarget(&myDepthBuffer);
+		RHI::SetPixelShader(&myGBufferShader);
+
+		std::vector<DeferredCommandData> meshes;
+		meshes.reserve(myRenderCommands->deferredMeshCommands.size());
+
+		for (auto& command : myRenderCommands->deferredRenderCommands)
+		{
+			command->Execute();
+		}
+
+		for (auto& command : myRenderCommands->deferredMeshCommands)
+		{
+			meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
+		}
+
+		CommonUtilities::QuickSort(meshes);
+
+		for (auto& mesh : meshes)
+		{
+			mesh.myCommand->Execute();
+		}
+
+		RHI::SetRenderTarget(nullptr, nullptr);
+		myGBuffer.SetAsResource(PIPELINE_STAGE_PIXEL_SHADER, 3);
+	}
+
+	// Forward Rendering
 	{
 		RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
 
-		std::vector<MeshCommandData> meshes;
-		meshes.reserve(myRenderCommands->meshCommands[0].size());
-		for (size_t i = 0; i < myRenderCommands->renderCommands.size(); i++)
+		std::vector<ForwardCommandData> meshes;
+		meshes.reserve(myRenderCommands->forwardMeshCommands.size());
+
+		for (auto& command : myRenderCommands->forwardRenderCommands)
 		{
-			for (auto& command : myRenderCommands->renderCommands[i])
-			{
-				command->Execute();
-			}
-			for (auto& command : myRenderCommands->meshCommands[i])
-			{
-				meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
-			}
+			command->Execute();
+		}
 
-			CommonUtilities::QuickSort(meshes);
+		for (auto& command : myRenderCommands->forwardMeshCommands)
+		{
+			meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
+		}
 
-			for (auto& mesh : meshes)
-			{
-				mesh.myCommand->Execute();
-			}
+		CommonUtilities::QuickSort(meshes);
+
+		for (auto& mesh : meshes)
+		{
+			mesh.myCommand->Execute();
 		}
 	}
+
+	// PostProcessing
 
 	myLineDrawer.Render();
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
 {
-	myRenderCommands->renderCommands.back().emplace_back(aCommand);
+	switch (aCommand->GetRenderStage())
+	{
+	case GraphicsCommand::RenderStage::Light:
+	{
+		myRenderCommands->lightRenderCommands.emplace_back(aCommand);
+		break;
+	}
+	case GraphicsCommand::RenderStage::Shadow:
+	{
+		myRenderCommands->shadowRenderCommands.emplace_back(aCommand);
+		break;
+	}
+	case GraphicsCommand::RenderStage::Deferred:
+	{
+		myRenderCommands->deferredRenderCommands.emplace_back(aCommand);
+		break;
+	}
+	case GraphicsCommand::RenderStage::Forward:
+	{
+		myRenderCommands->forwardRenderCommands.emplace_back(aCommand);
+		break;
+	}
+	case GraphicsCommand::RenderStage::PostProcess:
+	{
+		myRenderCommands->postProcessRenderCommands.emplace_back(aCommand);
+		break;
+	}
+	default:
+		GELogger.Err("Invalid RenderStage in AddGraphicsCommand!");
+		break;
+	}
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand)
@@ -608,13 +750,22 @@ void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow>
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand)
 {
-	myRenderCommands->meshCommands.back().emplace_back(aCommand);
-}
-
-void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GfxCmd_NewRenderlist> aCommand)
-{
-	myRenderCommands->renderCommands.emplace_back();
-	myRenderCommands->meshCommands.emplace_back();
+	switch (aCommand->GetRenderStage())
+	{
+	case GraphicsCommand::RenderStage::Deferred:
+	{
+		myRenderCommands->deferredMeshCommands.emplace_back(aCommand);
+		break;
+	}
+	case GraphicsCommand::RenderStage::Forward:
+	{
+		myRenderCommands->forwardMeshCommands.emplace_back(aCommand);
+		break;
+	}
+	default:
+		GELogger.Err("Invalid RenderStage in AddGraphicsCommand -> RenderMesh!");
+		break;
+	}
 }
 
 bool GraphicsEngine::CreateDefaultSampler()
@@ -689,6 +840,48 @@ bool GraphicsEngine::CreateLUTSampler()
 	return true;
 }
 
+bool GraphicsEngine::CreateAlphaBlend()
+{
+	D3D11_BLEND_DESC blendDesc;
+	D3D11_RENDER_TARGET_BLEND_DESC& target = blendDesc.RenderTarget[0];
+
+	target.BlendEnable = TRUE;
+	target.SrcBlend = D3D11_BLEND_ONE;
+	target.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	target.BlendOp = D3D11_BLEND_OP_ADD;
+	target.SrcBlendAlpha = D3D11_BLEND_ONE;
+	target.DestBlendAlpha = D3D11_BLEND_ONE;
+	target.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	target.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	if (!RHI::CreateBlendState(myAlphaBlend, blendDesc))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool GraphicsEngine::CreateAdditiveBlend()
+{
+	D3D11_BLEND_DESC blendDesc;
+	D3D11_RENDER_TARGET_BLEND_DESC& target = blendDesc.RenderTarget[0];
+
+	target.BlendEnable = TRUE;
+	target.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	target.DestBlend = D3D11_BLEND_ONE;
+	target.BlendOp = D3D11_BLEND_OP_ADD;
+	target.SrcBlendAlpha = D3D11_BLEND_ZERO;
+	target.DestBlendAlpha = D3D11_BLEND_ONE;
+	target.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	target.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	if (!RHI::CreateBlendState(myAdditiveBlend, blendDesc))
+	{
+		return false;
+	}
+	return true;
+}
+
 bool GraphicsEngine::CreateLUTTexture()
 {
 	if (!RHI::CreateTexture(&myBrdfLUTTexture, L"brdfLUT", 512, 512, DXGI_FORMAT_R16G16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
@@ -735,7 +928,7 @@ bool GraphicsEngine::CreateLUTTexture()
 	brdfPS.DeleteData();
 
 	return true;
-}
+	}
 
 GraphicsEngine::Settings GraphicsEngine::LoadSettings()
 {
@@ -764,6 +957,14 @@ GraphicsEngine::Settings GraphicsEngine::LoadSettings()
 	settings.backgroundColor.y = json["BackgroundColor"]["G"].asFloat();
 	settings.backgroundColor.z = json["BackgroundColor"]["B"].asFloat();
 	settings.backgroundColor.w = json["BackgroundColor"]["A"].asFloat();
+#ifdef _DEBUG
+	settings.defaultGBufferPSShader = "Content/Shaders/Debug/" + json["GBufferPSShader"].asString();
+#elif _RELEASE
+	settings.defaultGBufferPSShader = "Content/Shaders/Release/" + json["GBufferPSShader"].asString();
+#elif _RETAIL
+	settings.defaultGBufferPSShader = "Content/Shaders/Retail/" + json["GBufferPSShader"].asString();
+#endif // _DEBUG
+
 	return settings;
 }
 
@@ -779,6 +980,10 @@ void GraphicsEngine::SaveSettings(const Settings& someSettings) const
 	json["BackgroundColor"]["G"] = someSettings.backgroundColor.y;
 	json["BackgroundColor"]["B"] = someSettings.backgroundColor.z;
 	json["BackgroundColor"]["A"] = someSettings.backgroundColor.w;
+	size_t lastSlash = someSettings.defaultGBufferPSShader.find_last_of('/') + 1;
+	json["GBufferPSShader"] = someSettings.defaultGBufferPSShader.substr(lastSlash);
+	const std::string comment = "// Only use 'ShaderName.cso' and not full path";
+	json["GBufferPSShader"].setComment(comment, Json::commentAfterOnSameLine);
 
 	std::fstream fileStream(mySettingsPath, std::ios::out);
 	if (fileStream)

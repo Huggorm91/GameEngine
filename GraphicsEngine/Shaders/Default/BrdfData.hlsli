@@ -1,8 +1,6 @@
-struct BrdfVSToPS
-{
-    float2 UV : UV;
-    float4 Position : SV_POSITION;
-};
+#ifndef BRDFDATA_HLSLI
+#define BRDFDATA_HLSLI
+#include "QuadData.hlsli"
 
 static const float PI = 3.1415926535f;
 
@@ -103,3 +101,5 @@ float2 IntegrateBRDF(float aNdotV, float aRoughness)
 
     return float2(a, b) / NUM_SAMPLES;
 }
+
+#endif // BRDFDATA_HLSLI

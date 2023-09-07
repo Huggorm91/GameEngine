@@ -3,7 +3,7 @@
 #include <Timer.h>
 
 GfxCmd_SetFrameBuffer::GfxCmd_SetFrameBuffer(const CommonUtilities::Matrix4x4f& aViewMatrix, const CommonUtilities::Matrix4x4f& aProjectionMatrix, const CommonUtilities::Vector3f& aCameraPosition) :
-	myViewMatrix(aViewMatrix), myProjectionMatrix(aProjectionMatrix), myCameraPosition(aCameraPosition)
+	GraphicsCommand(RenderStage::Deferred), myViewMatrix(aViewMatrix), myProjectionMatrix(aProjectionMatrix), myCameraPosition(aCameraPosition)
 {
 }
 

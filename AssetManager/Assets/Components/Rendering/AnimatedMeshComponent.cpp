@@ -67,7 +67,7 @@ void AnimatedMeshComponent::Update()
 	{
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
 	}
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this, myIsDeferred));
 }
 
 void AnimatedMeshComponent::Init(const Json::Value& aJson)

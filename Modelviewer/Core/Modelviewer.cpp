@@ -405,8 +405,8 @@ void ModelViewer::Init()
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
+		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);
 	}
 
 	myGameObjects.emplace_back();
@@ -416,8 +416,8 @@ void ModelViewer::Init()
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		myGameObjects.back().AddComponent(spotlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
+		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);
 	}
 
 	myGameObjects.emplace_back();

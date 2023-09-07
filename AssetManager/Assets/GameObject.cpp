@@ -208,7 +208,7 @@ void GameObject::CreateImGuiWindow(const std::string& aWindowName)
 			for (auto [type, index] : myIndexList)
 			{
 				component = myComponents.ChangeValueUnsafe<Component>(index);
-				text = ComponentTypeToString(component->GetType()) + " " + std::to_string(component->GetID());
+				text = ComponentTypeToString(component->GetType()) + " " + std::to_string(component->GetComponentID());
 				ImGui::SetNextItemOpen(true, ImGuiCond_::ImGuiCond_Appearing);
 				if (ImGui::TreeNode(text.c_str(), ComponentTypeToString(component->GetType()).c_str()))
 				{

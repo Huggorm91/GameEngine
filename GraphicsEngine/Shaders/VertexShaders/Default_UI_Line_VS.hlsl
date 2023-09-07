@@ -1,4 +1,4 @@
-#include "Default/DefaultLineData.hlsli"
+#include "../Default/DefaultLineData.hlsli"
 
 DefaultVertexToPixel main(DefaultVertexInput input)
 {

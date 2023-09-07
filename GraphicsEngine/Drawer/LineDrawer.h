@@ -49,6 +49,7 @@ public:
 	//LineHandle AddCylinder(const CommonUtilities::Vector3f& aCenter, float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
 	//LineHandle AddCapsule(const CommonUtilities::Vector3f& aCenter, float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
 	//LineHandle AddCone(float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCone(float aHeight, float anAngleInRadians, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
 
 	LineHandle GetNewHandle();
 	void UpdatePrimitiveTransform(const LineHandle& aHandle, const CommonUtilities::Matrix4x4f& aTransform);
@@ -92,7 +93,7 @@ private:
 	unsigned AddPrimitive(const LinePrimitive& aPrimitive);
 	void UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle);
 
-	void CreateCircle(LinePrimitive& outPrimitive, float aRadius, const CommonUtilities::Vector3f& aStartPosition, const CommonUtilities::Vector3f& aDirection);
+	void CreateCircle(LinePrimitive& outPrimitive, unsigned aVertexCount, float aRadius, const CommonUtilities::Vector3f& aCenter, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector4f& aColor);
 
 	void UpdateBuffers(bool aIsUI);
 };

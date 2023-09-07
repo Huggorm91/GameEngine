@@ -38,7 +38,10 @@ public:
 
 	void SetRenderShadow(bool aState);
 	void ToogleRenderShadow();
-	bool IsRenderingShadow();
+	bool IsRenderingShadow() const;
+
+	void SetIsDeferred(bool aState);
+	bool IsDeferred() const;
 
 	void BoundsHasChanged() const;
 	const std::string& GetName() const;
@@ -48,6 +51,7 @@ public:
 	const MeshComponent* GetTypePointer() const override;
 
 protected:
+	bool myIsDeferred;
 	bool myRenderShadow;
 	const std::string* myPath;
 	CommonUtilities::Vector4f myColor;

@@ -1,6 +1,8 @@
 #ifndef SHADERFUNCTIONS_HLSLI
 #define SHADERFUNCTIONS_HLSLI
 #include "../ConstantBuffers/LightBuffer.hlsli"
+static const float PI = 3.1415926535f;
+static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
 
 float Pow2(float aValue)
 {
@@ -78,6 +80,22 @@ uint GetNumMips(TextureCube aCubeMap)
 float GetRangeAttenuation(float aDistance, float aLightRange)
 {
     return 1 - Pow2(aDistance / aLightRange);
+}
+
+float2 CartesianToSpherical(float3 aCartesianCoordinate)
+{
+    float2 spherical;
+    spherical.x = atan2(aCartesianCoordinate.y, aCartesianCoordinate.x) * PI_INVERSE;
+    spherical.y = aCartesianCoordinate.z;
+    return spherical;
+}
+
+float3 SpherlcalToCartesian(float2 aSphericalCoordinate)
+{
+    float2 sinCosTheta, sinCosPhi;
+    sincos(aSphericalCoordinate.x * PI, sinCosTheta.x, sinCosTheta.y);
+    sinCosPhi = float2(sqrt(1.0 - aSphericalCoordinate.y * aSphericalCoordinate.y), aSphericalCoordinate.y);
+    return float3(sinCosTheta.y * sinCosPhi.x, sinCosTheta.x * sinCosPhi.x, sinCosPhi.y);
 }
 
 #endif // SHADERFUNCTIONS_HLSLI

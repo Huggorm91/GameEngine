@@ -34,7 +34,8 @@ public:
 	GameObject& GetParent();
 
 	ComponentType GetType() const;
-	unsigned GetID() const;
+	unsigned GetParentID() const;
+	unsigned GetComponentID() const;
 
 	virtual void SetActive(bool aIsActive);
 	virtual void ToogleActive();

@@ -3,9 +3,9 @@
 #include "InterOp/RHI.h"
 #include "Rendering/Texture.h"
 #include "Rendering/Material.h"
+#include "Rendering/GBuffer.h"
 #include "Commands/GfxCmd_RenderMesh.h"
 #include "Commands/GfxCmd_RenderMeshShadow.h"
-#include "Commands/GfxCmd_NewRenderlist.h"
 #include "Commands/Light/LightCommand.h"
 #include "Drawer/LineDrawer.h"
 
@@ -94,7 +94,6 @@ public:
 	void AddGraphicsCommand(std::shared_ptr<LightCommand> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand);
-	void AddGraphicsCommand(std::shared_ptr<GfxCmd_NewRenderlist> aCommand);
 
 	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const {
 		return myWindowHandle;
@@ -135,15 +134,21 @@ private:
 		std::string defaultMaterialTexture;
 		std::string defaultCubeMap;
 		std::string defaultMaterial;
+		std::string defaultGBufferPSShader;
 		CommonUtilities::Vector4f backgroundColor;
 	};
 
 	struct CommandContainer
 	{
+		std::vector<std::shared_ptr<GraphicsCommand>> lightRenderCommands{};
 		std::vector<std::shared_ptr<LightCommand>> lightCommands {};
+		std::vector<std::shared_ptr<GraphicsCommand>> shadowRenderCommands{};
 		std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> shadowCommands {};
-		std::vector<std::vector<std::shared_ptr<GraphicsCommand>>> renderCommands {};
-		std::vector<std::vector<std::shared_ptr<GfxCmd_RenderMesh>>> meshCommands {};
+		std::vector<std::shared_ptr<GraphicsCommand>> deferredRenderCommands{};
+		std::vector<std::shared_ptr<GfxCmd_RenderMesh>> deferredMeshCommands{};
+		std::vector<std::shared_ptr<GraphicsCommand>> forwardRenderCommands {};
+		std::vector<std::shared_ptr<GfxCmd_RenderMesh>> forwardMeshCommands {};
+		std::vector<std::shared_ptr<GraphicsCommand>> postProcessRenderCommands{};
 	};
 
 #ifndef _RETAIL
@@ -157,6 +162,9 @@ private:
 	ComPtr<ID3D11SamplerState> myDefaultSampler;
 	ComPtr<ID3D11SamplerState> myShadowSampler;
 	ComPtr<ID3D11SamplerState> myLUTSampler;
+
+	ComPtr<ID3D11BlendState> myAlphaBlend;
+	ComPtr<ID3D11BlendState> myAdditiveBlend;
 
 	float myWorldRadius;
 	SIZE myWindowSize;
@@ -173,6 +181,8 @@ private:
 	std::array<Texture*, MAX_LIGHTS> myPointShadowMap;
 	std::array<Texture*, MAX_LIGHTS> mySpotShadowMap;
 
+	Shader myGBufferShader;
+
 	Texture myBackBuffer;
 	Texture myDepthBuffer;
 	Texture myBrdfLUTTexture;
@@ -182,6 +192,7 @@ private:
 	Texture myDefaultMaterialTexture;
 	Texture myDefaultCubeMap;
 	Material myDefaultMaterial;
+	GBuffer myGBuffer;
 
 	FrameBuffer myFrameBuffer;
 	ObjectBuffer myObjectBuffer;
@@ -189,6 +200,9 @@ private:
 	MaterialBuffer myMaterialBuffer;
 
 	LineDrawer myLineDrawer;
+
+	std::vector<std::shared_ptr<LightCommand>> myPointLights;
+	std::vector<std::shared_ptr<LightCommand>> mySpotLights;
 
 	CommandContainer myFirstCommandlist;
 	CommandContainer mySecondCommandlist;
@@ -199,7 +213,12 @@ private:
 	bool CreateDefaultSampler();
 	bool CreateShadowSampler();
 	bool CreateLUTSampler();
+
+	bool CreateAlphaBlend();
+	bool CreateAdditiveBlend();
+
 	bool CreateLUTTexture();
+
 	Settings LoadSettings();
 	void SaveSettings(const Settings& someSettings) const;
 };
