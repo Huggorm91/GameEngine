@@ -396,6 +396,7 @@ void ModelViewer::Init()
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
+		mesh.SetFXTexture(AssetManager::GetAsset<Texture*>("Content/Textures/FX/Chest_FX.dds"));
 	}
 
 	{

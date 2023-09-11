@@ -1,6 +1,6 @@
 #ifndef PBLFUNCTIONS_HLSLI
 #define PBLFUNCTIONS_HLSLI
-#include "DefaultMaterialData.hlsli"
+#include "MaterialData.hlsli"
 
 struct LightData
 {
@@ -139,34 +139,34 @@ float3 GetPblLight(LightData someData, float3 anAlbedoColor, float anOcclusion)
     
     if (FB_LightMode == 0 || FB_LightMode == 1)
     {
-#endif    
+#endif // !_RETAIL
     result = GetPblAmbientlight(someData, anOcclusion, diffuseColor);
 #ifndef _RETAIL
     }
     if (FB_LightMode == 0 || FB_LightMode == 2)
     {
-#endif
+#endif // !_RETAIL
     result += GetPblDirectionallight(someData);
 #ifndef _RETAIL
     }
-#endif
+#endif // !_RETAIL
     [unroll]
     for (int i = 0; i < MAX_LIGHTSOURCES; i++)
     {
 #ifndef _RETAIL
     if(FB_LightMode == 0 || FB_LightMode == 3)
     {
-#endif    
+#endif // !_RETAIL
         result += GetPblPointlightValue(someData, LB_Pointlights[i]);    
 #ifndef _RETAIL
         }
     if(FB_LightMode == 0 || FB_LightMode == 4)
     {
-#endif
+#endif // !_RETAIL
         result += GetPblSpotlightValue(someData, LB_Spotlights[i]);
 #ifndef _RETAIL
         }
-#endif
+#endif // !_RETAIL
     }
     return result;
 }

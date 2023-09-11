@@ -7,12 +7,13 @@ cbuffer FrameBuffer : register(b0)
 	float3 FB_CameraPosition;
 	float FB_DeltaTime;
 	double FB_TotalTime;
+    float2 FB_ScreenSize;
 	
 #ifndef _RETAIL
 	int FB_DebugMode;
     int FB_LightMode;
-#else
-    double paddingfb;	
+	
+    float2 paddingfb;
 #endif
 }
 #endif // FRAMEBUFFER_HLSLI

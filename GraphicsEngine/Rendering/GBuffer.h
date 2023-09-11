@@ -16,6 +16,8 @@ public:
 
 	void ClearTextures();
 
+	unsigned Count() const;
+
 private:
 	static unsigned mySlot;
 	Texture myAlbedoMap;

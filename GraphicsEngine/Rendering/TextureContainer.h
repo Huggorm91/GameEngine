@@ -8,6 +8,14 @@ struct TextureContainer
 	Texture DepthBuffer{};
 	Texture BrdfLUTTexture{};
 
+	Texture Scenebuffer{};
+	Texture HalfScenebuffer{};
+	Texture QuarterScenebufferA{};
+	Texture QuarterScenebufferB{};
+
+	Texture IntermediateA{};
+	Texture IntermediateB{};
+
 	Texture MissingTexture{};
 	Texture DefaultNormalTexture{};
 	Texture DefaultMaterialTexture{};
@@ -20,6 +28,12 @@ struct TextureContainer
 struct SlotContainer
 {
 	unsigned BrdfLUTTextureSlot{};
+	unsigned GBufferSlot{};
+	unsigned GBufferCount{};
+
+	unsigned IntermediateASlot{};
+	unsigned IntermediateBSlot{};
+
 	unsigned MissingTextureSlot{};
 	unsigned DefaultNormalTextureSlot{};
 	unsigned DefaultMaterialTextureSlot{};

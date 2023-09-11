@@ -246,17 +246,18 @@
   <ItemGroup>
     <None Include="Shaders\ConstantBuffers\FrameBuffer.hlsli" />
     <None Include="Shaders\ConstantBuffers\ObjectBuffer.hlsli" />
-    <None Include="Shaders\Default\DefaultMaterialData.hlsli" />
+    <None Include="Shaders\Default\MaterialData.hlsli" />
     <None Include="Shaders\ConstantBuffers\LightBuffer.hlsli" />
-    <None Include="Shaders\Default\DefaultVertexInput.hlsli" />
+    <None Include="Shaders\Default\VertexInput.hlsli" />
     <None Include="Shaders\Default\ShaderFunctions.hlsli" />
     <None Include="Shaders\ConstantBuffers\MaterialBuffer.hlsli" />
-    <None Include="Shaders\Default\DefaultLineData.hlsli" />
+    <None Include="Shaders\Default\LineData.hlsli" />
     <None Include="Shaders\Default\PhongFunctions.hlsli" />
     <None Include="Shaders\Default\PBLFunctions.hlsli" />
     <None Include="Shaders\Default\BrdfData.hlsli" />
     <None Include="Shaders\Default\GBufferData.hlsli" />
     <None Include="Shaders\Default\QuadData.hlsli" />
+    <None Include="Shaders\Default\PostProcessingData.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShaders\Default_VS.hlsl" />
@@ -271,5 +272,9 @@
     <FxCompile Include="Shaders\DeferredRendering\Default_Environment_PS.hlsl" />
     <FxCompile Include="Shaders\DeferredRendering\Default_SpotLight_PS.hlsl" />
     <FxCompile Include="Shaders\DeferredRendering\Default_PointLight_PS.hlsl" />
+    <FxCompile Include="Shaders\PixelShaders\Copy_PS.hlsl" />
+    <FxCompile Include="Shaders\PostProcessing\Luminance_PS.hlsl" />
+    <FxCompile Include="Shaders\PostProcessing\Gaussian_Blur_PS.hlsl" />
+    <FxCompile Include="Shaders\PostProcessing\Bloom_PS.hlsl" />
   </ItemGroup>
 </Project>

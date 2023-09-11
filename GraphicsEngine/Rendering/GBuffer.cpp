@@ -72,6 +72,11 @@ void GBuffer::ClearTextures()
 	RHI::ClearRenderTarget(&myPickingMap);
 }
 
+unsigned GBuffer::Count() const
+{
+	return static_cast<unsigned>(myTextureList.size());
+}
+
 bool GBuffer::CreateAlbedoTexture(const RHI::DeviceSize& aSize)
 {
 	if (!RHI::CreateTexture(&myAlbedoMap, L"GBuffer_Albedo", aSize.Width, aSize.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))

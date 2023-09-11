@@ -30,12 +30,12 @@ DefaultPixelOutput main(QuadVSToPS input)
                     result.Color = 0;
                     break;
                 }
-#endif
+#endif // !_RETAIL
                 const float3 material = GBuffer_Material.Sample(DefaultSampler, input.UV).rgb;
                 //const float3 vertexNormal = GBuffer_VertexNormal.Sample(DefaultSampler, input.UV).rgb;
                 const float3 pixelNormal = GBuffer_PixelNormal.Sample(DefaultSampler, input.UV).rgb;
                 const float4 worldPosition = GBuffer_Position.Sample(DefaultSampler, input.UV);
-                //const float3 fx = GBuffer_FX.Sample(DefaultSampler, input.UV).rgb;
+                const float emission = GBuffer_FX.Sample(DefaultSampler, input.UV).r;
             
                 LightData data;
                 data.position = worldPosition;
@@ -57,17 +57,18 @@ DefaultPixelOutput main(QuadVSToPS input)
 #ifndef _RETAIL
                 if (FB_LightMode == 0 || FB_LightMode == 1)
                 {
-#endif    
+#endif // !_RETAIL
                     result.Color.rgb = GetPblAmbientlight(data, material.r, diffuseColor);
 #ifndef _RETAIL
                 }
                 if (FB_LightMode == 0 || FB_LightMode == 2)
                 {
-#endif
+#endif // !_RETAIL
                     result.Color.rgb += GetPblDirectionallight(data);
 #ifndef _RETAIL
                 }
-#endif
+#endif // !_RETAIL
+                result.Color.rgb += albedo.rgb * emission;
                 result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
                 result.Color.a = albedo.a;
 #ifndef _RETAIL
@@ -91,7 +92,7 @@ DefaultPixelOutput main(QuadVSToPS input)
                 break;
             }
     }
-#endif
+#endif // !_RETAIL
     
     return result;
 }

@@ -164,6 +164,14 @@ void MeshComponent::SetMaterialTexture(Texture* aTexture)
 	}
 }
 
+void MeshComponent::SetFXTexture(Texture* aTexture)
+{
+	for (auto& element : myElements)
+	{
+		element.myMaterial.SetFXTexture(aTexture);
+	}
+}
+
 void MeshComponent::SetColor(const CommonUtilities::Vector4f& aColor)
 {
 	myColor = aColor;

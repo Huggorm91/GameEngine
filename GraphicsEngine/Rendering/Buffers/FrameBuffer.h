@@ -9,12 +9,13 @@ struct FrameBufferData
 	CommonUtilities::Vector3f CameraPosition{};
 	float DeltaTime = 0.f;
 	double TotalTime = 0.f;
+	CommonUtilities::Vector2f ScreenSize{};
 
 #ifndef _RETAIL
 	int DebugMode;
 	int LightMode;
-#else
-	double padding;
+
+	CommonUtilities::Vector2f padding;
 #endif // _DEBUG
 };
 

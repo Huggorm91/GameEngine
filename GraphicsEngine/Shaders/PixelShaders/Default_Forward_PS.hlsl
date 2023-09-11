@@ -10,13 +10,13 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
         default:
         case 0: // Default
     {
-#endif
+#endif // !_RETAIL
     
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
-                float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
-                result.Color = GetAlphaBlendColor(input.Color[0], textureColor);
-                result.Color = GetAlphaBlendColor(result.Color, MB_AlbedoColor);
-    //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
+                float4 albedoColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
+                albedoColor = GetAlphaBlendColor(input.Color[0], albedoColor);
+                albedoColor = GetAlphaBlendColor(MB_AlbedoColor, albedoColor);
+                //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
                 float3 pixelNormal = NormalTexture.Sample(DefaultSampler, scaledUV).rgb;
                 pixelNormal.xy = 2 * pixelNormal.xy - 1;
@@ -25,6 +25,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 pixelNormal = normalize(mul(pixelNormal, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS)));
     
                 float3 materialMap = MaterialTexture.Sample(DefaultSampler, scaledUV).rgb;
+                float emission = FXTexture.Sample(DefaultSampler, scaledUV).r;
     
                 LightData data;
                 data.position = input.WorldPosition;
@@ -32,7 +33,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 data.roughness = materialMap.g;
                 data.metalness = materialMap.b;
     
-    // These are calculated inside GetPblLight()
+                // These are calculated inside GetPblLight()
                 data.v = 0;
                 data.brdfDiffuse = 0;
                 data.specularColor = 0;
@@ -42,7 +43,9 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 data.aPow2 = 0;
                 data.nDotV = 0;
     
-                result.Color.rgb = GetPblLight(data, result.Color.rgb, materialMap.r);
+                result.Color.a = albedoColor.a;
+                result.Color.rgb = GetPblLight(data, albedoColor.rgb, materialMap.r);
+                result.Color.rgb += albedoColor.rgb * emission;
     
                 result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
 #ifndef _RETAIL
@@ -158,7 +161,7 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 break;
             }
     }
-#endif
+#endif // !_RETAIL
     
     return result;
 }

@@ -1,6 +1,6 @@
 #ifndef PHONGFUNCTIONS_HLSLI
 #define PHONGFUNCTIONS_HLSLI
-#include "DefaultMaterialData.hlsli"
+#include "MaterialData.hlsli"
 
 float3 GetPhongPointlightValue(float3 aPosition, float3 aPixelNormal, float3 aV, PointlightData aPointLight, float3 aColor)
 {

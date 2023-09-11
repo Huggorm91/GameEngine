@@ -1,4 +1,4 @@
-#include "../Default/DefaultMaterialData.hlsli"
+#include "../Default/MaterialData.hlsli"
 
 DefaultVertexToPixel main(DefaultVertexInput input)
 {

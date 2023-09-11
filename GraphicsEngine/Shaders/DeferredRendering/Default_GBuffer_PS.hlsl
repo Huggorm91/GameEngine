@@ -13,7 +13,7 @@ GBufferOutput main(DefaultVertexToPixel input)
         default:
         case 0: // Default
         {
-#endif
+#endif // !_RETAIL
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
                 result.Albedo = GetAlphaBlendColor(input.Color[0], textureColor);
@@ -224,7 +224,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 break;
             }
     }
-#endif
+#endif // !_RETAIL
     
     return result;
 }

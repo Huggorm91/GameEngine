@@ -32,6 +32,7 @@ public:
 	void SetAlbedoTexture(Texture* aTexture);
 	void SetNormalTexture(Texture* aTexture);
 	void SetMaterialTexture(Texture* aTexture);
+	void SetFXTexture(Texture* aTexture);
 
 	void SetColor(const CommonUtilities::Vector4f& aColor);
 	const CommonUtilities::Vector4f& GetColor() const;

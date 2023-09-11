@@ -1,7 +1,7 @@
 #ifndef GBUFFERDATA_HLSLI
 #define GBUFFERDATA_HLSLI
 #include "QuadData.hlsli"
-#include "DefaultMaterialData.hlsli"
+#include "MaterialData.hlsli"
 
 struct GBufferOutput
 {

@@ -2,6 +2,7 @@
 #define SHADERFUNCTIONS_HLSLI
 #include "../ConstantBuffers/LightBuffer.hlsli"
 static const float PI = 3.1415926535f;
+static const float PI2 = 6.28318530718f;
 static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
 
 float Pow2(float aValue)

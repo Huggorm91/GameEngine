@@ -192,6 +192,7 @@ private:
 	bool CreateAdditiveBlend();
 
 	bool CreateLUTTexture();
+	bool CreatePostProcessingTextures();
 	void LoadDefaultTextures(Settings& someSettings);
 
 	Settings LoadSettings();

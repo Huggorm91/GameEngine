@@ -10,6 +10,7 @@ DefaultPixelOutput main(QuadVSToPS input)
     if (albedo.a <= 0.f)
     {
         discard;
+        result.Color = 0;
         return result;
     }
     
@@ -17,6 +18,7 @@ DefaultPixelOutput main(QuadVSToPS input)
     //const float3 vertexNormal = GBuffer_VertexNormal.Sample(DefaultSampler, input.UV).rgb;
     const float3 pixelNormal = GBuffer_PixelNormal.Sample(DefaultSampler, input.UV).rgb;
     const float4 worldPosition = GBuffer_Position.Sample(DefaultSampler, input.UV);
+    //const float emission = GBuffer_FX.Sample(DefaultSampler, input.UV).r;
     
     LightData data;
     data.position = worldPosition;
@@ -36,7 +38,7 @@ DefaultPixelOutput main(QuadVSToPS input)
     data.nDotV = saturate(dot(data.pixelNormal, data.v));
     
     result.Color.rgb = GetPblPointlightValue(data, LB_Pointlights[0]);
-    
+    //result.Color.rgb += albedo.rgb * emission;
     result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
     result.Color.a = 1.f;
     return result;

@@ -4,7 +4,7 @@
 #include "../ConstantBuffers/FrameBuffer.hlsli"
 #include "../ConstantBuffers/LightBuffer.hlsli"
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
-#include "DefaultVertexInput.hlsli"
+#include "VertexInput.hlsli"
 #include "ShaderFunctions.hlsli"
 static const int MAX_LIGHTSOURCES = 8; // Update registers for ShadowMaps if MAX_LIGHTSOURCES is changed
 
