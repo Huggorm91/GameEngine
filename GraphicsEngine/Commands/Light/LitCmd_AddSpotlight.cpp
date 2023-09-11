@@ -5,6 +5,10 @@ LitCmd_AddSpotlight::LitCmd_AddSpotlight(SpotlightComponent& aLight) : LightComm
 myPosition(CommonUtilities::Vector4f{aLight.GetPosition(), 1.f} * aLight.GetTransform()), myLightDirection((CommonUtilities::Vector4f{aLight.GetLightDirection(), 0.f} * aLight.GetTransform()).GetNormalized()), myColor(aLight.GetColor()), 
 myShadowMap(aLight.GetShadowMap()), myCastsShadow(aLight.IsCastingShadows())
 {
+	if (myCastsShadow && myShadowMap != nullptr)
+	{
+		RHI::ClearDepthStencil(myShadowMap.get());
+	}
 }
 
 void LitCmd_AddSpotlight::Execute(const int anIndex)
@@ -23,12 +27,16 @@ void LitCmd_AddSpotlight::Execute(const int anIndex)
 
 	if (myCastsShadow && myShadowMap != nullptr)
 	{
-		RHI::ClearDepthStencil(myShadowMap.get());
 		GetSpotlightShadowMap()[anIndex] = myShadowMap.get();
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);	
+	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);	
+}
+
+Texture* LitCmd_AddSpotlight::GetShadowMap()
+{
+	return myShadowMap.get();
 }
 
 void LitCmd_AddSpotlight::SetShadowMap(const int anIndex)
@@ -37,4 +45,9 @@ void LitCmd_AddSpotlight::SetShadowMap(const int anIndex)
 	{
 		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 87 + anIndex, myShadowMap.get());
 	}
+}
+
+bool LitCmd_AddSpotlight::CastsShadow() const
+{
+	return myCastsShadow && myIntensity > 0.f;
 }

@@ -14,6 +14,7 @@ float3 Pow2(float3 aValue)
     return aValue * aValue;
 }
 
+#pragma warning(disable : 0048)
 float4x4 GetSkinMatrix(float4 boneWeights, uint4 boneIDs, float4x4 boneTransforms[128])
 {
     float4x4 skinMatrix = 0;
@@ -23,6 +24,7 @@ float4x4 GetSkinMatrix(float4 boneWeights, uint4 boneIDs, float4x4 boneTransform
     skinMatrix += boneWeights.w * boneTransforms[boneIDs.w];
     return skinMatrix;
 }
+#pragma warning(default : 0048)
 
 float4 GetAlphaBlendColor(float4 first, float4 second)
 {

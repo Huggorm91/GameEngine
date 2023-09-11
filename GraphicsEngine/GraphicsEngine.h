@@ -1,12 +1,10 @@
 #pragma once
-#include <memory>
+#include "Settings.h"
 #include "InterOp/RHI.h"
 #include "Rendering/Texture.h"
 #include "Rendering/Material.h"
 #include "Rendering/GBuffer.h"
-#include "Commands/GfxCmd_RenderMesh.h"
-#include "Commands/GfxCmd_RenderMeshShadow.h"
-#include "Commands/Light/LightCommand.h"
+#include "Commands/CommandContainer.h"
 #include "Drawer/LineDrawer.h"
 
 #include <wrl.h>
@@ -125,31 +123,7 @@ public:
 
 private:
 	friend class LightCommand;
-	friend class GraphicsCommand;
-
-	struct Settings
-	{
-		std::string defaultMissingTexture;
-		std::string defaultNormalTexture;
-		std::string defaultMaterialTexture;
-		std::string defaultCubeMap;
-		std::string defaultMaterial;
-		std::string defaultGBufferPSShader;
-		CommonUtilities::Vector4f backgroundColor;
-	};
-
-	struct CommandContainer
-	{
-		std::vector<std::shared_ptr<GraphicsCommand>> lightRenderCommands{};
-		std::vector<std::shared_ptr<LightCommand>> lightCommands {};
-		std::vector<std::shared_ptr<GraphicsCommand>> shadowRenderCommands{};
-		std::vector<std::shared_ptr<GfxCmd_RenderMeshShadow>> shadowCommands {};
-		std::vector<std::shared_ptr<GraphicsCommand>> deferredRenderCommands{};
-		std::vector<std::shared_ptr<GfxCmd_RenderMesh>> deferredMeshCommands{};
-		std::vector<std::shared_ptr<GraphicsCommand>> forwardRenderCommands {};
-		std::vector<std::shared_ptr<GfxCmd_RenderMesh>> forwardMeshCommands {};
-		std::vector<std::shared_ptr<GraphicsCommand>> postProcessRenderCommands{};
-	};
+	friend class GraphicsCommand;	
 
 #ifndef _RETAIL
 	DebugMode myDebugMode;
@@ -166,6 +140,10 @@ private:
 	ComPtr<ID3D11BlendState> myAlphaBlend;
 	ComPtr<ID3D11BlendState> myAdditiveBlend;
 
+	CommandContainer* myRenderCommands;
+	CommandContainer* myUpdateCommands;
+	LightCommand* myDirectionallight;
+
 	float myWorldRadius;
 	SIZE myWindowSize;
 	CommonUtilities::Vector3f myWorldMax;
@@ -174,14 +152,15 @@ private:
 	CommonUtilities::Vector4f myBackgroundColor;
 	std::string mySettingsPath;
 
-	CommandContainer* myRenderCommands;
-	CommandContainer* myUpdateCommands;
-
 	Texture* myDirectionalShadowMap;
 	std::array<Texture*, MAX_LIGHTS> myPointShadowMap;
 	std::array<Texture*, MAX_LIGHTS> mySpotShadowMap;
 
-	Shader myGBufferShader;
+	Shader myQuadVSShader;
+	Shader myGBufferPSShader;
+	Shader myEnvironmentPSShader;
+	Shader myPointlightPSShader;
+	Shader mySpotlightPSShader;
 
 	Texture myBackBuffer;
 	Texture myDepthBuffer;
@@ -201,8 +180,8 @@ private:
 
 	LineDrawer myLineDrawer;
 
-	std::vector<std::shared_ptr<LightCommand>> myPointLights;
-	std::vector<std::shared_ptr<LightCommand>> mySpotLights;
+	std::vector<LightCommand*> myPointLights;
+	std::vector<LightCommand*> mySpotLights;
 
 	CommandContainer myFirstCommandlist;
 	CommandContainer mySecondCommandlist;

@@ -6,8 +6,18 @@ LightCommand::LightCommand(): myType(Type::Other)
 {
 }
 
+Texture* LightCommand::GetShadowMap()
+{
+    return nullptr;
+}
+
 void LightCommand::SetShadowMap(const int)
 {
+}
+
+bool LightCommand::CastsShadow() const
+{
+    return false;
 }
 
 LightCommand::Type LightCommand::GetType()

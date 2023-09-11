@@ -50,7 +50,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle { Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle)};
+	std::wstring stdTitle{ Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle) };
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
@@ -154,6 +154,37 @@ int ModelViewer::Run()
 	return 0;
 }
 
+GameObject& ModelViewer::AddGameObject()
+{
+	GameObject newObject;
+	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
+	return iter.first->second;
+}
+
+GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
+{
+	GameObject newObject(anObject);
+	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
+	return iter.first->second;
+}
+
+GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
+{
+	auto iter = myGameObjects.emplace(anObject.GetID(), std::move(anObject));
+	return iter.first->second;
+}
+
+GameObject* ModelViewer::GetGameObject(unsigned anID)
+{
+	assert(anID != 0 && "Incorrect ID!");
+	
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		return &iter->second;
+	}
+	return nullptr;
+}
+
 void ModelViewer::ModelViewer::SaveState() const
 {
 	std::fstream fileStream(mySettingsPath, std::ios::out);
@@ -206,7 +237,7 @@ void ModelViewer::HideSplashScreen() const
 	SetForegroundWindow(myMainWindowHandle);
 }
 
-void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
+void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, ".lvl");
 	path = CreateValidPath(path, "Content/Scenes/", false);
@@ -218,10 +249,12 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 	scene["GameObjectIDCount"] = GameObject::GetIDCount();
 	scene["GameObjects"] = Json::arrayValue;
 
-	for (int i = 0; i < myGameObjects.size(); i++)
+	int i = 0;
+	for (auto& [id, object] : myGameObjects)
 	{
-		scene["GameObjects"][i] = myGameObjects[i].ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(myGameObjects[i].GetID()), Json::commentBefore);
+		scene["GameObjects"][i] = object.ToJson();
+		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object.GetID()), Json::commentBefore);
+		i++;
 	}
 
 	std::fstream fileStream(path, std::ios::out);
@@ -265,7 +298,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	GameObject::SetIDCount(json["GameObjectIDCount"].asUInt());
 	for (auto& object : json["GameObjects"])
 	{
-		myGameObjects.emplace_back(object);
+		AddGameObject(object);
 	}
 }
 
@@ -275,10 +308,10 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	//LoadScene("Default");
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Cube"));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 500.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Cube"));
+		object.SetPosition({ 0.f, 0.f, 500.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		//mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 		//mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
@@ -286,43 +319,53 @@ void ModelViewer::Init()
 		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
-	myGameObjects.back().SetPosition({ 200.f, 0.f, 500.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	//myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	//myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
-	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
-
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::InvertedCube));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedpyramid"));
-	myGameObjects.back().SetPosition({ 200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedsphere"));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Pyramid));
+		object.SetPosition({ 200.f, 0.f, 500.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Sphere));
+		object.SetPosition({ -200.f, 0.f, 500.f });
+		//object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		//object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		//object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+		object.GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
+		object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::InvertedCube));
+		object.SetPosition({ 0.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedpyramid"));
+		object.SetPosition({ 200.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedsphere"));
+		object.SetPosition({ -200.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
+		object.SetPosition({ 0.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M_Updated.dds"));
@@ -331,11 +374,11 @@ void ModelViewer::Init()
 		mesh.SetColor({ 1.f,0.f,0.f,.5f });
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
-	myGameObjects.back().SetPosition({ 100.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
+		object.SetPosition({ 100.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
@@ -345,99 +388,103 @@ void ModelViewer::Init()
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
+		object.SetPosition({ -200.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
-	myGameObjects.back().SetPosition({ 0.f, 200.f, 500.f });
-	myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
+		object.SetPosition({ 0.f, 200.f, 500.f });
+		object.SetRotation({ 0.f, 180.f, 0.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Buddha_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Buddha_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Buddha_M.dds"));
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ -100.f, 150.f, 400.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ -100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 1.f, 0.f, 0.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 100.f, 150.f, 400.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 0.f, 1.f, 0.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 150.f, 600.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 150.f, 600.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 0.f, 0.f, 1.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 200.f, 600.f });
 
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
-		myGameObjects.back().AddComponent(spotlight);
+		object.AddComponent(spotlight);
 
-		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);
+		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 200.f, 300.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 200.f, 300.f });
 
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
-		myGameObjects.back().AddComponent(spotlight);
+		object.AddComponent(spotlight);
 
-		DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);
+		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
 	}
 
-	myGameObjects.emplace_back();
 	{
+		auto& object = AddGameObject();
 		DirectionallightComponent light({ 0.f, -1.f, -1.f }, { 1.f, 1.f, 1.f }, 1.f);
-		myGameObjects.back().AddComponent(light);
+		object.AddComponent(light);
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
-	myGameObjects.back().SetPosition({ 0.f, -10.f, 0.f });
-	myGameObjects.back().SetScale({ 20.f, 1.f, 20.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
+		object.SetPosition({ 0.f, -10.f, 0.f });
+		object.SetScale({ 20.f, 1.f, 20.f });
+		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+		//object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
+	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
-	myGameObjects.back().SetPosition({ 0.f, 240.f, 1000.f });
-	myGameObjects.back().SetScale({ 20.f, 1.f, 5.f });
-	myGameObjects.back().SetRotation({ 90.f, 0.f, 0.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
+		object.SetPosition({ 0.f, 240.f, 1000.f });
+		object.SetScale({ 20.f, 1.f, 5.f });
+		object.SetRotation({ 90.f, 0.f, 0.f });
+		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+		//object.GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
+	}
 
 	//SaveScene("Default");
 }
@@ -492,6 +539,7 @@ void ModelViewer::ModelViewer::UpdateImgui()
 
 	//ImGui::ShowDemoWindow();
 	CreatePreferenceWindow();
+	CreateSceneContentWindow();
 
 	ImGui::Begin("Selected GameObject");
 	myGameObjects[mySelectedIndex].CreateImGuiWindow("Selected GameObject");
@@ -551,13 +599,18 @@ void ModelViewer::CreatePreferenceWindow()
 	}
 	ImGui::End();
 }
+void ModelViewer::CreateSceneContentWindow()
+{
+	ImGui::Begin("SceneContent");
+	ImGui::End();
+}
 #endif // _RETAIL
 
 void ModelViewer::UpdateScene()
 {
-	for (auto& model : myGameObjects)
+	for (auto& [id, object] : myGameObjects)
 	{
-		model.Update();
+		object.Update();
 	}
 }
 #ifndef _RETAIL

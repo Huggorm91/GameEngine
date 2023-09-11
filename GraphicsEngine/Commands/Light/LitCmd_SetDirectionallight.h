@@ -10,7 +10,10 @@ public:
 	~LitCmd_SetDirectionallight() override = default;
 
 	void Execute(const int anIndex) override;
+
+	Texture* GetShadowMap() override;
 	void SetShadowMap(const int anIndex) override;
+	bool CastsShadow() const override;
 
 private:
 	CommonUtilities::Vector3f myInvertedLightDirection;

@@ -15,7 +15,10 @@ public:
 	virtual ~LightCommand() = default;
 
 	virtual void Execute(const int anIndex) = 0;
+
+	virtual Texture* GetShadowMap();
 	virtual void SetShadowMap(const int anIndex);
+	virtual bool CastsShadow() const;
 
 	Type GetType();
 

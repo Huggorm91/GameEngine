@@ -2,7 +2,7 @@
 #include <Matrix4x4.hpp>
 #include "Rendering/Buffers/ConstantBuffer.h"
 
-const unsigned MAX_LIGHTS = 8;
+const unsigned MAX_LIGHTS = 8;	// Update registers for ShadowMaps if MAX_LIGHTS is changed
 
 struct PointlightData
 {

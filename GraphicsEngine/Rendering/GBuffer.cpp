@@ -47,6 +47,11 @@ void GBuffer::SetAsResource(unsigned aStage, unsigned aSlot)
 	RHI::SetTextureResources(aStage, aSlot, myTextureList);
 }
 
+void GBuffer::UnbindAsResource(unsigned aStage, unsigned aSlot)
+{
+	RHI::SetTextureResources(aStage, aSlot, myNullPtrList);
+}
+
 void GBuffer::ClearTextures()
 {
 	RHI::ClearRenderTarget(&myAlbedoMap);
@@ -65,6 +70,7 @@ bool GBuffer::CreateAlbedoTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myAlbedoMap);
 	myTextureList.emplace_back(&myAlbedoMap);
+	myNullPtrList.emplace_back(nullptr);
     return true;
 }
 
@@ -76,6 +82,7 @@ bool GBuffer::CreateMaterialTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myMaterialMap);
 	myTextureList.emplace_back(&myMaterialMap);
+	myNullPtrList.emplace_back(nullptr);
 	return true;
 }
 
@@ -87,6 +94,7 @@ bool GBuffer::CreateVertexNormalTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myVertexNormalMap);
 	myTextureList.emplace_back(&myVertexNormalMap);
+	myNullPtrList.emplace_back(nullptr);
 	return true;
 }
 
@@ -98,6 +106,7 @@ bool GBuffer::CreatePixelNormalTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myPixelNormalMap);
 	myTextureList.emplace_back(&myPixelNormalMap);
+	myNullPtrList.emplace_back(nullptr);
 	return true;
 }
 
@@ -109,6 +118,7 @@ bool GBuffer::CreatePositionTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myPositionMap);
 	myTextureList.emplace_back(&myPositionMap);
+	myNullPtrList.emplace_back(nullptr);
 	return true;
 }
 
@@ -120,5 +130,6 @@ bool GBuffer::CreatePickingTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myPickingMap);
 	myTextureList.emplace_back(&myPickingMap);
+	myNullPtrList.emplace_back(nullptr);
 	return true;
 }

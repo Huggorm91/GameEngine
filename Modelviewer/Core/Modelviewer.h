@@ -35,7 +35,16 @@ public:
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
+	GameObject& AddGameObject();
+	GameObject& AddGameObject(const GameObject& anObject);
+	GameObject& AddGameObject(GameObject&& anObject);
+
+	GameObject* GetGameObject(unsigned anID);
+	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
+
 	void SaveState() const;
+	void SaveScene(const std::string& aPath) const;
+	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
@@ -60,7 +69,7 @@ private:
 	Logger myLogger;
 	PerspectiveCamera myCamera;
 
-	std::vector<GameObject> myGameObjects;
+	std::unordered_map<unsigned, GameObject> myGameObjects;
 	// std::unordered_map<unsigned, GameObject> myGameObjects;
 
 	ModelViewer();
@@ -69,8 +78,6 @@ private:
 	void HideSplashScreen() const;
 	size_t LoadAllAssets();
 
-	void SaveScene(const std::string& aPath);
-	void LoadScene(const std::string& aPath);
 	void LoadState();
 
 	void UpdateScene();
@@ -84,5 +91,6 @@ private:
 	void RenderImgui();
 
 	void CreatePreferenceWindow();
+	void CreateSceneContentWindow();
 #endif // _RETAIL
 };

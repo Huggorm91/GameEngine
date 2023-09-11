@@ -4,14 +4,14 @@
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(localIDCount++), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
 #ifdef _DEBUG
 , myDebugPointers()
 #endif // _DEBUG
 {
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(localIDCount++), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
 #ifdef _DEBUG
 , myDebugPointers()
 #endif // _DEBUG
@@ -24,7 +24,8 @@ GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexL
 	}
 }
 
-GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
+GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), 
+myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
 #ifdef _DEBUG
 , myDebugPointers()
 #endif // _DEBUG
@@ -83,6 +84,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
 	myImguiText = myName;
+	const_cast<unsigned&>(myID) = aGameObject.myID;
 
 	for (auto [type, index] : myIndexList)
 	{

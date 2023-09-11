@@ -6,7 +6,7 @@
 #include "../ConstantBuffers/MaterialBuffer.hlsli"
 #include "DefaultVertexInput.hlsli"
 #include "ShaderFunctions.hlsli"
-static const int MAX_LIGHTSOURCES = 8;
+static const int MAX_LIGHTSOURCES = 8; // Update registers for ShadowMaps if MAX_LIGHTSOURCES is changed
 
 struct DefaultVertexToPixel
 {

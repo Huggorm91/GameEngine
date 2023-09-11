@@ -1,5 +1,5 @@
 #pragma once
-#include "Vector2.hpp"
+#include "Vector4.hpp"
 #include "Texture.h"
 
 class GBuffer
@@ -12,6 +12,7 @@ public:
 
 	void SetAsTarget(const Texture* aDepthStencil);
 	void SetAsResource(unsigned aStage, unsigned aSlot);
+	void UnbindAsResource(unsigned aStage, unsigned aSlot);
 
 	void ClearTextures();
 
@@ -23,6 +24,7 @@ private:
 	Texture myPositionMap;
 	Texture myPickingMap;
 	std::vector<Texture*> myTextureList;
+	std::vector<Texture*> myNullPtrList;
 
 	bool CreateAlbedoTexture(const RHI::DeviceSize& aSize);
 	bool CreateMaterialTexture(const RHI::DeviceSize& aSize);

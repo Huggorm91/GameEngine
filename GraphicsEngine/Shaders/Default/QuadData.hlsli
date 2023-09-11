@@ -3,8 +3,8 @@
 
 struct QuadVSToPS
 {
-    float2 UV : UV;
     float4 Position : SV_POSITION;
+    float2 UV : UV;
 };
 
 #endif // QUADDATA_HLSLI
