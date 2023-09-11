@@ -1,8 +1,12 @@
 #include "GraphicsEngine.pch.h"
 #include "GBuffer.h"
 
-bool GBuffer::Init()
+unsigned GBuffer::mySlot;
+
+bool GBuffer::Init(unsigned aSlot)
 {
+	mySlot = aSlot;
+
 	const RHI::DeviceSize& size = RHI::GetDeviceSize();
 	if (!CreateAlbedoTexture(size))
 	{
@@ -27,6 +31,11 @@ bool GBuffer::Init()
 	if (!CreatePositionTexture(size))
 	{
 		GELogger.Err("GBuffer: Failed to create Position texture");
+		return false;
+	}
+	if (!CreateFXTexture(size))
+	{
+		GELogger.Err("GBuffer: Failed to create FX texture");
 		return false;
 	}
 	if (!CreatePickingTexture(size))
@@ -59,6 +68,7 @@ void GBuffer::ClearTextures()
 	RHI::ClearRenderTarget(&myVertexNormalMap);
 	RHI::ClearRenderTarget(&myPixelNormalMap);
 	RHI::ClearRenderTarget(&myPositionMap);
+	RHI::ClearRenderTarget(&myFXMap);
 	RHI::ClearRenderTarget(&myPickingMap);
 }
 
@@ -118,6 +128,18 @@ bool GBuffer::CreatePositionTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myPositionMap);
 	myTextureList.emplace_back(&myPositionMap);
+	myNullPtrList.emplace_back(nullptr);
+	return true;
+}
+
+bool GBuffer::CreateFXTexture(const RHI::DeviceSize& aSize)
+{
+	if (!RHI::CreateTexture(&myFXMap, L"GBuffer_FX", aSize.Width, aSize.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	{
+		return false;
+	}
+	RHI::ClearRenderTarget(&myFXMap);
+	myTextureList.emplace_back(&myFXMap);
 	myNullPtrList.emplace_back(nullptr);
 	return true;
 }

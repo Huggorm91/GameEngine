@@ -45,7 +45,7 @@ void GfxCmd_RenderMesh::SetObjectBuffer()
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 1, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GetObjectBufferSlot(), buffer);
 }
 
 void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
@@ -63,33 +63,42 @@ void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 	buffer.Data.Shininess = aMaterial.myShininess;
 	buffer.Data.Metalness = aMaterial.myMetalness;
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 3, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GetMaterialBufferSlot(), buffer);
 
 	if (aMaterial.myAlbedoTexture)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, aMaterial.myAlbedoTexture);
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Albedo, aMaterial.myAlbedoTexture);
 	}
 	else
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 0, GetMissingTexture());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Albedo, GetMissingTexture());
 	}
 
 	if (aMaterial.myNormalTexture)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 1, aMaterial.myNormalTexture);
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Normal, aMaterial.myNormalTexture);
 	}
 	else
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 1, GetDefaultNormalTexture());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Normal, GetDefaultNormalTexture());
 	}
 
 	if (aMaterial.myMaterialTexture)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 2, aMaterial.myMaterialTexture);
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Material, aMaterial.myMaterialTexture);
 	}
 	else
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 2, GetDefaultMaterialTexture());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Material, GetDefaultMaterialTexture());
+	}
+
+	if (aMaterial.myFXTexture)
+	{
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_FX, aMaterial.myFXTexture);
+	}
+	else
+	{
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_FX, GetDefaultFXTexture());
 	}
 
 	for (auto& texture : aMaterial.myTextures)

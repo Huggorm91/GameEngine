@@ -21,5 +21,5 @@ void LitCmd_ResetLightBuffer::Execute(const int anIndex)
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GetLightBufferSlot(), buffer);
 }

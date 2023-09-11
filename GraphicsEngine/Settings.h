@@ -8,12 +8,16 @@ struct Settings
 	std::string defaultMissingTexture;
 	std::string defaultNormalTexture;
 	std::string defaultMaterialTexture;
+	std::string defaultFXTexture;
 	std::string defaultCubeMap;
+
 	std::string defaultMaterial;
+
 	std::string defaultGBufferPSShader;
 	std::string defaultEnvironmentPSShader;
 	std::string defaultPointlightPSShader;
 	std::string defaultSpotlightPSShader;
+
 	CommonUtilities::Vector4f backgroundColor;
 
 	Settings() = default;

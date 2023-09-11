@@ -3,6 +3,7 @@
 #include "Rendering/Buffers/ObjectBuffer.h"
 #include "Rendering/Buffers/LightBuffer.h"
 #include "Rendering/Buffers/MaterialBuffer.h"
+#include "Rendering/TextureContainer.h"
 
 class Material;
 
@@ -31,10 +32,17 @@ protected:
 	LightBuffer& GetLightBuffer();
 	MaterialBuffer& GetMaterialBuffer();
 
+	unsigned GetFrameBufferSlot();
+	unsigned GetObjectBufferSlot();
+	unsigned GetLightBufferSlot();
+	unsigned GetMaterialBufferSlot();
+
 	Texture* GetMissingTexture();
 	Texture* GetDefaultNormalTexture();
 	Texture* GetDefaultMaterialTexture();
+	Texture* GetDefaultFXTexture();
 	Material* GetDefaultMaterial();
+	const SlotContainer& GetTextureSlots();
 
 	CommonUtilities::Vector3f& GetWorldBoundsMin();
 	CommonUtilities::Vector3f& GetWorldBoundsMax();

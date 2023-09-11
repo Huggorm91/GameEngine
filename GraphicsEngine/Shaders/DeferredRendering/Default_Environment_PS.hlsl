@@ -35,6 +35,7 @@ DefaultPixelOutput main(QuadVSToPS input)
                 //const float3 vertexNormal = GBuffer_VertexNormal.Sample(DefaultSampler, input.UV).rgb;
                 const float3 pixelNormal = GBuffer_PixelNormal.Sample(DefaultSampler, input.UV).rgb;
                 const float4 worldPosition = GBuffer_Position.Sample(DefaultSampler, input.UV);
+                //const float3 fx = GBuffer_FX.Sample(DefaultSampler, input.UV).rgb;
             
                 LightData data;
                 data.position = worldPosition;
@@ -84,6 +85,7 @@ DefaultPixelOutput main(QuadVSToPS input)
         case 10:
         case 11:
         case 12:
+        case 13:
         {    
                 result.Color = albedo;
                 break;

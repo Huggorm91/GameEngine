@@ -1,7 +1,8 @@
 #pragma once
 #include "Settings.h"
 #include "InterOp/RHI.h"
-#include "Rendering/Texture.h"
+#include "Rendering/TextureContainer.h"
+#include "Rendering/ShaderContainer.h"
 #include "Rendering/Material.h"
 #include "Rendering/GBuffer.h"
 #include "Commands/CommandContainer.h"
@@ -29,6 +30,7 @@ public:
 		AmbientOcclusion,
 		Roughness,
 		Metalness,
+		Emission,
 		VertexColors,
 		AlbedoMap,
 		NormalMap,
@@ -75,7 +77,7 @@ public:
 	void SaveSettings() const;
 
 	void SetLoggingWindow(HANDLE aHandle);
-	void SetBackGroundColor(const CommonUtilities::Vector4f& aColor);
+	void SetBackGroundColor(const CommonUtilities::Vector3f& aColor);
 
 	// Swaps the render buffers. Should be called before BeginFrame or after EndFrame
 	void Swap();
@@ -104,7 +106,7 @@ public:
 		return myDefaultMaterial;
 	}
 	inline const Texture* GetDefaultCubeMap() const {
-		return &myDefaultCubeMap;
+		return &myTextures.DefaultCubeMap;
 	}
 
 	inline LineDrawer& GetLineDrawer() {
@@ -131,6 +133,10 @@ private:
 	RenderMode myRenderMode;
 	LineDrawer::LineHandle myGrid;
 #endif // !_RETAIL	
+	unsigned myFrameBufferSlot;
+	unsigned myObjectBufferSlot;
+	unsigned myLightBufferSlot;
+	unsigned myMaterialBufferSlot;
 
 	HWND myWindowHandle;
 	ComPtr<ID3D11SamplerState> myDefaultSampler;
@@ -149,29 +155,18 @@ private:
 	CommonUtilities::Vector3f myWorldMax;
 	CommonUtilities::Vector3f myWorldMin;
 	CommonUtilities::Vector3f myWorldCenter;
-	CommonUtilities::Vector4f myBackgroundColor;
+	CommonUtilities::Vector3f myBackgroundColor;
 	std::string mySettingsPath;
 
 	Texture* myDirectionalShadowMap;
 	std::array<Texture*, MAX_LIGHTS> myPointShadowMap;
 	std::array<Texture*, MAX_LIGHTS> mySpotShadowMap;
 
-	Shader myQuadVSShader;
-	Shader myGBufferPSShader;
-	Shader myEnvironmentPSShader;
-	Shader myPointlightPSShader;
-	Shader mySpotlightPSShader;
-
-	Texture myBackBuffer;
-	Texture myDepthBuffer;
-	Texture myBrdfLUTTexture;
-
-	Texture myMissingTexture;
-	Texture myDefaultNormalTexture;
-	Texture myDefaultMaterialTexture;
-	Texture myDefaultCubeMap;
+	SlotContainer myTextureSlots;
 	Material myDefaultMaterial;
 	GBuffer myGBuffer;
+	ShaderContainer myShaders;
+	TextureContainer myTextures;
 
 	FrameBuffer myFrameBuffer;
 	ObjectBuffer myObjectBuffer;
@@ -197,6 +192,7 @@ private:
 	bool CreateAdditiveBlend();
 
 	bool CreateLUTTexture();
+	void LoadDefaultTextures(Settings& someSettings);
 
 	Settings LoadSettings();
 	void SaveSettings(const Settings& someSettings) const;

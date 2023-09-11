@@ -312,9 +312,11 @@
     <ClInclude Include="Rendering\Buffers\FrameBuffer.h" />
     <ClInclude Include="Rendering\Buffers\ObjectBuffer.h" />
     <ClInclude Include="Rendering\Shader.h" />
+    <ClInclude Include="Rendering\ShaderContainer.h" />
     <ClInclude Include="Rendering\Texture.h" />
     <ClInclude Include="Rendering\Vertex.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="Rendering\TextureContainer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera\PerspectiveCamera.cpp" />
@@ -360,6 +362,7 @@
     <ClCompile Include="Rendering\Texture.cpp" />
     <ClCompile Include="Rendering\Vertex.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Rendering\TextureContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logging\Logging.vcxproj">

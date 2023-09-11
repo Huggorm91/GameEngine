@@ -32,24 +32,54 @@ MaterialBuffer& GraphicsCommand::GetMaterialBuffer()
     return GraphicsEngine::Get().myMaterialBuffer;
 }
 
+unsigned GraphicsCommand::GetFrameBufferSlot()
+{
+    return GraphicsEngine::Get().myFrameBufferSlot;
+}
+
+unsigned GraphicsCommand::GetObjectBufferSlot()
+{
+    return GraphicsEngine::Get().myObjectBufferSlot;
+}
+
+unsigned GraphicsCommand::GetLightBufferSlot()
+{
+    return GraphicsEngine::Get().myLightBufferSlot;
+}
+
+unsigned GraphicsCommand::GetMaterialBufferSlot()
+{
+    return GraphicsEngine::Get().myMaterialBufferSlot;
+}
+
 Texture* GraphicsCommand::GetMissingTexture()
 {
-    return &GraphicsEngine::Get().myMissingTexture;
+    return &GraphicsEngine::Get().myTextures.MissingTexture;
 }
 
 Texture* GraphicsCommand::GetDefaultNormalTexture()
 {
-    return &GraphicsEngine::Get().myDefaultNormalTexture;
+    return &GraphicsEngine::Get().myTextures.DefaultNormalTexture;
 }
 
 Texture* GraphicsCommand::GetDefaultMaterialTexture()
 {
-    return &GraphicsEngine::Get().myDefaultMaterialTexture;
+    return &GraphicsEngine::Get().myTextures.DefaultMaterialTexture;
+}
+
+Texture* GraphicsCommand::GetDefaultFXTexture()
+{
+    return &GraphicsEngine::Get().myTextures.DefaultFXTexture;
 }
 
 Material* GraphicsCommand::GetDefaultMaterial()
 {
     return &GraphicsEngine::Get().myDefaultMaterial;
+}
+
+const SlotContainer& GraphicsCommand::GetTextureSlots()
+{
+    return GraphicsEngine::Get().myTextureSlots;
 }
 
 CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMin()

@@ -7,8 +7,11 @@ Settings::Settings(const Json::Value& aJson)
 	defaultMaterialTexture = aJson["MaterialTexture"].asString();
 	defaultNormalTexture = aJson["NormalTexture"].asString();
 	defaultMissingTexture = aJson["MissingTexture"].asString();
+	defaultFXTexture = aJson["FXTexture"].asString();
 	defaultCubeMap = aJson["CubeMap"].asString();
+
 	defaultMaterial = aJson["DefaultMaterial"].asString();
+
 	backgroundColor.x = aJson["BackgroundColor"]["R"].asFloat();
 	backgroundColor.y = aJson["BackgroundColor"]["G"].asFloat();
 	backgroundColor.z = aJson["BackgroundColor"]["B"].asFloat();
@@ -37,8 +40,11 @@ Settings::operator Json::Value() const
 	json["MaterialTexture"] = defaultMaterialTexture;
 	json["NormalTexture"] = defaultNormalTexture;
 	json["MissingTexture"] = defaultMissingTexture;
+	json["FXTexture"] = defaultFXTexture;
 	json["CubeMap"] = defaultCubeMap;
+
 	json["DefaultMaterial"] = defaultMaterial;
+
 	json["BackgroundColor"]["R"] = backgroundColor.x;
 	json["BackgroundColor"]["G"] = backgroundColor.y;
 	json["BackgroundColor"]["B"] = backgroundColor.z;

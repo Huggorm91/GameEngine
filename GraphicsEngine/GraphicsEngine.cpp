@@ -13,8 +13,8 @@
 #include <Sort.hpp>
 
 GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myBackBuffer(), myDepthBuffer(), myBrdfLUTTexture(), myMissingTexture(),
-myDefaultNormalTexture(), myDefaultMaterialTexture(), myDefaultCubeMap(), myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist()
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(), 
+myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders()
 #ifndef _RETAIL
 , myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
 #endif // !_RETAIL	
@@ -35,8 +35,8 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 
 		if (!RHI::Initialize(myWindowHandle,
 							 enableDeviceDebug,
-							 &myBackBuffer,
-							 &myDepthBuffer))
+							 &myTextures.BackBuffer,
+							 &myTextures.DepthBuffer))
 		{
 			GELogger.Err("Failed to initialize the RHI!");
 			return false;
@@ -45,44 +45,34 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.backgroundColor;
 
+
 		// Textures
 		{
+			myTextureSlots.MissingTextureSlot = 99u;
+			myTextureSlots.DefaultNormalTextureSlot = 98u;
+			myTextureSlots.DefaultMaterialTextureSlot = 97u;
+			myTextureSlots.DefaultFXTextureSlot = 96u;
+			myTextureSlots.BrdfLUTTextureSlot = 95u;
+			myTextureSlots.DefaultCubeMapSlot = 100u;
+
+			myTextureSlots.DirectionalShadowMapSlot = 94u;
+			myTextureSlots.PointShadowMapSlot = 120u;
+			myTextureSlots.SpotShadowMapSlot = 86u;
+
 			if (!CreateLUTTexture())
 			{
 				GELogger.Err("Failed to create LUT texture!");
 				return false;
 			}
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 96, &myBrdfLUTTexture);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.BrdfLUTTextureSlot, &myTextures.BrdfLUTTexture);
 
-			if (!RHI::LoadTexture(&myDefaultMaterialTexture, Helpers::string_cast<std::wstring>(settings.defaultMaterialTexture)))
-			{
-				GELogger.Err("Failed to load default material texture!");
-			}
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 97, &myDefaultMaterialTexture);
-
-			if (!RHI::LoadTexture(&myDefaultNormalTexture, Helpers::string_cast<std::wstring>(settings.defaultNormalTexture)))
-			{
-				GELogger.Err("Failed to load default normal texture!");
-			}
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 98, &myDefaultNormalTexture);
-
-			if (!RHI::LoadTexture(&myMissingTexture, Helpers::string_cast<std::wstring>(settings.defaultMissingTexture)))
-			{
-				GELogger.Err("Failed to load default missing texture!");
-			}
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 99, &myMissingTexture);
-
-			if (!RHI::LoadTexture(&myDefaultCubeMap, Helpers::string_cast<std::wstring>(settings.defaultCubeMap)))
-			{
-				GELogger.Err("Failed to load default cubemap!");
-			}
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 100, &myDefaultCubeMap);
-
-			if (!myGBuffer.Init())
+			if (!myGBuffer.Init(10))
 			{
 				GELogger.Err("Failed to initialize GBuffer!");
 				return false;
 			}
+
+			LoadDefaultTextures(settings);
 		}
 
 		// Samplers
@@ -125,39 +115,51 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 
 		// Material
-		myDefaultMaterial = AssetManager::GetAsset<Material>(settings.defaultMaterial);
-		if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
 		{
-			GELogger.Err("Failed to create InputLayout!");
-			return false;
+			myDefaultMaterial = AssetManager::GetAsset<Material>(settings.defaultMaterial);
+			if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
+			{
+				GELogger.Err("Failed to create InputLayout!");
+				return false;
+			}
 		}
 
 		// Shaders
-		if (!RHI::LoadShader(&myGBufferPSShader, Helpers::string_cast<std::wstring>(settings.defaultGBufferPSShader)))
 		{
-			GELogger.Err("Failed to load GBuffer Shader!");
-			return false;
-		}
-		if (!RHI::LoadShader(&myEnvironmentPSShader, Helpers::string_cast<std::wstring>(settings.defaultEnvironmentPSShader)))
-		{
-			GELogger.Err("Failed to load Environment Shader!");
-			return false;
-		}
-		if (!RHI::LoadShader(&myPointlightPSShader, Helpers::string_cast<std::wstring>(settings.defaultPointlightPSShader)))
-		{
-			GELogger.Err("Failed to load Pointlight Shader!");
-			return false;
-		}
-		if (!RHI::LoadShader(&mySpotlightPSShader, Helpers::string_cast<std::wstring>(settings.defaultSpotlightPSShader)))
-		{
-			GELogger.Err("Failed to load Spotlight Shader!");
-			return false;
+			if (!RHI::LoadShader(&myShaders.GBufferPSShader, Helpers::string_cast<std::wstring>(settings.defaultGBufferPSShader)))
+			{
+				GELogger.Err("Failed to load GBuffer Shader!");
+				return false;
+			}
+			if (!RHI::LoadShader(&myShaders.EnvironmentPSShader, Helpers::string_cast<std::wstring>(settings.defaultEnvironmentPSShader)))
+			{
+				GELogger.Err("Failed to load Environment Shader!");
+				return false;
+			}
+			if (!RHI::LoadShader(&myShaders.PointlightPSShader, Helpers::string_cast<std::wstring>(settings.defaultPointlightPSShader)))
+			{
+				GELogger.Err("Failed to load Pointlight Shader!");
+				return false;
+			}
+			if (!RHI::LoadShader(&myShaders.SpotlightPSShader, Helpers::string_cast<std::wstring>(settings.defaultSpotlightPSShader)))
+			{
+				GELogger.Err("Failed to load Spotlight Shader!");
+				return false;
+			}
 		}
 
-		myFrameBuffer.Initialize();
-		myObjectBuffer.Initialize();
-		myLightBuffer.Initialize();
-		myMaterialBuffer.Initialize();
+		// Buffers
+		{
+			myFrameBufferSlot = 0;
+			myObjectBufferSlot = 1;
+			myLightBufferSlot = 2;
+			myMaterialBufferSlot = 3;
+
+			myFrameBuffer.Initialize();
+			myObjectBuffer.Initialize();
+			myLightBuffer.Initialize();
+			myMaterialBuffer.Initialize();
+		}
 
 		if (!myLineDrawer.Init())
 		{
@@ -181,16 +183,21 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 void GraphicsEngine::SaveSettings() const
 {
 	Settings settings;
-	settings.defaultMissingTexture = Helpers::string_cast<std::string>(myMissingTexture.GetName());
-	settings.defaultNormalTexture = Helpers::string_cast<std::string>(myDefaultNormalTexture.GetName());
-	settings.defaultMaterialTexture = Helpers::string_cast<std::string>(myDefaultMaterialTexture.GetName());
-	settings.defaultCubeMap = Helpers::string_cast<std::string>(myDefaultCubeMap.GetName());
+
+	settings.defaultMissingTexture = Helpers::string_cast<std::string>(myTextures.MissingTexture.GetName());
+	settings.defaultNormalTexture = Helpers::string_cast<std::string>(myTextures.DefaultNormalTexture.GetName());
+	settings.defaultMaterialTexture = Helpers::string_cast<std::string>(myTextures.DefaultMaterialTexture.GetName());
+	settings.defaultCubeMap = Helpers::string_cast<std::string>(myTextures.DefaultCubeMap.GetName());
+
 	settings.defaultMaterial = myDefaultMaterial.GetName();
-	settings.defaultGBufferPSShader = Helpers::string_cast<std::string>(myGBufferPSShader.GetName());
-	settings.defaultEnvironmentPSShader = Helpers::string_cast<std::string>(myEnvironmentPSShader.GetName());
-	settings.defaultPointlightPSShader = Helpers::string_cast<std::string>(myPointlightPSShader.GetName());
-	settings.defaultSpotlightPSShader = Helpers::string_cast<std::string>(mySpotlightPSShader.GetName());
+
+	settings.defaultGBufferPSShader = Helpers::string_cast<std::string>(myShaders.GBufferPSShader.GetName());
+	settings.defaultEnvironmentPSShader = Helpers::string_cast<std::string>(myShaders.EnvironmentPSShader.GetName());
+	settings.defaultPointlightPSShader = Helpers::string_cast<std::string>(myShaders.PointlightPSShader.GetName());
+	settings.defaultSpotlightPSShader = Helpers::string_cast<std::string>(myShaders.SpotlightPSShader.GetName());
+
 	settings.backgroundColor = myBackgroundColor;
+
 	SaveSettings(settings);
 }
 
@@ -199,7 +206,7 @@ void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
 	GELogger.SetConsoleHandle(aHandle);
 }
 
-void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector4f& aColor)
+void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector3f& aColor)
 {
 	myBackgroundColor = aColor;
 }
@@ -268,6 +275,11 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 		GELogger.Log("DebugMode: Metalness");
 		break;
 	}
+	case GraphicsEngine::DebugMode::Emission:
+	{
+		GELogger.Log("DebugMode: Emission");
+		break;
+	}
 	case GraphicsEngine::DebugMode::VertexColors:
 	{
 		GELogger.Log("DebugMode: VertexColors");
@@ -295,7 +307,7 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 
 	myFrameBuffer.Data.DebugMode = static_cast<int>(myDebugMode);
 	RHI::UpdateConstantBufferData(myFrameBuffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myFrameBufferSlot, myFrameBuffer);
 
 	return myDebugMode;
 }
@@ -353,7 +365,7 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 
 	myFrameBuffer.Data.LightMode = static_cast<int>(myLightMode);
 	RHI::UpdateConstantBufferData(myLightBuffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 2, myLightBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myLightBufferSlot, myLightBuffer);
 
 	return myLightMode;
 }
@@ -402,17 +414,16 @@ GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 
 void GraphicsEngine::BeginFrame()
 {
-	RHI::ClearRenderTarget(&myBackBuffer, { myBackgroundColor.x, myBackgroundColor.y, myBackgroundColor.z, 0.f });
-	RHI::ClearDepthStencil(&myDepthBuffer);
+	myTextures.ClearTextures(myBackgroundColor);
 	myGBuffer.ClearTextures();
 
-	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 95, nullptr); // Directionallight ShadowMap
-	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DirectionalShadowMapSlot, nullptr); // Directionallight ShadowMap
+	for (unsigned i = 0; i < MAX_LIGHTS; i++)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 87 + i, nullptr); // Spotlight ShadowMap
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 120 + i, nullptr); // Pointlight ShadowMap
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.SpotShadowMapSlot + i, nullptr); // Spotlight ShadowMap
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.PointShadowMapSlot + i, nullptr); // Pointlight ShadowMap
 	}
-	myGBuffer.UnbindAsResource(PIPELINE_STAGE_PIXEL_SHADER, 3); // If changed, also change SetAsResource() in Render() -> Deferred Rendering
+	myGBuffer.UnbindAsResource(PIPELINE_STAGE_PIXEL_SHADER);
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
 }
@@ -589,12 +600,12 @@ void GraphicsEngine::RenderFrame()
 			myLightBuffer.Data.DirectionalView = view;
 			myLightBuffer.Data.DirectionalProjection = projection;
 			RHI::UpdateConstantBufferData(myLightBuffer);
-			RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, 2, myLightBuffer);
+			RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, myLightBufferSlot, myLightBuffer);
 
 			myFrameBuffer.Data.View = view;
 			myFrameBuffer.Data.Projection = projection;
 			RHI::UpdateConstantBufferData(myFrameBuffer);
-			RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+			RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myFrameBufferSlot, myFrameBuffer);
 
 			// Draw to ShadowMap
 			for (auto& data : objectList)
@@ -628,7 +639,7 @@ void GraphicsEngine::RenderFrame()
 				myFrameBuffer.Data.Projection = projection;
 
 				RHI::UpdateConstantBufferData(myFrameBuffer);
-				RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, 0, myFrameBuffer);
+				RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myFrameBufferSlot, myFrameBuffer);
 
 				// Draw to ShadowMap
 				for (auto& data : objectList)
@@ -677,8 +688,8 @@ void GraphicsEngine::RenderFrame()
 	// Deferred Rendering
 	{
 		RHI::SetBlendState(nullptr);
-		myGBuffer.SetAsTarget(&myDepthBuffer);
-		RHI::SetPixelShader(&myGBufferPSShader);
+		myGBuffer.SetAsTarget(&myTextures.DepthBuffer);
+		RHI::SetPixelShader(&myShaders.GBufferPSShader);
 
 		std::vector<DeferredCommandData> meshes;
 		meshes.reserve(myRenderCommands->deferredMeshCommands.size());
@@ -703,15 +714,15 @@ void GraphicsEngine::RenderFrame()
 			mesh.myCommand->Execute();
 		}
 
-		RHI::SetRenderTarget(&myBackBuffer, nullptr);
-		myGBuffer.SetAsResource(PIPELINE_STAGE_PIXEL_SHADER, 3); // If changed, also change UnbindAsResource() in BeginFrame()
+		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+		myGBuffer.SetAsResource(PIPELINE_STAGE_PIXEL_SHADER);
 
 		// Draw ScreenQuad
-		RHI::SetVertexShader(&myQuadVSShader);
+		RHI::SetVertexShader(&myShaders.QuadVSShader);
 		RHI::ConfigureInputAssembler(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, nullptr, nullptr, 0, nullptr);
 
 		// Draw Ambient- and Directionallight
-		RHI::SetPixelShader(&myEnvironmentPSShader);
+		RHI::SetPixelShader(&myShaders.EnvironmentPSShader);
 		RHI::Draw(4);
 		RHI::SetBlendState(myAdditiveBlend);
 		//RHI::SetBlendState(myAlphaBlend);
@@ -724,7 +735,7 @@ void GraphicsEngine::RenderFrame()
 #endif // !_RETAIL
 
 				// Draw Spotlights
-				RHI::SetPixelShader(&mySpotlightPSShader);
+				RHI::SetPixelShader(&myShaders.SpotlightPSShader);
 				for (auto& light : mySpotLights)
 				{
 					light->Execute(0);
@@ -740,7 +751,7 @@ void GraphicsEngine::RenderFrame()
 #endif // !_RETAIL
 
 				// Draw Pointlight
-				RHI::SetPixelShader(&myPointlightPSShader);
+				RHI::SetPixelShader(&myShaders.PointlightPSShader);
 				for (auto& light : myPointLights)
 				{
 					light->Execute(0);
@@ -759,7 +770,7 @@ void GraphicsEngine::RenderFrame()
 	// Forward Rendering
 	if (myRenderCommands->forwardMeshCommands.size() > 0)
 	{
-		RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
+		RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 
 		pointIndex = 0;
 		for (auto& command : myPointLights)
@@ -813,7 +824,7 @@ void GraphicsEngine::RenderFrame()
 		}
 	}
 
-	RHI::SetRenderTarget(&myBackBuffer, &myDepthBuffer);
+	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 	RHI::SetBlendState(nullptr);
 	myLineDrawer.Render();
 }
@@ -999,11 +1010,11 @@ bool GraphicsEngine::CreateAdditiveBlend()
 
 bool GraphicsEngine::CreateLUTTexture()
 {
-	if (!RHI::CreateTexture(&myBrdfLUTTexture, L"brdfLUT", 512, 512, DXGI_FORMAT_R16G16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.BrdfLUTTexture, L"brdfLUT", 512, 512, DXGI_FORMAT_R16G16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		return false;
 	}
-	RHI::ClearRenderTarget(&myBrdfLUTTexture);
+	RHI::ClearRenderTarget(&myTextures.BrdfLUTTexture);
 
 	std::wstring path;
 #ifdef _DEBUG
@@ -1016,7 +1027,7 @@ bool GraphicsEngine::CreateLUTTexture()
 	GELogger.Err("Invalid buildsettings in CreateLUTTexture!");
 #endif // _DEBUG
 
-	if (!RHI::LoadShader(&myQuadVSShader, path + L"ScreenQuad_VS.cso"))
+	if (!RHI::LoadShader(&myShaders.QuadVSShader, path + L"ScreenQuad_VS.cso"))
 	{
 		return false;
 	}
@@ -1027,9 +1038,9 @@ bool GraphicsEngine::CreateLUTTexture()
 		return false;
 	}
 
-	RHI::SetVertexShader(&myQuadVSShader);
+	RHI::SetVertexShader(&myShaders.QuadVSShader);
 	RHI::SetPixelShader(&brdfPS);
-	RHI::SetRenderTarget(&myBrdfLUTTexture, nullptr);
+	RHI::SetRenderTarget(&myTextures.BrdfLUTTexture, nullptr);
 	RHI::ConfigureInputAssembler(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, nullptr, nullptr, 0, nullptr);
 
 	RHI::Draw(4);
@@ -1038,6 +1049,44 @@ bool GraphicsEngine::CreateLUTTexture()
 	brdfPS.DeleteData();
 
 	return true;
+}
+
+void GraphicsEngine::LoadDefaultTextures(Settings& someSettings)
+{
+	// FX
+	if (!RHI::LoadTexture(&myTextures.DefaultFXTexture, Helpers::string_cast<std::wstring>(someSettings.defaultFXTexture)))
+	{
+		GELogger.Err("Failed to load default FX texture!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultFXTextureSlot, &myTextures.DefaultFXTexture);
+
+	// Material
+	if (!RHI::LoadTexture(&myTextures.DefaultMaterialTexture, Helpers::string_cast<std::wstring>(someSettings.defaultMaterialTexture)))
+	{
+		GELogger.Err("Failed to load default material texture!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultMaterialTextureSlot, &myTextures.DefaultMaterialTexture);
+
+	// Normal
+	if (!RHI::LoadTexture(&myTextures.DefaultNormalTexture, Helpers::string_cast<std::wstring>(someSettings.defaultNormalTexture)))
+	{
+		GELogger.Err("Failed to load default normal texture!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultNormalTextureSlot, &myTextures.DefaultNormalTexture);
+
+	// Missing
+	if (!RHI::LoadTexture(&myTextures.MissingTexture, Helpers::string_cast<std::wstring>(someSettings.defaultMissingTexture)))
+	{
+		GELogger.Err("Failed to load default missing texture!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.MissingTextureSlot, &myTextures.MissingTexture);
+
+	// CubeMap
+	if (!RHI::LoadTexture(&myTextures.DefaultCubeMap, Helpers::string_cast<std::wstring>(someSettings.defaultCubeMap)))
+	{
+		GELogger.Err("Failed to load default cubemap!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultCubeMapSlot, &myTextures.DefaultCubeMap);
 }
 
 Settings GraphicsEngine::LoadSettings()

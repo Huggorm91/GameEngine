@@ -1,5 +1,6 @@
 #pragma once
 #include "Rendering/Buffers/LightBuffer.h"
+#include "Rendering/TextureContainer.h"
 
 class LightCommand 
 {
@@ -26,9 +27,14 @@ protected:
 	Type myType;
 
 	LightCommand(Type aType);
+
 	LightBuffer& GetLightBuffer();
+	unsigned GetLightBufferSlot();
+
 	const Texture* GetDefaultCubemap();
 	Texture*& GetDirectionalShadowMap();
 	std::array<Texture*, MAX_LIGHTS>& GetPointlightShadowMap();
 	std::array<Texture*, MAX_LIGHTS>& GetSpotlightShadowMap();
+
+	const SlotContainer& GetTextureSlots();
 };

@@ -12,8 +12,10 @@ enum ePipelineStage : unsigned
 
 enum eTextureSlot : unsigned
 {
-	Albedo,
-	Normal
+	TextureSlot_Albedo,
+	TextureSlot_Normal,
+	TextureSlot_Material,
+	TextureSlot_FX
 };
 
 class Material
@@ -23,7 +25,7 @@ public:
 	Material(const Material& aMaterial);
 	Material(const Json::Value& aJsonValue);
 	// Any nullptr will use GraphicEngine default
-	Material(const std::string& aName, Shader* aVertexShader = nullptr, Shader* aPixelShader = nullptr, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr, Texture* aMaterial = nullptr);
+	Material(const std::string& aName, Shader* aVertexShader = nullptr, Shader* aPixelShader = nullptr, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr, Texture* aMaterial = nullptr, Texture* aFX = nullptr);
 	~Material() = default;
 	Material& operator=(const Material& aMaterial);
 
@@ -33,6 +35,7 @@ public:
 	void SetAlbedoTexture(Texture* aTexture);
 	void SetNormalTexture(Texture* aTexture);
 	void SetMaterialTexture(Texture* aTexture);
+	void SetFXTexture(Texture* aTexture);
 
 	// Only used for BlinnPhong
 	void SetShininess(float aShininess);
@@ -52,6 +55,7 @@ public:
 	const Texture* GetAlbedoTexture() const;
 	const Texture* GetNormalTexture() const;
 	const Texture* GetMaterialTexture() const;
+	const Texture* GetFXTexture() const;
 
 	float GetShininess() const;
 	float GetMetalness() const;
@@ -83,6 +87,7 @@ private:
 	Texture* myAlbedoTexture;
 	Texture* myNormalTexture;
 	Texture* myMaterialTexture;
+	Texture* myFXTexture;
 
 	float myShininess;	// Only used for BlinnPhong
 	float myMetalness;	// Only used for BlinnPhong

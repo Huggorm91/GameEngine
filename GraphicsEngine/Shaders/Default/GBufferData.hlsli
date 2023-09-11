@@ -10,14 +10,16 @@ struct GBufferOutput
     float4 VertexNormal : SV_TARGET2;
     float4 Normal : SV_TARGET3;
     float4 WorldPosition : SV_TARGET4;
-    float4 ObjectID : SV_TARGET5;
+    float4 FX : SV_TARGET5;
+    float4 ObjectID : SV_TARGET6;
 };
 
-Texture2D GBuffer_Albedo : register(t3);
-Texture2D GBuffer_Material : register(t4);
-Texture2D GBuffer_VertexNormal : register(t5);
-Texture2D GBuffer_PixelNormal : register(t6);
-Texture2D GBuffer_Position : register(t7);
-Texture2D GBuffer_ObjectID : register(t8);
+Texture2D GBuffer_Albedo : register(t10);
+Texture2D GBuffer_Material : register(t11);
+Texture2D GBuffer_VertexNormal : register(t12);
+Texture2D GBuffer_PixelNormal : register(t13);
+Texture2D GBuffer_Position : register(t14);
+Texture2D GBuffer_FX : register(t15);
+Texture2D GBuffer_ObjectID : register(t16);
 
 #endif // GBUFFERDATA_HLSLI

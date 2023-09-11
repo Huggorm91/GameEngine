@@ -27,7 +27,7 @@ void LitCmd_AddPointlight::Execute(const int anIndex)
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);		
+	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, GetLightBufferSlot(), buffer);
 }
 
 Texture* LitCmd_AddPointlight::GetShadowMap()
@@ -39,7 +39,7 @@ void LitCmd_AddPointlight::SetShadowMap(const int anIndex)
 {
 	if (myCastsShadow && myShadowMap != nullptr)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 120 + anIndex, myShadowMap.get());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, GetTextureSlots().PointShadowMapSlot + anIndex, myShadowMap.get());
 	}
 }
 

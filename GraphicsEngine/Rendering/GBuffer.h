@@ -8,20 +8,22 @@ public:
 	GBuffer() = default;
 	~GBuffer() = default;
 
-	bool Init();
+	bool Init(unsigned aSlot);
 
 	void SetAsTarget(const Texture* aDepthStencil);
-	void SetAsResource(unsigned aStage, unsigned aSlot);
-	void UnbindAsResource(unsigned aStage, unsigned aSlot);
+	void SetAsResource(unsigned aStage, unsigned aSlot = mySlot);
+	void UnbindAsResource(unsigned aStage, unsigned aSlot = mySlot);
 
 	void ClearTextures();
 
 private:
+	static unsigned mySlot;
 	Texture myAlbedoMap;
 	Texture myMaterialMap;
 	Texture myVertexNormalMap;
 	Texture myPixelNormalMap;
 	Texture myPositionMap;
+	Texture myFXMap;
 	Texture myPickingMap;
 	std::vector<Texture*> myTextureList;
 	std::vector<Texture*> myNullPtrList;
@@ -31,5 +33,6 @@ private:
 	bool CreateVertexNormalTexture(const RHI::DeviceSize& aSize);
 	bool CreatePixelNormalTexture(const RHI::DeviceSize& aSize);
 	bool CreatePositionTexture(const RHI::DeviceSize& aSize);
+	bool CreateFXTexture(const RHI::DeviceSize& aSize);
 	bool CreatePickingTexture(const RHI::DeviceSize& aSize);
 };

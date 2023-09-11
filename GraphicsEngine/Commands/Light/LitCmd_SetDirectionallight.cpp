@@ -29,7 +29,7 @@ void LitCmd_SetDirectionallight::Execute(const int anIndex)
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, 2, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, GetLightBufferSlot(), buffer);
 }
 
 Texture* LitCmd_SetDirectionallight::GetShadowMap()
@@ -42,7 +42,7 @@ void LitCmd_SetDirectionallight::SetShadowMap(const int anIndex)
 	UNREFERENCED_PARAMETER(anIndex);
 	if (myCastsShadow && myShadowMap != nullptr)
 	{
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, 95, myShadowMap.get());
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, GetTextureSlots().DirectionalShadowMapSlot, myShadowMap.get());
 	}
 }
 

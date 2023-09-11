@@ -34,9 +34,14 @@ LightBuffer& LightCommand::GetLightBuffer()
     return GraphicsEngine::Get().myLightBuffer;
 }
 
+unsigned LightCommand::GetLightBufferSlot()
+{
+    return GraphicsEngine::Get().myLightBufferSlot;
+}
+
 const Texture* LightCommand::GetDefaultCubemap()
 {
-    return &GraphicsEngine::Get().myDefaultCubeMap;
+    return &GraphicsEngine::Get().myTextures.DefaultCubeMap;
 }
 
 Texture*& LightCommand::GetDirectionalShadowMap()
@@ -52,4 +57,9 @@ std::array<Texture*, MAX_LIGHTS>& LightCommand::GetPointlightShadowMap()
 std::array<Texture*, MAX_LIGHTS>& LightCommand::GetSpotlightShadowMap()
 {
     return GraphicsEngine::Get().mySpotShadowMap;
+}
+
+const SlotContainer& LightCommand::GetTextureSlots()
+{
+    return GraphicsEngine::Get().myTextureSlots;
 }

@@ -42,5 +42,5 @@ void GfxCmd_RenderMeshShadow::SetObjectBuffer()
 	}
 
 	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER, 1, buffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER, GetObjectBufferSlot(), buffer);
 }

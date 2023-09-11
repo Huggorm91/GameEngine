@@ -31,6 +31,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.VertexNormal.xyz = input.NormalWS;
                 result.VertexNormal.w = 0;
                 result.Material = MaterialTexture.Sample(DefaultSampler, scaledUV);
+                result.FX = FXTexture.Sample(DefaultSampler, scaledUV);
                 result.WorldPosition = input.WorldPosition;
                 
 #ifndef _RETAIL
@@ -46,6 +47,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -65,6 +67,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -76,6 +79,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -87,6 +91,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -98,6 +103,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -111,6 +117,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -124,6 +131,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
@@ -137,20 +145,39 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
-        case 9: // VertexColors
+        case 9: // Emission
+        {
+                float2 scaledUV = input.UVs[0] * MB_UVTiling;
+                float emission = FXTexture.Sample(DefaultSampler, scaledUV).r;
+                float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
+                result.Albedo = GetAlphaBlendColor(input.Color[0], textureColor);
+                result.Albedo = GetAlphaBlendColor(result.Albedo, MB_AlbedoColor);
+                result.Albedo *= emission;
+                result.Albedo.w = 1;
+            
+                result.Normal = 0;
+                result.VertexNormal = 0;
+                result.Material = 0;
+                result.FX = 0;
+                result.WorldPosition = 0;
+                break;
+            }
+        case 10: // VertexColors
         {
                 result.Albedo = input.Color[0];
             
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
-        case 10: // AlbedoMap
+        case 11: // AlbedoMap
         {
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 result.Albedo = AlbedoTexture.Sample(DefaultSampler, scaledUV);
@@ -158,10 +185,11 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
-        case 11: // NormalMap
+        case 12: // NormalMap
         {
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 result.Albedo = NormalTexture.Sample(DefaultSampler, scaledUV);
@@ -169,10 +197,11 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
                 break;
             }
-        case 12: // DirectionallightUV
+        case 13: // DirectionallightUV
         {
                 float3 uv = GetShadowMapUV(LB_DirectionalView, LB_DirectionalProjection, input.WorldPosition);
                 if (uv.x < 0.f || uv.x > 1.f || uv.y < 0.f || uv.y > 1.f)
@@ -189,6 +218,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Normal = 0;
                 result.VertexNormal = 0;
                 result.Material = 0;
+                result.FX = 0;
                 result.WorldPosition = 0;
         
                 break;

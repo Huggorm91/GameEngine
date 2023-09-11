@@ -112,24 +112,35 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 result.Color.w = 1;
                 break;
             }
-        case 9: // VertexColors
+        case 9: // Emission
+        {
+                float2 scaledUV = input.UVs[0] * MB_UVTiling;
+                float emission = FXTexture.Sample(DefaultSampler, scaledUV).r;
+                float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
+                result.Color = GetAlphaBlendColor(input.Color[0], textureColor);
+                result.Color = GetAlphaBlendColor(result.Color, MB_AlbedoColor);
+                result.Color *= emission;
+                result.Color.w = 1;
+                break;
+            }
+        case 10: // VertexColors
     {
                 result.Color = input.Color[0];
                 break;
             }
-        case 10: // AlbedoMap
+        case 11: // AlbedoMap
     {
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 result.Color = AlbedoTexture.Sample(DefaultSampler, scaledUV);
                 break;
             }
-        case 11: // NormalMap
+        case 12: // NormalMap
     {
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 result.Color = NormalTexture.Sample(DefaultSampler, scaledUV);
                 break;
             }
-        case 12: // DirectionallightUV
+        case 13: // DirectionallightUV
     {
                 float3 uv = GetShadowMapUV(LB_DirectionalView, LB_DirectionalProjection, input.WorldPosition);
                 if (uv.x < 0.f || uv.x > 1.f || uv.y < 0.f || uv.y > 1.f)
