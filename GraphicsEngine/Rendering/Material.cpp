@@ -4,12 +4,12 @@
 #include "AssetManager/AssetManager.h"
 #include "../InterOp/Helpers.h"
 
-Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr), myShininess(62.f), myMetalness(), myNormalStrength(1.f), myUVTiling(1.f, 1.f), myAlbedoColor()
+Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr)
 {
 }
 
 Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), myPixelShader(aMaterial.myPixelShader), myTextures(aMaterial.myTextures), myBuffer(aMaterial.myBuffer), myName(aMaterial.myName), myAlbedoTexture(aMaterial.myAlbedoTexture), myFXTexture(aMaterial.myFXTexture),
-myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMaterialTexture), myShininess(aMaterial.myShininess), myMetalness(aMaterial.myMetalness), myNormalStrength(aMaterial.myNormalStrength), myUVTiling(aMaterial.myUVTiling), myAlbedoColor(aMaterial.myAlbedoColor)
+myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMaterialTexture)
 {
 	myBuffer.Initialize();
 }
@@ -19,10 +19,15 @@ myPixelShader(aJsonValue["PixelShader"].isNull() ? nullptr : AssetManager::GetAs
 myAlbedoTexture(aJsonValue["AlbedoTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["AlbedoTexture"].asString())), 
 myNormalTexture(aJsonValue["NormalTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["NormalTexture"].asString())),
 myMaterialTexture(aJsonValue["MaterialTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["MaterialTexture"].asString())),
-myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["FXTexture"].asString())), myShininess(aJsonValue["Shininess"].asFloat()), myMetalness(aJsonValue["Metalness"].asFloat()),
-myNormalStrength(aJsonValue["NormalStrength"].asFloat()), myUVTiling(aJsonValue["UVTiling"]["X"].asFloat(), aJsonValue["UVTiling"]["Y"].asFloat()),
-myAlbedoColor(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat())
+myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["FXTexture"].asString()))
 {
+	myBuffer.Data.Shininess = aJsonValue["Shininess"].asFloat();
+	myBuffer.Data.Metalness = aJsonValue["Metalness"].asFloat();
+	myBuffer.Data.NormalStrength = aJsonValue["NormalStrength"].asFloat();
+	myBuffer.Data.UVTiling = CommonUtilities::Vector2f(aJsonValue["UVTiling"]);
+	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat());
+	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat());
+
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
 	{
 		const Json::Value& texture = aJsonValue["Textures"][i];
@@ -32,7 +37,7 @@ myAlbedoColor(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"
 }
 
 Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial, Texture* aFX) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(), 
-myBuffer(), myName(aName), myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial), myFXTexture(aFX), myShininess(62.f), myMetalness(), myNormalStrength(1.f), myUVTiling(1.f, 1.f), myAlbedoColor()
+myBuffer(), myName(aName), myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial), myFXTexture(aFX)
 {
 	myBuffer.Initialize();
 }
@@ -47,12 +52,7 @@ Material& Material::operator=(const Material& aMaterial)
 	myNormalTexture = aMaterial.myNormalTexture;
 	myMaterialTexture = aMaterial.myMaterialTexture;
 	myFXTexture = aMaterial.myFXTexture;
-	myBuffer = aMaterial.myBuffer; // Potential future problem with comptr copy
-	myShininess = aMaterial.myShininess;
-	myMetalness = aMaterial.myMetalness;
-	myNormalStrength = aMaterial.myNormalStrength;
-	myUVTiling = aMaterial.myUVTiling;
-	myAlbedoColor = aMaterial.myAlbedoColor;
+	myBuffer = aMaterial.myBuffer;
 	myBuffer.Initialize();
 	return *this;
 }
@@ -89,27 +89,32 @@ void Material::SetFXTexture(Texture* aTexture)
 
 void Material::SetShininess(float aShininess)
 {
-	myShininess = aShininess;
+	myBuffer.Data.Shininess = aShininess;
 }
 
 void Material::SetMetalness(float aMetalness)
 {
-	myMetalness = aMetalness;
+	myBuffer.Data.Metalness = aMetalness;
 }
 
 void Material::SetNormalStrength(float aNormalStrength)
 {
-	myNormalStrength = aNormalStrength;
+	myBuffer.Data.NormalStrength = aNormalStrength;
 }
 
 void Material::SetUVTiling(const CommonUtilities::Vector2f& aUVTiling)
 {
-	myUVTiling = aUVTiling;
+	myBuffer.Data.UVTiling = aUVTiling;
 }
 
-void Material::SetColor(const CommonUtilities::Vector4f& aColor)
+void Material::SetAlbedoColor(const CommonUtilities::Vector4f& aColor)
 {
-	myAlbedoColor = aColor;
+	myBuffer.Data.AlbedoColor = aColor;
+}
+
+void Material::SetEmissionColor(const CommonUtilities::Vector4f& aColor)
+{
+	myBuffer.Data.EmissionColor = aColor;
 }
 
 void Material::SetName(const std::string& aName)
@@ -149,27 +154,32 @@ const Texture* Material::GetFXTexture() const
 
 float Material::GetShininess() const
 {
-	return myShininess;
+	return myBuffer.Data.Shininess;
 }
 
 float Material::GetMetalness() const
 {
-	return myMetalness;
+	return myBuffer.Data.Metalness;
 }
 
 float Material::GetNormalStrength() const
 {
-	return myNormalStrength;
+	return myBuffer.Data.NormalStrength;
 }
 
 const CommonUtilities::Vector2f& Material::GetUVTiling() const
 {
-	return myUVTiling;
+	return myBuffer.Data.UVTiling;
 }
 
-const CommonUtilities::Vector4f& Material::GetColor() const
+const CommonUtilities::Vector4f& Material::GetAlbedoColor() const
 {
-	return myAlbedoColor;
+	return myBuffer.Data.AlbedoColor;
+}
+
+const CommonUtilities::Vector4f& Material::GetEmissionColor() const
+{
+	return myBuffer.Data.EmissionColor;
 }
 
 const std::string& Material::GetName() const
@@ -255,16 +265,19 @@ Json::Value Material::ToJson() const
 		result["FXTexture"] = Json::nullValue;
 	}
 	
-	//result["Buffer"] = myBuffer.Data;  // Add all values to separate sub names
-	result["Shininess"] = myShininess;
-	result["Metalness"] = myMetalness;
-	result["NormalStrength"] = myNormalStrength;
-	result["UVTiling"]["X"] = myUVTiling.x;
-	result["UVTiling"]["Y"] = myUVTiling.y;
-	result["AlbedoColor"]["R"] = myAlbedoColor.x;
-	result["AlbedoColor"]["G"] = myAlbedoColor.y;
-	result["AlbedoColor"]["B"] = myAlbedoColor.z;
-	result["AlbedoColor"]["A"] = myAlbedoColor.w;
+	result["Shininess"] = myBuffer.Data.Shininess;
+	result["Metalness"] = myBuffer.Data.Metalness;
+	result["NormalStrength"] = myBuffer.Data.NormalStrength;
+	result["UVTiling"]["X"] = myBuffer.Data.UVTiling.x;
+	result["UVTiling"]["Y"] = myBuffer.Data.UVTiling.y;
+	result["AlbedoColor"]["R"] = myBuffer.Data.AlbedoColor.x;
+	result["AlbedoColor"]["G"] = myBuffer.Data.AlbedoColor.y;
+	result["AlbedoColor"]["B"] = myBuffer.Data.AlbedoColor.z;
+	result["AlbedoColor"]["A"] = myBuffer.Data.AlbedoColor.w;
+	result["EmissionColor"]["R"] = myBuffer.Data.EmissionColor.x;
+	result["EmissionColor"]["G"] = myBuffer.Data.EmissionColor.y;
+	result["EmissionColor"]["B"] = myBuffer.Data.EmissionColor.z;
+	result["EmissionColor"]["A"] = myBuffer.Data.EmissionColor.w;
 	return result;
 }
 

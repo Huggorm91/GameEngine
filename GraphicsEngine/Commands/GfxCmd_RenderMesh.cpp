@@ -56,14 +56,8 @@ void GfxCmd_RenderMesh::SetMaterialResource(const Material& aMaterial)
 		RHI::SetPixelShader(aMaterial.myPixelShader);
 	}
 	
-	auto& buffer = GetMaterialBuffer();
-	buffer.Data.AlbedoColor = aMaterial.myAlbedoColor;
-	buffer.Data.UVTiling = aMaterial.myUVTiling;
-	buffer.Data.NormalStrength = aMaterial.myNormalStrength;
-	buffer.Data.Shininess = aMaterial.myShininess;
-	buffer.Data.Metalness = aMaterial.myMetalness;
-	RHI::UpdateConstantBufferData(buffer);
-	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GetMaterialBufferSlot(), buffer);
+	RHI::UpdateConstantBufferData(aMaterial.myBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GetMaterialBufferSlot(), aMaterial.myBuffer);
 
 	if (aMaterial.myAlbedoTexture)
 	{

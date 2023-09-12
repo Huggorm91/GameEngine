@@ -5,6 +5,7 @@
 struct MaterialBufferData
 {
 	CommonUtilities::Vector4f AlbedoColor{};
+	CommonUtilities::Vector4f EmissionColor{};
 	CommonUtilities::Vector2f UVTiling{};
 	float NormalStrength{};
 	float Shininess{};
