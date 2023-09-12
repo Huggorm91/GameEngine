@@ -4,7 +4,7 @@ float4 main(QuadVSToPS input) : SV_TARGET
 {
     const float3 albedo = Intermediate_ATexture.Sample(DefaultSampler, input.UV).rgb;
     const float luminance = dot(albedo, float3(0.2126f, 0.7152f, 0.0722f));
-    const float cutOff = 0.8f;
+    const float cutOff = 0.7f;
     const float fadeLimit = 0.4f;
     
     if(luminance >= cutOff)

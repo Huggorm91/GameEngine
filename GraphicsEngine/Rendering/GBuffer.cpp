@@ -38,6 +38,11 @@ bool GBuffer::Init(unsigned aSlot)
 		GELogger.Err("GBuffer: Failed to create FX texture");
 		return false;
 	}
+	if (!CreateEmissionTexture(size))
+	{
+		GELogger.Err("GBuffer: Failed to create Emisison texture");
+		return false;
+	}
 	if (!CreatePickingTexture(size))
 	{
 		GELogger.Err("GBuffer: Failed to create Picking texture");
@@ -69,6 +74,7 @@ void GBuffer::ClearTextures()
 	RHI::ClearRenderTarget(&myPixelNormalMap);
 	RHI::ClearRenderTarget(&myPositionMap);
 	RHI::ClearRenderTarget(&myFXMap);
+	RHI::ClearRenderTarget(&myEmissionMap);
 	RHI::ClearRenderTarget(&myPickingMap);
 }
 
@@ -145,6 +151,18 @@ bool GBuffer::CreateFXTexture(const RHI::DeviceSize& aSize)
 	}
 	RHI::ClearRenderTarget(&myFXMap);
 	myTextureList.emplace_back(&myFXMap);
+	myNullPtrList.emplace_back(nullptr);
+	return true;
+}
+
+bool GBuffer::CreateEmissionTexture(const RHI::DeviceSize& aSize)
+{
+	if (!RHI::CreateTexture(&myEmissionMap, L"GBuffer_Emission", aSize.Width, aSize.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	{
+		return false;
+	}
+	RHI::ClearRenderTarget(&myEmissionMap);
+	myTextureList.emplace_back(&myEmissionMap);
 	myNullPtrList.emplace_back(nullptr);
 	return true;
 }

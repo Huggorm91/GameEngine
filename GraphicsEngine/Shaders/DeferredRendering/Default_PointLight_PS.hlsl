@@ -38,8 +38,8 @@ DefaultPixelOutput main(QuadVSToPS input)
     data.nDotV = saturate(dot(data.pixelNormal, data.v));
     
     result.Color.rgb = GetPblPointlightValue(data, LB_Pointlights[0]);
-    //result.Color.rgb += albedo.rgb * emission;
-    result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
-    result.Color.a = 1.f;
+    
+    result.Color.a = saturate(length(result.Color.rgb) * 1000.f);
+    
     return result;
 }

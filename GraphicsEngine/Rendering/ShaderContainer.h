@@ -3,9 +3,16 @@
 
 struct ShaderContainer
 {
-	Shader QuadVSShader{};
-	Shader GBufferPSShader{};
-	Shader EnvironmentPSShader{};
-	Shader PointlightPSShader{};
-	Shader SpotlightPSShader{};
+	Shader QuadVS{};
+
+	Shader LuminancePS{};
+	Shader BlurPS{};
+	Shader BloomPS{};
+	Shader GammaPS{};
+	Shader CopyPS{};
+
+	Shader GBufferPS{};
+	Shader EnvironmentPS{};
+	Shader PointlightPS{};
+	Shader SpotlightPS{};
 };

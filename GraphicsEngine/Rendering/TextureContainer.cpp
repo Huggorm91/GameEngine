@@ -7,5 +7,7 @@ void TextureContainer::ClearTextures(const CommonUtilities::Vector3f& aFillColor
 	RHI::ClearRenderTarget(&Scenebuffer);
 	RHI::ClearRenderTarget(&IntermediateA);
 	RHI::ClearRenderTarget(&IntermediateB);
+	RHI::ClearRenderTarget(&QuarterScenebufferA);
+	RHI::ClearRenderTarget(&QuarterScenebufferB);
 	RHI::ClearDepthStencil(&DepthBuffer);
 }

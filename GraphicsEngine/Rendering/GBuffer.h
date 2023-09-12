@@ -26,6 +26,7 @@ private:
 	Texture myPixelNormalMap;
 	Texture myPositionMap;
 	Texture myFXMap;
+	Texture myEmissionMap;
 	Texture myPickingMap;
 	std::vector<Texture*> myTextureList;
 	std::vector<Texture*> myNullPtrList;
@@ -36,5 +37,6 @@ private:
 	bool CreatePixelNormalTexture(const RHI::DeviceSize& aSize);
 	bool CreatePositionTexture(const RHI::DeviceSize& aSize);
 	bool CreateFXTexture(const RHI::DeviceSize& aSize);
+	bool CreateEmissionTexture(const RHI::DeviceSize& aSize);
 	bool CreatePickingTexture(const RHI::DeviceSize& aSize);
 };

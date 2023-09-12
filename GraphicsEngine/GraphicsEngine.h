@@ -123,9 +123,18 @@ public:
 		return myWorldCenter;
 	}
 
+	inline void SetUsingBloom(bool aState){
+		myIsUsingBloom = aState;
+	}
+	inline void ToogleUsingBloom(){
+		myIsUsingBloom = !myIsUsingBloom;
+	}
+
 private:
 	friend class LightCommand;
-	friend class GraphicsCommand;	
+	friend class GraphicsCommand;
+
+	bool myIsUsingBloom;
 
 #ifndef _RETAIL
 	DebugMode myDebugMode;
@@ -193,7 +202,9 @@ private:
 
 	bool CreateLUTTexture();
 	bool CreatePostProcessingTextures();
-	void LoadDefaultTextures(Settings& someSettings);
+
+	void LoadDefaultTextures(const Settings& someSettings);
+	bool LoadShaders(const Settings& someSettings);
 
 	Settings LoadSettings();
 	void SaveSettings(const Settings& someSettings) const;

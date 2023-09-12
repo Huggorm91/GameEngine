@@ -276,5 +276,6 @@
     <FxCompile Include="Shaders\PostProcessing\Luminance_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Gaussian_Blur_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Bloom_PS.hlsl" />
+    <FxCompile Include="Shaders\PostProcessing\Gamma_PS.hlsl" />
   </ItemGroup>
 </Project>

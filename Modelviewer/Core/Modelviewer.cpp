@@ -343,6 +343,7 @@ void ModelViewer::Init()
 		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+		object.GetComponent<MeshComponent>().GetElements().back().myMaterial.SetUVTiling({2.f, 2.f});
 	}
 
 	{
@@ -363,7 +364,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
-		object.SetPosition({ 0.f, 0.f, 200.f });
+		object.SetPosition({ 200.f, 0.f, 200.f });
 		//object.SetRotation({ 0.f, 180.f, 0.f });
 		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
@@ -376,7 +377,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
-		object.SetPosition({ 100.f, 0.f, 200.f });
+		object.SetPosition({ -200.f, 0.f, 200.f });
 		//object.SetRotation({ 0.f, 180.f, 0.f });
 		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
@@ -390,7 +391,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
-		object.SetPosition({ -200.f, 0.f, 200.f });
+		object.SetPosition({ 0.f, 0.f, 200.f });
 		//object.SetRotation({ 0.f, 180.f, 0.f });
 		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
@@ -413,7 +414,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ -100.f, 150.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 1.f, { 1.f, 0.f, 0.f });
+		PointlightComponent pointlight(200.f, 4.f, { 1.f, 0.f, 0.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -424,7 +425,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 100.f, 150.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 1.f, { 0.f, 1.f, 0.f });
+		PointlightComponent pointlight(200.f, 4.f, { 0.f, 1.f, 0.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -435,7 +436,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 150.f, 600.f });
 
-		PointlightComponent pointlight(200.f, 1.f, { 0.f, 0.f, 1.f });
+		PointlightComponent pointlight(200.f, 4.f, { 0.f, 0.f, 1.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -446,7 +447,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
+		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
 		object.AddComponent(spotlight);
 
 		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -455,9 +456,9 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject();
-		object.SetPosition({ 0.f, 200.f, 300.f });
+		object.SetPosition({ 0.f, 200.f, 350.f });
 
-		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
+		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		object.AddComponent(spotlight);
 
 		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -466,7 +467,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject();
-		DirectionallightComponent light({ 0.f, -1.f, -1.f }, { 1.f, 1.f, 1.f }, 1.f);
+		DirectionallightComponent light({ 0.f, -1.f, 1.f }, { 1.f, 1.f, 1.f }, 1.f);
 		object.AddComponent(light);
 	}
 

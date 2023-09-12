@@ -5,20 +5,26 @@ namespace Json{ class Value; }
 
 struct Settings
 {
-	std::string defaultMissingTexture;
-	std::string defaultNormalTexture;
-	std::string defaultMaterialTexture;
-	std::string defaultFXTexture;
-	std::string defaultCubeMap;
+	std::string DefaultMissingTexture;
+	std::string DefaultNormalTexture;
+	std::string DefaultMaterialTexture;
+	std::string DefaultFXTexture;
+	std::string DefaultCubeMap;
 
-	std::string defaultMaterial;
+	std::string DefaultMaterial;
 
-	std::string defaultGBufferPSShader;
-	std::string defaultEnvironmentPSShader;
-	std::string defaultPointlightPSShader;
-	std::string defaultSpotlightPSShader;
+	std::string LuminancePS{};
+	std::string BlurPS{};
+	std::string BloomPS{};
+	std::string GammaPS{};
+	std::string CopyPS{};
 
-	CommonUtilities::Vector4f backgroundColor;
+	std::string GBufferPS;
+	std::string EnvironmentPS;
+	std::string PointlightPS;
+	std::string SpotlightPS;
+
+	CommonUtilities::Vector4f BackgroundColor;
 
 	Settings() = default;
 	Settings(const Json::Value& aJson);

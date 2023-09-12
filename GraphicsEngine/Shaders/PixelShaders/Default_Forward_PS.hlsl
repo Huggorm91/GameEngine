@@ -46,8 +46,6 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
                 result.Color.a = albedoColor.a;
                 result.Color.rgb = GetPblLight(data, albedoColor.rgb, materialMap.r);
                 result.Color.rgb += albedoColor.rgb * emission;
-    
-                result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
 #ifndef _RETAIL
                 break;
             }

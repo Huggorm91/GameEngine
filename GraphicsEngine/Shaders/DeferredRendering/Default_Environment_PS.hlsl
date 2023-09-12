@@ -25,11 +25,6 @@ DefaultPixelOutput main(QuadVSToPS input)
                     result.Color = albedo;
                     break;
                 }
-                if (FB_LightMode == 3 || FB_LightMode == 4)
-                {
-                    result.Color = 0;
-                    break;
-                }
 #endif // !_RETAIL
                 const float3 material = GBuffer_Material.Sample(DefaultSampler, input.UV).rgb;
                 //const float3 vertexNormal = GBuffer_VertexNormal.Sample(DefaultSampler, input.UV).rgb;
@@ -69,7 +64,6 @@ DefaultPixelOutput main(QuadVSToPS input)
                 }
 #endif // !_RETAIL
                 result.Color.rgb += albedo.rgb * emission;
-                result.Color.rgb = saturate(LinearToGamma(result.Color.rgb));
                 result.Color.a = albedo.a;
 #ifndef _RETAIL
                 break;
