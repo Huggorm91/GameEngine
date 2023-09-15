@@ -7,15 +7,24 @@
 #include "GraphicsEngine/Commands/GfxCmd_UpdateWorldBounds.h"
 
 MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix()
+#ifndef _RETAIL
+,myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
+#endif // !_RETAIL
 {
 }
 
 MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix()
+#ifndef _RETAIL
+, myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
+#endif // !_RETAIL
 {
 }
 
 MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f }, 
 myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix()
+#ifndef _RETAIL
+, myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
+#endif // !_RETAIL
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
 	{
@@ -25,6 +34,9 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 
 MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), 
 myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix()
+#ifndef _RETAIL
+, myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
+#endif // !_RETAIL
 {
 }
 
@@ -52,6 +64,12 @@ void MeshComponent::Init(const Json::Value& aJson)
 	{
 		myElements[element["Index"].asInt()].myMaterial = element["Material"];
 	}
+
+#ifndef _RETAIL
+	myLerpValue = aJson["LerpValue"].asFloat();
+	myLerpColor1 = CommonUtilities::Vector4f(aJson["LerpColor1"]);
+	myLerpColor2 = CommonUtilities::Vector4f(aJson["LerpColor2"]);
+#endif // !_RETAIL
 }
 
 void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath)
@@ -205,7 +223,22 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
-	ImGui::ColorEdit4("Color", (float*)&myColor);
+
+	if (ImGui::ColorEdit4("Color1", (float*)&myLerpColor1))
+	{
+		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+	}
+	if (ImGui::ColorEdit4("Color2", (float*)&myLerpColor2))
+	{
+		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+	}
+	if (ImGui::SliderFloat("Color", &myLerpValue, 0.f, 1.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+	}
+	ImGui::SameLine();
+	ImGui::ColorEdit4("  ", (float*)&myColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+
 	// Add editor for Elements
 	myTransform.CreateImGuiComponents(aWindowName);
 }
@@ -216,7 +249,10 @@ Json::Value MeshComponent::ToJson() const
 	result["RenderShadow"] = myRenderShadow;
 	result["Color"] = static_cast<Json::Value>(myColor);
 	result["Transform"] = myTransform.ToJson();
-	result["Path"] = *myPath;
+	if (myPath)
+	{
+		result["Path"] = *myPath;
+	}	
 	result["Elements"] = Json::arrayValue;
 	for (int i = 0; i < myElements.size(); i++)
 	{
@@ -224,6 +260,12 @@ Json::Value MeshComponent::ToJson() const
 		element["Index"] = i;
 		element["Material"] = myElements[i].myMaterial.ToJson();
 	}
+
+#ifndef _RETAIL
+	result["LerpValue"] = myLerpValue;
+	result["LerpColor1"] = static_cast<Json::Value>(myLerpColor1);
+	result["LerpColor2"] = static_cast<Json::Value>(myLerpColor2);
+#endif // !_RETAIL
 
 	return result;
 }

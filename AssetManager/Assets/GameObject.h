@@ -3,15 +3,19 @@
 #include "Components/Transform.h"
 #include <fstream>
 
+class Prefab;
+
 class GameObject
 {
 public:
 	GameObject();
+	GameObject(const Prefab& aPrefab);
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
 	~GameObject() = default;
 
+	GameObject& operator=(const Prefab& aPrefab);
 	GameObject& operator=(const GameObject& aGameObject);
 	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
@@ -53,14 +57,19 @@ public:
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
 
-	void CreateImGuiWindow(const std::string& aWindowName);
+	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
 	void ToBinary(std::ofstream& aStream) const;
 
+	void MarkAsPrefab();
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
+#ifndef _RETAIL
+	friend class PrefabManager;
+	GameObject(unsigned anID);
+#endif // !_RETAIL
 	friend class Component;
 	static unsigned localIDCount;
 

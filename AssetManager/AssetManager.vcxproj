@@ -276,6 +276,8 @@
     <ClInclude Include="Managers\ShaderManager.h" />
     <ClInclude Include="Assets\Components\Light\PointlightComponent.h" />
     <ClInclude Include="Assets\Components\Light\SpotlightComponent.h" />
+    <ClInclude Include="Managers\PrefabManager.h" />
+    <ClInclude Include="Assets\Prefab.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />
@@ -315,6 +317,8 @@
     <ClCompile Include="Managers\ShaderManager.cpp" />
     <ClCompile Include="Assets\Components\Light\PointlightComponent.cpp" />
     <ClCompile Include="Assets\Components\Light\SpotlightComponent.cpp" />
+    <ClCompile Include="Managers\PrefabManager.cpp" />
+    <ClCompile Include="Assets\Prefab.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

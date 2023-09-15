@@ -48,8 +48,14 @@ public:
 	const MeshComponent* GetTypePointer() const override;
 
 protected:
+
 	bool myRenderShadow;
 	const std::string* myPath;
+#ifndef _RETAIL
+	float myLerpValue;
+	CommonUtilities::Vector4f myLerpColor1;
+	CommonUtilities::Vector4f myLerpColor2;
+#endif // !_RETAIL
 	CommonUtilities::Vector4f myColor;
 	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;

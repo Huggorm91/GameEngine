@@ -4,6 +4,7 @@
 #include "Windows.h"
 
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
 
@@ -26,9 +27,10 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedIndex(0)
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedObject(nullptr)
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh)
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(),
+myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty")
 #endif // _RETAIL
 {
 }
@@ -49,7 +51,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle { Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle)};
+	std::wstring stdTitle{ Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle) };
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
@@ -120,8 +122,8 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	LoadScene("Default");
-	//Init();
+	//LoadScene("Default");
+	Init();
 	CommonUtilities::Timer::Init();
 
 	bool isRunning = true;
@@ -149,6 +151,37 @@ int ModelViewer::Run()
 	ImGui::DestroyContext();
 
 	return 0;
+}
+
+GameObject& ModelViewer::AddGameObject()
+{
+	GameObject newObject;
+	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
+	return iter.first->second;
+}
+
+GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
+{
+	GameObject newObject(anObject);
+	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
+	return iter.first->second;
+}
+
+GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
+{
+	auto iter = myGameObjects.emplace(anObject.GetID(), std::move(anObject));
+	return iter.first->second;
+}
+
+GameObject* ModelViewer::GetGameObject(unsigned anID)
+{
+	assert(anID != 0 && "Incorrect ID!");
+
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		return &iter->second;
+	}
+	return nullptr;
 }
 
 void ModelViewer::ModelViewer::SaveState() const
@@ -203,10 +236,10 @@ void ModelViewer::HideSplashScreen() const
 	SetForegroundWindow(myMainWindowHandle);
 }
 
-void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
+void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, ".lvl");
-	path = CreateValidPath(path, "Content/Scenes/", false);
+	path = CreateValidPath(path, "Content/Scenes/", &myLogger);
 	if (path.empty())
 	{
 		myLogger.Err("Could not create filepath: " + aPath);
@@ -215,10 +248,12 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 	scene["GameObjectIDCount"] = GameObject::GetIDCount();
 	scene["GameObjects"] = Json::arrayValue;
 
-	for (int i = 0; i < myGameObjects.size(); i++)
+	int i = 0;
+	for (auto& [id, object] : myGameObjects)
 	{
-		scene["GameObjects"][i] = myGameObjects[i].ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(myGameObjects[i].GetID()), Json::commentBefore);
+		scene["GameObjects"][i] = object.ToJson();
+		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object.GetID()), Json::commentBefore);
+		i++;
 	}
 
 	std::fstream fileStream(path, std::ios::out);
@@ -241,7 +276,7 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, ".lvl");
-	path = GetValidPath(path, "Content/Scenes/", false);
+	path = GetValidPath(path, "Content/Scenes/", &myLogger);
 	if (path.empty())
 	{
 		myLogger.Err("Could not find filepath: " + aPath);
@@ -262,7 +297,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	GameObject::SetIDCount(json["GameObjectIDCount"].asUInt());
 	for (auto& object : json["GameObjects"])
 	{
-		myGameObjects.emplace_back(object);
+		AddGameObject(object);
 	}
 }
 
@@ -270,10 +305,10 @@ void ModelViewer::Init()
 {
 	//LoadScene("Default");
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Cube"));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 500.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Cube"));
+		object.SetPosition({ 0.f, 0.f, 500.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		//mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
 		//mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
@@ -281,43 +316,53 @@ void ModelViewer::Init()
 		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Pyramid));
-	myGameObjects.back().SetPosition({ 200.f, 0.f, 500.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Sphere));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 500.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	//myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	//myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
-	myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
-
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::InvertedCube));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedpyramid"));
-	myGameObjects.back().SetPosition({ 200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("invertedsphere"));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 700.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-	myGameObjects.back().GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
-	myGameObjects.back().SetPosition({ 0.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Pyramid));
+		object.SetPosition({ 200.f, 0.f, 500.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Sphere));
+		object.SetPosition({ -200.f, 0.f, 500.f });
+		//object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		//object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		//object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+		object.GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
+		object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::InvertedCube));
+		object.SetPosition({ 0.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedpyramid"));
+		object.SetPosition({ 200.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedsphere"));
+		object.SetPosition({ -200.f, 0.f, 700.f });
+		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
+		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
+		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
+	}
+
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
+		object.SetPosition({ 0.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M_Updated.dds"));
@@ -326,11 +371,11 @@ void ModelViewer::Init()
 		mesh.SetColor({ 1.f,0.f,0.f,.5f });
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
-	myGameObjects.back().SetPosition({ 100.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		AnimatedMeshComponent& mesh = myGameObjects.back().GetComponent<AnimatedMeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
+		object.SetPosition({ 100.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
@@ -340,100 +385,103 @@ void ModelViewer::Init()
 		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
-	myGameObjects.back().SetPosition({ -200.f, 0.f, 200.f });
-	//myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
+		object.SetPosition({ -200.f, 0.f, 200.f });
+		//object.SetRotation({ 0.f, 180.f, 0.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
-	myGameObjects.back().SetPosition({ 0.f, 200.f, 500.f });
-	myGameObjects.back().SetRotation({ 0.f, 180.f, 0.f });
 	{
-		MeshComponent& mesh = myGameObjects.back().GetComponent<MeshComponent>();
+		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
+		object.SetPosition({ 0.f, 200.f, 500.f });
+		object.SetRotation({ 0.f, 180.f, 0.f });
+		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Buddha_C.dds"));
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Buddha_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Buddha_M.dds"));
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ -100.f, 150.f, 400.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ -100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 1.f, 0.f, 0.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 100.f, 150.f, 400.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 100.f, 150.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 0.f, 1.f, 0.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 150.f, 600.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 150.f, 600.f });
 
 		PointlightComponent pointlight(200.f, 1.f, { 0.f, 0.f, 1.f });
-		myGameObjects.back().AddComponent(pointlight);
+		object.AddComponent(pointlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
+		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
 		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 200.f, 600.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 200.f, 600.f });
 
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
-		myGameObjects.back().AddComponent(spotlight);
+		object.AddComponent(spotlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
+		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
 	}
 
-	myGameObjects.emplace_back();
 	{
-		myGameObjects.back().SetPosition({ 0.f, 200.f, 300.f });
+		auto& object = AddGameObject();
+		object.SetPosition({ 0.f, 200.f, 300.f });
 
 		SpotlightComponent spotlight(500, 1.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
-		myGameObjects.back().AddComponent(spotlight);
+		object.AddComponent(spotlight);
 
-		/*DebugDrawComponent& debug = myGameObjects.back().AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection()+0.1f, spotlight.GetLightDirection()-0.1f);*/
+		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
+		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
 	}
 
-	myGameObjects.emplace_back();
 	{
-		DirectionallightComponent light({ 0.f, -1.f, -1.f });
-		light.SetIntensity(.25f);
-		myGameObjects.back().AddComponent(light);
+		auto& object = AddGameObject();
+		DirectionallightComponent light({ 0.f, -1.f, -1.f }, { 1.f, 1.f, 1.f }, 1.f);
+		object.AddComponent(light);
 	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
-	myGameObjects.back().SetPosition({ 0.f, -10.f, 0.f });
-	myGameObjects.back().SetScale({ 20.f, 1.f, 20.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
+		object.SetPosition({ 0.f, -10.f, 0.f });
+		object.SetScale({ 20.f, 1.f, 20.f });
+		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+		//object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
+	}
 
-	myGameObjects.emplace_back(AssetManager::GetAsset(Primitives::Plane));
-	myGameObjects.back().SetPosition({ 0.f, 240.f, 1000.f });
-	myGameObjects.back().SetScale({ 20.f, 1.f, 5.f });
-	myGameObjects.back().SetRotation({ 90.f, 0.f, 0.f });
-	myGameObjects.back().GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-	//myGameObjects.back().GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
+	{
+		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
+		object.SetPosition({ 0.f, 240.f, 1000.f });
+		object.SetScale({ 20.f, 1.f, 5.f });
+		object.SetRotation({ 90.f, 0.f, 0.f });
+		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+		//object.GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
+	}
 
 	//SaveScene("Default");
 }
@@ -459,6 +507,15 @@ void ModelViewer::Update()
 	engine.EndFrame();
 }
 
+void ModelViewer::UpdateScene()
+{
+	for (auto& [id, object] : myGameObjects)
+	{
+		object.Update();
+	}
+}
+
+#ifndef _RETAIL
 void ModelViewer::ModelViewer::InitImgui()
 {
 	// Setup Dear ImGui context
@@ -484,10 +541,10 @@ void ModelViewer::ModelViewer::UpdateImgui()
 
 	//ImGui::ShowDemoWindow();
 	CreatePreferenceWindow();
-
-	ImGui::Begin("Selected GameObject");
-	myGameObjects[mySelectedIndex].CreateImGuiWindow("Selected GameObject");
-	ImGui::End();
+	CreateSceneContentWindow();
+	CreateSelectedObjectWindow();
+	CreatePrefabWindow();
+	CreateNewObjectWindow();
 }
 
 void ModelViewer::ModelViewer::RenderImgui()
@@ -498,53 +555,239 @@ void ModelViewer::ModelViewer::RenderImgui()
 
 void ModelViewer::CreatePreferenceWindow()
 {
-	ImGui::Begin("Preferences");
-	ImGui::SeparatorText("Selected Object");
-	ImGui::DragInt("Index", &mySelectedIndex, 1.f, 0, myGameObjects.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::Begin("Preferences"))
+	{
+		ImGui::SeparatorText("Launch Settings");
+		ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
+		ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
 
-	ImGui::SeparatorText("Launch Settings");
-	ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
-	ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
+		ImGui::SeparatorText("Camera Settings");
+		if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
+		{
+			myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
+		}
+		if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
+		{
+			myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
+		}
+		if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
+		{
+			myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
+		}
 
-	ImGui::SeparatorText("Camera Settings");
-	if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
-	{
-		myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
-	}
-	if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
-	{
-		myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
-	}
-	if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
-	{
-		myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
-	}
+		ImGui::SeparatorText("Scene Settings");
+		ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.001f, 0.f);
 
-	ImGui::SeparatorText("Scene Settings");
-	ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.001f, 0.f);
-
-	ImGui::SeparatorText("");
-	if (ImGui::Button("Save Preferences"))
-	{
-		SaveState();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Save Scene"))
-	{
-		SaveScene("Default");
+		ImGui::SeparatorText("");
+		if (ImGui::Button("Save Preferences"))
+		{
+			SaveState();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save Scene"))
+		{
+			// Add file selector
+			SaveScene("Default");
+		}
 	}
 	ImGui::End();
 }
 
-void ModelViewer::UpdateScene()
+void ModelViewer::CreateSelectedObjectWindow()
 {
-	for (auto& model : myGameObjects)
+	if (ImGui::Begin("Selected GameObject"))
 	{
-		model.Update();
+		if (mySelectedObject)
+		{
+			mySelectedObject->CreateImGuiWindowContent("Selected GameObject");
+
+			ImGui::Separator();
+			if (ImGui::Button("Save As Prefab"))
+			{
+				ImGui::OpenPopup("Select Prefab Name");
+			}
+			if (ImGui::BeginPopupModal("Select Prefab Name"))
+			{
+				static std::string name;
+				if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					AssetManager::SavePrefab(*mySelectedObject, name);
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::Button("Close"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Save"))
+				{
+					AssetManager::SavePrefab(*mySelectedObject, name);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}		
 	}
+	ImGui::End();
 }
-#ifndef _RETAIL
+
+void ModelViewer::CreateSceneContentWindow()
+{
+	myImguiNameCounts.clear();
+
+	if (ImGui::Begin("Scene"))
+	{
+		for (auto& [id, object] : myGameObjects)
+		{
+			if (auto iter = myImguiNameCounts.find(object.GetName()); iter != myImguiNameCounts.end())
+			{
+				std::string text = object.GetName() + " (" + std::to_string(iter->second++) + ")";
+				if (ImGui::Button(text.c_str()))
+				{
+					mySelectedObject = &object;
+				}
+			}
+			else
+			{
+				myImguiNameCounts.emplace(object.GetName(), 1);
+				if (ImGui::Button(object.GetName().c_str()))
+				{
+					mySelectedObject = &object;
+				}
+			}
+		}
+	}
+	ImGui::End();
+}
+
+void ModelViewer::CreatePrefabWindow()
+{
+	if (ImGui::Begin("Prefab", &myIsShowingPrefabWindow))
+	{
+		if (ImGui::BeginCombo(" ", mySelectedPrefabName ? mySelectedPrefabName->c_str() : ""))
+		{
+			for (auto& path : AssetManager::GetAvailablePrefabs())
+			{
+				const bool isSelected = (mySelectedPrefabName == &path);
+				if (ImGui::Selectable(path.c_str(), isSelected))
+				{
+					mySelectedPrefabName = &path;
+				}
+
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		if (mySelectedPrefabName)
+		{
+			if (ImGui::Button("Set as new object"))
+			{
+				myNewObject = AssetManager::GetPrefab(*mySelectedPrefabName);
+				myNewObject.MarkAsPrefab();
+				if (!myIsShowingNewObjectWindow)
+				{
+					myIsShowingNewObjectWindow = true;
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Add to Scene"))
+			{
+				AddGameObject(AssetManager::GetPrefab(*mySelectedPrefabName));
+			}
+		}
+		
+		ImGui::Separator();
+
+		if (ImGui::Button("Select Prefab"))
+		{
+			if (ShowFileSelector(mySelectedPath, { L"Prefab files", ToWString("*" + AssetManager::GetPrefabExtension()) }, ToWString(GetFullPath(AssetManager::GetPrefabPath())), L"Select Prefab"))
+			{
+				myLogger.Log("Selected File!");
+			}
+		}
+		ImGui::Text(GetRelativePath(mySelectedPath).c_str());
+	}
+	ImGui::End();
+}
+
+void ModelViewer::CreateNewObjectWindow()
+{
+	if (ImGui::Begin("New Object", &myIsShowingNewObjectWindow))
+	{
+		if (ImGui::Button("Reset to Default"))
+		{
+			myNewObject = AssetManager::GetPrefab("Default");
+		}
+		if (ImGui::BeginCombo(" ", ComponentTypeToString(mySelectedComponentType).c_str()))
+		{
+			int* selectedType = (int*)&mySelectedComponentType;
+			for (int i = 1; i < static_cast<int>(ComponentType::Count); i++)
+			{
+				const bool isSelected = (*selectedType == i);
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected))
+				{
+					*selectedType = i;
+				}
+
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Add Component"))
+		{
+			AddComponent(mySelectedComponentType, myNewObject);
+		}
+
+		ImGui::Separator();
+		myNewObject.CreateImGuiWindowContent("New Object");
+		ImGui::Separator();
+
+		if (ImGui::Button("Add To Scene"))
+		{
+			AddGameObject(myNewObject);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save As Prefab"))
+		{
+			ImGui::OpenPopup("Select Prefab Name");
+		}
+		if (ImGui::BeginPopupModal("Select Prefab Name"))
+		{
+			static std::string name;
+			if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				AssetManager::SavePrefab(myNewObject, name);
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::Button("Close"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Save"))
+			{
+				AssetManager::SavePrefab(myNewObject, name);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
+}
+
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
@@ -576,4 +819,4 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eK
 		break;
 	}
 }
-#endif // DEBUG
+#endif // _RETAIL

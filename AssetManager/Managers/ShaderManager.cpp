@@ -10,7 +10,7 @@ ShaderManager::ShaderManager(const std::string& aPath): myPath(aPath), myFilePat
 
 void ShaderManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath);
+	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
 }
 
 Shader* ShaderManager::GetShader(const std::string& aPath)
@@ -27,14 +27,14 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 
 Shader* ShaderManager::LoadShader(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".cso");
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
 
 #ifdef _DEBUG
-	path = GetValidPath(path, myPath + "Debug/");
+	path = GetValidPath(path, myPath + "Debug/", &AMLogger);
 #elif _RELEASE
-	path = GetValidPath(path, myPath + "Release/");
+	path = GetValidPath(path, myPath + "Release/", &AMLogger);
 #elif _RETAIL
-	path = GetValidPath(path, myPath + "Retail/");
+	path = GetValidPath(path, myPath + "Retail/", &AMLogger);
 #endif // _DEBUG
 	
 	if (path.empty())

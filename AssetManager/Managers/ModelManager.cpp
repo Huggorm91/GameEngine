@@ -12,7 +12,7 @@ ModelManager::ModelManager(const std::string& aPath) : myPath(aPath), myFilePath
 
 void ModelManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath);
+	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
 }
 
 void ModelManager::GeneratePrimitives()
@@ -72,6 +72,12 @@ void ModelManager::GeneratePrimitives()
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Plane", & modelIter.first->first);
 	}
+
+	{
+		GameObject& model = myModels.emplace("", GameObject()).first->second;
+		model.AddComponent<MeshComponent>();
+		model.AddComponent<AnimatedMeshComponent>();
+	}
 }
 
 GameObject* ModelManager::GetModel(const std::string& aPath)
@@ -83,7 +89,7 @@ GameObject* ModelManager::GetModel(const std::string& aPath)
 	else
 	{
 		std::string path = AddExtensionIfMissing(aPath, ".fbx");
-		path = GetValidPath(path, myPath, false);
+		path = GetValidPath(path, myPath);
 		if (path.empty())
 		{
 			std::string lowerCase = aPath;
@@ -245,8 +251,8 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 
 Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".fbx");
-	path = GetValidPath(path, myPath);
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, myPath, &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager: Could not load model from path: " + aPath);

@@ -10,7 +10,7 @@ TextureManager::TextureManager(const std::string& aPath): myPath(aPath), myFileP
 
 void TextureManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath);
+	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
 }
 
 Texture* TextureManager::GetTexture(const std::string& aPath)
@@ -27,8 +27,8 @@ Texture* TextureManager::GetTexture(const std::string& aPath)
 
 Texture* TextureManager::LoadTexture(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".dds");
-	path = GetValidPath(path, myPath);
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, myPath, &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("TextureManager: Could not load texture from path: " + aPath);

@@ -14,13 +14,15 @@ enum class ComponentType
 	DebugDraw,
 	PerspectiveCamera,
 	Input,
-	Movement
+	Movement,
+	Count
 };
 
 class GameObject;
 class Component;
 
 void AddComponent(const Component* aComponent, GameObject& aParent);
+void AddComponent(const ComponentType aType, GameObject& aParent);
 void LoadComponent(const Json::Value& aJson, GameObject& aParent);
 std::string ComponentTypeToString(const ComponentType aType);
 std::string ComponentTypeToString(const Json::Value& aJson);

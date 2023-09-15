@@ -40,18 +40,21 @@ public:
 	virtual void ToogleActive();
 	bool IsActive() const;
 
+	//virtual void SetValue(unsigned aSlot)
+
 	virtual void ComponentPointersInvalidated();
 	virtual void CreateImGuiComponents(const std::string& aWindowName);
 	virtual Json::Value ToJson() const;
 	virtual const Component* GetTypePointer() const;
 
+	void MarkAsPrefabComponent();
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 
 protected:
 	GameObject* myParent;
 	ComponentType myType;
-	const int myID;
+	const unsigned myID;
 	bool myIsActive;
 
 	static unsigned localIDCount;

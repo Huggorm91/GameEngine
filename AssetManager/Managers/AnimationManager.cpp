@@ -10,7 +10,7 @@ AnimationManager::AnimationManager(const std::string& aPath): myPath(aPath), myA
 
 void AnimationManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath);
+	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
 }
 
 Animation* AnimationManager::GetAnimation(const std::string& aPath)
@@ -27,8 +27,8 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath)
 
 Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".fbx");
-	path = GetValidPath(path, myPath);
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, myPath, &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("AnimationManager: Could not load animation from path: " + aPath);

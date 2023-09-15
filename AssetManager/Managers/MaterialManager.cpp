@@ -10,7 +10,7 @@ MaterialManager::MaterialManager(const std::string& aPath): myPath(aPath), myFil
 
 void MaterialManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath);
+	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
 }
 
 Material* MaterialManager::GetMaterial(const std::string& aPath)
@@ -55,8 +55,13 @@ Material* MaterialManager::CreateMaterial(const std::string& anIdentifier, Shade
 
 void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".mat");
-	path = CreateValidPath(path, myPath);
+	std::string path = aPath;
+	if (!HasValidExtension(aPath, GetExtension()))
+	{
+		path += GetExtension();
+	}
+	path = CreateValidPath(path, myPath, &AMLogger);
+
 	if (path.empty())
 	{
 		AMLogger.Err("MaterialManager: Could not save material to path: " + aPath);
@@ -82,8 +87,8 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 
 Material* MaterialManager::LoadMaterial(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, ".mat");
-	path = GetValidPath(path, myPath);
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, myPath, &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("MaterialManager: Could not load material from path: " + aPath);

@@ -97,7 +97,10 @@ void Component::ComponentPointersInvalidated()
 void Component::CreateImGuiComponents(const std::string& aWindowName)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
-	ImGui::Checkbox("Active", &myIsActive);
+	if (ImGui::Checkbox("Active", &myIsActive))
+	{
+		SetActive(myIsActive);
+	}
 }
 
 Json::Value Component::ToJson() const
@@ -116,6 +119,15 @@ Json::Value Component::ToJson() const
 const Component* Component::GetTypePointer() const
 {
 	return this;
+}
+
+void Component::MarkAsPrefabComponent()
+{
+	if (myID != 0)
+	{
+		const_cast<unsigned&>(myID) = 0;
+		localIDCount--;
+	}	
 }
 
 const CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer() const

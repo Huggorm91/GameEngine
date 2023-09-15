@@ -5,7 +5,7 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "Logging/Logging.h"
 
-#include "AssetManager/Assets/GameObject.h"
+#include "AssetManager/Assets/Prefab.h"
 #include "GraphicsEngine/Camera/PerspectiveCamera.h"
 
 class SplashWindow;
@@ -19,12 +19,12 @@ class ModelViewer
 {
 #endif // _RETAIL
 public:
-// Singleton Getter.
+	// Singleton Getter.
 	static ModelViewer& Get() {
 		static ModelViewer myInstance; return myInstance;
 	}
 
-// Acceleration Getters for components.
+	// Acceleration Getters for components.
 	FORCEINLINE static ApplicationState& GetApplicationState() {
 		return Get().myApplicationState;
 	}
@@ -35,7 +35,16 @@ public:
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
+	GameObject& AddGameObject();
+	GameObject& AddGameObject(const GameObject& anObject);
+	GameObject& AddGameObject(GameObject&& anObject);
+
+	GameObject* GetGameObject(unsigned anID);
+	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
+
 	void SaveState() const;
+	void SaveScene(const std::string& aPath) const;
+	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
@@ -44,10 +53,19 @@ public:
 
 private:
 #ifndef _RETAIL
+	bool myIsEditingPrefab;
+	bool myIsShowingPrefabWindow;
+	bool myIsShowingNewObjectWindow;
+	ComponentType mySelectedComponentType;
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
-	int mySelectedIndex;
+	GameObject* mySelectedObject; 
+	const std::string* mySelectedPrefabName;
+	Prefab myEditPrefab;
+	GameObject myNewObject;
+	std::string mySelectedPath;
+	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 #endif // _RETAIL
 	HINSTANCE myModuleHandle{ nullptr };
 	HWND myMainWindowHandle{ nullptr };
@@ -60,8 +78,7 @@ private:
 	Logger myLogger;
 	PerspectiveCamera myCamera;
 
-	std::vector<GameObject> myGameObjects;
-	// std::unordered_map<unsigned, GameObject> myGameObjects;
+	std::unordered_map<unsigned, GameObject> myGameObjects;
 
 	ModelViewer();
 
@@ -69,8 +86,6 @@ private:
 	void HideSplashScreen() const;
 	size_t LoadAllAssets();
 
-	void SaveScene(const std::string& aPath);
-	void LoadScene(const std::string& aPath);
 	void LoadState();
 
 	void UpdateScene();
@@ -78,9 +93,16 @@ private:
 	void Init();
 	void Update();
 
+#ifndef _RETAIL
 	void InitImgui();
 	void UpdateImgui();
 	void RenderImgui();
 
 	void CreatePreferenceWindow();
+	void CreateSelectedObjectWindow();
+	void CreateSceneContentWindow();
+
+	void CreatePrefabWindow();
+	void CreateNewObjectWindow();
+#endif // _RETAIL
 };
