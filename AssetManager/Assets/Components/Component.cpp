@@ -44,6 +44,7 @@ void Component::Init(const Json::Value& aJson)
 {
 	myIsActive = aJson["IsActive"].asBool();
 	myType = static_cast<ComponentType>(aJson["Type"].asInt());
+	const_cast<unsigned&>(myID) = aJson["ID"].asUInt();
 }
 
 void Component::Init(GameObject* aParent)

@@ -44,7 +44,9 @@ namespace CommonUtilities
 		inline T LengthSqr() const;
 		inline T Length() const;
 		inline Vector4<T> GetNormalized() const;
+		inline Vector4<T> GetNormalizedNoAssert() const;
 		inline void Normalize();
+		inline void NormalizeNoAssert();
 		inline T Dot(const Vector4<T>& aVector) const;
 
 		inline void Zero();
@@ -172,11 +174,30 @@ namespace CommonUtilities
 		return normalized;
 	}
 
+	template<typename T>
+	inline Vector4<T> Vector4<T>::GetNormalizedNoAssert() const
+	{
+		Vector4 normalized(*this);
+		normalized.NormalizeNoAssert();
+		return normalized;
+	}
+
 	template <typename T>
 	inline void Vector4<T>::Normalize()
 	{
 		T length = Length();
 		assert(length != 0);
+		if (length == 0)
+		{
+			return;
+		}
+		*this /= length;
+	}
+
+	template<typename T>
+	inline void Vector4<T>::NormalizeNoAssert()
+	{
+		T length = Length();
 		if (length == 0)
 		{
 			return;

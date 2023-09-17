@@ -10,6 +10,12 @@ namespace CommonUtilities
 
 		KeyBind();
 		KeyBind(eKey aKey, eKey aModifier = eKey::None);
+
+		bool ContainsKey(eKey aKey) const;
+		bool ContainsKey(eKey aKey, bool& outIsModifierKey) const;
+
+		bool HasModifier() const;
+
 		static bool IsModifierKey(eKey aKey);
 
 	private:

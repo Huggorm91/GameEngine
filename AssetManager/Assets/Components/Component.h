@@ -47,6 +47,7 @@ public:
 	virtual Json::Value ToJson() const;
 	virtual const Component* GetTypePointer() const;
 
+	// Only call before creating another Component!
 	void MarkAsPrefabComponent();
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }

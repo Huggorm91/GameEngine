@@ -147,6 +147,30 @@ void GameObject::Update()
 	}
 }
 
+const Component* GameObject::GetComponentPointer(unsigned anID) const
+{
+	for (auto [type, index] : myIndexList)
+	{
+		if (const Component* component = myComponents.GetValueUnsafe<Component>(index); component->GetID() == anID)
+		{
+			return component;
+		}
+	}
+	return nullptr;
+}
+
+Component* GameObject::GetComponentPointer(unsigned anID)
+{
+	for (auto [type, index] : myIndexList)
+	{
+		if (Component* component = myComponents.ChangeValueUnsafe<Component>(index); component->GetID() == anID)
+		{
+			return component;
+		}
+	}
+	return nullptr;
+}
+
 void GameObject::SetPosition(const CommonUtilities::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);

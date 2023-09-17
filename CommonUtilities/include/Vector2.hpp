@@ -45,7 +45,9 @@ namespace CommonUtilities
 		inline T LengthSqr() const;
 		inline T Length() const;
 		inline Vector2<T> GetNormalized() const;
+		inline Vector2<T> GetNormalizedNoAssert() const;
 		inline void Normalize();
+		inline void NormalizeNoAssert();
 		inline T Dot(const Vector2<T>& aVector) const;
 
 		inline void Transform(const Vector2<T>& aDistance, const double& aRotation);
@@ -181,11 +183,30 @@ namespace CommonUtilities
 		return normalized;
 	}
 
+	template<typename T>
+	inline Vector2<T> Vector2<T>::GetNormalizedNoAssert() const
+	{
+		Vector2 normalized(*this);
+		normalized.NormalizeNoAssert();
+		return normalized;
+	}
+
 	template <typename T>
 	inline void Vector2<T>::Normalize()
 	{
 		T length = Length();
 		assert(length != 0);
+		if (length == 0)
+		{
+			return;
+		}
+		*this /= length;
+	}
+
+	template<typename T>
+	inline void Vector2<T>::NormalizeNoAssert()
+	{
+		T length = Length();
 		if (length == 0)
 		{
 			return;

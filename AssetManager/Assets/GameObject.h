@@ -32,9 +32,22 @@ public:
 	T& GetComponent();
 
 	template<class T>
+	const T* GetComponent(unsigned anID) const;
+	template<class T>
+	T* GetComponent(unsigned anID);
+
+	const Component* GetComponentPointer(unsigned anID) const;
+	Component* GetComponentPointer(unsigned anID);
+
+	template<class T>
 	std::vector<const T*> GetComponents() const;
 	template<class T>
 	std::vector<T*> GetComponents();
+
+	template<class T>
+	bool RemoveComponent(unsigned anID);
+	template<class T>
+	bool RemoveComponent(const T* aComponent);
 
 	template<class T>
 	bool HasComponent() const;
@@ -59,8 +72,9 @@ public:
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
-	void ToBinary(std::ofstream& aStream) const;
+	//void ToBinary(std::ofstream& aStream) const;
 
+	// Only call before creating another GameObject!
 	void MarkAsPrefab();
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
@@ -138,6 +152,34 @@ inline T& GameObject::GetComponent()
 }
 
 template<class T>
+inline const T* GameObject::GetComponent(unsigned anID) const
+{
+	auto range = myIndexList.equal_range(&typeid(T));
+	for (auto iter = range.first; iter != range.second; iter++)
+	{
+		if (T& component = myComponents.GetValue<T>(iter->second); component.GetID() == anID)
+		{
+			return &component;
+		}
+	}
+	return nullptr;
+}
+
+template<class T>
+inline T* GameObject::GetComponent(unsigned anID)
+{
+	auto range = myIndexList.equal_range(&typeid(T));
+	for (auto iter = range.first; iter != range.second; iter++)
+	{
+		if (T& component = myComponents.GetValue<T>(iter->second); component.GetID() == anID)
+		{
+			return &component;
+		}
+	}
+	return nullptr;
+}
+
+template<class T>
 inline std::vector<const T*> GameObject::GetComponents() const
 {
 	std::vector<const T*> result;
@@ -159,6 +201,36 @@ inline std::vector<T*> GameObject::GetComponents()
 		result.emplace_back(&myComponents.ChangeValue<T>(iter->second));
 	}
 	return result;
+}
+
+template<class T>
+inline bool GameObject::RemoveComponent(unsigned anID)
+{
+	auto range = myIndexList.equal_range(&typeid(T));
+	for (auto iter = range.first; iter != range.second; iter++)
+	{
+		if (T& component = myComponents.GetValue<T>(iter->second); component.GetID() == anID)
+		{
+			myIndexList.erase(iter);
+			return true;
+		}
+	}
+	return false;
+}
+
+template<class T>
+inline bool GameObject::RemoveComponent(const T* aComponent)
+{
+	auto range = myIndexList.equal_range(&typeid(T));
+	for (auto iter = range.first; iter != range.second; iter++)
+	{
+		if (const T* component = &myComponents.GetValue<T>(iter->second); component == aComponent)
+		{
+			myIndexList.erase(iter);
+			return true;
+		}
+	}
+	return false;
 }
 
 template<class T>
