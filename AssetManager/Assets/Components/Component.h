@@ -48,7 +48,7 @@ public:
 	virtual const Component* GetTypePointer() const;
 
 	// Only call before creating another Component!
-	void MarkAsPrefabComponent();
+	void MarkAsPrefabComponent(unsigned anID = 0);
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 

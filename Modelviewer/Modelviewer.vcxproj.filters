@@ -33,6 +33,27 @@
     <ClInclude Include="Core\ApplicationState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Commands\EditCommand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_AddComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Modelviewer.cpp">
@@ -45,6 +66,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\ApplicationState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

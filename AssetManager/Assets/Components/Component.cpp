@@ -122,11 +122,11 @@ const Component* Component::GetTypePointer() const
 	return this;
 }
 
-void Component::MarkAsPrefabComponent()
+void Component::MarkAsPrefabComponent(unsigned anID)
 {
-	if (myID != 0)
+	if (myID != anID)
 	{
-		const_cast<unsigned&>(myID) = 0;
+		const_cast<unsigned&>(myID) = anID;
 		localIDCount--;
 	}	
 }

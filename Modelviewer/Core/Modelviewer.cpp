@@ -110,6 +110,11 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
+
+	input.BindAction(CommonUtilities::eInputAction::Undo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Z, CommonUtilities::eKey::Ctrl });
+	input.BindAction(CommonUtilities::eInputAction::Redo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Y, CommonUtilities::eKey::Ctrl });
+	input.Attach(this, CommonUtilities::eInputAction::Undo);
+	input.Attach(this, CommonUtilities::eInputAction::Redo);
 #endif // _RETAIL
 
 	HideSplashScreen();
@@ -182,6 +187,18 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 		return &iter->second;
 	}
 	return nullptr;
+}
+
+bool ModelViewer::RemoveGameObject(unsigned anID)
+{
+	assert(anID != 0 && "Incorrect ID!");
+
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		myGameObjects.erase(iter);
+		return true;
+	}
+	return false;
 }
 
 void ModelViewer::ModelViewer::SaveState() const
@@ -308,6 +325,8 @@ void ModelViewer::Init()
 	{
 		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Cube"));
 		object.SetPosition({ 0.f, 0.f, 500.f });
+		object.AddComponent<DirectionallightComponent>();
+		object.AddComponent<PointlightComponent>();
 		MeshComponent& mesh = object.GetComponent<MeshComponent>();
 		//mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
 		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
@@ -788,6 +807,36 @@ void ModelViewer::CreateNewObjectWindow()
 	ImGui::End();
 }
 
+void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
+{
+	// Potential future problem with using infinite Undo-stack
+	myUndoCommands.emplace_back(aCommand);
+	if (myRedoCommands.size() > 0)
+	{
+		myRedoCommands.clear();
+	}
+}
+
+void ModelViewer::Undo()
+{
+	if (myUndoCommands.size() > 0)
+	{
+		myUndoCommands.back()->Undo();
+		myRedoCommands.emplace_back(myUndoCommands.back());
+		myUndoCommands.pop_back();
+	}	
+}
+
+void ModelViewer::Redo()
+{
+	if (myRedoCommands.size() > 0)
+	{
+		myRedoCommands.back()->Redo();
+		myUndoCommands.emplace_back(myRedoCommands.back());
+		myRedoCommands.pop_back();
+	}	
+}
+
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
@@ -817,6 +866,22 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eK
 	}
 	default:
 		break;
+	}
+}
+void ModelViewer::ReceiveEvent(CommonUtilities::eInputAction anAction, float aValue)
+{
+	if (aValue < 1.5f)
+	{
+		return;
+	}
+
+	if (anAction == CommonUtilities::eInputAction::Undo)
+	{
+		Undo();
+	}
+	else if(anAction == CommonUtilities::eInputAction::Redo)
+	{
+		Redo();
 	}
 }
 #endif // _RETAIL
