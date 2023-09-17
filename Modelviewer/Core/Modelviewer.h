@@ -8,6 +8,8 @@
 #include "AssetManager/Assets/Prefab.h"
 #include "GraphicsEngine/Camera/PerspectiveCamera.h"
 
+#include "Commands/EditCommand.h"
+
 class SplashWindow;
 
 #ifndef _RETAIL
@@ -42,13 +44,15 @@ public:
 	GameObject* GetGameObject(unsigned anID);
 	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
 
+	bool RemoveGameObject(unsigned anID);
+
 	void SaveState() const;
 	void SaveScene(const std::string& aPath) const;
 	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
+	void ReceiveEvent(CommonUtilities::eInputAction, float) override;
 #endif // _RETAIL
 
 private:
@@ -66,6 +70,8 @@ private:
 	GameObject myNewObject;
 	std::string mySelectedPath;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
+	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 #endif // _RETAIL
 	HINSTANCE myModuleHandle{ nullptr };
 	HWND myMainWindowHandle{ nullptr };
@@ -104,5 +110,9 @@ private:
 
 	void CreatePrefabWindow();
 	void CreateNewObjectWindow();
+
+	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
+	void Undo();
+	void Redo();
 #endif // _RETAIL
 };

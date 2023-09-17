@@ -314,11 +314,20 @@ void GameObject::MarkAsPrefab()
 	{
 		const_cast<unsigned&>(myID) = 0;
 		localIDCount--;
-	}
 
-	for (auto [type, index] : myIndexList)
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
+		}
+	}	
+}
+
+void GameObject::MarkAsPrefab(unsigned anID)
+{
+	if (myID != anID)
 	{
-		myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
+		const_cast<unsigned&>(myID) = anID;
+		localIDCount--;
 	}
 }
 

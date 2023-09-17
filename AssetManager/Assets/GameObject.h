@@ -76,6 +76,9 @@ public:
 
 	// Only call before creating another GameObject!
 	void MarkAsPrefab();
+	// Only call before creating another GameObject!
+	void MarkAsPrefab(unsigned anID);
+
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 
