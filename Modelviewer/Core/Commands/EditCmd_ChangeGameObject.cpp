@@ -11,7 +11,7 @@ void EditCmd_ChangeGameObject::Undo()
 	Swap();
 }
 
-void EditCmd_ChangeGameObject::Redo()
+void EditCmd_ChangeGameObject::Execute()
 {
 	Swap();
 }

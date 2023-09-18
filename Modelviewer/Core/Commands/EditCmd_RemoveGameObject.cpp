@@ -14,7 +14,7 @@ void EditCmd_RemoveGameObject::Undo()
 	copy = GameObject(); // To ensure internal pointer in BlackBoard of myObject is not deleted when swap is destroyed
 }
 
-void EditCmd_RemoveGameObject::Redo()
+void EditCmd_RemoveGameObject::Execute()
 {
 	const bool success = ModelViewer::Get().RemoveGameObject(myID);
 	assert(success && "Failed to remove GameObject");

@@ -9,7 +9,7 @@ public:
 	~EditCmd_AddGameObject() = default;
 
 	void Undo() override;
-	void Redo() override;
+	void Execute() override;
 
 protected:
 	std::shared_ptr<GameObject> myObject;

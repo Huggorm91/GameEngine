@@ -12,7 +12,7 @@ void EditCmd_AddGameObject::Undo()
 	assert(success && "Failed to remove GameObject");
 }
 
-void EditCmd_AddGameObject::Redo()
+void EditCmd_AddGameObject::Execute()
 {
 	GameObject copy(*myObject);
 	copy.MarkAsPrefab(myID);

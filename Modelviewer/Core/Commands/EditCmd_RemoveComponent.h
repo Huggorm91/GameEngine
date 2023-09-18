@@ -13,7 +13,7 @@ public:
 
 	// Potential future problem: GameObject ComponentContainer will grow for every Undo-Call
 	void Undo() override;
-	void Redo() override;
+	void Execute() override;
 
 
 protected:
@@ -38,7 +38,7 @@ inline void EditCmd_RemoveComponent<CompType>::Undo()
 }
 
 template<class CompType>
-inline void EditCmd_RemoveComponent<CompType>::Redo()
+inline void EditCmd_RemoveComponent<CompType>::Execute()
 {
 	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");

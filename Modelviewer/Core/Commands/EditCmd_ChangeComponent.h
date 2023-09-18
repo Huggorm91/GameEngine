@@ -12,7 +12,7 @@ public:
 	~EditCmd_ChangeComponent() = default;
 
 	void Undo() override;
-	void Redo() override;
+	void Execute() override;
 
 protected:
 	std::shared_ptr<CompType> myComponent;
@@ -35,7 +35,7 @@ inline void EditCmd_ChangeComponent<CompType>::Undo()
 }
 
 template<class CompType>
-inline void EditCmd_ChangeComponent<CompType>::Redo()
+inline void EditCmd_ChangeComponent<CompType>::Execute()
 {
 	Swap();
 }

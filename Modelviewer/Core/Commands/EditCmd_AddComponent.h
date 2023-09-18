@@ -13,7 +13,7 @@ public:
 
 	void Undo() override;
 	// Potential future problem: GameObject ComponentContainer will grow for every Redo-Call
-	void Redo() override;
+	void Execute() override;
 
 protected:
 	std::shared_ptr<CompType> myComponent;
@@ -38,7 +38,7 @@ inline void EditCmd_AddComponent<CompType>::Undo()
 }
 
 template<class CompType>
-inline void EditCmd_AddComponent<CompType>::Redo()
+inline void EditCmd_AddComponent<CompType>::Execute()
 {
 	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
