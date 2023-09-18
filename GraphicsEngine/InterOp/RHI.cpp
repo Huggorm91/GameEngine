@@ -998,6 +998,8 @@ bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
 		return false;
 	}
 
+	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(wchar_t) * aName.length(), aName.data());
+
 	if (someBindFlags & D3D11_BIND_DEPTH_STENCIL)
 	{
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthDesc = {};

@@ -26,7 +26,8 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 	myBuffer.Data.NormalStrength = aJsonValue["NormalStrength"].asFloat();
 	myBuffer.Data.UVTiling = CommonUtilities::Vector2f(aJsonValue["UVTiling"]);
 	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat());
-	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat());
+	myBuffer.Data.EmissionColor = CommonUtilities::Vector3f(aJsonValue["EmissionColor"]["R"].asFloat(), aJsonValue["EmissionColor"]["G"].asFloat(), aJsonValue["EmissionColor"]["B"].asFloat());
+	myBuffer.Data.EmissionIntensity = aJsonValue["EmissionIntensity"].asFloat();
 
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
 	{
@@ -112,9 +113,14 @@ void Material::SetAlbedoColor(const CommonUtilities::Vector4f& aColor)
 	myBuffer.Data.AlbedoColor = aColor;
 }
 
-void Material::SetEmissionColor(const CommonUtilities::Vector4f& aColor)
+void Material::SetEmissionColor(const CommonUtilities::Vector3f& aColor)
 {
 	myBuffer.Data.EmissionColor = aColor;
+}
+
+void Material::SetEmissionIntensity(float anIntensity)
+{
+	myBuffer.Data.EmissionIntensity = anIntensity;
 }
 
 void Material::SetName(const std::string& aName)
@@ -177,9 +183,14 @@ const CommonUtilities::Vector4f& Material::GetAlbedoColor() const
 	return myBuffer.Data.AlbedoColor;
 }
 
-const CommonUtilities::Vector4f& Material::GetEmissionColor() const
+const CommonUtilities::Vector3f& Material::GetEmissionColor() const
 {
 	return myBuffer.Data.EmissionColor;
+}
+
+float Material::GetEmissionIntensity() const
+{
+	return myBuffer.Data.EmissionIntensity;
 }
 
 const std::string& Material::GetName() const
@@ -277,7 +288,7 @@ Json::Value Material::ToJson() const
 	result["EmissionColor"]["R"] = myBuffer.Data.EmissionColor.x;
 	result["EmissionColor"]["G"] = myBuffer.Data.EmissionColor.y;
 	result["EmissionColor"]["B"] = myBuffer.Data.EmissionColor.z;
-	result["EmissionColor"]["A"] = myBuffer.Data.EmissionColor.w;
+	result["EmissionIntensity"] = myBuffer.Data.EmissionIntensity;
 	return result;
 }
 

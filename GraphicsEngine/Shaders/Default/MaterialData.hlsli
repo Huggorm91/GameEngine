@@ -32,6 +32,7 @@ struct DefaultPixelOutput
 };
 
 SamplerState DefaultSampler : register(s0);
+SamplerState BlurSampler : register(s13);
 SamplerComparisonState ShadowSampler : register(s14);
 SamplerState LUTSampler : register(s15);
 

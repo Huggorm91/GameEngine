@@ -417,6 +417,11 @@ void ModelViewer::Init()
 		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
 		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
 		mesh.SetFXTexture(AssetManager::GetAsset<Texture*>("Content/Textures/FX/Chest_FX.dds"));
+		for (auto& element : mesh.GetElements())
+		{
+			element.myMaterial.SetEmissionColor({ 1.f, 0.f, 0.f});
+			element.myMaterial.SetEmissionIntensity(1.f);
+		}		
 	}
 
 	{
@@ -433,7 +438,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ -100.f, 50.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 4.f, { 1.f, 0.f, 0.f });
+		PointlightComponent pointlight(200.f, 2.f, { 1.f, 0.f, 0.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -444,7 +449,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 100.f, 50.f, 400.f });
 
-		PointlightComponent pointlight(200.f, 4.f, { 0.f, 1.f, 0.f });
+		PointlightComponent pointlight(200.f, 2.f, { 0.f, 1.f, 0.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -455,7 +460,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 50.f, 600.f });
 
-		PointlightComponent pointlight(200.f, 4.f, { 0.f, 0.f, 1.f });
+		PointlightComponent pointlight(200.f, 2.f, { 0.f, 0.f, 1.f });
 		object.AddComponent(pointlight);
 
 		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -466,7 +471,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
+		SpotlightComponent spotlight(500, 2.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
 		object.AddComponent(spotlight);
 
 		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -477,7 +482,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 200.f, 350.f });
 
-		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
+		SpotlightComponent spotlight(500, 2.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		object.AddComponent(spotlight);
 
 		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();

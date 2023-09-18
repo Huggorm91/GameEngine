@@ -150,6 +150,7 @@ private:
 	HWND myWindowHandle;
 	ComPtr<ID3D11SamplerState> myDefaultSampler;
 	ComPtr<ID3D11SamplerState> myShadowSampler;
+	ComPtr<ID3D11SamplerState> myBlurSampler;
 	ComPtr<ID3D11SamplerState> myLUTSampler;
 
 	ComPtr<ID3D11BlendState> myAlphaBlend;
@@ -195,6 +196,7 @@ private:
 
 	bool CreateDefaultSampler();
 	bool CreateShadowSampler();
+	bool CreateBlurSampler();
 	bool CreateLUTSampler();
 
 	bool CreateAlphaBlend();

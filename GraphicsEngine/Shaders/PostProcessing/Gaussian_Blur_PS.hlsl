@@ -10,7 +10,7 @@ float4 main(QuadVSToPS input) : SV_TARGET
     const float quality = 4.f;
     const float qualityInverse = 1 / quality;
     
-    const float radius = 8.f;
+    const float radius = 2.f;
     
     const float2 rad = radius / FB_ScreenSize;
 
@@ -24,7 +24,7 @@ float4 main(QuadVSToPS input) : SV_TARGET
         [unroll]
         for (int i = 0; i < quality; i++)
         {
-            result += Intermediate_ATexture.Sample(DefaultSampler, input.UV + float2(cos(d), sin(d)) * rad * f);
+            result += Intermediate_ATexture.Sample(BlurSampler, input.UV + float2(cos(d), sin(d)) * rad * f);
             f += qualityInverse;
         }
         
@@ -32,6 +32,7 @@ float4 main(QuadVSToPS input) : SV_TARGET
     }
     
     result.rgb /= quality * directions - 15.f;
-    result.a = 1;
+    result.a = 1.f;
+    //result.a = saturate(length(result.rgb));
     return result;
 }

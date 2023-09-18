@@ -34,9 +34,9 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		myWindowHandle = windowHandle;
 
 		if (!RHI::Initialize(myWindowHandle,
-			enableDeviceDebug,
-			&myTextures.BackBuffer,
-			&myTextures.DepthBuffer))
+							 enableDeviceDebug,
+							 &myTextures.BackBuffer,
+							 &myTextures.DepthBuffer))
 		{
 			GELogger.Err("Failed to initialize the RHI!");
 			return false;
@@ -95,6 +95,13 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 				return false;
 			}
 			RHI::SetSamplerState(myDefaultSampler, 0);
+
+			if (!CreateBlurSampler())
+			{
+				GELogger.Err("Failed to create Blur sampler!");
+				return false;
+			}
+			RHI::SetSamplerState(myBlurSampler, 13);
 
 			if (!CreateShadowSampler())
 			{
@@ -582,6 +589,7 @@ void GraphicsEngine::RenderFrame()
 		// Create Directionallight shadows
 		if (myLightBuffer.Data.CastDirectionalShadows && myLightBuffer.Data.DirectionallightIntensity > 0.f)
 		{
+			RHI::BeginEvent(L"Directlight Shadows");
 			RHI::SetRenderTarget(nullptr, myDirectionalShadowMap);
 
 			// Depth sort
@@ -611,48 +619,52 @@ void GraphicsEngine::RenderFrame()
 			{
 				data.myCommand->Execute();
 			}
+			RHI::EndEvent();
 		}
 
 		// Create Spotlight shadows
-		for (auto iter = mySpotLights.begin(); iter != mySpotLights.end(); iter++)
-		{
-			if ((*iter)->CastsShadow()) // TODO: Add culling
-			{
-				(*iter)->Execute(0);
-				auto& spotLight = myLightBuffer.Data.Spotlights[0];
-				RHI::SetRenderTarget(nullptr, mySpotShadowMap[0]);
+		//RHI::BeginEvent(L"Spotlight Shadows");
+		//for (auto iter = mySpotLights.begin(); iter != mySpotLights.end(); iter++)
+		//{
+		//	if ((*iter)->CastsShadow()) // TODO: Add culling
+		//	{
+		//		(*iter)->Execute(0);
+		//		auto& spotLight = myLightBuffer.Data.Spotlights[0];
+		//		RHI::SetRenderTarget(nullptr, mySpotShadowMap[0]);
 
-				// Depth sort
-				position = spotLight.Position;
-				CommonUtilities::QuickSort(objectList, compare);
-				updatedDistance.clear();
+		//		// Depth sort
+		//		position = spotLight.Position;
+		//		CommonUtilities::QuickSort(objectList, compare);
+		//		updatedDistance.clear();
 
-				const CommonUtilities::Vector3f& target = position + spotLight.LightDirection * spotLight.Range;
-				const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, target);
-				const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreatePerspectiveMatrix(spotLight.OuterAngle * 2.f, 1.f, spotLight.Range, { 1.f, 1.f });
+		//		const CommonUtilities::Vector3f& target = position + spotLight.LightDirection * spotLight.Range;
+		//		const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, target);
+		//		const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreatePerspectiveMatrix(spotLight.OuterAngle * 2.f, 1.f, spotLight.Range, { 1.f, 1.f });
 
-				spotLight.View = view;
-				spotLight.Projection = projection;
+		//		spotLight.View = view;
+		//		spotLight.Projection = projection;
 
-				myFrameBuffer.Data.View = view;
-				myFrameBuffer.Data.Projection = projection;
+		//		myFrameBuffer.Data.View = view;
+		//		myFrameBuffer.Data.Projection = projection;
 
-				RHI::UpdateConstantBufferData(myFrameBuffer);
-				RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myFrameBufferSlot, myFrameBuffer);
+		//		RHI::UpdateConstantBufferData(myFrameBuffer);
+		//		RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_PIXEL_SHADER, myFrameBufferSlot, myFrameBuffer);
 
-				// Draw to ShadowMap
-				for (auto& data : objectList)
-				{
-					data.myCommand->Execute();
-				}
-			}
-			/*else
-			{
-				iter = mySpotLights.erase(iter);
-			}*/
-		}
+		//		// Draw to ShadowMap
+		//		for (auto& data : objectList)
+		//		{
+		//			data.myCommand->Execute();
+		//		}
+		//	}
+		//	/*else
+		//	{
+		//		iter = mySpotLights.erase(iter);
+		//	}*/
+		//}
+		//RHI::EndEvent();
 
 		// Create Pointlight shadows
+		// RHI::BeginEvent(L"Bloom");
 		//for (auto iter = myPointLights.begin(); iter != myPointLights.end(); iter++)
 		//{
 		//	if ((*iter)->CastsShadow()) // TODO: Add culling
@@ -677,6 +689,7 @@ void GraphicsEngine::RenderFrame()
 		//		iter = mySpotLights.erase(iter);
 		//	}*/
 		//}
+		//RHI::EndEvent();
 
 		RHI::SetRenderTarget(nullptr, nullptr);
 
@@ -689,6 +702,7 @@ void GraphicsEngine::RenderFrame()
 
 	// Deferred Rendering
 	{
+		RHI::BeginEvent(L"Deferred");
 		RHI::SetBlendState(nullptr);
 		myGBuffer.SetAsTarget(&myTextures.DepthBuffer);
 		RHI::SetPixelShader(&myShaders.GBufferPS);
@@ -767,11 +781,13 @@ void GraphicsEngine::RenderFrame()
 #endif // !_RETAIL
 
 		RHI::SetBlendState(nullptr);
+		RHI::EndEvent();
 	}
 
 	// Forward Rendering
 	if (myRenderCommands->forwardMeshCommands.size() > 0)
 	{
+		RHI::BeginEvent(L"Forward");
 		RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
 
 		pointIndex = 0;
@@ -816,6 +832,7 @@ void GraphicsEngine::RenderFrame()
 		{
 			mesh.myCommand->Execute();
 		}
+		RHI::EndEvent();
 	}
 
 	// PostProcessing
@@ -835,6 +852,7 @@ void GraphicsEngine::RenderFrame()
 		// Bloom
 		if (myIsUsingBloom)
 		{
+			RHI::BeginEvent(L"Bloom");
 			// Luminance
 			RHI::SetRenderTarget(&myTextures.IntermediateA, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
@@ -853,25 +871,24 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 			// Blur
-			RHI::BeginEvent(L"Blur");
 			RHI::SetPixelShader(&myShaders.BlurPS);
 			RHI::SetRenderTarget(&myTextures.QuarterScenebufferB, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferA);
 			RHI::Draw(4);
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr); // Release QuarterScenebufferA
-			RHI::SetRenderTarget(&myTextures.QuarterScenebufferA, nullptr);
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferB);
-			RHI::Draw(4);
-			RHI::EndEvent();
+			//RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr); // Release QuarterScenebufferA
+			//RHI::SetRenderTarget(&myTextures.QuarterScenebufferA, nullptr);
+			//RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferB);
+			//RHI::Draw(4); QuarterScenebufferA // Set below
 
 			// Upsample
 			RHI::SetPixelShader(&myShaders.CopyPS);
 			RHI::SetRenderTarget(&myTextures.HalfScenebuffer, nullptr);
-			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferA);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferB);
 			RHI::Draw(4);
 
 			// Bloom
-			RHI::SetPixelShader(&myShaders.CopyPS);
+			//RHI::SetBlendState(myAlphaBlend);
+			RHI::SetPixelShader(&myShaders.BloomPS);
 			RHI::SetRenderTarget(&myTextures.IntermediateB, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, &myTextures.HalfScenebuffer);
@@ -879,6 +896,7 @@ void GraphicsEngine::RenderFrame()
 
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
+			RHI::EndEvent();
 		}
 		else
 		{
@@ -886,13 +904,13 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 		}
 
-		// Gamma correction				
+		// Gamma correction
+		RHI::SetBlendState(nullptr);
 		RHI::SetPixelShader(&myShaders.GammaPS);
 		RHI::Draw(4);
 	}
 
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
-	RHI::SetBlendState(nullptr);
 	myLineDrawer.Render();
 }
 
@@ -1003,6 +1021,30 @@ bool GraphicsEngine::CreateShadowSampler()
 	desc.MaxLOD = 0;
 
 	if (!RHI::CreateSamplerState(myShadowSampler, desc))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool GraphicsEngine::CreateBlurSampler()
+{
+	D3D11_SAMPLER_DESC desc{};
+	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.MipLODBias = 0.f;
+	desc.MaxAnisotropy = 1;
+	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	desc.BorderColor[0] = 1.f;
+	desc.BorderColor[1] = 1.f;
+	desc.BorderColor[2] = 1.f;
+	desc.BorderColor[3] = 1.f;
+	desc.MinLOD = -D3D11_FLOAT32_MAX;
+	desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	if (!RHI::CreateSamplerState(myBlurSampler, desc))
 	{
 		return false;
 	}

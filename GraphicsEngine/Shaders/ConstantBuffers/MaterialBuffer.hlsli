@@ -3,7 +3,8 @@
 cbuffer MaterialBuffer : register(b3)
 {
     float4 MB_AlbedoColor;
-    float4 MB_EmissionColor;
+    float3 MB_EmissionColor;
+    float MB_EmissionIntensity;
     float2 MB_UVTiling;
     float MB_NormalStrength;
     float MB_Shininess;

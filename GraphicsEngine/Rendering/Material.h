@@ -44,7 +44,8 @@ public:
 	void SetNormalStrength(float aNormalStrength);
 	void SetUVTiling(const CommonUtilities::Vector2f& aUVTiling);
 	void SetAlbedoColor(const CommonUtilities::Vector4f& aColor);
-	void SetEmissionColor(const CommonUtilities::Vector4f& aColor);
+	void SetEmissionColor(const CommonUtilities::Vector3f& aColor);
+	void SetEmissionIntensity(float anIntensity);
 
 	void SetName(const std::string& aName);
 
@@ -63,7 +64,8 @@ public:
 	float GetNormalStrength() const;
 	const CommonUtilities::Vector2f& GetUVTiling() const;
 	const CommonUtilities::Vector4f& GetAlbedoColor() const;
-	const CommonUtilities::Vector4f& GetEmissionColor() const;
+	const CommonUtilities::Vector3f& GetEmissionColor() const;
+	float GetEmissionIntensity() const;
 
 	const std::string& GetName() const;
 
