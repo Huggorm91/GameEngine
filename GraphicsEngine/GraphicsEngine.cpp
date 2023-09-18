@@ -853,6 +853,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 			// Blur
+			RHI::BeginEvent(L"Blur");
 			RHI::SetPixelShader(&myShaders.BlurPS);
 			RHI::SetRenderTarget(&myTextures.QuarterScenebufferB, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferA);
@@ -861,6 +862,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetRenderTarget(&myTextures.QuarterScenebufferA, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.QuarterScenebufferB);
 			RHI::Draw(4);
+			RHI::EndEvent();
 
 			// Upsample
 			RHI::SetPixelShader(&myShaders.CopyPS);

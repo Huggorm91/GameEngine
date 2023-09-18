@@ -774,7 +774,13 @@ bool RHI::LoadShader(Shader* outShader, const std::wstring& aFileName)
 
 	shaderName = shaderName.substr(0, shaderName.size() - 4);
 
-	return LoadShaderFromMemory(outShader, shaderName, shData.data(), shData.size());
+	bool success = LoadShaderFromMemory(outShader, shaderName, shData.data(), shData.size());
+
+	if (success)
+	{
+		outShader->myShaderObject->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(wchar_t) * aFileName.length(), aFileName.data());
+	}
+	return success;
 }
 
 bool RHI::LoadShaderFromMemory(Shader* outShader, const std::wstring& aName, const BYTE* someShaderData,

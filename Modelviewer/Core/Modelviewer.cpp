@@ -412,7 +412,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject();
-		object.SetPosition({ -100.f, 150.f, 400.f });
+		object.SetPosition({ -100.f, 50.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 4.f, { 1.f, 0.f, 0.f });
 		object.AddComponent(pointlight);
@@ -423,7 +423,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject();
-		object.SetPosition({ 100.f, 150.f, 400.f });
+		object.SetPosition({ 100.f, 50.f, 400.f });
 
 		PointlightComponent pointlight(200.f, 4.f, { 0.f, 1.f, 0.f });
 		object.AddComponent(pointlight);
@@ -434,7 +434,7 @@ void ModelViewer::Init()
 
 	{
 		auto& object = AddGameObject();
-		object.SetPosition({ 0.f, 150.f, 600.f });
+		object.SetPosition({ 0.f, 50.f, 600.f });
 
 		PointlightComponent pointlight(200.f, 4.f, { 0.f, 0.f, 1.f });
 		object.AddComponent(pointlight);
@@ -447,7 +447,7 @@ void ModelViewer::Init()
 		auto& object = AddGameObject();
 		object.SetPosition({ 0.f, 200.f, 600.f });
 
-		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
+		SpotlightComponent spotlight(500, 4.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
 		object.AddComponent(spotlight);
 
 		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
@@ -484,7 +484,7 @@ void ModelViewer::Init()
 		object.SetPosition({ 0.f, 240.f, 1000.f });
 		object.SetScale({ 20.f, 1.f, 5.f });
 		object.SetRotation({ 90.f, 0.f, 0.f });
-		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
+		object.GetComponent<MeshComponent>().SetColor({ .5f, .5f, .5f, 1.f });
 		//object.GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
 	}
 

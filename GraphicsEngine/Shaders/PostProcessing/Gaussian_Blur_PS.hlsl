@@ -4,19 +4,13 @@ float4 main(QuadVSToPS input) : SV_TARGET
 {
     float4 result = Intermediate_ATexture.Sample(DefaultSampler, input.UV);
     
-    if (result.a < 0.05f)
-    {
-        discard;
-        return result;
-    }
-    
     const float directions = 16.f;
     const float directionsInverse = 1 / directions;
     
     const float quality = 4.f;
     const float qualityInverse = 1 / quality;
     
-    const float radius = 2.f;
+    const float radius = 8.f;
     
     const float2 rad = radius / FB_ScreenSize;
 
