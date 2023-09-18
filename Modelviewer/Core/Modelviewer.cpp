@@ -10,6 +10,8 @@
 
 #include "Modelviewer.h"
 #include "Windows/SplashWindow.h"
+#include "Commands/EditCmd_AddGameObject.h"
+#include "Commands/EditCmd_RemoveGameObject.h"
 
 #include <filesystem>
 
@@ -198,6 +200,13 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 
 	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
 	{
+#ifndef _RETAIL
+		if (mySelectedObject == &iter->second)
+		{
+			mySelectedObject = nullptr;
+		}
+#endif // !_RETAIL
+
 		myGameObjects.erase(iter);
 		return true;
 	}
@@ -536,6 +545,18 @@ void ModelViewer::Update()
 	RenderImgui();
 #endif // _RETAIL
 
+	if (myIncommingCommands.size() > 0)
+	{
+		myRedoCommands.clear();
+	}
+
+	for (auto& command : myIncommingCommands)
+	{
+		command->Execute();
+		myUndoCommands.emplace_back(command);
+	}
+	myIncommingCommands.clear();
+
 	engine.EndFrame();
 }
 
@@ -738,7 +759,7 @@ void ModelViewer::CreatePrefabWindow()
 
 			if (ImGui::Button("Add to Scene"))
 			{
-				AddGameObject(AssetManager::GetPrefab(*mySelectedPrefabName));
+				AddCommand(std::make_shared<EditCmd_AddGameObject>(AssetManager::GetPrefab(*mySelectedPrefabName)));
 			}
 		}
 		
@@ -796,7 +817,7 @@ void ModelViewer::CreateNewObjectWindow()
 
 		if (ImGui::Button("Add To Scene"))
 		{
-			AddGameObject(myNewObject);
+			AddCommand(std::make_shared<EditCmd_AddGameObject>(myNewObject));
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Save As Prefab"))
@@ -830,11 +851,7 @@ void ModelViewer::CreateNewObjectWindow()
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
 	// Potential future problem with using infinite Undo-stack
-	myUndoCommands.emplace_back(aCommand);
-	if (myRedoCommands.size() > 0)
-	{
-		myRedoCommands.clear();
-	}
+	myIncommingCommands.emplace_back(aCommand);
 }
 
 void ModelViewer::Undo()

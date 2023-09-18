@@ -30,7 +30,7 @@ inline EditCmd_RemoveComponent<CompType>::EditCmd_RemoveComponent(const CompType
 template<class CompType>
 inline void EditCmd_RemoveComponent<CompType>::Undo()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
+	GameObject* object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	CompType& component = object->AddComponent<CompType>(*myComponent);
@@ -40,7 +40,7 @@ inline void EditCmd_RemoveComponent<CompType>::Undo()
 template<class CompType>
 inline void EditCmd_RemoveComponent<CompType>::Execute()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
+	GameObject* object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	const bool success = object->RemoveComponent<CompType>(myComponentID);

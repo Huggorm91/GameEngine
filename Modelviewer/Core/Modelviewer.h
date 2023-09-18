@@ -57,19 +57,25 @@ public:
 
 private:
 #ifndef _RETAIL
+	friend class EditCommand;
+
 	bool myIsEditingPrefab;
 	bool myIsShowingPrefabWindow;
 	bool myIsShowingNewObjectWindow;
-	ComponentType mySelectedComponentType;
+
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
+
+	ComponentType mySelectedComponentType;
 	GameObject* mySelectedObject; 
 	const std::string* mySelectedPrefabName;
+	std::string mySelectedPath;
 	Prefab myEditPrefab;
 	GameObject myNewObject;
-	std::string mySelectedPath;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+
+	std::vector<std::shared_ptr<EditCommand>> myIncommingCommands;
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 #endif // _RETAIL

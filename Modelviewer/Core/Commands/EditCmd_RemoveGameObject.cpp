@@ -10,12 +10,12 @@ void EditCmd_RemoveGameObject::Undo()
 {
 	GameObject copy(*myObject);
 	copy.MarkAsPrefab(myID);
-	ModelViewer::Get().AddGameObject(std::move(copy));
-	copy = GameObject(); // To ensure internal pointer in BlackBoard of myObject is not deleted when swap is destroyed
+	AddGameObject(std::move(copy));
+	copy = GameObject(); // To ensure internal pointer in BlackBoard of myObject is not deleted when copy is destroyed
 }
 
 void EditCmd_RemoveGameObject::Execute()
 {
-	const bool success = ModelViewer::Get().RemoveGameObject(myID);
+	const bool success = RemoveGameObject(myID);
 	assert(success && "Failed to remove GameObject");
 }

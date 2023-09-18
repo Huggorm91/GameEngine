@@ -6,6 +6,7 @@ class EditCmd_AddGameObject : public EditCommand
 {
 public:
 	EditCmd_AddGameObject(const GameObject& anObject);
+	EditCmd_AddGameObject(GameObject&& anObject);
 	~EditCmd_AddGameObject() = default;
 
 	void Undo() override;

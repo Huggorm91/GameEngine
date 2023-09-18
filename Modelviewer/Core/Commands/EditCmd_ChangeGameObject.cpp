@@ -18,7 +18,7 @@ void EditCmd_ChangeGameObject::Execute()
 
 void EditCmd_ChangeGameObject::Swap()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myID);
+	GameObject* object = GetGameObject(myID);
 	assert(object && "Could not find GameObject!");
 
 	GameObject swap(std::move(*object));
