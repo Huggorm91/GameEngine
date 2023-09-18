@@ -836,6 +836,9 @@ void GraphicsEngine::RenderFrame()
 	}
 
 	// PostProcessing
+#ifndef _RETAIL
+	if (myDebugMode == DebugMode::Default)
+#endif // !_RETAIL
 	{
 		RHI::SetRenderTarget(nullptr, nullptr);
 
@@ -909,6 +912,15 @@ void GraphicsEngine::RenderFrame()
 		RHI::SetPixelShader(&myShaders.GammaPS);
 		RHI::Draw(4);
 	}
+#ifndef _RETAIL
+	else
+	{
+		RHI::SetPixelShader(&myShaders.CopyPS);
+		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
+		RHI::Draw(4);
+	}
+#endif // !_RETAIL
 
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 	myLineDrawer.Render();
