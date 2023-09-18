@@ -21,10 +21,13 @@ public:
 
 	void SaveMaterial(const Material* aMaterial, const std::string& aPath);
 
+	inline const std::string& GetPath(){ return myPath; }
+	static inline std::string GetExtension(){ return ".mat"; }
+
 private:
 	std::unordered_map<std::string, Material> myMaterials;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content/Materials/";
+	const std::string myPath = "Content\\Materials\\";
 
 	Material* LoadMaterial(const std::string& aPath);
 };

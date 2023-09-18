@@ -245,12 +245,23 @@
   <ItemGroup>
     <ClInclude Include="Core\Modelviewer.h" />
     <ClInclude Include="Core\ApplicationState.h" />
+    <ClInclude Include="Core\Commands\EditCommand.h" />
+    <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h" />
+    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObject.h" />
+    <ClInclude Include="Core\Commands\EditCmd_AddComponent.h" />
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\ApplicationState.cpp" />
+    <ClCompile Include="Core\Commands\EditCommand.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObject.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="Windows\SplashWindow.cpp" />

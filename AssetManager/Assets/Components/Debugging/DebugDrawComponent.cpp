@@ -3,9 +3,9 @@
 #include "../../GameObject.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 
-DebugDrawComponent::DebugDrawComponent() :
+DebugDrawComponent::DebugDrawComponent() : Component(ComponentType::DebugDraw)
 #ifndef _RETAIL
-	myHandle(GraphicsEngine::Get().GetLineDrawer().GetNewHandle())
+	, myHandle(GraphicsEngine::Get().GetLineDrawer().GetNewHandle())
 #else
 	myHandle()
 #endif // !_RETAIL	

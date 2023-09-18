@@ -8,6 +8,7 @@ AnimationManager AssetManager::myAnimationManager;
 TextureManager AssetManager::myTextureManager;
 ShaderManager AssetManager::myShaderManager;
 MaterialManager AssetManager::myMaterialManager;
+PrefabManager AssetManager::myPrefabManager;
 
 void AssetManager::Init()
 {
@@ -25,6 +26,7 @@ void AssetManager::Init()
 		myTextureManager.Init();
 		myShaderManager.Init();
 		myMaterialManager.Init();
+		myPrefabManager.Init();
 
 #ifdef _DEBUG
 	}

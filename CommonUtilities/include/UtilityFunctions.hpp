@@ -3,7 +3,7 @@
 #include <vector>
 #include <sstream>
 #include "Conversions.hpp" // Adds conversion with a single include
-constexpr double Pi = 3.1415926535897932384626433832795;
+constexpr auto Pi = 3.1415926535897932384626433832795;
 constexpr double Pi2 = 6.283185307179586476925286766559;
 constexpr double PiInverse = 0.31830988618379067153776752674503;
 

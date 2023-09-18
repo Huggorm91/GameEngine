@@ -4,6 +4,7 @@
 #include "Windows.h"
 
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
 
@@ -27,9 +28,10 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedObject(nullptr)
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), mySelectedIndex(0)
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(),
+myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty")
 #endif // _RETAIL
 {
 }
@@ -109,6 +111,11 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
+
+	input.BindAction(CommonUtilities::eInputAction::Undo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Z, CommonUtilities::eKey::Ctrl });
+	input.BindAction(CommonUtilities::eInputAction::Redo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Y, CommonUtilities::eKey::Ctrl });
+	input.Attach(this, CommonUtilities::eInputAction::Undo);
+	input.Attach(this, CommonUtilities::eInputAction::Redo);
 #endif // _RETAIL
 
 	HideSplashScreen();
@@ -177,12 +184,24 @@ GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
 GameObject* ModelViewer::GetGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
-	
+
 	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
 	{
 		return &iter->second;
 	}
 	return nullptr;
+}
+
+bool ModelViewer::RemoveGameObject(unsigned anID)
+{
+	assert(anID != 0 && "Incorrect ID!");
+
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		myGameObjects.erase(iter);
+		return true;
+	}
+	return false;
 }
 
 void ModelViewer::ModelViewer::SaveState() const
@@ -240,7 +259,7 @@ void ModelViewer::HideSplashScreen() const
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, ".lvl");
-	path = CreateValidPath(path, "Content/Scenes/", false);
+	path = CreateValidPath(path, "Content/Scenes/", &myLogger);
 	if (path.empty())
 	{
 		myLogger.Err("Could not create filepath: " + aPath);
@@ -277,7 +296,7 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, ".lvl");
-	path = GetValidPath(path, "Content/Scenes/", false);
+	path = GetValidPath(path, "Content/Scenes/", &myLogger);
 	if (path.empty())
 	{
 		myLogger.Err("Could not find filepath: " + aPath);
@@ -484,7 +503,7 @@ void ModelViewer::Init()
 		object.SetPosition({ 0.f, 240.f, 1000.f });
 		object.SetScale({ 20.f, 1.f, 5.f });
 		object.SetRotation({ 90.f, 0.f, 0.f });
-		object.GetComponent<MeshComponent>().SetColor({ .5f, .5f, .5f, 1.f });
+		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
 		//object.GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
 	}
 
@@ -515,6 +534,14 @@ void ModelViewer::Update()
 	engine.EndFrame();
 }
 
+void ModelViewer::UpdateScene()
+{
+	for (auto& [id, object] : myGameObjects)
+	{
+		object.Update();
+	}
+}
+
 #ifndef _RETAIL
 void ModelViewer::ModelViewer::InitImgui()
 {
@@ -542,10 +569,9 @@ void ModelViewer::ModelViewer::UpdateImgui()
 	//ImGui::ShowDemoWindow();
 	CreatePreferenceWindow();
 	CreateSceneContentWindow();
-
-	ImGui::Begin("Selected GameObject");
-	myGameObjects[mySelectedIndex].CreateImGuiWindow("Selected GameObject");
-	ImGui::End();
+	CreateSelectedObjectWindow();
+	CreatePrefabWindow();
+	CreateNewObjectWindow();
 }
 
 void ModelViewer::ModelViewer::RenderImgui()
@@ -556,28 +582,26 @@ void ModelViewer::ModelViewer::RenderImgui()
 
 void ModelViewer::CreatePreferenceWindow()
 {
-	ImGui::Begin("Preferences");
-	ImGui::SeparatorText("Selected Object");
-	ImGui::DragInt("Index", &mySelectedIndex, 1.f, 0, myGameObjects.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::Begin("Preferences"))
+	{
+		ImGui::SeparatorText("Launch Settings");
+		ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
+		ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
 
-	ImGui::SeparatorText("Launch Settings");
-	ImGui::Checkbox("Start Maximized", &myApplicationState.StartMaximized);
-	ImGui::DragInt2("Window Size", &myApplicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::InputText("Window Title", &myApplicationState.WindowTitle);
-
-	ImGui::SeparatorText("Camera Settings");
-	if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
-	{
-		myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
-	}
-	if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
-	{
-		myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
-	}
-	if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
-	{
-		myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
-	}
+		ImGui::SeparatorText("Camera Settings");
+		if (ImGui::DragFloat("Movement Speed", &myApplicationState.CameraSpeed))
+		{
+			myCamera.SetMovementSpeed(myApplicationState.CameraSpeed);
+		}
+		if (ImGui::DragFloat("Rotation Speed", &myApplicationState.CameraRotationSpeed))
+		{
+			myCamera.SetRotationSpeed(myApplicationState.CameraRotationSpeed);
+		}
+		if (ImGui::DragFloat("Mouse Sensitivity", &myApplicationState.CameraMouseSensitivity))
+		{
+			myCamera.SetMouseSensitivity(myApplicationState.CameraMouseSensitivity);
+		}
 
 	ImGui::SeparatorText("Scene Settings");
 	if (ImGui::DragFloat("Ambientlight Intensity", &myApplicationState.AmbientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
@@ -589,33 +613,245 @@ void ModelViewer::CreatePreferenceWindow()
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	}
 
-	ImGui::SeparatorText("");
-	if (ImGui::Button("Save Preferences"))
-	{
-		SaveState();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Save Scene"))
-	{
-		SaveScene("Default");
+		ImGui::SeparatorText("");
+		if (ImGui::Button("Save Preferences"))
+		{
+			SaveState();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save Scene"))
+		{
+			// Add file selector
+			SaveScene("Default");
+		}
 	}
 	ImGui::End();
 }
+
+void ModelViewer::CreateSelectedObjectWindow()
+{
+	if (ImGui::Begin("Selected GameObject"))
+	{
+		if (mySelectedObject)
+		{
+			mySelectedObject->CreateImGuiWindowContent("Selected GameObject");
+
+			ImGui::Separator();
+			if (ImGui::Button("Save As Prefab"))
+			{
+				ImGui::OpenPopup("Select Prefab Name");
+			}
+			if (ImGui::BeginPopupModal("Select Prefab Name"))
+			{
+				static std::string name;
+				if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					AssetManager::SavePrefab(*mySelectedObject, name);
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::Button("Close"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Save"))
+				{
+					AssetManager::SavePrefab(*mySelectedObject, name);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}		
+	}
+	ImGui::End();
+}
+
 void ModelViewer::CreateSceneContentWindow()
 {
-	ImGui::Begin("SceneContent");
+	myImguiNameCounts.clear();
+
+	if (ImGui::Begin("Scene"))
+	{
+		for (auto& [id, object] : myGameObjects)
+		{
+			if (auto iter = myImguiNameCounts.find(object.GetName()); iter != myImguiNameCounts.end())
+			{
+				std::string text = object.GetName() + " (" + std::to_string(iter->second++) + ")";
+				if (ImGui::Button(text.c_str()))
+				{
+					mySelectedObject = &object;
+				}
+			}
+			else
+			{
+				myImguiNameCounts.emplace(object.GetName(), 1);
+				if (ImGui::Button(object.GetName().c_str()))
+				{
+					mySelectedObject = &object;
+				}
+			}
+		}
+	}
 	ImGui::End();
 }
-#endif // _RETAIL
 
-void ModelViewer::UpdateScene()
+void ModelViewer::CreatePrefabWindow()
 {
-	for (auto& [id, object] : myGameObjects)
+	if (ImGui::Begin("Prefab", &myIsShowingPrefabWindow))
 	{
-		object.Update();
+		if (ImGui::BeginCombo(" ", mySelectedPrefabName ? mySelectedPrefabName->c_str() : ""))
+		{
+			for (auto& path : AssetManager::GetAvailablePrefabs())
+			{
+				const bool isSelected = (mySelectedPrefabName == &path);
+				if (ImGui::Selectable(path.c_str(), isSelected))
+				{
+					mySelectedPrefabName = &path;
+				}
+
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		if (mySelectedPrefabName)
+		{
+			if (ImGui::Button("Set as new object"))
+			{
+				myNewObject = AssetManager::GetPrefab(*mySelectedPrefabName);
+				myNewObject.MarkAsPrefab();
+				if (!myIsShowingNewObjectWindow)
+				{
+					myIsShowingNewObjectWindow = true;
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Add to Scene"))
+			{
+				AddGameObject(AssetManager::GetPrefab(*mySelectedPrefabName));
+			}
+		}
+		
+		ImGui::Separator();
+
+		if (ImGui::Button("Select Prefab"))
+		{
+			if (ShowFileSelector(mySelectedPath, { L"Prefab files", ToWString("*" + AssetManager::GetPrefabExtension()) }, ToWString(GetFullPath(AssetManager::GetPrefabPath())), L"Select Prefab"))
+			{
+				myLogger.Log("Selected File!");
+			}
+		}
+		ImGui::Text(GetRelativePath(mySelectedPath).c_str());
+	}
+	ImGui::End();
+}
+
+void ModelViewer::CreateNewObjectWindow()
+{
+	if (ImGui::Begin("New Object", &myIsShowingNewObjectWindow))
+	{
+		if (ImGui::Button("Reset to Default"))
+		{
+			myNewObject = AssetManager::GetPrefab("Default");
+		}
+		if (ImGui::BeginCombo(" ", ComponentTypeToString(mySelectedComponentType).c_str()))
+		{
+			int* selectedType = (int*)&mySelectedComponentType;
+			for (int i = 1; i < static_cast<int>(ComponentType::Count); i++)
+			{
+				const bool isSelected = (*selectedType == i);
+				if (ImGui::Selectable(ComponentTypeToString(static_cast<ComponentType>(i)).c_str(), isSelected))
+				{
+					*selectedType = i;
+				}
+
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Add Component"))
+		{
+			AddComponent(mySelectedComponentType, myNewObject);
+		}
+
+		ImGui::Separator();
+		myNewObject.CreateImGuiWindowContent("New Object");
+		ImGui::Separator();
+
+		if (ImGui::Button("Add To Scene"))
+		{
+			AddGameObject(myNewObject);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save As Prefab"))
+		{
+			ImGui::OpenPopup("Select Prefab Name");
+		}
+		if (ImGui::BeginPopupModal("Select Prefab Name"))
+		{
+			static std::string name;
+			if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				AssetManager::SavePrefab(myNewObject, name);
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::Button("Close"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Save"))
+			{
+				AssetManager::SavePrefab(myNewObject, name);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
+}
+
+void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
+{
+	// Potential future problem with using infinite Undo-stack
+	myUndoCommands.emplace_back(aCommand);
+	if (myRedoCommands.size() > 0)
+	{
+		myRedoCommands.clear();
 	}
 }
-#ifndef _RETAIL
+
+void ModelViewer::Undo()
+{
+	if (myUndoCommands.size() > 0)
+	{
+		myUndoCommands.back()->Undo();
+		myRedoCommands.emplace_back(myUndoCommands.back());
+		myUndoCommands.pop_back();
+	}	
+}
+
+void ModelViewer::Redo()
+{
+	if (myRedoCommands.size() > 0)
+	{
+		myRedoCommands.back()->Execute();
+		myUndoCommands.emplace_back(myRedoCommands.back());
+		myRedoCommands.pop_back();
+	}	
+}
+
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
@@ -647,4 +883,20 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eK
 		break;
 	}
 }
-#endif // DEBUG
+void ModelViewer::ReceiveEvent(CommonUtilities::eInputAction anAction, float aValue)
+{
+	if (aValue < 1.5f)
+	{
+		return;
+	}
+
+	if (anAction == CommonUtilities::eInputAction::Undo)
+	{
+		Undo();
+	}
+	else if(anAction == CommonUtilities::eInputAction::Redo)
+	{
+		Redo();
+	}
+}
+#endif // _RETAIL

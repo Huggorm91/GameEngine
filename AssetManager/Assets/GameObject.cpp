@@ -1,17 +1,35 @@
 #include "AssetManager.pch.h"
 #include "GameObject.h"
 #include "Components/Rendering/AnimatedMeshComponent.h"
+#include "Prefab.h"
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName)
 #ifdef _DEBUG
 , myDebugPointers()
 #endif // _DEBUG
 {
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName("GameObject: " + std::to_string(myID)), myImguiText(myName)
+GameObject::GameObject(const Prefab& aPrefab): GameObject()
+{
+	if (aPrefab.myTemplate)
+	{
+		const Component* pointer = nullptr;
+		for (auto [type, index] : aPrefab.myTemplate->myIndexList)
+		{
+			pointer = aPrefab.myTemplate->myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
+			::AddComponent(pointer, *this);
+		}
+	}
+	else
+	{
+		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+	}
+}
+
+GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName), myImguiText(myName)
 #ifdef _DEBUG
 , myDebugPointers()
 #endif // _DEBUG
@@ -48,6 +66,30 @@ GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexLi
 	{
 		 LoadComponent(jsonComponent, *this);
 	}
+}
+
+GameObject& GameObject::operator=(const Prefab& aPrefab)
+{
+	if (aPrefab.myTemplate)
+	{
+		myCount = 0;
+		myComponents.Clear();
+		myIndexList.clear();
+#ifdef _DEBUG
+		myDebugPointers.clear();
+#endif // _DEBUG
+		const Component* pointer = nullptr;
+		for (auto [type, index] : aPrefab.myTemplate->myIndexList)
+		{
+			pointer = aPrefab.myTemplate->myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
+			::AddComponent(pointer, *this);
+		}
+	}
+	else
+	{
+		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+	}
+	return *this;
 }
 
 GameObject& GameObject::operator=(const GameObject& aGameObject)
@@ -105,6 +147,30 @@ void GameObject::Update()
 			myComponents.ChangeValueUnsafe<Component>(index)->Update();
 		}
 	}
+}
+
+const Component* GameObject::GetComponentPointer(unsigned anID) const
+{
+	for (auto [type, index] : myIndexList)
+	{
+		if (const Component* component = myComponents.GetValueUnsafe<Component>(index); component->GetComponentID() == anID)
+		{
+			return component;
+		}
+	}
+	return nullptr;
+}
+
+Component* GameObject::GetComponentPointer(unsigned anID)
+{
+	for (auto [type, index] : myIndexList)
+	{
+		if (Component* component = myComponents.ChangeValueUnsafe<Component>(index); component->GetComponentID() == anID)
+		{
+			return component;
+		}
+	}
+	return nullptr;
 }
 
 void GameObject::SetPosition(const CommonUtilities::Vector3f& aPosition)
@@ -191,7 +257,7 @@ unsigned int GameObject::GetID() const
 	return myID;
 }
 
-void GameObject::CreateImGuiWindow(const std::string& aWindowName)
+void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 {
 	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -244,7 +310,31 @@ Json::Value GameObject::ToJson() const
 	return result;
 }
 
-void GameObject::ToBinary(std::ofstream& aStream) const
+void GameObject::MarkAsPrefab()
 {
-	//aStream.write();
+	if (myID != 0)
+	{
+		const_cast<unsigned&>(myID) = 0;
+		localIDCount--;
+
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
+		}
+	}	
 }
+
+void GameObject::MarkAsPrefab(unsigned anID)
+{
+	if (myID != anID)
+	{
+		const_cast<unsigned&>(myID) = anID;
+		localIDCount--;
+	}
+}
+
+#ifndef _RETAIL
+GameObject::GameObject(unsigned anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName)
+{
+}
+#endif // !_RETAIL

@@ -5,8 +5,10 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "Logging/Logging.h"
 
-#include "AssetManager/Assets/GameObject.h"
+#include "AssetManager/Assets/Prefab.h"
 #include "GraphicsEngine/Camera/PerspectiveCamera.h"
+
+#include "Commands/EditCommand.h"
 
 class SplashWindow;
 
@@ -19,12 +21,12 @@ class ModelViewer
 {
 #endif // _RETAIL
 public:
-// Singleton Getter.
+	// Singleton Getter.
 	static ModelViewer& Get() {
 		static ModelViewer myInstance; return myInstance;
 	}
 
-// Acceleration Getters for components.
+	// Acceleration Getters for components.
 	FORCEINLINE static ApplicationState& GetApplicationState() {
 		return Get().myApplicationState;
 	}
@@ -42,21 +44,34 @@ public:
 	GameObject* GetGameObject(unsigned anID);
 	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
 
+	bool RemoveGameObject(unsigned anID);
+
 	void SaveState() const;
 	void SaveScene(const std::string& aPath) const;
 	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction, float) override{}
+	void ReceiveEvent(CommonUtilities::eInputAction, float) override;
 #endif // _RETAIL
 
 private:
 #ifndef _RETAIL
+	bool myIsEditingPrefab;
+	bool myIsShowingPrefabWindow;
+	bool myIsShowingNewObjectWindow;
+	ComponentType mySelectedComponentType;
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
-	int mySelectedIndex;
+	GameObject* mySelectedObject; 
+	const std::string* mySelectedPrefabName;
+	Prefab myEditPrefab;
+	GameObject myNewObject;
+	std::string mySelectedPath;
+	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
+	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 #endif // _RETAIL
 	HINSTANCE myModuleHandle{ nullptr };
 	HWND myMainWindowHandle{ nullptr };
@@ -70,7 +85,6 @@ private:
 	PerspectiveCamera myCamera;
 
 	std::unordered_map<unsigned, GameObject> myGameObjects;
-	// std::unordered_map<unsigned, GameObject> myGameObjects;
 
 	ModelViewer();
 
@@ -91,6 +105,14 @@ private:
 	void RenderImgui();
 
 	void CreatePreferenceWindow();
+	void CreateSelectedObjectWindow();
 	void CreateSceneContentWindow();
+
+	void CreatePrefabWindow();
+	void CreateNewObjectWindow();
+
+	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
+	void Undo();
+	void Redo();
 #endif // _RETAIL
 };

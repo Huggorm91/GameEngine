@@ -14,10 +14,13 @@ public:
 
 	Shader* GetShader(const std::string& aPath);
 
+	inline const std::string& GetPath(){ return myPath; }
+	static inline std::string GetExtension(){ return ".cso"; }
+
 private:
 	std::unordered_map<std::string, Shader> myShaders;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content/Shaders/";
+	const std::string myPath = "Content\\Shaders\\";
 
 	Shader* LoadShader(const std::string& aPath);
 };

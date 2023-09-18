@@ -22,7 +22,8 @@ namespace CommonUtilities
 		void Attach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey = eKey::None);
 		void Attach(InputObserver* anObserver, eInputAction anEvent);
 
-		void BindAction(eInputAction anEvent, KeyBind aPrimary, KeyBind aSecondary = KeyBind());
+		void BindAction(eInputAction anEvent, KeyBind aKeybind);
+		void BindAction(eInputAction anEvent, const std::vector<KeyBind>& aKeybindList);
 		void UnbindAction(eInputAction anEvent);
 
 		void Detach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey = eKey::None);
@@ -83,10 +84,11 @@ namespace CommonUtilities
 		std::unordered_multimap<eInputEvent, eKey> myEvents;
 
 		std::unordered_multimap<eInputAction, InputObserver*> myActionObservers;
-		std::unordered_map<eInputAction, std::pair<KeyBind,KeyBind>> myKeybinds;
+		std::unordered_map<eInputAction, std::vector<KeyBind>> myKeybinds;
 
-		std::unordered_map<eInputAction, float> myTriggeredActions;
-		std::unordered_set<int> myTriggeredKeys;
+		std::unordered_multimap<eInputAction, float> myTriggeredActions;
+		std::unordered_set<eKey> myObservedKeys;
+		std::unordered_set<eKey> myTriggeredKeys;
 
 		std::bitset<256> myCurrentState;
 		std::bitset<256> myPreviousState;
@@ -94,11 +96,12 @@ namespace CommonUtilities
 		RECT myClientRect;
 
 		Vector2<int> myMousePosition;
-		Vector2<float> myRawMouseMovement;
 		Vector2<int> myScrollDelta;
 
 		Vector2<int> myRelativeCenterPosition;
 		Vector2<int> myCenterPosition;
+
+		Vector2<float> myRawMouseMovement;
 
 		HWND myWindowHandle;
 		XBoxController* myXboxController;
@@ -151,5 +154,6 @@ namespace CommonUtilities
 		bool IsKeyDown(int aKey) const;
 		bool IsKeyUp(int aKey) const;
 		bool IsKeyHeld(int aKey) const;
+		bool IsKeyReleased(int aKey) const;
 	};
 }

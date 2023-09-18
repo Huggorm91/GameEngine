@@ -14,11 +14,14 @@ public:
 
 	Animation* GetAnimation(const std::string& aPath);
 
+	inline const std::string& GetPath(){ return myPath; }
+	static inline std::string GetExtension(){ return ".fbx"; }
+
 private:
 	std::unordered_map<std::string, Animation> myAnimations;
 	std::unordered_map<std::string, AnimationData> myAnimationData;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content/Animations/";
+	const std::string myPath = "Content\\Animations\\";
 
 	Animation* LoadAnimation(const std::string& aPath);
 };

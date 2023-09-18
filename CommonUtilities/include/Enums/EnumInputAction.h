@@ -27,6 +27,8 @@ namespace CommonUtilities
 		MoveVerticaly,
 		MoveHorizontaly,
 		DodgeRoll,
-		PauseGame
+		PauseGame, 
+		Undo,
+		Redo
 	};
 }

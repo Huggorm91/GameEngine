@@ -44,6 +44,7 @@ void Component::Init(const Json::Value& aJson)
 {
 	myIsActive = aJson["IsActive"].asBool();
 	myType = static_cast<ComponentType>(aJson["Type"].asInt());
+	const_cast<unsigned&>(myID) = aJson["ID"].asUInt();
 }
 
 void Component::Init(GameObject* aParent)
@@ -102,7 +103,10 @@ void Component::ComponentPointersInvalidated()
 void Component::CreateImGuiComponents(const std::string& aWindowName)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
-	ImGui::Checkbox("Active", &myIsActive);
+	if (ImGui::Checkbox("Active", &myIsActive))
+	{
+		SetActive(myIsActive);
+	}
 }
 
 Json::Value Component::ToJson() const
@@ -121,6 +125,15 @@ Json::Value Component::ToJson() const
 const Component* Component::GetTypePointer() const
 {
 	return this;
+}
+
+void Component::MarkAsPrefabComponent(unsigned anID)
+{
+	if (myID != anID)
+	{
+		const_cast<unsigned&>(myID) = anID;
+		localIDCount--;
+	}	
 }
 
 const CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer() const

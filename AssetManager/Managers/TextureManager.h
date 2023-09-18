@@ -14,10 +14,13 @@ public:
 
 	Texture* GetTexture(const std::string& aPath);
 
+	inline const std::string& GetPath(){ return myPath; }
+	static inline std::string GetExtension(){ return ".dds"; }
+
 private:
 	std::unordered_map<std::string, Texture> myTextures;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content/Textures/";
+	const std::string myPath = "Content\\Textures\\";
 
 	Texture* LoadTexture(const std::string& aPath);
 };

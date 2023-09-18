@@ -14,13 +14,13 @@ class ExampleComponent : public Component
 	// 5. Add 'case ComponentType::Example: return "Example";' to switch in ComponentTypeToString() in ComponentType.cpp
 public:
 	ExampleComponent(); // Use base constructor: Component(ComponentType::Example)
-	ExampleComponent(const Component& aComponent);
-	ExampleComponent(ExampleComponent&& aComponent) noexcept;
-	ExampleComponent(const Json::Value& aJson);
+	ExampleComponent(const ExampleComponent& aComponent) = default;
+	ExampleComponent(ExampleComponent&& aComponent) noexcept = default;
+	ExampleComponent(const Json::Value& aJson); // Init(const Json::Value& aJson) can be used as an alternative
 	~ExampleComponent() = default;
 
-	ExampleComponent& operator=(const ExampleComponent& aComponent);
-	ExampleComponent& operator=(ExampleComponent&& aComponent) noexcept;
+	ExampleComponent& operator=(const ExampleComponent& aComponent) = default;
+	ExampleComponent& operator=(ExampleComponent&& aComponent) noexcept = default;
 
 	// void Init(const Json::Value& aJson) override;
 	// void Init(GameObject* aParent) override;

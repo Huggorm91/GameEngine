@@ -75,6 +75,62 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 	}
 }
 
+void AddComponent(const ComponentType aType, GameObject& aParent)
+{
+	switch (aType)
+	{
+	case ComponentType::Mesh:
+	{
+		aParent.AddComponent<MeshComponent>();
+		break;
+	}
+	case ComponentType::AnimatedMesh:
+	{
+		aParent.AddComponent<AnimatedMeshComponent>();
+		break;
+	}
+	case ComponentType::Directionallight:
+	{
+		aParent.AddComponent<DirectionallightComponent>();
+		break;
+	}
+	case ComponentType::Pointlight:
+	{
+		aParent.AddComponent<PointlightComponent>();
+		break;
+	}
+	case ComponentType::Spotlight:
+	{
+		aParent.AddComponent<SpotlightComponent>();
+		break;
+	}
+	case ComponentType::DebugDraw:
+	{
+		aParent.AddComponent<DebugDrawComponent>();
+		break;
+	}
+	case ComponentType::PerspectiveCamera:
+	{
+		aParent.AddComponent<PerspectiveCameraComponent>();
+		break;
+	}
+	case ComponentType::Input:
+	{
+		aParent.AddComponent<InputComponent>();
+		break;
+	}
+	case ComponentType::Movement:
+	{
+		aParent.AddComponent<MovementComponent>();
+		break;
+	}
+	default:
+	{
+		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+	}
+	}
+}
+
 void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 {
     ComponentType type = static_cast<ComponentType>(aJson["Type"].asInt());
