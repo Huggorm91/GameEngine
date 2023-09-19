@@ -301,7 +301,16 @@ void ModelViewer::HideSplashScreen() const
 {
 	mySplashWindow->Close();
 	delete mySplashWindow;
-	ShowWindow(myMainWindowHandle, SW_SHOW);
+
+	if (myApplicationState.StartMaximized)
+	{
+		ShowWindow(myMainWindowHandle, SW_MAXIMIZE);
+	}
+	else
+	{
+		ShowWindow(myMainWindowHandle, SW_SHOW);
+	}
+	
 	SetForegroundWindow(myMainWindowHandle);
 }
 
