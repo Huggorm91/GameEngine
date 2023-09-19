@@ -56,7 +56,7 @@ Settings::operator Json::Value() const
 	json["BackgroundColor"]["B"] = BackgroundColor.z;
 	json["BackgroundColor"]["A"] = BackgroundColor.w;
 
-	const std::string comment = "// Only use 'ShaderName.cso' and not full path";
+	const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
 	size_t lastSlash = LuminancePS.find_last_of('/') + 1;
 	json["LuminancePSShader"] = LuminancePS.substr(lastSlash);
 	json["LuminancePSShader"].setComment(comment, Json::commentAfterOnSameLine);

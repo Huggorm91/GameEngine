@@ -226,9 +226,14 @@ Json::Value Material::ToJson() const
 		result["Textures"][i] = texture;
 	}
 
-	if (myPixelShader)
+	if (myVertexShader)
 	{
-		result["VertexShader"] = Helpers::string_cast<std::string>(myVertexShader->GetName());
+		std::string path = Helpers::string_cast<std::string>(myVertexShader->GetName());
+		size_t lastSlash = path.find_last_of('/') + 1;
+		result["VertexShader"] = path.substr(lastSlash);
+
+		const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
+		result["VertexShader"].setComment(comment, Json::commentAfterOnSameLine);
 	}
 	else
 	{
@@ -236,7 +241,12 @@ Json::Value Material::ToJson() const
 	}	
 	if (myPixelShader)
 	{
-		result["PixelShader"] = Helpers::string_cast<std::string>(myPixelShader->GetName());
+		std::string path = Helpers::string_cast<std::string>(myPixelShader->GetName());
+		size_t lastSlash = path.find_last_of('/') + 1;
+		result["PixelShader"] = path.substr(lastSlash);
+
+		const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
+		result["PixelShader"].setComment(comment, Json::commentAfterOnSameLine);
 	}
 	else
 	{
