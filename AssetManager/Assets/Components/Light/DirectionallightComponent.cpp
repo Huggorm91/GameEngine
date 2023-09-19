@@ -152,7 +152,7 @@ Json::Value DirectionallightComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
 	result["InvertedLightDirection"] = static_cast<Json::Value>(myInvertedLightDirection);
-	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Color"] = myColor.ToJsonColor();
 	result["Intensity"] = myIntensity;
 	result["CastShadows"] = myCastShadows;
 	return result;

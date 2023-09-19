@@ -25,8 +25,8 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 	myBuffer.Data.Metalness = aJsonValue["Metalness"].asFloat();
 	myBuffer.Data.NormalStrength = aJsonValue["NormalStrength"].asFloat();
 	myBuffer.Data.UVTiling = CommonUtilities::Vector2f(aJsonValue["UVTiling"]);
-	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]["R"].asFloat(), aJsonValue["AlbedoColor"]["G"].asFloat(), aJsonValue["AlbedoColor"]["B"].asFloat(), aJsonValue["AlbedoColor"]["A"].asFloat());
-	myBuffer.Data.EmissionColor = CommonUtilities::Vector3f(aJsonValue["EmissionColor"]["R"].asFloat(), aJsonValue["EmissionColor"]["G"].asFloat(), aJsonValue["EmissionColor"]["B"].asFloat());
+	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]);
+	myBuffer.Data.EmissionColor = CommonUtilities::Vector3f(aJsonValue["EmissionColor"]);
 	myBuffer.Data.EmissionIntensity = aJsonValue["EmissionIntensity"].asFloat();
 
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
@@ -289,15 +289,9 @@ Json::Value Material::ToJson() const
 	result["Shininess"] = myBuffer.Data.Shininess;
 	result["Metalness"] = myBuffer.Data.Metalness;
 	result["NormalStrength"] = myBuffer.Data.NormalStrength;
-	result["UVTiling"]["X"] = myBuffer.Data.UVTiling.x;
-	result["UVTiling"]["Y"] = myBuffer.Data.UVTiling.y;
-	result["AlbedoColor"]["R"] = myBuffer.Data.AlbedoColor.x;
-	result["AlbedoColor"]["G"] = myBuffer.Data.AlbedoColor.y;
-	result["AlbedoColor"]["B"] = myBuffer.Data.AlbedoColor.z;
-	result["AlbedoColor"]["A"] = myBuffer.Data.AlbedoColor.w;
-	result["EmissionColor"]["R"] = myBuffer.Data.EmissionColor.x;
-	result["EmissionColor"]["G"] = myBuffer.Data.EmissionColor.y;
-	result["EmissionColor"]["B"] = myBuffer.Data.EmissionColor.z;
+	result["UVTiling"] = static_cast<Json::Value>(myBuffer.Data.UVTiling);
+	result["AlbedoColor"] = myBuffer.Data.AlbedoColor.ToJsonColor();
+	result["EmissionColor"] = myBuffer.Data.EmissionColor.ToJsonColor();
 	result["EmissionIntensity"] = myBuffer.Data.EmissionIntensity;
 	return result;
 }

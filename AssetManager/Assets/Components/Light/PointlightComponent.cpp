@@ -157,7 +157,7 @@ Json::Value PointlightComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
 	result["Position"] = static_cast<Json::Value>(myPosition);
-	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Color"] = myColor.ToJsonColor();
 	result["Radius"] = myRadius;
 	result["Intensity"] = myIntensity;
 	result["CastShadows"] = myCastShadows;

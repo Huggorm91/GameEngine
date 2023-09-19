@@ -164,7 +164,7 @@ Json::Value SpotlightComponent::ToJson() const
 	Json::Value result = Component::ToJson();
 	result["Position"] = static_cast<Json::Value>(myPosition);
 	result["LightDirection"] = static_cast<Json::Value>(myLightDirection);
-	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Color"] = myColor.ToJsonColor();
 	result["Range"] = myRange;
 	result["Intensity"] = myIntensity;
 	result["InnerAngle"] = myInnerAngle;

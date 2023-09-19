@@ -267,7 +267,7 @@ Json::Value MeshComponent::ToJson() const
 	Json::Value result = Component::ToJson();
 	result["RenderShadow"] = myRenderShadow;
 	result["IsDeferred"]= myIsDeferred;
-	result["Color"] = static_cast<Json::Value>(myColor);
+	result["Color"] = myColor.ToJsonColor();
 	result["Transform"] = myTransform.ToJson();
 	if (myPath)
 	{
@@ -283,8 +283,8 @@ Json::Value MeshComponent::ToJson() const
 
 #ifndef _RETAIL
 	result["LerpValue"] = myLerpValue;
-	result["LerpColor1"] = static_cast<Json::Value>(myLerpColor1);
-	result["LerpColor2"] = static_cast<Json::Value>(myLerpColor2);
+	result["LerpColor1"] = myLerpColor1.ToJsonColor();
+	result["LerpColor2"] = myLerpColor2.ToJsonColor();
 #endif // !_RETAIL
 
 	return result;
