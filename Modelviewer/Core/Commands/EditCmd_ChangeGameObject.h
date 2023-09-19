@@ -5,7 +5,7 @@
 class EditCmd_ChangeGameObject : public EditCommand
 {
 public:
-	EditCmd_ChangeGameObject(const GameObject& anObject);
+	EditCmd_ChangeGameObject(const std::shared_ptr<GameObject>& anObject);
 	~EditCmd_ChangeGameObject() = default;
 
 	void Undo() override;

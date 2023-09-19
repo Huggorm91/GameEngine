@@ -59,6 +59,8 @@ protected:
 	float myLerpValue;
 	CommonUtilities::Vector4f myLerpColor1;
 	CommonUtilities::Vector4f myLerpColor2;
+	std::string myLerpName1;
+	std::string myLerpName2;
 #endif // !_RETAIL
 	CommonUtilities::Vector4f myColor;
 	std::string myName;

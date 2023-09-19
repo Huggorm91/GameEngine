@@ -13,10 +13,10 @@ protected:
 	void LogError(const std::string& anError) const;
 	void LogMessage(const std::string& anError) const;
 
-	GameObject* GetGameObject(unsigned anID) const;
+	std::shared_ptr<GameObject> GetGameObject(unsigned anID) const;
 
-	GameObject& AddGameObject(const GameObject& anObject);
-	GameObject& AddGameObject(GameObject&& anObject);
+	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject);
+	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject);
 
 	bool RemoveGameObject(unsigned anID);
 };

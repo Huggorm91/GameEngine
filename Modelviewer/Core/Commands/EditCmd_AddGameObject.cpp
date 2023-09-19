@@ -1,7 +1,7 @@
 #include "EditCmd_AddGameObject.h"
 #include "../Modelviewer.h"
 
-EditCmd_AddGameObject::EditCmd_AddGameObject(const GameObject& anObject) : myObject(std::make_shared<GameObject>(anObject)), myID(anObject.GetID())
+EditCmd_AddGameObject::EditCmd_AddGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetID())
 {
 	myObject->MarkAsPrefab(myID);
 }

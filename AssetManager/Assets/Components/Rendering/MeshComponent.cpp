@@ -242,22 +242,29 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
-	if (ImGui::ColorEdit4("Color1", (float*)&myLerpColor1))
+	if (ColorManager::CreateImGuiComponents(myLerpColor1, myLerpName1, "Color1"))
 	{
 		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
-	if (ImGui::ColorEdit4("Color2", (float*)&myLerpColor2))
+	ImGui::SameLine();
+	ImGui::ColorEdit4("   ", &myLerpColor1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+
+	if (ColorManager::CreateImGuiComponents(myLerpColor2, myLerpName2, "Color2"))
 	{
 		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
+	ImGui::SameLine();
+	ImGui::ColorEdit4("    ", &myLerpColor2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+
 	if (ImGui::SliderFloat("Color", &myLerpValue, 0.f, 1.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 	{
 		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
 	ImGui::SameLine();
-	ImGui::ColorEdit4("  ", (float*)&myColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+	ImGui::ColorEdit4("  ", &myColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+
 	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
-	ImGui::ColorEdit4("Color", (float*)&myColor);
+	//ImGui::ColorEdit4("Color", (float*)&myColor);
 	// Add editor for Elements
 	myTransform.CreateImGuiComponents(aWindowName);
 }

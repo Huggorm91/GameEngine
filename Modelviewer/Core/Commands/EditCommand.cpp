@@ -11,20 +11,19 @@ void EditCommand::LogMessage(const std::string& anError) const
     ModelViewer::Get().GetLogger().Log(anError);
 }
 
-GameObject* EditCommand::GetGameObject(unsigned anID) const
+std::shared_ptr<GameObject> EditCommand::GetGameObject(unsigned anID) const
 {
     return ModelViewer::Get().GetGameObject(anID);
 }
 
-GameObject& EditCommand::AddGameObject(const GameObject& anObject)
+std::shared_ptr<GameObject>& EditCommand::AddGameObject(const std::shared_ptr<GameObject>& anObject)
 {
-    GameObject newObject(anObject);
-    return ModelViewer::Get().myGameObjects.emplace(newObject.GetID(), std::move(newObject)).first->second;
+    return ModelViewer::Get().myGameObjects.emplace(anObject->GetID(), anObject).first->second;
 }
 
-GameObject& EditCommand::AddGameObject(GameObject&& anObject)
+std::shared_ptr<GameObject>& EditCommand::AddGameObject(GameObject&& anObject)
 {
-    return ModelViewer::Get().myGameObjects.emplace(anObject.GetID(), std::move(anObject)).first->second;
+    return ModelViewer::Get().myGameObjects.emplace(anObject.GetID(), std::make_shared<GameObject>(std::move(anObject))).first->second;
 }
 
 bool EditCommand::RemoveGameObject(unsigned anID)
@@ -34,9 +33,9 @@ bool EditCommand::RemoveGameObject(unsigned anID)
     auto& gameObjects = ModelViewer::Get().myGameObjects;
     if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
     {
-        if (ModelViewer::Get().mySelectedObject == &iter->second)
+        if (ModelViewer::Get().mySelectedObject.lock() == iter->second)
         {
-            ModelViewer::Get().mySelectedObject = nullptr;
+            ModelViewer::Get().mySelectedObject.reset();
         }
         gameObjects.erase(iter);
         return true;

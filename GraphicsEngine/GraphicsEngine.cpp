@@ -45,7 +45,6 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.BackgroundColor;
 
-
 		// Textures
 		{
 			myTextureSlots.MissingTextureSlot = 99u;
@@ -192,11 +191,17 @@ void GraphicsEngine::SaveSettings() const
 	settings.DefaultMissingTexture = Helpers::string_cast<std::string>(myTextures.MissingTexture.GetName());
 	settings.DefaultNormalTexture = Helpers::string_cast<std::string>(myTextures.DefaultNormalTexture.GetName());
 	settings.DefaultMaterialTexture = Helpers::string_cast<std::string>(myTextures.DefaultMaterialTexture.GetName());
+	settings.DefaultFXTexture = Helpers::string_cast<std::string>(myTextures.DefaultFXTexture.GetName());
 	settings.DefaultCubeMap = Helpers::string_cast<std::string>(myTextures.DefaultCubeMap.GetName());
 
 	settings.DefaultMaterial = myDefaultMaterial.GetName();
 
+	settings.LuminancePS = Helpers::string_cast<std::string>(myShaders.LuminancePS.GetName());
+	settings.BlurPS = Helpers::string_cast<std::string>(myShaders.BlurPS.GetName());
+	settings.BloomPS = Helpers::string_cast<std::string>(myShaders.BloomPS.GetName());
 	settings.GammaPS = Helpers::string_cast<std::string>(myShaders.GammaPS.GetName());
+	settings.CopyPS = Helpers::string_cast<std::string>(myShaders.CopyPS.GetName());
+
 	settings.GBufferPS = Helpers::string_cast<std::string>(myShaders.GBufferPS.GetName());
 	settings.EnvironmentPS = Helpers::string_cast<std::string>(myShaders.EnvironmentPS.GetName());
 	settings.PointlightPS = Helpers::string_cast<std::string>(myShaders.PointlightPS.GetName());
@@ -896,6 +901,7 @@ void GraphicsEngine::RenderFrame()
 
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
 			RHI::EndEvent();
 		}
 		else
@@ -1330,6 +1336,7 @@ Settings GraphicsEngine::LoadSettings()
 		return Settings();
 	}
 
+	ColorManager::Init(json["Colors"]);
 	return Settings(json);
 }
 
@@ -1338,9 +1345,12 @@ void GraphicsEngine::SaveSettings(const Settings& someSettings) const
 	std::fstream fileStream(mySettingsPath, std::ios::out);
 	if (fileStream)
 	{
+		Json::Value settings = someSettings;
+		settings["Colors"] = ColorManager::ToJson();
+
 		Json::StreamWriterBuilder builder;
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-		writer->write(someSettings, &fileStream);
+		writer->write(settings, &fileStream);
 		fileStream.flush();
 	}
 	else

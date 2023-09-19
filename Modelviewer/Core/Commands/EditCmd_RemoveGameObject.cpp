@@ -1,7 +1,7 @@
 #include "EditCmd_RemoveGameObject.h"
 #include "../Modelviewer.h"
 
-EditCmd_RemoveGameObject::EditCmd_RemoveGameObject(const GameObject& anObject) : myObject(std::make_shared<GameObject>(anObject)), myID(anObject.GetID())
+EditCmd_RemoveGameObject::EditCmd_RemoveGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetID())
 {
 	myObject->MarkAsPrefab(myID);
 }

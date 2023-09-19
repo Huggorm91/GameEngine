@@ -30,7 +30,7 @@
 #include <Timer.h>
 #include <InputMapper.h>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedObject(nullptr)
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedObject()
 #ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(),
 myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty")
@@ -163,11 +163,48 @@ int ModelViewer::Run()
 	return 0;
 }
 
+#ifndef _RETAIL
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject()
+{
+	std::shared_ptr<GameObject> newObject = std::make_shared<GameObject>();
+	AddCommand(std::make_shared<EditCmd_AddGameObject>(newObject));
+	return myGameObjects.at(newObject->GetID());
+}
+
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject)
+{
+	AddCommand(std::make_shared<EditCmd_AddGameObject>(anObject));
+	return myGameObjects.at(anObject->GetID());
+}
+
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject)
+{
+	unsigned id = anObject.GetID();
+	AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
+	return myGameObjects.at(id);
+}
+
+std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
+{
+	assert(anID != 0 && "Incorrect ID!");
+
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		return iter->second;
+	}
+	return nullptr;
+}
+#else
 GameObject& ModelViewer::AddGameObject()
 {
 	GameObject newObject;
 	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
 	return iter.first->second;
+}
+
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject)
+{
+	// TODO: insert return statement here
 }
 
 GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
@@ -193,6 +230,7 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 	}
 	return nullptr;
 }
+#endif // _RETAIL
 
 bool ModelViewer::RemoveGameObject(unsigned anID)
 {
@@ -201,9 +239,9 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
 	{
 #ifndef _RETAIL
-		if (mySelectedObject == &iter->second)
+		if (mySelectedObject.lock() == iter->second)
 		{
-			mySelectedObject = nullptr;
+			mySelectedObject.reset();
 		}
 #endif // !_RETAIL
 
@@ -229,6 +267,8 @@ void ModelViewer::ModelViewer::SaveState() const
 	}
 	myLogger.Log("Successfully saved settings");
 	fileStream.close();
+
+	GraphicsEngine::Get().SaveSettings();
 }
 
 void ModelViewer::ModelViewer::LoadState()
@@ -280,8 +320,14 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 	int i = 0;
 	for (auto& [id, object] : myGameObjects)
 	{
+#ifndef _RETAIL
+		scene["GameObjects"][i] = object->ToJson();
+		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
+#else
 		scene["GameObjects"][i] = object.ToJson();
 		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object.GetID()), Json::commentBefore);
+#endif // !_RETAIL
+
 		i++;
 	}
 
@@ -334,194 +380,7 @@ void ModelViewer::Init()
 {
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
-	//LoadScene("Default");
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Cube"));
-		object.SetPosition({ 0.f, 0.f, 500.f });
-		MeshComponent& mesh = object.GetComponent<MeshComponent>();
-		//mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		//mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		//mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-		mesh.SetColor(GetColor(eColor::White));
-		mesh.GetElements()[0].myMaterial.SetShininess(1000.f);
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Pyramid));
-		object.SetPosition({ 200.f, 0.f, 500.f });
-		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Sphere));
-		object.SetPosition({ -200.f, 0.f, 500.f });
-		//object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		//object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		//object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-		object.GetComponent<MeshComponent>().SetColor(GetColor(eColor::White));
-		object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1000.f);
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::InvertedCube));
-		object.SetPosition({ 0.f, 0.f, 700.f });
-		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-		object.GetComponent<MeshComponent>().GetElements().back().myMaterial.SetUVTiling({2.f, 2.f});
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedpyramid"));
-		object.SetPosition({ 200.f, 0.f, 700.f });
-		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("invertedsphere"));
-		object.SetPosition({ -200.f, 0.f, 700.f });
-		object.GetComponent<MeshComponent>().SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		object.GetComponent<MeshComponent>().SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Wooden_Carving_N.dds"));
-		object.GetComponent<MeshComponent>().SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Wooden_Carving_M.dds"));
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("SK_C_TGA_Bro"));
-		object.SetPosition({ 200.f, 0.f, 200.f });
-		//object.SetRotation({ 0.f, 180.f, 0.f });
-		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/TGA_Bro_C.dds"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
-		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M_Updated.dds"));
-		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Wave.fbx"));
-		mesh.StartAnimation();
-		mesh.SetColor({ 1.f,0.f,0.f,.5f });
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/SK_C_TGA_Bro.fbx"));
-		object.SetPosition({ -200.f, 0.f, 200.f });
-		//object.SetRotation({ 0.f, 180.f, 0.f });
-		AnimatedMeshComponent& mesh = object.GetComponent<AnimatedMeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Wooden_Carving_C.dds"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/TGA_Bro_N.dds"));
-		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/TGA_Bro_M.dds"));
-		mesh.SetAnimation(AssetManager::GetAsset<Animation>("Content/Animations/Idle/A_C_TGA_Bro_Idle_Brething.fbx"));
-		mesh.SetLooping(true);
-		mesh.StartAnimation();
-		//mesh.SetColor({ 1.f,0.f,0.f,1.f });
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Chest.fbx"));
-		object.SetPosition({ 0.f, 0.f, 200.f });
-		//object.SetRotation({ 0.f, 180.f, 0.f });
-		MeshComponent& mesh = object.GetComponent<MeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Chest_C.dds"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Chest_N.dds"));
-		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Chest_M.dds"));
-		mesh.SetFXTexture(AssetManager::GetAsset<Texture*>("Content/Textures/FX/Chest_FX.dds"));
-		for (auto& element : mesh.GetElements())
-		{
-			element.myMaterial.SetEmissionColor({ 1.f, 0.f, 0.f});
-			element.myMaterial.SetEmissionIntensity(1.f);
-		}		
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset<GameObject>("Content/Models/Buddha.fbx"));
-		object.SetPosition({ 0.f, 200.f, 500.f });
-		object.SetRotation({ 0.f, 180.f, 0.f });
-		MeshComponent& mesh = object.GetComponent<MeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Albedo/Buddha_C.dds"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Normal/Buddha_N.dds"));
-		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Material/Buddha_M.dds"));
-	}
-
-	{
-		auto& object = AddGameObject();
-		object.SetPosition({ -100.f, 50.f, 400.f });
-
-		PointlightComponent pointlight(200.f, 2.f, { 1.f, 0.f, 0.f });
-		object.AddComponent(pointlight);
-
-		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
-	}
-
-	{
-		auto& object = AddGameObject();
-		object.SetPosition({ 100.f, 50.f, 400.f });
-
-		PointlightComponent pointlight(200.f, 2.f, { 0.f, 1.f, 0.f });
-		object.AddComponent(pointlight);
-
-		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
-	}
-
-	{
-		auto& object = AddGameObject();
-		object.SetPosition({ 0.f, 50.f, 600.f });
-
-		PointlightComponent pointlight(200.f, 2.f, { 0.f, 0.f, 1.f });
-		object.AddComponent(pointlight);
-
-		/*DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 200.f, true);*/
-	}
-
-	{
-		auto& object = AddGameObject();
-		object.SetPosition({ 0.f, 200.f, 600.f });
-
-		SpotlightComponent spotlight(500, 2.f, 30.f, 50.f, { 0.f, -1.f, 1.f });
-		object.AddComponent(spotlight);
-
-		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
-	}
-
-	{
-		auto& object = AddGameObject();
-		object.SetPosition({ 0.f, 200.f, 350.f });
-
-		SpotlightComponent spotlight(500, 2.f, 30.f, 50.f, { 0.f, -1.f, -1.f });
-		object.AddComponent(spotlight);
-
-		DebugDrawComponent& debug = object.AddComponent<DebugDrawComponent>();
-		debug.SetAxisLines(CommonUtilities::Vector3f::Null, 500.f, false, spotlight.GetLightDirection(), spotlight.GetLightDirection() + 0.1f, spotlight.GetLightDirection() - 0.1f);
-	}
-
-	{
-		auto& object = AddGameObject();
-		DirectionallightComponent light({ 0.f, -1.f, 1.f }, { 1.f, 1.f, 1.f }, 1.f);
-		object.AddComponent(light);
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
-		object.SetPosition({ 0.f, -10.f, 0.f });
-		object.SetScale({ 20.f, 1.f, 20.f });
-		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-		//object.GetComponent<MeshComponent>().GetElements()[0].myMaterial.SetShininess(1.f);
-	}
-
-	{
-		auto& object = AddGameObject(AssetManager::GetAsset(Primitives::Plane));
-		object.SetPosition({ 0.f, 240.f, 1000.f });
-		object.SetScale({ 20.f, 1.f, 5.f });
-		object.SetRotation({ 90.f, 0.f, 0.f });
-		object.GetComponent<MeshComponent>().SetColor({ 1.f, 1.f, 1.f, 1.f });
-		//object.GetComponent<MeshComponent>().SetTexture(AssetManager::GetAsset<Texture*>("Content/Textures/Default/UV_checker_Map.dds"));
-	}
-
-	//SaveScene("Default");
+	LoadScene("Default");
 }
 
 void ModelViewer::Update()
@@ -545,18 +404,6 @@ void ModelViewer::Update()
 	RenderImgui();
 #endif // _RETAIL
 
-	if (myIncommingCommands.size() > 0)
-	{
-		myRedoCommands.clear();
-	}
-
-	for (auto& command : myIncommingCommands)
-	{
-		command->Execute();
-		myUndoCommands.emplace_back(command);
-	}
-	myIncommingCommands.clear();
-
 	engine.EndFrame();
 }
 
@@ -564,7 +411,11 @@ void ModelViewer::UpdateScene()
 {
 	for (auto& [id, object] : myGameObjects)
 	{
+#ifndef _RETAIL
+		object->Update();
+#else
 		object.Update();
+#endif // !_RETAIL
 	}
 }
 
@@ -658,9 +509,10 @@ void ModelViewer::CreateSelectedObjectWindow()
 {
 	if (ImGui::Begin("Selected GameObject"))
 	{
-		if (mySelectedObject)
+		if (!mySelectedObject.expired())
 		{
-			mySelectedObject->CreateImGuiWindowContent("Selected GameObject");
+			auto selectedObject = mySelectedObject.lock();
+			selectedObject->CreateImGuiWindowContent("Selected GameObject");
 
 			ImGui::Separator();
 			if (ImGui::Button("Save As Prefab"))
@@ -672,7 +524,7 @@ void ModelViewer::CreateSelectedObjectWindow()
 				static std::string name;
 				if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))
 				{
-					AssetManager::SavePrefab(*mySelectedObject, name);
+					AssetManager::SavePrefab(*selectedObject, name);
 					ImGui::CloseCurrentPopup();
 				}
 				if (ImGui::Button("Close"))
@@ -682,7 +534,7 @@ void ModelViewer::CreateSelectedObjectWindow()
 				ImGui::SameLine();
 				if (ImGui::Button("Save"))
 				{
-					AssetManager::SavePrefab(*mySelectedObject, name);
+					AssetManager::SavePrefab(*selectedObject, name);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
@@ -700,20 +552,20 @@ void ModelViewer::CreateSceneContentWindow()
 	{
 		for (auto& [id, object] : myGameObjects)
 		{
-			if (auto iter = myImguiNameCounts.find(object.GetName()); iter != myImguiNameCounts.end())
+			if (auto iter = myImguiNameCounts.find(object->GetName()); iter != myImguiNameCounts.end())
 			{
-				std::string text = object.GetName() + " (" + std::to_string(iter->second++) + ")";
+				std::string text = object->GetName() + " (" + std::to_string(iter->second++) + ")";
 				if (ImGui::Button(text.c_str()))
 				{
-					mySelectedObject = &object;
+					mySelectedObject = object;
 				}
 			}
 			else
 			{
-				myImguiNameCounts.emplace(object.GetName(), 1);
-				if (ImGui::Button(object.GetName().c_str()))
+				myImguiNameCounts.emplace(object->GetName(), 1);
+				if (ImGui::Button(object->GetName().c_str()))
 				{
-					mySelectedObject = &object;
+					mySelectedObject = object;
 				}
 			}
 		}
@@ -817,7 +669,7 @@ void ModelViewer::CreateNewObjectWindow()
 
 		if (ImGui::Button("Add To Scene"))
 		{
-			AddCommand(std::make_shared<EditCmd_AddGameObject>(myNewObject));
+			AddCommand(std::make_shared<EditCmd_AddGameObject>(std::make_shared<GameObject>(myNewObject)));
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Save As Prefab"))
@@ -851,7 +703,12 @@ void ModelViewer::CreateNewObjectWindow()
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
 	// Potential future problem with using infinite Undo-stack
-	myIncommingCommands.emplace_back(aCommand);
+	if (myRedoCommands.size() > 0)
+	{
+		myRedoCommands.clear();
+	}
+	aCommand->Execute();
+	myUndoCommands.emplace_back(aCommand);
 }
 
 void ModelViewer::Undo()

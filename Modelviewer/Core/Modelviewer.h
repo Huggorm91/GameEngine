@@ -37,12 +37,21 @@ public:
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
+#ifndef _RETAIL
+	std::shared_ptr<GameObject>& AddGameObject();
+	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject); 
+	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject);
+
+	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
+	std::shared_ptr<GameObject> GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+#else
 	GameObject& AddGameObject();
 	GameObject& AddGameObject(const GameObject& anObject);
 	GameObject& AddGameObject(GameObject&& anObject);
 
 	GameObject* GetGameObject(unsigned anID);
-	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
+	GameObject* GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+#endif // _RETAIL
 
 	bool RemoveGameObject(unsigned anID);
 
@@ -68,14 +77,13 @@ private:
 	GraphicsEngine::RenderMode myRenderMode;
 
 	ComponentType mySelectedComponentType;
-	GameObject* mySelectedObject; 
+	std::weak_ptr<GameObject> mySelectedObject;
 	const std::string* mySelectedPrefabName;
 	std::string mySelectedPath;
 	Prefab myEditPrefab;
 	GameObject myNewObject;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 
-	std::vector<std::shared_ptr<EditCommand>> myIncommingCommands;
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 #endif // _RETAIL
@@ -90,7 +98,11 @@ private:
 	Logger myLogger;
 	PerspectiveCamera myCamera;
 
+#ifndef _RETAIL
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myGameObjects;
+#else
 	std::unordered_map<unsigned, GameObject> myGameObjects;
+#endif // _RETAIL
 
 	ModelViewer();
 

@@ -1,7 +1,7 @@
 #include "EditCmd_ChangeGameObject.h"
 #include "../Modelviewer.h"
 
-EditCmd_ChangeGameObject::EditCmd_ChangeGameObject(const GameObject& anObject) : myObject(std::make_shared<GameObject>(anObject)), myID(anObject.GetID())
+EditCmd_ChangeGameObject::EditCmd_ChangeGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetID())
 {
 	myObject->MarkAsPrefab(myID);
 }
@@ -18,7 +18,7 @@ void EditCmd_ChangeGameObject::Execute()
 
 void EditCmd_ChangeGameObject::Swap()
 {
-	GameObject* object = GetGameObject(myID);
+	std::shared_ptr<GameObject> object = GetGameObject(myID);
 	assert(object && "Could not find GameObject!");
 
 	GameObject swap(std::move(*object));

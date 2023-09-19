@@ -241,6 +241,7 @@
     <Lib>
       <AdditionalDependencies>CommonUtilities.lib;TGAFbx.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)CommonUtilities\lib;$(SolutionDir)ThirdParty\FBXImporter\lib\Release</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
