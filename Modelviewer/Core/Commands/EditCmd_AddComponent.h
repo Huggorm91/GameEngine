@@ -18,7 +18,7 @@ public:
 protected:
 	std::shared_ptr<CompType> myComponent;
 	unsigned myGameObjectID;
-	unsigned myComponentID;
+	unsigned myComponentIndex; // Make function to get Index of component in gameobject (To recreate the old memory adress)
 };
 
 template<class CompType>

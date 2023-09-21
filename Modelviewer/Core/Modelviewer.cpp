@@ -10,8 +10,8 @@
 
 #include "Modelviewer.h"
 #include "Windows/SplashWindow.h"
-#include "Commands/EditCmd_AddGameObject.h"
-#include "Commands/EditCmd_RemoveGameObject.h"
+#include "Commands/EditCmd_AddGameobject.h"
+#include "Commands/EditCmd_RemoveGameobject.h"
 
 #include <filesystem>
 
@@ -33,9 +33,10 @@
 ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects(), mySelectedObject()
 #ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(),
-myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty")
+myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(nullptr)
 #endif // _RETAIL
 {
+	myNewObject.MarkAsPrefab();
 }
 
 bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
@@ -109,6 +110,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 #ifndef _RETAIL
 	InitImgui();
 
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::Del);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
@@ -118,6 +120,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.BindAction(CommonUtilities::eInputAction::Redo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Y, CommonUtilities::eKey::Ctrl });
 	input.Attach(this, CommonUtilities::eInputAction::Undo);
 	input.Attach(this, CommonUtilities::eInputAction::Redo);
+
+	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
 	HideSplashScreen();
@@ -164,23 +168,65 @@ int ModelViewer::Run()
 }
 
 #ifndef _RETAIL
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject()
+void ModelViewer::SetDropFile(HDROP aHandle)
+{
+	myIsShowingDragFilePopUp = true;
+	myDropfile = aHandle;
+	myDropFileSelection = 0;
+	myDropFileCount = DragQueryFileA(aHandle, 0xFFFFFFFF, NULL, 0);
+	POINT position;
+	if (DragQueryPoint(aHandle, &position))
+	{
+		myDropLocation = position;
+	}
+	else
+	{
+		myDropLocation = CommonUtilities::Vector2i::Null;
+	}
+}
+
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 {
 	std::shared_ptr<GameObject> newObject = std::make_shared<GameObject>();
-	AddCommand(std::make_shared<EditCmd_AddGameObject>(newObject));
+	if (aAddToUndo)
+	{
+		AddCommand(std::make_shared<EditCmd_AddGameObject>(newObject));
+	}
+	else
+	{
+		EditCmd_AddGameObject command(newObject);
+		command.Execute();
+	}
 	return myGameObjects.at(newObject->GetID());
 }
 
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject)
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
 {
-	AddCommand(std::make_shared<EditCmd_AddGameObject>(anObject));
+	if (aAddToUndo)
+	{
+		AddCommand(std::make_shared<EditCmd_AddGameObject>(anObject));
+	}
+	else
+	{
+		EditCmd_AddGameObject command(anObject);
+		command.Execute();
+	}
+	
 	return myGameObjects.at(anObject->GetID());
 }
 
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject)
+std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
 {
 	unsigned id = anObject.GetID();
-	AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
+	if (aAddToUndo)
+	{
+		AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
+	}
+	else
+	{
+		EditCmd_AddGameObject command(std::move(anObject));
+		command.Execute();
+	}	
 	return myGameObjects.at(id);
 }
 
@@ -194,43 +240,6 @@ std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
 	}
 	return nullptr;
 }
-#else
-GameObject& ModelViewer::AddGameObject()
-{
-	GameObject newObject;
-	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
-	return iter.first->second;
-}
-
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject)
-{
-	// TODO: insert return statement here
-}
-
-GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
-{
-	GameObject newObject(anObject);
-	auto iter = myGameObjects.emplace(newObject.GetID(), std::move(newObject));
-	return iter.first->second;
-}
-
-GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
-{
-	auto iter = myGameObjects.emplace(anObject.GetID(), std::move(anObject));
-	return iter.first->second;
-}
-
-GameObject* ModelViewer::GetGameObject(unsigned anID)
-{
-	assert(anID != 0 && "Incorrect ID!");
-
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
-	{
-		return &iter->second;
-	}
-	return nullptr;
-}
-#endif // _RETAIL
 
 bool ModelViewer::RemoveGameObject(unsigned anID)
 {
@@ -238,18 +247,49 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 
 	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
 	{
-#ifndef _RETAIL
-		if (mySelectedObject.lock() == iter->second)
-		{
-			mySelectedObject.reset();
-		}
-#endif // !_RETAIL
+		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
+		return true;
+	}
+	return false;
+}
+#else
+GameObject& ModelViewer::AddGameObject()
+{
+	GameObject newObject;
+	auto iter = myGameObjects.emplace(newobject->GetID(), std::move(newObject));
+	return iter.first->second;
+}
 
+GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
+{
+	GameObject newObject(anObject);
+	return myGameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
+}
+
+GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
+{
+	return myGameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
+}
+
+GameObject* ModelViewer::GetGameObject(unsigned anID)
+{
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		return &iter->second;
+	}
+	return nullptr;
+}
+
+bool ModelViewer::RemoveGameObject(unsigned anID)
+{
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
 		myGameObjects.erase(iter);
 		return true;
 	}
 	return false;
 }
+#endif // _RETAIL
 
 void ModelViewer::ModelViewer::SaveState() const
 {
@@ -333,8 +373,8 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 		scene["GameObjects"][i] = object->ToJson();
 		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
 #else
-		scene["GameObjects"][i] = object.ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object.GetID()), Json::commentBefore);
+		scene["GameObjects"][i] = object->ToJson();
+		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
 #endif // !_RETAIL
 
 		i++;
@@ -381,7 +421,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	GameObject::SetIDCount(json["GameObjectIDCount"].asUInt());
 	for (auto& object : json["GameObjects"])
 	{
-		AddGameObject(object);
+		AddGameObject(object, false);
 	}
 }
 
@@ -423,7 +463,7 @@ void ModelViewer::UpdateScene()
 #ifndef _RETAIL
 		object->Update();
 #else
-		object.Update();
+		object->Update();
 #endif // !_RETAIL
 	}
 }
@@ -454,6 +494,7 @@ void ModelViewer::ModelViewer::UpdateImgui()
 
 	//ImGui::ShowDemoWindow();
 	CreatePreferenceWindow();
+	CreateDropFilePopUp();
 	CreateSceneContentWindow();
 	CreateSelectedObjectWindow();
 	CreatePrefabWindow();
@@ -514,6 +555,28 @@ void ModelViewer::CreatePreferenceWindow()
 	ImGui::End();
 }
 
+void ModelViewer::CreateDropFilePopUp()
+{
+	if (myIsShowingDragFilePopUp)
+	{
+		ImGui::OpenPopup("DropFile");
+		myIsShowingDragFilePopUp = false;
+	}
+
+	if (ImGui::BeginPopupModal("DropFile"))
+	{
+		const std::string& filePath = GetDropFilePath(myDropFileSelection);
+		ImGui::Text(filePath.c_str());
+		if (ImGui::Button("Close"))
+		{
+			DragFinish(myDropfile);
+			myDropfile = NULL;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
 void ModelViewer::CreateSelectedObjectWindow()
 {
 	if (ImGui::Begin("Selected GameObject"))
@@ -548,6 +611,11 @@ void ModelViewer::CreateSelectedObjectWindow()
 				}
 				ImGui::EndPopup();
 			}
+			ImGui::SameLine(0.f, 50.f);
+			if (ImGui::Button("Delete"))
+			{
+				AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObject.lock()));
+			}			
 		}		
 	}
 	ImGui::End();
@@ -717,10 +785,13 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 		myRedoCommands.clear();
 	}
 	aCommand->Execute();
-	myUndoCommands.emplace_back(aCommand);
+	if (myUndoCommands.empty() || !myUndoCommands.back()->Merge(aCommand.get()))
+	{
+		myUndoCommands.emplace_back(aCommand);
+	}	
 }
 
-void ModelViewer::Undo()
+void ModelViewer::UndoCommand()
 {
 	if (myUndoCommands.size() > 0)
 	{
@@ -730,7 +801,7 @@ void ModelViewer::Undo()
 	}	
 }
 
-void ModelViewer::Redo()
+void ModelViewer::RedoCommand()
 {
 	if (myRedoCommands.size() > 0)
 	{
@@ -740,11 +811,28 @@ void ModelViewer::Redo()
 	}	
 }
 
+std::string ModelViewer::GetDropFilePath(unsigned anIndex)
+{
+	LPSTR fileName = new char[1024];
+	unsigned charCount = DragQueryFileA(myDropfile, anIndex, fileName, 1024);
+	std::string result(fileName, charCount);
+	delete[] fileName;
+	return result;
+}
+
 void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
+	case CommonUtilities::eKey::Del:
+	{
+		if (!mySelectedObject.expired())
+		{
+			AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObject.lock()));
+		}
+		break;
+	}
 	case CommonUtilities::eKey::F5:
 	{
 		myDebugMode = engine.NextDebugMode();
@@ -780,11 +868,11 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputAction anAction, float aVa
 
 	if (anAction == CommonUtilities::eInputAction::Undo)
 	{
-		Undo();
+		UndoCommand();
 	}
 	else if(anAction == CommonUtilities::eInputAction::Redo)
 	{
-		Redo();
+		RedoCommand();
 	}
 }
 #endif // _RETAIL

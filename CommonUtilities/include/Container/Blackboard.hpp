@@ -18,6 +18,8 @@ namespace CommonUtilities
 		// If true: the container has expanded and any pointers are invalidated
 		template<typename value>
 		bool SetValue(const key& aKey, const value& aValue);
+		template<typename value>
+		bool SetValue(const key& aKey, value&& aValue);
 
 		template<typename value>
 		const value& GetValue(const key& aKey) const;
@@ -77,6 +79,35 @@ namespace CommonUtilities
 				hasResized = true;
 			}
 			new (&myData[myCurrentIndex]) value(aValue);
+			myDataPointers[aKey] = myCurrentIndex;
+
+			myCurrentIndex += valueSize;
+			myDataTypes[aKey] = &typeid(value);
+		}
+		else
+		{
+			assert(typeid(value) == *myDataTypes[aKey] && "Blackboard: Trying to set a value to a different type than it was created with!");
+			*(reinterpret_cast<value*>(myData[it->second])) = aValue;
+		}
+		return hasResized;
+	}
+
+	template<typename key>
+	template<typename value>
+	inline bool Blackboard<key>::SetValue(const key& aKey, value&& aValue)
+	{
+		bool hasResized = false;
+		auto it = myDataPointers.find(aKey);
+		if (it == myDataPointers.end())
+		{
+			unsigned int valueSize = sizeof(value);
+			if (myCurrentSize < myCurrentIndex + valueSize)
+			{
+				myCurrentSize = (myCurrentSize + valueSize) * 2;
+				myData.resize(myCurrentSize);
+				hasResized = true;
+			}
+			new (&myData[myCurrentIndex]) value(std::move(aValue));
 			myDataPointers[aKey] = myCurrentIndex;
 
 			myCurrentIndex += valueSize;

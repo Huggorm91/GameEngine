@@ -3,6 +3,8 @@
 #include <Conversions.hpp>
 #include <JsonVector.hpp>
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ModelViewer/Core/ModelViewer.h"
+#include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
 
 Transform::Transform(): myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform()
 {
@@ -75,17 +77,22 @@ void Transform::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
 	{
-		if (ImGui::DragFloat3("Position", &myPosition.x))
+		auto position = myPosition;
+		if (ImGui::DragFloat3("Position", &position.x))
 		{
-			myHasChanged = true;
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myPosition, position, myHasChanged));
 		}
-		if (ImGui::DragFloat3("Rotation", &myRotation.x))
+
+		auto rotation = myRotation;
+		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
-			myHasChanged = true;
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myRotation, rotation, myHasChanged));
 		}
-		if (ImGui::DragFloat3("Scale", &myScale.x))
+
+		auto scale = myScale;
+		if (ImGui::DragFloat3("Scale", &scale.x))
 		{
-			myHasChanged = true;
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myScale, scale, myHasChanged));
 		}
 		ImGui::TreePop();
 	}	

@@ -23,8 +23,8 @@ public:
 	Component(const Json::Value& aJson);
 	virtual ~Component() = default;
 
-	virtual Component& operator=(const Component& aComponent);
-	virtual Component& operator=(Component&& aComponent) noexcept;
+	Component& operator=(const Component& aComponent);
+	Component& operator=(Component&& aComponent) noexcept;
 
 	virtual void Init(const Json::Value& aJson);
 	virtual void Init(GameObject* aParent);

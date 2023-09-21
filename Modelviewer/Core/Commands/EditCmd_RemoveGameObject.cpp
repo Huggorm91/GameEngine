@@ -8,10 +8,7 @@ EditCmd_RemoveGameObject::EditCmd_RemoveGameObject(const std::shared_ptr<GameObj
 
 void EditCmd_RemoveGameObject::Undo()
 {
-	GameObject copy(*myObject);
-	copy.MarkAsPrefab(myID);
-	AddGameObject(std::move(copy));
-	copy = GameObject(); // To ensure internal pointer in BlackBoard of myObject is not deleted when copy is destroyed
+	AddGameObject(myObject);
 }
 
 void EditCmd_RemoveGameObject::Execute()

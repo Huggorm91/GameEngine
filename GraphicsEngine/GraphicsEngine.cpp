@@ -455,6 +455,7 @@ void GraphicsEngine::EndFrame()
 	myPointLights.clear();
 	mySpotLights.clear();
 
+	myDirectionallight = nullptr;
 	myDirectionalShadowMap = nullptr;
 	for (size_t i = 0; i < MAX_LIGHTS; i++)
 	{

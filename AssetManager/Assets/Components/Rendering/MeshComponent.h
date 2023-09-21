@@ -12,7 +12,10 @@ public:
 	MeshComponent(ComponentType aType);
 	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType = ComponentType::Mesh);
 	MeshComponent(const MeshComponent& aMeshComponent);
+	MeshComponent(MeshComponent&& aMeshComponent) = default;
 	virtual ~MeshComponent() = default;
+	MeshComponent& operator=(const MeshComponent& aComponent) = default;
+	MeshComponent& operator=(MeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
 

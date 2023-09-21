@@ -6,9 +6,9 @@
 unsigned int GameObject::localIDCount = 0;
 
 GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName)
-#ifdef _DEBUG
+#ifndef _RETAIL
 , myDebugPointers()
-#endif // _DEBUG
+#endif // !_RETAIL
 {
 }
 
@@ -30,9 +30,9 @@ GameObject::GameObject(const Prefab& aPrefab): GameObject()
 }
 
 GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName), myImguiText(myName)
-#ifdef _DEBUG
+#ifndef _RETAIL
 , myDebugPointers()
-#endif // _DEBUG
+#endif // !_RETAIL
 {
 	const Component* pointer = nullptr;
 	for (auto [type, index] : aGameObject.myIndexList)
@@ -44,23 +44,23 @@ GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexL
 
 GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), 
 myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
-#ifdef _DEBUG
+#ifndef _RETAIL
 , myDebugPointers()
-#endif // _DEBUG
+#endif // !_RETAIL
 {
 	for (auto [type, index] : myIndexList)
 	{
 		myComponents.ChangeValueUnsafe<Component>(index)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 		myDebugPointers.emplace_back(myComponents.GetValueUnsafe<Component>(index));
-#endif // _DEBUG
+#endif // !_RETAIL
 	}
 }
 
 GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName)
-#ifdef _DEBUG
+#ifndef _RETAIL
 , myDebugPointers()
-#endif // _DEBUG
+#endif // !_RETAIL
 {
 	for (auto& jsonComponent : aJson["Components"])
 	{
@@ -75,9 +75,9 @@ GameObject& GameObject::operator=(const Prefab& aPrefab)
 		myCount = 0;
 		myComponents.Clear();
 		myIndexList.clear();
-#ifdef _DEBUG
+#ifndef _RETAIL
 		myDebugPointers.clear();
-#endif // _DEBUG
+#endif // !_RETAIL
 		const Component* pointer = nullptr;
 		for (auto [type, index] : aPrefab.myTemplate->myIndexList)
 		{
@@ -97,9 +97,9 @@ GameObject& GameObject::operator=(const GameObject& aGameObject)
 	myCount = 0;
 	myComponents.Clear();
 	myIndexList.clear();
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.clear();
-#endif // _DEBUG
+#endif // !_RETAIL
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
@@ -116,9 +116,9 @@ GameObject& GameObject::operator=(const GameObject& aGameObject)
 
 GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 {
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.clear();
-#endif // _DEBUG
+#endif // !_RETAIL
 	myCount = aGameObject.myCount;
 	myComponents = aGameObject.myComponents;
 	myIndexList = aGameObject.myIndexList;
@@ -131,9 +131,9 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	for (auto [type, index] : myIndexList)
 	{
 		myComponents.ChangeValueUnsafe<Component>(index)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 		myDebugPointers.emplace_back(myComponents.GetValueUnsafe<Component>(index));
-#endif // _DEBUG
+#endif // !_RETAIL
 	}
 	return *this;
 }
@@ -316,12 +316,11 @@ void GameObject::MarkAsPrefab()
 	{
 		const_cast<unsigned&>(myID) = 0;
 		localIDCount--;
-
-		for (auto [type, index] : myIndexList)
-		{
-			myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
-		}
 	}	
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
+	}
 }
 
 void GameObject::MarkAsPrefab(unsigned anID)

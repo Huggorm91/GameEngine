@@ -8,6 +8,7 @@ public:
 
 	virtual void Undo() = 0;
 	virtual void Execute() = 0;
+	virtual bool Merge(const EditCommand* aCommand);
 
 protected:
 	void LogError(const std::string& anError) const;

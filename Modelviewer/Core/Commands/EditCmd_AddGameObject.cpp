@@ -18,8 +18,5 @@ void EditCmd_AddGameObject::Undo()
 
 void EditCmd_AddGameObject::Execute()
 {
-	GameObject copy(*myObject);
-	copy.MarkAsPrefab(myID);
-	AddGameObject(std::move(copy));
-	copy = GameObject(); // To ensure internal pointer in BlackBoard of myObject is not deleted when swap is destroyed
+	AddGameObject(myObject);
 }

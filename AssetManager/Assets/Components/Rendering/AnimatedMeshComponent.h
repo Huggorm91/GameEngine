@@ -16,7 +16,10 @@ public:
 	AnimatedMeshComponent();
 	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
+	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
 	~AnimatedMeshComponent() = default;
+	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent) = default;
+	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
 

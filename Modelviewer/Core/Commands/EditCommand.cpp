@@ -1,6 +1,11 @@
 #include "EditCommand.h"
 #include "../Modelviewer.h"
 
+bool EditCommand::Merge(const EditCommand*)
+{
+    return false;
+}
+
 void EditCommand::LogError(const std::string& anError) const
 {
     ModelViewer::Get().GetLogger().Err(anError);
@@ -28,8 +33,6 @@ std::shared_ptr<GameObject>& EditCommand::AddGameObject(GameObject&& anObject)
 
 bool EditCommand::RemoveGameObject(unsigned anID)
 {
-    assert(anID != 0 && "Incorrect ID!");
-
     auto& gameObjects = ModelViewer::Get().myGameObjects;
     if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
     {

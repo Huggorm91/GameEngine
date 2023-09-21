@@ -56,18 +56,6 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 		aParent.AddComponent(component);
 		break;
 	}
-	case ComponentType::Input:
-	{
-		const InputComponent& component = *dynamic_cast<const InputComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
-	}
-	case ComponentType::Movement:
-	{
-		const MovementComponent& component = *dynamic_cast<const MovementComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
-	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -114,16 +102,6 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 		aParent.AddComponent<PerspectiveCameraComponent>();
 		break;
 	}
-	case ComponentType::Input:
-	{
-		aParent.AddComponent<InputComponent>();
-		break;
-	}
-	case ComponentType::Movement:
-	{
-		aParent.AddComponent<MovementComponent>();
-		break;
-	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -138,17 +116,16 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	{		
 	case ComponentType::Mesh:
 	{
-
 		MeshComponent mesh = AssetManager::GetAsset<MeshComponent>(aJson["Path"].asString());
 		mesh.Init(aJson);
-		aParent.AddComponent(mesh);
+		aParent.AddComponent(std::move(mesh));
 		break;
 	}
 	case ComponentType::AnimatedMesh:
 	{
 		auto mesh = AssetManager::GetAsset<AnimatedMeshComponent>(aJson["Path"].asString());
 		mesh.Init(aJson);
-		aParent.AddComponent(mesh);
+		aParent.AddComponent(std::move(mesh));
 		break;
 	}
 	case ComponentType::Directionallight:
@@ -171,14 +148,6 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 		break;
 	}
 	case ComponentType::PerspectiveCamera:
-	{
-		break;
-	}
-	case ComponentType::Input:
-	{
-		break;
-	}
-	case ComponentType::Movement:
 	{
 		break;
 	}
@@ -209,10 +178,6 @@ std::string ComponentTypeToString(const ComponentType aType)
 		return "DebugDraw";
 	case ComponentType::PerspectiveCamera:
 		return "PerspectiveCamera";
-	case ComponentType::Input:
-		return "Input";
-	case ComponentType::Movement:
-		return "Movement";
 	default:
 		return "Invalid";
 	}

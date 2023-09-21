@@ -10,8 +10,10 @@ public:
 	DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
 	DirectionallightComponent(const Json::Value& aJson);
 	DirectionallightComponent(const DirectionallightComponent& aLight);
+	DirectionallightComponent(DirectionallightComponent&& aLight) = default;
 	~DirectionallightComponent() = default;
 	DirectionallightComponent& operator=(const DirectionallightComponent& aLight);
+	DirectionallightComponent& operator=(DirectionallightComponent&& aLight) = default;
 
 	void Init(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
 	void Update() override;

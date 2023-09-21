@@ -250,7 +250,6 @@
     <ClInclude Include="Assets\Components\Rendering\AnimatedMeshComponent.h" />
     <ClInclude Include="Assets\Animation.h" />
     <ClInclude Include="Assets\Components\Camera\PerspectiveCameraComponent.h" />
-    <ClInclude Include="Assets\Components\InputComponent.h" />
     <ClInclude Include="Assets\Components\Light\DirectionallightComponent.h" />
     <ClInclude Include="Assets\Components\Debugging\DebugDrawComponent.h" />
     <ClInclude Include="Assets\Components\ComponentType.h" />
@@ -272,7 +271,6 @@
     <ClInclude Include="Assets\Components\ComponentParts\TgaImporterConversions.h" />
     <ClInclude Include="Assets\Components\ComponentParts\Skeleton.h" />
     <ClInclude Include="Managers\TextureManager.h" />
-    <ClInclude Include="Assets\Components\MovementComponent.h" />
     <ClInclude Include="Managers\MaterialManager.h" />
     <ClInclude Include="Managers\ShaderManager.h" />
     <ClInclude Include="Assets\Components\Light\PointlightComponent.h" />
@@ -284,7 +282,6 @@
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />
     <ClCompile Include="Assets\Animation.cpp" />
     <ClCompile Include="Assets\Components\Camera\PerspectiveCameraComponent.cpp" />
-    <ClCompile Include="Assets\Components\InputComponent.cpp" />
     <ClCompile Include="Assets\Components\Light\DirectionallightComponent.cpp" />
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
     <ClCompile Include="Assets\Components\ComponentType.cpp" />
@@ -313,7 +310,6 @@
     <ClCompile Include="Assets\Components\ComponentParts\TgaImporterConversions.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\Skeleton.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
-    <ClCompile Include="Assets\Components\MovementComponent.cpp" />
     <ClCompile Include="Managers\MaterialManager.cpp" />
     <ClCompile Include="Managers\ShaderManager.cpp" />
     <ClCompile Include="Assets\Components\Light\PointlightComponent.cpp" />

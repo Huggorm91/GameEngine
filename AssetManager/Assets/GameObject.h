@@ -25,6 +25,8 @@ public:
 	T& AddComponent();
 	template<class T>
 	T& AddComponent(const T& aComponent);
+	template<class T>
+	T& AddComponent(T&& aComponent);
 
 	template<class T>
 	const T& GetComponent() const;
@@ -97,9 +99,9 @@ private:
 	std::string myImguiText;
 	Transform myTransform;
 
-#ifdef _DEBUG
+#ifndef _RETAIL
 	std::vector<const Component*> myDebugPointers;
-#endif // _DEBUG
+#endif // !_RETAIL
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	CommonUtilities::Blackboard<unsigned> myComponents;
 };
@@ -116,9 +118,9 @@ inline T& GameObject::AddComponent()
 	}
 	myIndexList.emplace(&typeid(T), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // _DEBUG
+#endif // !_RETAIL
 	return myComponents.ChangeValue<T>(myCount++);
 }
 
@@ -134,9 +136,27 @@ inline T& GameObject::AddComponent(const T& aComponent)
 	}
 	myIndexList.emplace(&typeid(aComponent), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // _DEBUG
+#endif // !_RETAIL
+	return myComponents.ChangeValue<T>(myCount++);
+}
+
+template<class T>
+inline T& GameObject::AddComponent(T&& aComponent)
+{
+	if (myComponents.SetValue(myCount, std::move(aComponent)))
+	{
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.ChangeValueUnsafe<Component>(index)->ComponentPointersInvalidated();
+		}
+	}
+	myIndexList.emplace(&typeid(aComponent), myCount);
+	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
+#ifndef _RETAIL
+	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
+#endif // !_RETAIL
 	return myComponents.ChangeValue<T>(myCount++);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <shellapi.h>
 
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
@@ -38,9 +39,13 @@ public:
 	int Run();
 
 #ifndef _RETAIL
-	std::shared_ptr<GameObject>& AddGameObject();
-	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject); 
-	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject);
+	void SetDropFile(HDROP aHandle);
+
+	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
+
+	std::shared_ptr<GameObject>& AddGameObject(bool aAddToUndo = true);
+	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo = true);
+	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
 
 	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
 	std::shared_ptr<GameObject> GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
@@ -71,10 +76,16 @@ private:
 	bool myIsEditingPrefab;
 	bool myIsShowingPrefabWindow;
 	bool myIsShowingNewObjectWindow;
+	bool myIsShowingDragFilePopUp;
 
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
+
+	HDROP myDropfile;
+	unsigned myDropFileCount;
+	unsigned myDropFileSelection;
+	CommonUtilities::Vector2i myDropLocation;
 
 	ComponentType mySelectedComponentType;
 	std::weak_ptr<GameObject> mySelectedObject;
@@ -123,14 +134,17 @@ private:
 	void RenderImgui();
 
 	void CreatePreferenceWindow();
+	void CreateDropFilePopUp();
+
 	void CreateSelectedObjectWindow();
 	void CreateSceneContentWindow();
 
 	void CreatePrefabWindow();
 	void CreateNewObjectWindow();
 
-	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
-	void Undo();
-	void Redo();
+	void UndoCommand();
+	void RedoCommand();
+
+	std::string GetDropFilePath(unsigned anIndex);
 #endif // _RETAIL
 };

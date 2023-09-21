@@ -8,7 +8,11 @@ public:
 
 	DebugDrawComponent();
 	DebugDrawComponent(const Json::Value& aJson, GameObject* aParent);
+	DebugDrawComponent(const DebugDrawComponent& aLight) = default;
+	DebugDrawComponent(DebugDrawComponent&& aLight) = default;
 	~DebugDrawComponent() = default;
+	DebugDrawComponent& operator=(const DebugDrawComponent& aLight) = default;
+	DebugDrawComponent& operator=(DebugDrawComponent&& aLight) = default;
 
 	void Update() override;
 

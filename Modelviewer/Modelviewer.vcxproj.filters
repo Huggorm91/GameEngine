@@ -39,7 +39,7 @@
     <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObject.h">
+    <ClInclude Include="Core\Commands\EditCmd_ChangeTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Commands\EditCmd_AddComponent.h">
@@ -52,6 +52,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,7 +74,7 @@
     <ClCompile Include="Core\Commands\EditCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObject.cpp">
+    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp">
