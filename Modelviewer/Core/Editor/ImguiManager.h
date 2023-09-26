@@ -20,6 +20,10 @@ public:
 	void Update();
 	void Render();
 
+	void AddGameObject(GameObject* anObject);
+	void ChangeIndexName(GameObject* anObject, const std::string& aName);
+	const std::string& GetIndexName(GameObject* anObject) const;
+
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
 	void ReceiveEvent(CommonUtilities::eInputAction, float) override;
 
@@ -60,6 +64,7 @@ private:
 	GameObject myNewObject;
 
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
 
 	std::string GetDropFilePath(unsigned anIndex);
 	void ReleaseDropFile();

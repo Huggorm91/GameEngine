@@ -37,6 +37,7 @@ public:
 	int Run();
 
 #ifndef _RETAIL
+	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
 	void SetDropFile(HDROP aHandle);
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);

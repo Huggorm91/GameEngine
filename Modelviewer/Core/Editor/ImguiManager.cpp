@@ -20,7 +20,7 @@
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
 mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
-myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath()
+myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex()
 {
 	myNewObject.MarkAsPrefab();
 }
@@ -76,6 +76,35 @@ void ImguiManager::Render()
 {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ImguiManager::AddGameObject(GameObject* anObject)
+{
+	if (myImguiNameIndex.find(anObject) != myImguiNameIndex.end())
+	{
+		return;
+	}
+
+	if (auto iter = myImguiNameCounts.find(anObject->GetName()); iter != myImguiNameCounts.end())
+	{
+		std::string text = anObject->GetName() + " (" + std::to_string(iter->second++) + ")";
+		myImguiNameIndex.emplace(anObject, text);
+	}
+	else
+	{
+		myImguiNameCounts.emplace(anObject->GetName(), 1);
+		myImguiNameIndex.emplace(anObject, anObject->GetName());
+	}
+}
+
+void ImguiManager::ChangeIndexName(GameObject* anObject, const std::string& aName)
+{
+	myImguiNameIndex.at(anObject) = aName;
+}
+
+const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
+{
+	return myImguiNameIndex.at(anObject);
 }
 
 void ImguiManager::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
@@ -379,7 +408,6 @@ void ImguiManager::CreateSelectedObjectWindow()
 void ImguiManager::CreateSceneContentWindow()
 {
 	using namespace CommonUtilities;
-	myImguiNameCounts.clear();
 
 	if (ImGui::Begin("Scene"))
 	{
@@ -389,32 +417,16 @@ void ImguiManager::CreateSceneContentWindow()
 
 			if (isSelected)
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, {0.f,1.f,0.f,1.f});
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0.f,1.f,0.f,1.f });
 			}
 
-			if (auto iter = myImguiNameCounts.find(object->GetName()); iter != myImguiNameCounts.end())
+			if (ImGui::Button(myImguiNameIndex.at(object.get()).c_str()))
 			{
-				std::string text = object->GetName() + " (" + std::to_string(iter->second++) + ")";
-				if (ImGui::Button(text.c_str()))
+				if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
 				{
-					if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
-					{
-						mySelectedObjects.clear();
-					}
-					mySelectedObjects.emplace_back(object);
+					mySelectedObjects.clear();
 				}
-			}
-			else
-			{
-				myImguiNameCounts.emplace(object->GetName(), 1);
-				if (ImGui::Button(object->GetName().c_str()))
-				{
-					if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
-					{
-						mySelectedObjects.clear();
-					}
-					mySelectedObjects.emplace_back(object);
-				}
+				mySelectedObjects.emplace_back(object);
 			}
 
 			if (isSelected)

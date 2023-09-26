@@ -258,6 +258,7 @@
     <ClInclude Include="Core\Commands\EditCmd_AddMultipleGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.h" />
+    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
     <ClInclude Include="targetver.h" />
@@ -273,6 +274,7 @@
     <ClCompile Include="Core\Commands\EditCmd_AddMultipleGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="Windows\SplashWindow.cpp" />

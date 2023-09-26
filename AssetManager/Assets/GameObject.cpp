@@ -3,6 +3,12 @@
 #include "Components/Rendering/AnimatedMeshComponent.h"
 #include "Prefab.h"
 
+#ifndef _RETAIL
+#include "ModelViewer/Core/ModelViewer.h"
+#include "Modelviewer/Core/Commands/EditCmd_ChangeGameObjectName.h"
+#endif // !_RETAIL
+
+
 unsigned int GameObject::localIDCount = 0;
 
 GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName)
@@ -240,6 +246,7 @@ bool GameObject::IsActive() const
 void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
+	myImguiText = aName;
 }
 
 const std::string& GameObject::GetName() const
@@ -266,7 +273,11 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 		ImGui::Checkbox("Active", &myIsActive);
 		if (ImGui::InputText("Name", &myImguiText, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
+#ifndef _RETAIL
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeGameObjectName>(this, myImguiText));
+#else
 			myName = myImguiText;
+#endif // !_RETAIL
 		}
 		myTransform.CreateImGuiComponents(aWindowName);
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))

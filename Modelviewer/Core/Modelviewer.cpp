@@ -167,6 +167,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 		EditCmd_AddGameObject command(newObject);
 		command.Execute();
 	}
+
 	return myGameObjects.at(newObject->GetID());
 }
 
