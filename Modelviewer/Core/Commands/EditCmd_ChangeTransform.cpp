@@ -23,7 +23,6 @@ bool EditCmd_ChangeTransform::Merge(const EditCommand* aCommand)
 	if (pointer && myPointer == pointer->myPointer)
 	{
 		myNewValue = pointer->myNewValue;
-		*myPointer = myNewValue;
 		return true;
 	}
 	return false;

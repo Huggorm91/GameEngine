@@ -63,6 +63,15 @@
     <ClInclude Include="Core\Editor\AssetTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_AddMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Modelviewer.cpp">
@@ -93,6 +102,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Editor\AssetTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_AddMultipleGameObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
