@@ -2,6 +2,7 @@
 #include "../Modelviewer.h"
 #include "../Commands/EditCmd_AddGameobject.h"
 #include "../Commands/EditCmd_RemoveGameobject.h"
+#include "../Commands/EditCmd_RemoveMultipleGameobjects.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
@@ -18,7 +19,7 @@
 #include <InputMapper.h>
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
-mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObject(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
+mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
 myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath()
 {
 	myNewObject.MarkAsPrefab();
@@ -83,9 +84,21 @@ void ImguiManager::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::e
 	{
 	case CommonUtilities::eKey::Del:
 	{
-		if (!mySelectedObject.expired())
+		if (mySelectedObjects.size() == 1)
 		{
-			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObject.lock()));
+			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObjects.back().lock()));
+		}
+		else if (mySelectedObjects.size() > 1)
+		{
+			std::vector<std::shared_ptr<GameObject>> objectlist;
+			for (auto& pointer : mySelectedObjects)
+			{
+				if (!pointer.expired())
+				{
+					objectlist.emplace_back(pointer.lock());
+				}
+			}
+			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveMultipleGameObjects>(objectlist));
 		}
 		break;
 	}
@@ -166,6 +179,18 @@ bool ImguiManager::NextDropFile()
 bool ImguiManager::IsLastDropFile()
 {
 	return myDropFileCount == 0 || myDropFileSelection == myDropFileCount - 1;
+}
+
+bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
+{
+	for (auto& selection : mySelectedObjects)
+	{
+		if (selection.lock() == anObject)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void ImguiManager::CreatePreferenceWindow()
@@ -304,9 +329,9 @@ void ImguiManager::CreateSelectedObjectWindow()
 {
 	if (ImGui::Begin("Selected GameObject"))
 	{
-		if (!mySelectedObject.expired())
+		if (mySelectedObjects.size() == 1)
 		{
-			auto selectedObject = mySelectedObject.lock();
+			auto selectedObject = mySelectedObjects.back().lock();
 			selectedObject->CreateImGuiWindowContent("Selected GameObject");
 
 			ImGui::Separator();
@@ -337,7 +362,14 @@ void ImguiManager::CreateSelectedObjectWindow()
 			ImGui::SameLine(0.f, 50.f);
 			if (ImGui::Button("Delete"))
 			{
-				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObject.lock()));
+				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObjects.back().lock()));
+			}
+		}
+		else if (mySelectedObjects.size() > 1)
+		{
+			if (myVisibleTransform.CreateMultipleSelectionImGuiComponents("Selected GameObject"))
+			{
+
 			}
 		}
 	}
@@ -346,18 +378,30 @@ void ImguiManager::CreateSelectedObjectWindow()
 
 void ImguiManager::CreateSceneContentWindow()
 {
+	using namespace CommonUtilities;
 	myImguiNameCounts.clear();
 
 	if (ImGui::Begin("Scene"))
 	{
 		for (auto& [id, object] : myModelViewer->myGameObjects)
 		{
+			const bool isSelected = IsSelected(object);
+
+			if (isSelected)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, {0.f,1.f,0.f,1.f});
+			}
+
 			if (auto iter = myImguiNameCounts.find(object->GetName()); iter != myImguiNameCounts.end())
 			{
 				std::string text = object->GetName() + " (" + std::to_string(iter->second++) + ")";
 				if (ImGui::Button(text.c_str()))
 				{
-					mySelectedObject = object;
+					if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+					{
+						mySelectedObjects.clear();
+					}
+					mySelectedObjects.emplace_back(object);
 				}
 			}
 			else
@@ -365,8 +409,17 @@ void ImguiManager::CreateSceneContentWindow()
 				myImguiNameCounts.emplace(object->GetName(), 1);
 				if (ImGui::Button(object->GetName().c_str()))
 				{
-					mySelectedObject = object;
+					if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+					{
+						mySelectedObjects.clear();
+					}
+					mySelectedObjects.emplace_back(object);
 				}
+			}
+
+			if (isSelected)
+			{
+				ImGui::PopStyleColor(ImGuiCol_Button);
 			}
 		}
 	}

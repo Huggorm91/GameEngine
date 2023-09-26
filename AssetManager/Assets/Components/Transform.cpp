@@ -103,6 +103,36 @@ void Transform::CreateImGuiComponents(const std::string&)
 #endif // !_RETAIL
 }
 
+bool Transform::CreateMultipleSelectionImGuiComponents(const std::string& aWindowName)
+{
+#ifndef _RETAIL
+	bool hasChanged = false;
+	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+	if (ImGui::TreeNode("Transform"))
+	{
+		if (ImGui::DragFloat3("Position", &myPosition.x))
+		{
+			myHasChanged = true;
+			hasChanged = true;
+		}
+
+		if (ImGui::DragFloat3("Rotation", &myRotation.x))
+		{
+			myHasChanged = true;
+			hasChanged = true;
+		}
+
+		if (ImGui::DragFloat3("Scale", &myScale.x))
+		{
+			myHasChanged = true;
+			hasChanged = true;
+		}
+		ImGui::TreePop();
+	}
+	return hasChanged;
+#endif // !_RETAIL
+}
+
 Json::Value Transform::ToJson() const
 {
 	Json::Value result;

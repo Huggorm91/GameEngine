@@ -45,13 +45,16 @@ private:
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
 
-	std::weak_ptr<GameObject> mySelectedObject;
+	std::vector<std::weak_ptr<GameObject>> mySelectedObjects;
 
 	CommonUtilities::Vector2i myDropLocation;
 
 	std::string myOverwriteFromPath;
 	std::string myOverwriteToPath;
 	std::string mySelectedPath;
+
+	Transform myVisibleTransform;
+	Transform myApplicableTransform;
 
 	Prefab myEditPrefab;
 	GameObject myNewObject;
@@ -63,6 +66,8 @@ private:
 	// Returns true if another file exists
 	bool NextDropFile();
 	bool IsLastDropFile();
+
+	bool IsSelected(const std::shared_ptr<GameObject>& anObject);
 
 	void CreatePreferenceWindow();
 	void CreateDropFilePopUp();

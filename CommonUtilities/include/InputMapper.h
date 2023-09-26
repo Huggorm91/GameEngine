@@ -69,6 +69,7 @@ namespace CommonUtilities
 		bool GetKeyDown(const eKey aKeyCode) const;
 		bool GetKeyUp(const eKey aKeyCode) const;
 		bool GetKeyHeld(const eKey aKeyCode) const;
+		bool GetKeyDownOrHeld(const eKey aKeyCode) const;
 		bool GetDoubleMouseClick(const eKey aKeyCode) const;
 
 	private:

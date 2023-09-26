@@ -25,6 +25,7 @@ public:
 	bool HasChanged() const;
 
 	void CreateImGuiComponents(const std::string& aWindowName);
+	bool CreateMultipleSelectionImGuiComponents(const std::string& aWindowName);
 	Json::Value ToJson() const;
 
 private:
