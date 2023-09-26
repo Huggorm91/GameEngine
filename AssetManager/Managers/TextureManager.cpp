@@ -4,41 +4,51 @@
 #include "GraphicsEngine/InterOp/RHI.h"
 #include "../DirectoryFunctions.h"
 
-TextureManager::TextureManager(const std::string& aPath): myPath(aPath), myFilePaths(), myTextures()
-{
-}
-
 void TextureManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+}
+
+void TextureManager::LoadAllTextures()
+{
+	for (auto& path : myFilePaths)
+	{
+		LoadTexture(path);
+	}
 }
 
 Texture* TextureManager::GetTexture(const std::string& aPath)
 {
-	if (auto iter = myTextures.find(aPath); iter != myTextures.end())
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("TextureManager: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto iter = myTextures.find(path); iter != myTextures.end())
 	{
 		return &iter->second;
 	}
 	else
 	{
-		return LoadTexture(aPath);
+		return LoadTexture(path);
 	}
+}
+
+const std::unordered_set<std::string>& TextureManager::GetTexturelist() const
+{
+	return myLoadedTextures;
 }
 
 Texture* TextureManager::LoadTexture(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, myPath, &AMLogger);
-	if (path.empty())
-	{
-		AMLogger.Err("TextureManager: Could not load texture from path: " + aPath);
-		return nullptr;
-	}
-
 	Texture texture;
-	if (RHI::LoadTexture(&texture, Helpers::string_cast<std::wstring>(path)))
+	if (RHI::LoadTexture(&texture, Helpers::string_cast<std::wstring>(aPath)))
 	{
 		auto iter = myTextures.emplace(aPath, texture);
+		myLoadedTextures.emplace(aPath);
 		return &iter.first->second;
 	}
 

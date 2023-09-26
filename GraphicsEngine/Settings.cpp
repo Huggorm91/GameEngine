@@ -1,6 +1,7 @@
 #include "GraphicsEngine.pch.h"
 #include "Settings.h"
 #include <JsonVector.hpp>
+#include "AssetManager/AssetManager.h"
 #include "AssetManager/DirectoryFunctions.h"
 
 Settings::Settings(const Json::Value& aJson)
@@ -16,16 +17,7 @@ Settings::Settings(const Json::Value& aJson)
 
 	BackgroundColor = static_cast<CommonUtilities::Vector4f>(aJson["BackgroundColor"]);
 
-	std::string path;
-#ifdef _DEBUG
-	path = "Content/Shaders/Debug/";
-#elif _RELEASE
-	path = "Content/Shaders/Release/";
-#elif _RETAIL
-	path = "Content/Shaders/Retail/";
-#else
-	GELogger.Err("Settings: Invalid buildsettings in Settings(Json)!");
-#endif // _DEBUG
+	std::string path = AssetManager::GetShaderPath();
 
 	const std::string& shaderExtension = ".cso";	
 	LuminancePS = AddExtensionIfMissing(path + aJson["LuminancePSShader"].asString(), shaderExtension);

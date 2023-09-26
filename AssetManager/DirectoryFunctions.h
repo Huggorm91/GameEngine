@@ -21,11 +21,20 @@ bool HasValidExtension(const std::string& aPath, const std::string& anExtension)
 
 std::string GetRelativePath(const std::string& aFullPath);
 std::string GetFullPath(const std::string& aRelativePath);
+
+std::string GetContainingFolder(const std::string& aFilePath);
 std::string GetFileName(const std::string& aFilePath);
+std::string GetFileExtension(const std::string& aFilePath);
+std::string RemoveFileExtension(const std::string& aFilePath);
+
 std::string GetAppPath();
+
+bool FileExists(const std::string& aFilePath);
 
 std::string RemoveStringPart(const std::string& aString, const std::string& aPartToRemove);
 
 std::wstring ToWString(const std::string& aString);
 std::string ToString(const std::wstring& aString);
 
+std::string ToLower(const std::string& aString);
+std::string ToUpper(const std::string& aString);

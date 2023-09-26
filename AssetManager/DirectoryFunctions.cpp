@@ -125,11 +125,15 @@ std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aP
 
 std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDirectory, const Logger* aLogger)
 {
-	if (fs::exists(aPath))
+	std::string fullPath = aPath;
+	std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
+
+	if (fs::exists(fullPath))
 	{
-		return aPath;
+		return fullPath;
 	}
-	std::string fullPath = aDefaultDirectory + aPath;
+
+	fullPath = aDefaultDirectory + fullPath;
 
 	if (!fs::exists(fullPath))
 	{
@@ -144,14 +148,15 @@ std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDi
 
 std::string CreateValidPath(const std::string& aPath, const std::string& aDefaultDirectory, const Logger* aLogger)
 {
-	if (fs::exists(aPath))
-	{
-		return aPath;
-	}
 	std::string fullPath = aPath;
-	std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+	std::replace(fullPath.begin(), fullPath.end(), '/', '\\');
 
-	if (auto firstDivider = fullPath.find_first_of('/'); !fs::exists(fullPath.substr(0, firstDivider)))
+	if (fs::exists(fullPath))
+	{
+		return fullPath;
+	}
+
+	if (auto firstDivider = fullPath.find_first_of('\\'); !fs::exists(fullPath.substr(0, firstDivider)))
 	{
 		fullPath = aDefaultDirectory + fullPath;
 	}
@@ -205,26 +210,51 @@ std::string GetRelativePath(const std::string& aFullPath)
 	return fs::relative(aFullPath, appPath).string();
 }
 
-std::string MakeRelative(const std::string& aPath, const std::string& aPathToBeRelativeTo)
-{
-
-	return std::string();
-}
-
 std::string GetFullPath(const std::string& aRelativePath)
 {
 	return fs::current_path().string() + "\\" + aRelativePath;
 }
 
+std::string GetContainingFolder(const std::string& aFilePath)
+{
+	size_t lastSlash = aFilePath.find_last_of('\\');
+	if (lastSlash == std::string::npos)
+	{
+		lastSlash = aFilePath.find_last_of('/');
+	}
+	return aFilePath.substr(0, lastSlash + 1);
+}
+
 std::string GetFileName(const std::string& aFilePath)
 {
-	size_t lastSlash = aFilePath.find_last_of('/') + 1;
+	size_t lastSlash = aFilePath.find_last_of('\\');
+	if (lastSlash == std::string::npos)
+	{
+		lastSlash = aFilePath.find_last_of('/');
+	}
+	return aFilePath.substr(lastSlash + 1);
+}
+
+std::string GetFileExtension(const std::string& aFilePath)
+{
+	size_t lastSlash = aFilePath.find_last_of('.');
 	return aFilePath.substr(lastSlash);
+}
+
+std::string RemoveFileExtension(const std::string& aFilePath)
+{
+	size_t lastSlash = aFilePath.find_last_of('.');
+	return aFilePath.substr(0, lastSlash);
 }
 
 std::string GetAppPath()
 {
 	return fs::current_path().string();
+}
+
+bool FileExists(const std::string& aFilePath)
+{
+	return fs::exists(aFilePath);
 }
 
 std::string RemoveStringPart(const std::string& aString, const std::string& aPartToRemove)
@@ -257,4 +287,18 @@ std::string ToString(const std::wstring& aString)
 	std::string result(len, L'\0');
 	WideCharToMultiByte(CP_ACP, 0, aString.c_str(), sLength, &result[0], len, 0, 0);
 	return result;
+}
+
+std::string ToLower(const std::string& aString)
+{
+	std::string lowerCase = aString;
+	std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
+	return lowerCase;
+}
+
+std::string ToUpper(const std::string& aString)
+{
+	std::string upperCase = aString;
+	std::transform(upperCase.begin(), upperCase.end(), upperCase.begin(), [](unsigned char c) { return std::toupper(c); });
+	return upperCase;
 }

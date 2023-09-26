@@ -1,20 +1,18 @@
 #pragma once
 #include <memory>
-#include <shellapi.h>
 
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
+#include "GraphicsEngine/Camera/PerspectiveCamera.h"
 #include "Logging/Logging.h"
 
-#include "AssetManager/Assets/Prefab.h"
-#include "GraphicsEngine/Camera/PerspectiveCamera.h"
-
-#include "Commands/EditCommand.h"
 
 class SplashWindow;
 
 #ifndef _RETAIL
-#include <InputHandler.h>
+#include "Editor/ImguiManager.h"
+#include "Commands/EditCommand.h"
+
 class ModelViewer: public CommonUtilities::InputObserver
 {
 #else
@@ -61,8 +59,12 @@ public:
 	bool RemoveGameObject(unsigned anID);
 
 	void SaveState() const;
+
 	void SaveScene(const std::string& aPath) const;
 	void LoadScene(const std::string& aPath);
+
+	static inline const char* GetSceneExtension(){ return ".lvl"; }
+	static inline const char* GetScenePath(){ return "Content\\Scenes\\"; }
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
@@ -71,29 +73,14 @@ public:
 
 private:
 #ifndef _RETAIL
+	friend class ImguiManager;
 	friend class EditCommand;
-
-	bool myIsEditingPrefab;
-	bool myIsShowingPrefabWindow;
-	bool myIsShowingNewObjectWindow;
-	bool myIsShowingDragFilePopUp;
 
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
 
-	HDROP myDropfile;
-	unsigned myDropFileCount;
-	unsigned myDropFileSelection;
-	CommonUtilities::Vector2i myDropLocation;
-
-	ComponentType mySelectedComponentType;
-	std::weak_ptr<GameObject> mySelectedObject;
-	const std::string* mySelectedPrefabName;
-	std::string mySelectedPath;
-	Prefab myEditPrefab;
-	GameObject myNewObject;
-	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+	ImguiManager myImguiManager;
 
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
@@ -129,22 +116,7 @@ private:
 	void Update();
 
 #ifndef _RETAIL
-	void InitImgui();
-	void UpdateImgui();
-	void RenderImgui();
-
-	void CreatePreferenceWindow();
-	void CreateDropFilePopUp();
-
-	void CreateSelectedObjectWindow();
-	void CreateSceneContentWindow();
-
-	void CreatePrefabWindow();
-	void CreateNewObjectWindow();
-
 	void UndoCommand();
 	void RedoCommand();
-
-	std::string GetDropFilePath(unsigned anIndex);
 #endif // _RETAIL
 };

@@ -264,8 +264,14 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::ColorEdit4("  ", &myColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
 
 	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
-	//ImGui::ColorEdit4("Color", (float*)&myColor);
-	// Add editor for Elements
+	
+	for (int i = 0; i < myElements.size(); i++)
+	{
+		ImGui::PushID(i);
+		myElements[i].myMaterial.CreateImguiComponents(aWindowName);
+		ImGui::PopID();
+	}
+
 	myTransform.CreateImGuiComponents(aWindowName);
 }
 

@@ -2,9 +2,12 @@
 #include "Transform.h"
 #include <Conversions.hpp>
 #include <JsonVector.hpp>
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
+
+#ifndef _RETAIL
 #include "ModelViewer/Core/ModelViewer.h"
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
+#endif // !_RETAIL
 
 Transform::Transform(): myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform()
 {
@@ -72,8 +75,9 @@ bool Transform::HasChanged() const
 	return myHasChanged;
 }
 
-void Transform::CreateImGuiComponents(const std::string& aWindowName)
+void Transform::CreateImGuiComponents(const std::string&)
 {
+#ifndef _RETAIL
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
 	{
@@ -96,6 +100,7 @@ void Transform::CreateImGuiComponents(const std::string& aWindowName)
 		}
 		ImGui::TreePop();
 	}	
+#endif // !_RETAIL
 }
 
 Json::Value Transform::ToJson() const

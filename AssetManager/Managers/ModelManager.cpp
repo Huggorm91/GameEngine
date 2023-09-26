@@ -6,13 +6,9 @@
 #include <Importer.h>
 #undef LoadModel
 
-ModelManager::ModelManager(const std::string& aPath) : myPath(aPath), myFilePaths(), myMeshData(), myModels(), mySkeletons()
-{
-}
-
 void ModelManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 void ModelManager::GeneratePrimitives()
@@ -96,14 +92,11 @@ GameObject* ModelManager::GetModel(const std::string& aPath)
 	}
 	else
 	{
-		std::string path = AddExtensionIfMissing(aPath, ".fbx");
-		path = GetValidPath(path, myPath);
+		std::string path = AddExtensionIfMissing(aPath, GetExtension());
+		path = GetValidPath(path, GetPath());
 		if (path.empty())
 		{
-			std::string lowerCase = aPath;
-			std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
-
-			if (auto iter = myModels.find(lowerCase); iter != myModels.end())
+			if (auto iter = myModels.find(ToLower(aPath)); iter != myModels.end())
 			{
 				return &iter->second;
 			}
@@ -147,9 +140,22 @@ Skeleton* ModelManager::GetSkeleton(const std::string& aPath)
 	{
 		return &iter->second;
 	}
+
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetSkeleton: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto iter = mySkeletons.find(path); iter != mySkeletons.end())
+	{
+		return &iter->second;
+	}
 	else
 	{
-		return LoadSkeleton(aPath);
+		return LoadSkeleton(path);
 	}
 	AMLogger.Err("ModelManager: Could not find a Skeleton: " + aPath);
 	return nullptr;
@@ -162,6 +168,19 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 		return &model->GetComponent<MeshComponent>();
 	}
 
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetMesh: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto model = GetModel(path); model != nullptr)
+	{
+		return &model->GetComponent<MeshComponent>();
+	}
+
 	AMLogger.Err("ModelManager: Could not find a MeshComponent: " + aPath);
 	return nullptr;
 }
@@ -169,6 +188,19 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 AnimatedMeshComponent* ModelManager::GetAnimatedMesh(const std::string& aPath)
 {
 	if (auto model = GetModel(aPath); model != nullptr)
+	{
+		return &model->GetComponent<AnimatedMeshComponent>();
+	}
+
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetAnimatedMesh: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto model = GetModel(path); model != nullptr)
 	{
 		return &model->GetComponent<AnimatedMeshComponent>();
 	}
@@ -261,19 +293,11 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 
 Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, myPath, &AMLogger);
-	if (path.empty())
-	{
-		AMLogger.Err("ModelManager: Could not load model from path: " + aPath);
-		return nullptr;
-	}
-
 	TGA::FBX::Mesh tgaMesh;
 	bool success = false;
 	try
 	{
-		success = TGA::FBX::Importer::LoadMeshA(path, tgaMesh);
+		success = TGA::FBX::Importer::LoadMeshA(aPath, tgaMesh);
 	}
 	catch (const std::exception& e)
 	{

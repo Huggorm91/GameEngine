@@ -4,13 +4,9 @@
 #include <Importer.h>
 #undef LoadAnimation
 
-AnimationManager::AnimationManager(const std::string& aPath): myPath(aPath), myAnimationData(), myAnimations(), myFilePaths()
-{
-}
-
 void AnimationManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Animation* AnimationManager::GetAnimation(const std::string& aPath)
@@ -28,7 +24,7 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath)
 Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, myPath, &AMLogger);
+	path = GetValidPath(path, GetPath(), &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("AnimationManager: Could not load animation from path: " + aPath);

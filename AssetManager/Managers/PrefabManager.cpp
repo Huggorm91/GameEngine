@@ -3,17 +3,13 @@
 #include <External/jsonCpp/json.h>
 #include "../DirectoryFunctions.h"
 
-PrefabManager::PrefabManager(const std::string& aPath): myUnloadedFilePaths(), myPath(aPath), myPrefabs()
-{
-}
-
 void PrefabManager::Init()
 {
-	myUnloadedFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myUnloadedFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 	
 	for (auto& path : myUnloadedFilePaths)
 	{
-		myValidPaths.emplace(RemoveStringPart(path, myPath));
+		myValidPaths.emplace(RemoveStringPart(path, GetPath()));
 	}
 
 	myPrefabs.emplace("Empty", GameObject(0));
@@ -148,7 +144,7 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, myPath, &AMLogger);
+	path = CreateValidPath(path, GetPath(), &AMLogger);
 
 	if (path.empty())
 	{
@@ -176,5 +172,5 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 std::string PrefabManager::ValidatePath(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	return GetValidPath(path, myPath, &AMLogger);
+	return GetValidPath(path, GetPath(), &AMLogger);
 }

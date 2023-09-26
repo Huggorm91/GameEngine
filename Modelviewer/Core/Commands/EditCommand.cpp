@@ -36,9 +36,9 @@ bool EditCommand::RemoveGameObject(unsigned anID)
     auto& gameObjects = ModelViewer::Get().myGameObjects;
     if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
     {
-        if (ModelViewer::Get().mySelectedObject.lock() == iter->second)
+        if (ModelViewer::Get().myImguiManager.mySelectedObject.lock() == iter->second)
         {
-            ModelViewer::Get().mySelectedObject.reset();
+            ModelViewer::Get().myImguiManager.mySelectedObject.reset();
         }
         gameObjects.erase(iter);
         return true;

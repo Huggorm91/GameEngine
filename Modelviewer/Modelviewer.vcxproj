@@ -243,6 +243,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Editor\AssetTypes.h" />
     <ClInclude Include="Core\Modelviewer.h" />
     <ClInclude Include="Core\ApplicationState.h" />
     <ClInclude Include="Core\Commands\EditCommand.h" />
@@ -253,6 +254,7 @@
     <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h" />
+    <ClInclude Include="Core\Editor\ImguiManager.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
     <ClInclude Include="targetver.h" />
@@ -263,6 +265,8 @@
     <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp" />
+    <ClCompile Include="Core\Editor\AssetTypes.cpp" />
+    <ClCompile Include="Core\Editor\ImguiManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="Windows\SplashWindow.cpp" />

@@ -6,7 +6,6 @@ class PrefabManager
 {
 public:
 	PrefabManager() = default;
-	PrefabManager(const std::string& aPath);
 	~PrefabManager() = default;
 
 	void Init();
@@ -21,14 +20,15 @@ public:
 	void SavePrefab(const std::string& aPath, const GameObject& aPrefab);
 	void SaveAllPrefabs() const;
 
-	inline const std::string& GetPath(){ return myPath; }
-	static inline std::string GetExtension(){ return ".prfb"; }
+	static inline const char* GetExtension(){ return ".prfb"; }
+	static inline const char* GetPath(){ return "Content\\Prefabs\\"; }
+	static inline const wchar_t* GetExtensionW(){ return L".prfb"; }
+	static inline const wchar_t* GetPathW(){ return L"Content\\Prefabs\\"; }
 
 private:
 	std::unordered_map<std::string, GameObject> myPrefabs;
 	std::unordered_set<std::string> myValidPaths;
 	std::unordered_set<std::string> myUnloadedFilePaths;
-	const std::string myPath = "Content\\Prefabs\\";
 
 	GameObject* LoadPrefab(const std::string& aPath);
 	void SavePrefabToFile(const std::string& aPath, const GameObject& aPrefab) const;

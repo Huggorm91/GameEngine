@@ -1132,16 +1132,7 @@ bool GraphicsEngine::CreateLUTTexture()
 	}
 	RHI::ClearRenderTarget(&myTextures.BrdfLUTTexture);
 
-	std::wstring path;
-#ifdef _DEBUG
-	path = L"Content/Shaders/Debug/";
-#elif _RELEASE
-	path = L"Content/Shaders/Release/";
-#elif _RETAIL
-	path = L"Content/Shaders/Retail/";
-#else
-	GELogger.Err("Invalid buildsettings in CreateLUTTexture!");
-#endif // _DEBUG
+	std::wstring path = AssetManager::GetShaderPathW();
 
 	if (!RHI::LoadShader(&myShaders.QuadVS, path + L"ScreenQuad_VS.cso"))
 	{
@@ -1171,6 +1162,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 {
 	const RHI::DeviceSize& size = RHI::GetDeviceSize();
 
+	// Scenebuffer
 	if (!RHI::CreateTexture(&myTextures.Scenebuffer, L"Scene_Buffer", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Scenebuffer texture!");
@@ -1178,6 +1170,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	}
 	RHI::ClearRenderTarget(&myTextures.Scenebuffer);
 
+	// Scenebuffer, half size
 	if (!RHI::CreateTexture(&myTextures.HalfScenebuffer, L"Half_Scene_Buffer", static_cast<size_t>(size.Width * 0.5f), static_cast<size_t>(size.Height * 0.5f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Half_Scenebuffer texture!");
@@ -1185,6 +1178,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	}
 	RHI::ClearRenderTarget(&myTextures.HalfScenebuffer);
 
+	// Scenebuffer, quarter size A
 	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferA, L"Quarter_Scene_Buffer_A", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Quarter_Scenebuffer_A texture!");
@@ -1192,6 +1186,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	}
 	RHI::ClearRenderTarget(&myTextures.QuarterScenebufferA);
 
+	// Scenebuffer, quarter size B
 	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferB, L"Quarter_Scene_Buffer_B", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Quarter_Scenebuffer_B texture!");
@@ -1199,6 +1194,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	}
 	RHI::ClearRenderTarget(&myTextures.QuarterScenebufferB);
 
+	// Intermediate A
 	if (!RHI::CreateTexture(&myTextures.IntermediateA, L"Intermediate_A", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Intermediate_A texture!");
@@ -1206,6 +1202,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	}
 	RHI::ClearRenderTarget(&myTextures.IntermediateA);
 
+	// Intermediate B
 	if (!RHI::CreateTexture(&myTextures.IntermediateB, L"Intermediate_B", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Intermediate_B texture!");

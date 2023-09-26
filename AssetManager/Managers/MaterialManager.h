@@ -9,7 +9,6 @@ class MaterialManager
 {
 public:
 	MaterialManager() = default;
-	MaterialManager(const std::string& aPath);
 	~MaterialManager() = default;
 
 	void Init();
@@ -21,13 +20,14 @@ public:
 
 	void SaveMaterial(const Material* aMaterial, const std::string& aPath);
 
-	inline const std::string& GetPath(){ return myPath; }
-	static inline std::string GetExtension(){ return ".mat"; }
+	static inline const char* GetExtension(){ return ".mat"; }
+	static inline const char* GetPath(){ return "Content\\Materials\\"; }
+	static inline const wchar_t* GetExtensionW(){ return L".mat"; }
+	static inline const wchar_t* GetPathW(){ return L"Content\\Materials\\"; }
 
 private:
 	std::unordered_map<std::string, Material> myMaterials;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content\\Materials\\";
 
 	Material* LoadMaterial(const std::string& aPath);
 };

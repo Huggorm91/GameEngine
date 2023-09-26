@@ -4,13 +4,9 @@
 #include <fstream>
 #include "../DirectoryFunctions.h"
 
-MaterialManager::MaterialManager(const std::string& aPath): myPath(aPath), myFilePaths(), myMaterials()
-{
-}
-
 void MaterialManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Material* MaterialManager::GetMaterial(const std::string& aPath)
@@ -60,7 +56,7 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, myPath, &AMLogger);
+	path = CreateValidPath(path, GetPath(), &AMLogger);
 
 	if (path.empty())
 	{
@@ -88,7 +84,7 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 Material* MaterialManager::LoadMaterial(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, myPath, &AMLogger);
+	path = GetValidPath(path, GetPath(), &AMLogger);
 	if (path.empty())
 	{
 		AMLogger.Err("MaterialManager: Could not load material from path: " + aPath);

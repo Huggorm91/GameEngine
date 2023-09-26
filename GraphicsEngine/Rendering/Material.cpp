@@ -1,8 +1,22 @@
 #include "GraphicsEngine.pch.h"
 #include "Material.h"
-#include <External/jsonCpp/json.h>
-#include "AssetManager/AssetManager.h"
+#include "../GraphicsEngine.h"
 #include "../InterOp/Helpers.h"
+
+#include "AssetManager/AssetManager.h"
+
+#include <External/jsonCpp/json.h>
+
+#ifndef _RETAIL
+#include "AssetManager/DirectoryFunctions.h"
+
+#include "ModelViewer/Core/ModelViewer.h"
+#include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
+
+#include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
+#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#endif // !_RETAIL
 
 Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr)
 {
@@ -14,9 +28,9 @@ myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMateri
 	myBuffer.Initialize();
 }
 
-Material::Material(const Json::Value& aJsonValue) : myVertexShader(aJsonValue["VertexShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["VertexShader"].asString())), 
+Material::Material(const Json::Value& aJsonValue) : myVertexShader(aJsonValue["VertexShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["VertexShader"].asString())),
 myPixelShader(aJsonValue["PixelShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["PixelShader"].asString())), myTextures(), myBuffer(), myName(aJsonValue["Name"].asString()),
-myAlbedoTexture(aJsonValue["AlbedoTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["AlbedoTexture"].asString())), 
+myAlbedoTexture(aJsonValue["AlbedoTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["AlbedoTexture"].asString())),
 myNormalTexture(aJsonValue["NormalTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["NormalTexture"].asString())),
 myMaterialTexture(aJsonValue["MaterialTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["MaterialTexture"].asString())),
 myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(aJsonValue["FXTexture"].asString()))
@@ -37,7 +51,7 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 	myBuffer.Initialize();
 }
 
-Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial, Texture* aFX) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(), 
+Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial, Texture* aFX) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(),
 myBuffer(), myName(aName), myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial), myFXTexture(aFX)
 {
 	myBuffer.Initialize();
@@ -220,7 +234,7 @@ Json::Value Material::ToJson() const
 		else
 		{
 			texture["Texture"] = Json::nullValue;
-		}		
+		}
 		texture["Slot"] = binding.slot;
 		texture["Stage"] = binding.stage;
 		result["Textures"][i] = texture;
@@ -238,7 +252,7 @@ Json::Value Material::ToJson() const
 	else
 	{
 		result["VertexShader"] = Json::nullValue;
-	}	
+	}
 	if (myPixelShader)
 	{
 		std::string path = Helpers::string_cast<std::string>(myPixelShader->GetName());
@@ -276,7 +290,7 @@ Json::Value Material::ToJson() const
 	else
 	{
 		result["MaterialTexture"] = Json::nullValue;
-	}	
+	}
 	if (myFXTexture)
 	{
 		result["FXTexture"] = Helpers::string_cast<std::string>(myFXTexture->GetName());
@@ -285,7 +299,7 @@ Json::Value Material::ToJson() const
 	{
 		result["FXTexture"] = Json::nullValue;
 	}
-	
+
 	result["Shininess"] = myBuffer.Data.Shininess;
 	result["Metalness"] = myBuffer.Data.Metalness;
 	result["NormalStrength"] = myBuffer.Data.NormalStrength;
@@ -295,6 +309,201 @@ Json::Value Material::ToJson() const
 	result["EmissionIntensity"] = myBuffer.Data.EmissionIntensity;
 	return result;
 }
+
+void Material::CreateImguiComponents(const std::string&)
+{
+#ifndef _RETAIL
+	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+	if (ImGui::TreeNode("Material"))
+	{
+		ImGui::Text(myName.c_str());
+		if (myAlbedoTexture)
+		{
+			myAlbedoName = ToString(myAlbedoTexture->GetName());
+		}
+		if (myNormalTexture)
+		{
+			myNormalName = ToString(myNormalTexture->GetName());
+		}
+		if (myMaterialTexture)
+		{
+			myMaterialName = ToString(myMaterialTexture->GetName());
+		}
+		if (myFXTexture)
+		{
+			myFXName = ToString(myFXTexture->GetName());
+		}
+
+		// TODO: Fix Imgui representation for Shaders
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+		if (ImGui::TreeNode("Textures"))
+		{
+			CreateTextureCombo(TextureSlot_Albedo);
+			ImGui::SameLine();
+			if (myAlbedoTexture)
+			{
+				ImGui::Image(myAlbedoTexture->GetSRV().Get(), ImVec2(75, 75));
+			}
+			else
+			{
+				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetAlbedoTexture()->GetSRV().Get(), ImVec2(75, 75));
+			}
+
+
+			CreateTextureCombo(TextureSlot_Normal);
+			ImGui::SameLine();
+			if (myNormalTexture)
+			{
+				ImGui::Image(myNormalTexture->GetSRV().Get(), ImVec2(75, 75));
+			}
+			else
+			{
+				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetNormalTexture()->GetSRV().Get(), ImVec2(75, 75));
+			}
+
+
+			CreateTextureCombo(TextureSlot_Material);
+			ImGui::SameLine();
+			if (myMaterialTexture)
+			{
+				ImGui::Image(myMaterialTexture->GetSRV().Get(), ImVec2(75, 75));
+			}
+			else
+			{
+				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetMaterialTexture()->GetSRV().Get(), ImVec2(75, 75));
+			}
+
+
+			CreateTextureCombo(TextureSlot_FX);
+			ImGui::SameLine();
+			if (myFXTexture)
+			{
+				ImGui::Image(myFXTexture->GetSRV().Get(), ImVec2(75, 75));
+			}
+			else
+			{
+				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetFXTexture()->GetSRV().Get(), ImVec2(75, 75));
+			}
+
+			if (!myTextures.empty())
+			{
+				ImGui::SeparatorText("Extra Textures");
+				for (auto& binding : myTextures)
+				{
+					ImGui::Text(("Slot " + std::to_string(binding.slot) + ": ").c_str());
+					ImGui::SameLine();
+					ImGui::Image(binding.texture->GetSRV().Get(), ImVec2(75, 75));
+				}
+			}
+			ImGui::TreePop();
+		}
+
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+		if (ImGui::TreeNode("Buffer"))
+		{
+			auto& buffer = myBuffer.Data;
+
+			auto albedo = buffer.AlbedoColor;
+			if (ImGui::ColorEdit4("Albedo Color", &albedo.x))
+			{
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector4f>>(buffer.AlbedoColor, albedo));
+			}
+
+			auto emission = buffer.EmissionColor;
+			if (ImGui::ColorEdit3("Emission Color", &emission.x))
+			{
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector3f>>(buffer.EmissionColor, emission));
+			}
+
+			auto intensity = buffer.EmissionIntensity;
+			if (ImGui::DragFloat("Emission Intensity", &intensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+			{
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<float>>(buffer.EmissionIntensity, intensity));
+			}
+
+			auto uv = buffer.UVTiling;
+			if (ImGui::DragFloat2("UV Tiling", &uv.x, 0.1f))
+			{
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector2f>>(buffer.UVTiling, uv));
+			}
+
+			auto normal = buffer.NormalStrength;
+			if (ImGui::DragFloat("Normal Strength", &normal, 0.01f))
+			{
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<float>>(buffer.NormalStrength, normal));
+			}
+
+			// Not implemented: Blinn Phong variables
+
+			ImGui::TreePop();
+		}
+		ImGui::TreePop();
+	}
+#endif // !_RETAIL
+}
+
+#ifndef _RETAIL
+void Material::CreateTextureCombo(eTextureSlot aSlot)
+{
+	Texture** texture = nullptr;
+	std::string* name = nullptr;
+
+	switch (aSlot)
+	{
+	case TextureSlot_Albedo:
+	{
+		texture = &myAlbedoTexture;
+		name = &myAlbedoName;
+		break;
+	}
+	case TextureSlot_Normal:
+	{
+		texture = &myNormalTexture;
+		name = &myNormalName;
+		break;
+	}
+	case TextureSlot_Material:
+	{
+		texture = &myMaterialTexture;
+		name = &myMaterialName;
+		break;
+	}
+	case TextureSlot_FX:
+	{
+		texture = &myFXTexture;
+		name = &myFXName;
+		break;
+	}
+	default:
+		return;
+	}
+
+	ImGui::PushID(aSlot);
+	if (ImGui::BeginCombo("", name->c_str(), ImGuiComboFlags_HeightLarge))
+	{
+		for (auto& path : AssetManager::GetAvailableTextures())
+		{
+			Texture* current = AssetManager::GetAsset<Texture*>(path);
+			const bool isSelected = *texture == current;
+			if (ImGui::Selectable(ToString(current->GetName()).c_str(), isSelected))
+			{
+				*texture = current;
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+
+			constexpr int imageSize = 30;
+			ImGui::SameLine(ImGui::GetContentRegionAvail().x - imageSize);
+			ImGui::Image(current->GetSRV().Get(), ImVec2(imageSize, imageSize));
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+}
+#endif // !_RETAIL
 
 void Material::AddTexture(Texture* aTexture, unsigned aPipelineStage, unsigned aSlot)
 {

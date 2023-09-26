@@ -72,6 +72,7 @@ public:
 	const MaterialBuffer& GetBuffer() const;
 
 	Json::Value ToJson() const;
+	void CreateImguiComponents(const std::string& aWindowName);
 
 private:
 	friend class GfxCmd_RenderMesh;
@@ -93,7 +94,18 @@ private:
 	Texture* myMaterialTexture;
 	Texture* myFXTexture;
 
+#ifndef _RETAIL
+	std::string myAlbedoName;
+	std::string myNormalName;
+	std::string myMaterialName;
+	std::string myFXName;
+#endif // !_RETAIL
+
 	std::string myName;
 	std::vector<TextureBinding> myTextures;
 	MaterialBuffer myBuffer;
+
+#ifndef _RETAIL
+	void CreateTextureCombo(eTextureSlot aSlot);
+#endif // !_RETAIL
 };

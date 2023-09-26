@@ -7,20 +7,23 @@ class TextureManager
 {
 public:
 	TextureManager() = default;
-	TextureManager(const std::string& aPath);
 	~TextureManager() = default;
 
 	void Init();
+	void LoadAllTextures();
 
 	Texture* GetTexture(const std::string& aPath);
+	const std::unordered_set<std::string>& GetTexturelist() const;
 
-	inline const std::string& GetPath(){ return myPath; }
-	static inline std::string GetExtension(){ return ".dds"; }
+	static inline const char* GetExtension(){ return ".dds"; }
+	static inline const char* GetPath(){ return "Content\\Textures\\"; }
+	static inline const wchar_t* GetExtensionW(){ return L".dds"; }
+	static inline const wchar_t* GetPathW(){ return L"Content\\Textures\\"; }
 
 private:
 	std::unordered_map<std::string, Texture> myTextures;
+	std::unordered_set<std::string> myLoadedTextures;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content\\Textures\\";
 
 	Texture* LoadTexture(const std::string& aPath);
 };

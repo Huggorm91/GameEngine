@@ -18,7 +18,6 @@ class ModelManager
 {
 public:
 	ModelManager() = default;
-	ModelManager(const std::string& aPath);
 	~ModelManager() = default;
 
 	void Init();
@@ -32,15 +31,16 @@ public:
 	MeshComponent* GetMesh(const std::string& aPath);
 	AnimatedMeshComponent* GetAnimatedMesh(const std::string& aPath);
 
-	inline const std::string& GetPath(){ return myPath; }
-	static inline std::string GetExtension(){ return ".fbx"; }
+	static inline const char* GetExtension(){ return ".fbx"; }
+	static inline const char* GetPath(){ return "Content\\Models\\"; }
+	static inline const wchar_t* GetExtensionW(){ return L".fbx"; }
+	static inline const wchar_t* GetPathW(){ return L"Content\\Models\\"; }
 
 private:
 	std::unordered_map<std::string, GameObject> myModels;
 	std::unordered_map<std::string, std::vector<MeshData>> myMeshData;
 	std::unordered_map<std::string, Skeleton> mySkeletons;
 	std::unordered_set<std::string> myFilePaths;
-	const std::string myPath = "Content\\Models\\";
 
 	GameObject* LoadModel(const std::string& aPath);
 	Skeleton* LoadSkeleton(const std::string& aPath);
