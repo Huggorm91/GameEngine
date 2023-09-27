@@ -3,13 +3,13 @@
 cbuffer MaterialBuffer : register(b3)
 {
     float4 MB_AlbedoColor;
-    float3 MB_EmissionColor;
+    float4 MB_EmissionColor;
     float MB_EmissionIntensity;
     float2 MB_UVTiling;
     float MB_NormalStrength;
     float MB_Shininess;
     float MB_Metalness;
     
-    float3 paddingmb;
+    float2 paddingmb;
 }
 #endif // MATERIALBUFFER_HLSLI

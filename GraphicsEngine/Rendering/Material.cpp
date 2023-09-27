@@ -40,7 +40,7 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 	myBuffer.Data.NormalStrength = aJsonValue["NormalStrength"].asFloat();
 	myBuffer.Data.UVTiling = CommonUtilities::Vector2f(aJsonValue["UVTiling"]);
 	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]);
-	myBuffer.Data.EmissionColor = CommonUtilities::Vector3f(aJsonValue["EmissionColor"]);
+	myBuffer.Data.EmissionColor = CommonUtilities::Vector4f(aJsonValue["EmissionColor"]);
 	myBuffer.Data.EmissionIntensity = aJsonValue["EmissionIntensity"].asFloat();
 
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
@@ -127,7 +127,7 @@ void Material::SetAlbedoColor(const CommonUtilities::Vector4f& aColor)
 	myBuffer.Data.AlbedoColor = aColor;
 }
 
-void Material::SetEmissionColor(const CommonUtilities::Vector3f& aColor)
+void Material::SetEmissionColor(const CommonUtilities::Vector4f& aColor)
 {
 	myBuffer.Data.EmissionColor = aColor;
 }
@@ -197,7 +197,7 @@ const CommonUtilities::Vector4f& Material::GetAlbedoColor() const
 	return myBuffer.Data.AlbedoColor;
 }
 
-const CommonUtilities::Vector3f& Material::GetEmissionColor() const
+const CommonUtilities::Vector4f& Material::GetEmissionColor() const
 {
 	return myBuffer.Data.EmissionColor;
 }
@@ -410,9 +410,18 @@ void Material::CreateImguiComponents(const std::string&)
 			}
 
 			auto emission = buffer.EmissionColor;
-			if (ImGui::ColorEdit3("Emission Color", &emission.x))
+			if (ImGui::ColorEdit4("Emission Color", &emission.x))
 			{
-				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector3f>>(buffer.EmissionColor, emission));
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector4f>>(buffer.EmissionColor, emission));
+			}
+			ImGui::SameLine(); 
+			ImGui::TextDisabled("(?)");
+			if (ImGui::BeginItemTooltip())
+			{
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted("Alpha controls how much of the Albedo texture is used for Emission.");
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
 			}
 
 			auto intensity = buffer.EmissionIntensity;

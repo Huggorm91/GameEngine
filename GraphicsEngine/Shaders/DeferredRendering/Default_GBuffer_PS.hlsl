@@ -33,7 +33,7 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Material = MaterialTexture.Sample(DefaultSampler, scaledUV);
                 result.FX = FXTexture.Sample(DefaultSampler, scaledUV);
                 const float emissionMultiplier = result.FX.r * MB_EmissionIntensity;
-                result.Emission.rgb = MB_EmissionColor * emissionMultiplier;
+                result.Emission.rgb = GetAlphaBlendColor(MB_EmissionColor, float4(textureColor.rgb, 1 - MB_EmissionColor.a)).rgb * emissionMultiplier;
                 result.Emission.a = emissionMultiplier;
                 result.WorldPosition = input.WorldPosition;
                 
@@ -164,11 +164,12 @@ GBufferOutput main(DefaultVertexToPixel input)
         {
                 float2 scaledUV = input.UVs[0] * MB_UVTiling;
                 float emission = FXTexture.Sample(DefaultSampler, scaledUV).r;
-                //float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
+                float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
                 //result.Albedo = GetAlphaBlendColor(input.Color[0], textureColor);
                 //result.Albedo = GetAlphaBlendColor(result.Albedo, MB_AlbedoColor);
                 //result.Albedo *= emission;
-                result.Albedo.rgb = MB_EmissionColor * emission;
+                const float emissionMultiplier = emission * MB_EmissionIntensity;
+                result.Albedo.rgb = GetAlphaBlendColor(MB_EmissionColor, float4(textureColor.rgb, 1 - MB_EmissionColor.a)).rgb * emissionMultiplier;
                 result.Albedo.a = 1;
             
                 result.Normal = 0;
