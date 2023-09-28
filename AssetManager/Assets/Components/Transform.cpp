@@ -9,18 +9,52 @@
 #include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
 #endif // !_RETAIL
 
-Transform::Transform(): myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform()
+Transform::Transform() : myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
 {
 }
 
-Transform::Transform(const Json::Value& aJson): myPosition(aJson["Position"]), myRotation(aJson["Rotation"]), myScale(aJson["Scale"]), myHasChanged(true), myTransform()
+Transform::Transform(const Json::Value& aJson) : myPosition(aJson["Position"]), myRotation(aJson["Rotation"]), myScale(aJson["Scale"]), myHasChanged(true), myTransform(), myParent(nullptr), myWorldPosition()
 {
 }
 
-Transform::Transform(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aRotation, const CommonUtilities::Vector3f& aScale):
-	myPosition(aPosition), myRotation(aRotation), myScale(aScale), myHasChanged(false), myTransform()
+Transform::Transform(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aRotation, const CommonUtilities::Vector3f& aScale) :
+	myPosition(aPosition), myRotation(aRotation), myScale(aScale), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
 {
 	UpdateTransform();
+}
+
+Transform::Transform(const Transform& aTransform) : myPosition(aTransform.myPosition), myRotation(aTransform.myRotation), myScale(aTransform.myScale), myHasChanged(aTransform.myHasChanged),
+myTransform(aTransform.myTransform), myParent(nullptr), myWorldPosition(aTransform.myWorldPosition)
+{
+}
+
+Transform::Transform(Transform&& aTransform) noexcept : myPosition(aTransform.myPosition), myRotation(aTransform.myRotation), myScale(aTransform.myScale), myHasChanged(aTransform.myHasChanged),
+myTransform(aTransform.myTransform), myParent(nullptr), myWorldPosition(aTransform.myWorldPosition)
+{
+}
+
+Transform& Transform::operator=(const Transform& aTransform)
+{
+	myPosition = aTransform.myPosition;
+	myRotation = aTransform.myRotation;
+	myScale = aTransform.myScale;
+	myHasChanged = aTransform.myHasChanged;
+	myTransform = aTransform.myTransform;
+	myParent = nullptr;
+	myWorldPosition = aTransform.myWorldPosition;
+	return *this;
+}
+
+Transform& Transform::operator=(Transform&& aTransform) noexcept
+{
+	myPosition = aTransform.myPosition;
+	myRotation = aTransform.myRotation;
+	myScale = aTransform.myScale;
+	myHasChanged = aTransform.myHasChanged;
+	myTransform = aTransform.myTransform;
+	myParent = nullptr;
+	myWorldPosition = aTransform.myWorldPosition;
+	return *this;
 }
 
 void Transform::SetPosition(const CommonUtilities::Vector3f& aPosition)
@@ -56,23 +90,52 @@ const CommonUtilities::Vector3f& Transform::GetScale() const
 	return myScale;
 }
 
-const CommonUtilities::Vector3f& Transform::GetWorldPosition() const
+const CommonUtilities::Vector4f& Transform::GetWorldPosition() const
 {
+	if (myHasChanged)
+	{
+		const_cast<Transform*>(this)->UpdateTransform();
+	}
 	return myWorldPosition;
 }
 
 const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
 {
-	if (myHasChanged)
+	if (myHasChanged || (myParent && myParent->myHasChanged))
 	{
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
 	return myTransform;
 }
 
+void Transform::SetHasChanged(bool aState)
+{
+	myHasChanged = aState;
+}
+
 bool Transform::HasChanged() const
 {
 	return myHasChanged;
+}
+
+void Transform::SetParent(Transform* aParent)
+{
+	myParent = aParent;
+	UpdateTransform();
+}
+
+void Transform::RemoveParent()
+{
+	myParent = nullptr;
+	UpdateTransform();
+}
+
+void Transform::Update()
+{
+	if (myHasChanged || (myParent && myParent->myHasChanged))
+	{
+		const_cast<Transform*>(this)->UpdateTransform();
+	}
 }
 
 void Transform::CreateImGuiComponents(const std::string&)
@@ -99,7 +162,7 @@ void Transform::CreateImGuiComponents(const std::string&)
 			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myScale, scale, myHasChanged));
 		}
 		ImGui::TreePop();
-	}	
+	}
 #endif // !_RETAIL
 }
 
@@ -145,8 +208,44 @@ Json::Value Transform::ToJson() const
 void Transform::UpdateTransform()
 {
 	myHasChanged = false;
-	myTransform = CommonUtilities::Matrix4x4f::CreateScaleMatrix(myScale) *
-		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(myRotation)) *
-		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+	myTransform = CommonUtilities::Matrix4x4f::CreateScaleMatrix(GetTotalScale()) *
+		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(GetTotalRotation())) *
+		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(GetTotalPosition());
 	myWorldPosition = myTransform * CommonUtilities::Vector4f{ myPosition, 1.f };
+}
+
+CommonUtilities::Vector3f Transform::GetTotalPosition() const
+{
+	if (myParent)
+	{
+		return myParent->GetTotalPosition() + myPosition;
+	}
+	else
+	{
+		return myPosition;
+	}
+}
+
+CommonUtilities::Vector3f Transform::GetTotalRotation() const
+{
+	if (myParent)
+	{
+		return myParent->GetTotalRotation() + myRotation;
+	}
+	else
+	{
+		return myRotation;
+	}
+}
+
+CommonUtilities::Vector3f Transform::GetTotalScale() const
+{
+	if (myParent)
+	{
+		return myParent->GetTotalScale() * myScale;
+	}
+	else
+	{
+		return myScale;
+	}
 }

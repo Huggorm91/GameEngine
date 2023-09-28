@@ -147,9 +147,9 @@ void SpotlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::DragFloat("Range", &myRange);
 	ImGui::DragFloat3("Position", &myPosition.x);
 #ifndef _RETAIL
-	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x))
+	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x, .001f))
 	{
-		myLightDirection = myEditDirection.GetNormalized();
+		myLightDirection = myEditDirection.GetNormalizedNoAssert();
 	}
 #endif // _RETAIL
 	ImGui::PushItemWidth(100.f);

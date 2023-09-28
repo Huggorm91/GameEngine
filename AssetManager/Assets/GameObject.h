@@ -13,7 +13,7 @@ public:
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
-	~GameObject() = default;
+	~GameObject();
 
 	GameObject& operator=(const Prefab& aPrefab);
 	GameObject& operator=(const GameObject& aGameObject);
@@ -60,11 +60,16 @@ public:
 
 	const Transform& GetTransform() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
-	const CommonUtilities::Vector3f& GetWorldPosition() const;
+	const CommonUtilities::Vector4f& GetWorldPosition() const;
 
 	void SetActive(bool aIsActive);
 	void ToogleActive();
 	bool IsActive() const;
+
+	void SetParent(GameObject* anObject);
+	void RemoveParent();
+	void AddChild(GameObject* anObject);
+	void RemoveChild(GameObject* anObject);
 
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
@@ -95,6 +100,10 @@ private:
 	bool myIsActive;
 	const unsigned myID;
 	unsigned myCount;
+
+	GameObject* myParent;
+	std::vector<GameObject*> myChildren;
+
 	std::string myName;
 	std::string myImguiText;
 	Transform myTransform;

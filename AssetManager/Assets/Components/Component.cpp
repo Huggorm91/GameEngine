@@ -97,6 +97,10 @@ bool Component::IsActive() const
 	return myIsActive;
 }
 
+void Component::TransformHasChanged() const
+{
+}
+
 void Component::ComponentPointersInvalidated()
 {
 }
@@ -147,6 +151,18 @@ CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer()
 {
 	assert(myParent != nullptr && "Component not Initialized!");
 	return myParent->myComponents;
+}
+
+const Transform* Component::GetParentTransform() const
+{
+	assert(myParent != nullptr && "Component not Initialized!");
+	return &myParent->myTransform;
+}
+
+Transform* Component::GetParentTransform()
+{
+	assert(myParent != nullptr && "Component not Initialized!");
+	return &myParent->myTransform;
 }
 
 void Component::NotifyInput(CommonUtilities::eInputAction anEvent)

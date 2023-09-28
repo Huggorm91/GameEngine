@@ -20,7 +20,7 @@ void EditCmd_ChangeTransform::Execute()
 bool EditCmd_ChangeTransform::Merge(const EditCommand* aCommand)
 {
 	const EditCmd_ChangeTransform* pointer = dynamic_cast<const EditCmd_ChangeTransform*>(aCommand);
-	if (pointer && myPointer == pointer->myPointer && (myOldValue - myNewValue).GetNormalized().Abs() == (pointer->myOldValue - pointer->myNewValue).GetNormalized().Abs())
+	if (pointer && myPointer == pointer->myPointer && (myOldValue - myNewValue).GetNormalizedNoAssert().Abs() == (pointer->myOldValue - pointer->myNewValue).GetNormalizedNoAssert().Abs())
 	{
 		myNewValue = pointer->myNewValue;
 		return true;

@@ -8,6 +8,8 @@
 // A template to build new components can be found in ComponentTemplate.h
 
 class GameObject;
+class Transform;
+
 namespace CommonUtilities
 {
 	enum class eInputAction : int;
@@ -41,9 +43,9 @@ public:
 	virtual void ToogleActive();
 	bool IsActive() const;
 
-	//virtual void SetValue(unsigned aSlot)
-
+	virtual void TransformHasChanged() const;
 	virtual void ComponentPointersInvalidated();
+
 	virtual void CreateImGuiComponents(const std::string& aWindowName);
 	virtual Json::Value ToJson() const;
 	virtual const Component* GetTypePointer() const;
@@ -63,6 +65,9 @@ protected:
 
 	const CommonUtilities::Blackboard<unsigned int>& GetComponentContainer() const;
 	CommonUtilities::Blackboard<unsigned int>& GetComponentContainer();
+
+	const Transform* GetParentTransform() const;
+	Transform* GetParentTransform();
 
 	virtual void NotifyInput(CommonUtilities::eInputAction anEvent);
 };

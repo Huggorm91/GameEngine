@@ -11,14 +11,20 @@
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName)
+GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName), myParent(nullptr), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
 {
 }
 
-GameObject::GameObject(const Prefab& aPrefab): GameObject()
+#ifndef _RETAIL
+GameObject::GameObject(unsigned anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName), myDebugPointers(), myParent(nullptr), myChildren()
+{
+}
+#endif // !_RETAIL
+
+GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 {
 	if (aPrefab.myTemplate)
 	{
@@ -35,7 +41,8 @@ GameObject::GameObject(const Prefab& aPrefab): GameObject()
 	}
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName), myImguiText(myName)
+GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName),
+myImguiText(myName), myParent(aGameObject.myParent), myChildren(aGameObject.myChildren)
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
@@ -48,8 +55,8 @@ GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexL
 	}
 }
 
-GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive), 
-myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
+GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive),
+myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName), myParent(aGameObject.myParent), myChildren(aGameObject.myChildren)
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
@@ -63,14 +70,26 @@ myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName)
 	}
 }
 
-GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName)
+GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName), myParent(nullptr), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
 {
 	for (auto& jsonComponent : aJson["Components"])
 	{
-		 LoadComponent(jsonComponent, *this);
+		LoadComponent(jsonComponent, *this);
+	}
+}
+
+GameObject::~GameObject()
+{
+	if (myParent)
+	{
+		myParent->RemoveChild(this);
+	}
+	for (auto& child : myChildren)
+	{
+		child->RemoveParent();
 	}
 }
 
@@ -110,6 +129,8 @@ GameObject& GameObject::operator=(const GameObject& aGameObject)
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
 	myImguiText = myName;
+	myParent = aGameObject.myParent;
+	myChildren = aGameObject.myChildren;
 
 	const Component* pointer = nullptr;
 	for (auto [type, index] : aGameObject.myIndexList)
@@ -133,6 +154,8 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myName = aGameObject.myName;
 	myImguiText = myName;
 	const_cast<unsigned&>(myID) = aGameObject.myID;
+	myParent = aGameObject.myParent;
+	myChildren = aGameObject.myChildren;
 
 	for (auto [type, index] : myIndexList)
 	{
@@ -148,6 +171,16 @@ void GameObject::Update()
 {
 	if (myIsActive)
 	{
+		if (myTransform.HasChanged())
+		{
+			myTransform.Update();
+
+			for (auto [type, index] : myIndexList)
+			{
+				myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+			}
+		}
+
 		for (auto [type, index] : myIndexList)
 		{
 			myComponents.ChangeValueUnsafe<Component>(index)->Update();
@@ -203,28 +236,23 @@ const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
-		if (HasComponent<MeshComponent>())
+		for (auto [type, index] : myIndexList)
 		{
-			auto componentList = GetComponents<MeshComponent>();
-			for (auto& component : componentList)
-			{
-				component->BoundsHasChanged();
-			}
+			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
 		}
-		else if (HasComponent<AnimatedMeshComponent>())
-		{
-			auto componentList = GetComponents<AnimatedMeshComponent>();
-			for (auto& component : componentList)
-			{
-				component->BoundsHasChanged();
-			}
-		}		
 	}
 	return myTransform.GetTransformMatrix();
 }
 
-const CommonUtilities::Vector3f& GameObject::GetWorldPosition() const
+const CommonUtilities::Vector4f& GameObject::GetWorldPosition() const
 {
+	if (myTransform.HasChanged())
+	{
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+		}
+	}
 	return myTransform.GetWorldPosition();
 }
 
@@ -241,6 +269,37 @@ void GameObject::ToogleActive()
 bool GameObject::IsActive() const
 {
 	return myIsActive;
+}
+
+void GameObject::SetParent(GameObject* anObject)
+{
+	myParent = anObject;
+	myTransform.SetParent(&anObject->myTransform);
+}
+
+void GameObject::RemoveParent()
+{
+	myParent = nullptr;
+	myTransform.RemoveParent();
+}
+
+void GameObject::AddChild(GameObject* anObject)
+{
+	anObject->SetParent(this);
+	myChildren.emplace_back(anObject);
+}
+
+void GameObject::RemoveChild(GameObject* anObject)
+{
+	for (auto iter = myChildren.begin(); iter != myChildren.end(); iter++)
+	{
+		if (*iter == anObject)
+		{
+			(*iter)->RemoveParent();
+			myChildren.erase(iter);
+			return;
+		}
+	}
 }
 
 void GameObject::SetName(const std::string& aName)
@@ -311,7 +370,7 @@ Json::Value GameObject::ToJson() const
 	const Component* component = nullptr;
 	unsigned i = 0;
 	for (auto [type, index] : myIndexList)
-	{		
+	{
 		component = myComponents.GetValueUnsafe<Component>(index);
 		result["Components"][i] = component->ToJson();
 		result["Components"][i].setComment("// " + ComponentTypeToString(component->GetType()), Json::commentBefore);
@@ -327,7 +386,7 @@ void GameObject::MarkAsPrefab()
 	{
 		const_cast<unsigned&>(myID) = 0;
 		localIDCount--;
-	}	
+	}
 	for (auto [type, index] : myIndexList)
 	{
 		myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
@@ -342,9 +401,3 @@ void GameObject::MarkAsPrefab(unsigned anID)
 		localIDCount--;
 	}
 }
-
-#ifndef _RETAIL
-GameObject::GameObject(unsigned anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName)
-{
-}
-#endif // !_RETAIL

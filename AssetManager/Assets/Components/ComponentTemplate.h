@@ -29,10 +29,12 @@ public:
 	// void SetActive(bool aIsActive) override;
 	// void ToogleActive() override;
 
+	// void TransformHasChanged() const override;
 	// void ComponentPointersInvalidated() override;
+
 	void CreateImGuiComponents(const std::string& aWindowName) override;
-	const ExampleComponent* GetTypePointer() const override; // return this;
 	Json::Value ToJson() const override;
+	const ExampleComponent* GetTypePointer() const override; // return this;
 
 private:
 

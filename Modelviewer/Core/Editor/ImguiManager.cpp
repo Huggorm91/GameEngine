@@ -431,7 +431,7 @@ void ImguiManager::CreateSceneContentWindow()
 
 			if (isSelected)
 			{
-				ImGui::PopStyleColor(ImGuiCol_Button);
+				ImGui::PopStyleColor();
 			}
 		}
 	}

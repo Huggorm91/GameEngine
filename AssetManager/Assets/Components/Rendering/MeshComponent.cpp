@@ -38,6 +38,72 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 , myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
 #endif // !_RETAIL
 {
+	if (myParent)
+	{
+		myTransform.SetParent(GetParentTransform());
+	}
+}
+
+MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept: Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
+myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
+#ifndef _RETAIL
+, myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
+#endif // !_RETAIL
+{
+	if (myParent)
+	{
+		myTransform.SetParent(GetParentTransform());
+	}	
+}
+
+MeshComponent& MeshComponent::operator=(const MeshComponent& aMeshComponent)
+{
+	Component::operator=(aMeshComponent);
+	myTransform = aMeshComponent.myTransform;
+	myColor = aMeshComponent.myColor;
+	myElements = aMeshComponent.myElements;
+	myBoxSphereBounds = aMeshComponent.myBoxSphereBounds;
+	myName = aMeshComponent.myName;
+	myPath = aMeshComponent.myPath;
+	myRenderShadow = aMeshComponent.myRenderShadow;
+	myTransformMatrix = aMeshComponent.myTransformMatrix;
+	myIsDeferred = aMeshComponent.myIsDeferred;
+#ifndef _RETAIL
+	myLerpValue = aMeshComponent.myLerpValue;
+	myLerpColor1 = aMeshComponent.myLerpColor1;
+	myLerpColor2 = aMeshComponent.myLerpColor2;
+#endif // !_RETAIL
+	if (myParent)
+	{
+		myTransform.SetParent(GetParentTransform());
+	}
+
+	return *this;
+}
+
+MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
+{
+	Component::operator=(std::move(aMeshComponent));
+	myTransform = aMeshComponent.myTransform;
+	myColor = aMeshComponent.myColor;
+	myElements = aMeshComponent.myElements;
+	myBoxSphereBounds = aMeshComponent.myBoxSphereBounds;
+	myName = aMeshComponent.myName;
+	myPath = aMeshComponent.myPath;
+	myRenderShadow = aMeshComponent.myRenderShadow;
+	myTransformMatrix = aMeshComponent.myTransformMatrix;
+	myIsDeferred = aMeshComponent.myIsDeferred;
+#ifndef _RETAIL
+	myLerpValue = aMeshComponent.myLerpValue;
+	myLerpColor1 = aMeshComponent.myLerpColor1;
+	myLerpColor2 = aMeshComponent.myLerpColor2;
+#endif // !_RETAIL
+	if (myParent)
+	{
+		myTransform.SetParent(GetParentTransform());
+	}
+
+	return *this;
 }
 
 void MeshComponent::Update()
@@ -52,6 +118,13 @@ void MeshComponent::Update()
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
 	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this, myIsDeferred));
+}
+
+void MeshComponent::Init(GameObject* aParent)
+{
+	Component::Init(aParent);
+	myTransform.SetParent(GetParentTransform());
+	TransformHasChanged();
 }
 
 void MeshComponent::Init(const Json::Value& aJson)
@@ -133,19 +206,18 @@ void MeshComponent::SetOffsetScale(const CommonUtilities::Vector3f& aScale)
 	myTransform.SetScale(aScale);
 }
 
-CommonUtilities::Matrix4x4f MeshComponent::GetTransform() const
+const CommonUtilities::Matrix4x4f& MeshComponent::GetTransform() const
 {
-	assert(myParent != nullptr && "MeshComponent is not Initialized!");
 	if (myTransform.HasChanged())
 	{
-		BoundsHasChanged();
+		TransformHasChanged();
 	}
-	return myTransformMatrix;
+	return myTransform.GetTransformMatrix();
 }
 
-CommonUtilities::Vector4f MeshComponent::GetWorldPosition() const
+const CommonUtilities::Vector4f& MeshComponent::GetWorldPosition() const
 {
-	return myParent->GetTransformMatrix() * CommonUtilities::Vector4f{ myTransform.GetWorldPosition(), 1.f };
+	return myTransform.GetWorldPosition();
 }
 
 const std::vector<MeshElement>& MeshComponent::GetElements() const
@@ -225,17 +297,16 @@ bool MeshComponent::IsDeferred() const
 	return myIsDeferred;
 }
 
-void MeshComponent::BoundsHasChanged() const
-{
-	const_cast<CommonUtilities::Matrix4x4f&>(myTransformMatrix) = CommonUtilities::Matrix4x4f::CreateScaleMatrix(myParent->GetTransform().GetScale() * myTransform.GetScale()) *
-		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(myParent->GetTransform().GetRotation() + myTransform.GetRotation())) *
-		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myParent->GetTransform().GetPosition() + myTransform.GetPosition());
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(myTransformMatrix * CommonUtilities::Vector4f(myBoxSphereBounds.GetMin(), 1.f), myTransformMatrix * CommonUtilities::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
-}
-
 const std::string& MeshComponent::GetName() const
 {
 	return myName;
+}
+
+void MeshComponent::TransformHasChanged() const
+{
+	const_cast<Transform&>(myTransform).SetHasChanged(true);
+	const auto& transform = myTransform.GetTransformMatrix();
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * CommonUtilities::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * CommonUtilities::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
 }
 
 void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)

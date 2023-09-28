@@ -142,9 +142,9 @@ void DirectionallightComponent::CreateImGuiComponents(const std::string& aWindow
 	ImGui::Checkbox("Cast Shadow", &myCastShadows);
 	ImGui::DragFloat("Intensity", &myIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::ColorEdit3("Color", &myColor.x);
-	if (ImGui::DragFloat3("Light Direction", &myLightDirection.x))
+	if (ImGui::DragFloat3("Light Direction", &myLightDirection.x, .001f))
 	{
-		myInvertedLightDirection = -myLightDirection.GetNormalized();
+		myInvertedLightDirection = -myLightDirection.GetNormalizedNoAssert();
 	}
 }
 
