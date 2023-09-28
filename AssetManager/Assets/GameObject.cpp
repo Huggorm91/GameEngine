@@ -173,12 +173,7 @@ void GameObject::Update()
 	{
 		if (myTransform.HasChanged())
 		{
-			myTransform.Update();
-
-			for (auto [type, index] : myIndexList)
-			{
-				myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
-			}
+			TransformHasChanged();
 		}
 
 		for (auto [type, index] : myIndexList)
@@ -275,12 +270,29 @@ void GameObject::SetParent(GameObject* anObject)
 {
 	myParent = anObject;
 	myTransform.SetParent(&anObject->myTransform);
+	TransformHasChanged();
 }
 
 void GameObject::RemoveParent()
 {
 	myParent = nullptr;
 	myTransform.RemoveParent();
+	TransformHasChanged();
+}
+
+void GameObject::TransformHasChanged()
+{
+	myTransform.Update();
+
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+	}
+
+	for (auto& child : myChildren)
+	{
+		child->TransformHasChanged();
+	}
 }
 
 void GameObject::AddChild(GameObject* anObject)
@@ -400,4 +412,9 @@ void GameObject::MarkAsPrefab(unsigned anID)
 		const_cast<unsigned&>(myID) = anID;
 		localIDCount--;
 	}
+}
+
+void SetGameObjectIDCount(unsigned aValue)
+{
+	GameObject::localIDCount = aValue;
 }

@@ -207,11 +207,28 @@ Json::Value Transform::ToJson() const
 
 void Transform::UpdateTransform()
 {
+	myTransform = GetTotalTransform();
+	myWorldPosition = myTransform * CommonUtilities::Vector4f{ 0.f, 0.f, 0.f, 1.f };
 	myHasChanged = false;
-	myTransform = CommonUtilities::Matrix4x4f::CreateScaleMatrix(GetTotalScale()) *
-		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(GetTotalRotation())) *
-		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(GetTotalPosition());
-	myWorldPosition = myTransform * CommonUtilities::Vector4f{ myPosition, 1.f };
+}
+
+CommonUtilities::Matrix4x4f Transform::GetTransform() const
+{
+	return CommonUtilities::Matrix4x4f::CreateScaleMatrix(myScale) *
+		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(myRotation)) *
+		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+}
+
+CommonUtilities::Matrix4x4f Transform::GetTotalTransform() const
+{
+	if (myParent)
+	{
+		return GetTransform() * myParent->GetTotalTransform();
+	}
+	else
+	{
+		return GetTransform();
+	}
 }
 
 CommonUtilities::Vector3f Transform::GetTotalPosition() const

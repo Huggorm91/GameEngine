@@ -4,6 +4,7 @@
 #include <fstream>
 
 class Prefab;
+void SetGameObjectIDCount(unsigned aValue);
 
 class GameObject
 {
@@ -66,8 +67,6 @@ public:
 	void ToogleActive();
 	bool IsActive() const;
 
-	void SetParent(GameObject* anObject);
-	void RemoveParent();
 	void AddChild(GameObject* anObject);
 	void RemoveChild(GameObject* anObject);
 
@@ -86,7 +85,6 @@ public:
 	// Only call before creating another GameObject!
 	void MarkAsPrefab(unsigned anID);
 
-	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
@@ -94,6 +92,7 @@ private:
 	friend class PrefabManager;
 	GameObject(unsigned anID);
 #endif // !_RETAIL
+	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
 	static unsigned localIDCount;
 
@@ -113,6 +112,11 @@ private:
 #endif // !_RETAIL
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	CommonUtilities::Blackboard<unsigned> myComponents;
+
+	void SetParent(GameObject* anObject);
+	void RemoveParent();
+
+	void TransformHasChanged();
 };
 
 template<class T>

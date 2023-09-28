@@ -389,7 +389,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	}
 	fileStream.close();
 
-	GameObject::SetIDCount(json["GameObjectIDCount"].asUInt());
+	SetGameObjectIDCount(json["GameObjectIDCount"].asUInt());
 	for (auto& object : json["GameObjects"])
 	{
 		AddGameObject(object, false);
@@ -401,6 +401,12 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
+
+	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube));
+	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube));
+	cube2->SetPosition({150.f, 0.f, 0.f});
+	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
+	cube1->AddChild(cube2.get());
 }
 
 void ModelViewer::Update()

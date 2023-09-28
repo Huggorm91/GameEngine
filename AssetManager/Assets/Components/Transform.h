@@ -53,6 +53,8 @@ private:
 
 	void UpdateTransform();
 
+	CommonUtilities::Matrix4x4f GetTransform() const;
+	CommonUtilities::Matrix4x4f GetTotalTransform() const;
 	CommonUtilities::Vector3f GetTotalPosition() const;
 	CommonUtilities::Vector3f GetTotalRotation() const;
 	CommonUtilities::Vector3f GetTotalScale() const;
