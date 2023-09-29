@@ -83,14 +83,12 @@ GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexLi
 
 GameObject::~GameObject()
 {
-	if (myParent)
-	{
-		myParent->RemoveChild(this);
-	}
 	for (auto& child : myChildren)
 	{
-		child->RemoveParent();
+		child->myParent = nullptr;
+		child->myTransform.RemoveParent();
 	}
+	RemoveFromParent();
 }
 
 GameObject& GameObject::operator=(const Prefab& aPrefab)
@@ -268,17 +266,37 @@ bool GameObject::IsActive() const
 
 void GameObject::SetParent(GameObject* anObject)
 {
+	RemoveFromParent();
 	myParent = anObject;
 	myTransform.SetParent(&anObject->myTransform);
 	TransformHasChanged();
 }
 
-void GameObject::RemoveParent()
+void GameObject::RemoveParentInternal()
 {
 	myParent = nullptr;
 	myTransform.RemoveParent();
 	TransformHasChanged();
 }
+
+void GameObject::RemoveFromParent()
+{
+	if (myParent)
+	{
+		for (auto iter = myParent->myChildren.begin(); iter != myParent->myChildren.end(); iter++)
+		{
+#ifndef _RETAIL
+			if (iter->get() == this)
+#else
+			if ((*iter) == this)
+#endif // !_RETAIL
+			{
+				myParent->myChildren.erase(iter);
+				break;
+			}
+			}
+		}
+	}
 
 void GameObject::TransformHasChanged()
 {
@@ -295,6 +313,36 @@ void GameObject::TransformHasChanged()
 	}
 }
 
+#ifndef _RETAIL
+void GameObject::AddChild(std::shared_ptr<GameObject> anObject)
+{
+	anObject->SetParent(this);
+	myChildren.emplace_back(anObject);
+}
+
+void GameObject::RemoveChild(std::shared_ptr<GameObject> anObject)
+{
+	for (auto iter = myChildren.begin(); iter != myChildren.end(); iter++)
+	{
+		if (*iter == anObject)
+		{
+			(*iter)->RemoveParentInternal();
+			myChildren.erase(iter);
+			return;
+		}
+	}
+}
+
+const std::vector<std::shared_ptr<GameObject>>& GameObject::GetChildren() const
+{
+	return myChildren;
+}
+
+std::vector<std::shared_ptr<GameObject>>& GameObject::GetChildren()
+{
+	return myChildren;
+}
+#else
 void GameObject::AddChild(GameObject* anObject)
 {
 	anObject->SetParent(this);
@@ -314,6 +362,44 @@ void GameObject::RemoveChild(GameObject* anObject)
 	}
 }
 
+const std::vector<GameObject*>& GameObject::GetChildren() const
+{
+	return myChildren;
+}
+
+std::vector<GameObject*>& GameObject::GetChildren()
+{
+	return myChildren;
+}
+#endif // !_RETAIL
+
+
+const GameObject* GameObject::GetParent() const
+{
+	return myParent;
+}
+
+GameObject* GameObject::GetParent()
+{
+	return myParent;
+}
+
+void GameObject::RemoveParent()
+{
+	RemoveFromParent();
+	RemoveParentInternal();
+}
+
+bool GameObject::HasChild() const
+{
+	return myChildren.size() > 0;
+}
+
+bool GameObject::HasParent() const
+{
+	return myParent != nullptr;
+}
+
 void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
@@ -331,6 +417,11 @@ unsigned int GameObject::GetComponentCount() const
 }
 
 unsigned int GameObject::GetID() const
+{
+	return myID;
+}
+
+const unsigned& GameObject::GetIDRef() const
 {
 	return myID;
 }
@@ -366,8 +457,8 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 					ImGui::TreePop();
 				}
 			}
-		}
 	}
+}
 }
 
 Json::Value GameObject::ToJson() const

@@ -407,35 +407,93 @@ void ImguiManager::CreateSelectedObjectWindow()
 
 void ImguiManager::CreateSceneContentWindow()
 {
-	using namespace CommonUtilities;
-
 	if (ImGui::Begin("Scene"))
 	{
-		for (auto& [id, object] : myModelViewer->myGameObjects)
+		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myLoadedScene.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+
+		if (ImGui::BeginDragDropTarget())
 		{
-			const bool isSelected = IsSelected(object);
+			DropSceneContent(nullptr);
+			ImGui::EndDragDropTarget();
+		}
 
-			if (isSelected)
+		if (isOpen)
+		{
+			for (auto& [id, object] : myModelViewer->myGameObjects)
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, { 0.f,1.f,0.f,1.f });
-			}
-
-			if (ImGui::Button(myImguiNameIndex.at(object.get()).c_str()))
-			{
-				if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+				if (object->HasParent())
 				{
-					mySelectedObjects.clear();
+					continue;
 				}
-				mySelectedObjects.emplace_back(object);
-			}
 
-			if (isSelected)
+				SceneContentButton(object);
+			}
+			ImGui::TreePop();
+		}		
+	}
+	ImGui::End();
+}
+
+void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObject)
+{
+	using namespace CommonUtilities;
+
+	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
+
+	if (ImGui::IsItemClicked()) 
+	{
+		if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+		{
+			mySelectedObjects.clear();
+		}
+		mySelectedObjects.emplace_back(anObject);
+	}
+
+	if (ImGui::BeginDragDropTarget()) 
+	{
+		DropSceneContent(anObject.get());
+		ImGui::EndDragDropTarget();
+	}
+
+	if (ImGui::BeginDragDropSource()) 
+	{
+		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
+		ImGui::EndDragDropSource();
+	}
+
+	if (isOpen)
+	{
+		for (auto& child : anObject->GetChildren())
+		{
+			SceneContentButton(myModelViewer->GetGameObject(child->GetID()));
+		}
+		ImGui::TreePop();
+	}
+}
+
+void ImguiManager::DropSceneContent(GameObject* aParent)
+{
+	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_SceneObject"))
+	{
+		//IM_ASSERT(payload->DataSize == sizeof(unsigned));
+		//unsigned id = *static_cast<unsigned*>(payload->Data);
+		if (aParent)
+		{
+			auto parent = myModelViewer->GetGameObject(aParent->GetID());
+			for (auto& object : mySelectedObjects)
 			{
-				ImGui::PopStyleColor();
+				parent->AddChild(object.lock());
+			}
+			//anObject->AddChild(myModelViewer->GetGameObject(id));
+		}
+		else
+		{
+			for (auto& object : mySelectedObjects)
+			{
+				object.lock()->RemoveParent();
 			}
 		}
 	}
-	ImGui::End();
 }
 
 void ImguiManager::CreatePrefabWindow()

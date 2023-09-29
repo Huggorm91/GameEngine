@@ -67,14 +67,33 @@ public:
 	void ToogleActive();
 	bool IsActive() const;
 
+	bool HasChild() const;
+	bool HasParent() const;
+
+	const GameObject* GetParent() const;
+	GameObject* GetParent();
+
+	void RemoveParent();
+#ifndef _RETAIL
+	void AddChild(std::shared_ptr<GameObject> anObject);
+	void RemoveChild(std::shared_ptr<GameObject> anObject);
+
+	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const;
+	std::vector<std::shared_ptr<GameObject>>& GetChildren();
+#else
 	void AddChild(GameObject* anObject);
 	void RemoveChild(GameObject* anObject);
+
+	const std::vector<GameObject*>& GetChildren() const;
+	std::vector<GameObject*>& GetChildren();
+#endif // !_RETAIL
 
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
 
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
+	const unsigned& GetIDRef() const;
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
@@ -101,20 +120,24 @@ private:
 	unsigned myCount;
 
 	GameObject* myParent;
-	std::vector<GameObject*> myChildren;
 
 	std::string myName;
 	std::string myImguiText;
 	Transform myTransform;
 
 #ifndef _RETAIL
+	std::vector<std::shared_ptr<GameObject>> myChildren;
 	std::vector<const Component*> myDebugPointers;
+#else
+	std::vector<GameObject*> myChildren;
 #endif // !_RETAIL
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	CommonUtilities::Blackboard<unsigned> myComponents;
 
-	void SetParent(GameObject* anObject);
-	void RemoveParent();
+	void SetParent(GameObject*);
+
+	void RemoveParentInternal();
+	void RemoveFromParent();
 
 	void TransformHasChanged();
 };

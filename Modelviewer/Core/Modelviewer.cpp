@@ -389,6 +389,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	}
 	fileStream.close();
 
+	myLoadedScene = aPath;
 	SetGameObjectIDCount(json["GameObjectIDCount"].asUInt());
 	for (auto& object : json["GameObjects"])
 	{
@@ -406,7 +407,7 @@ void ModelViewer::Init()
 	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube));
 	cube2->SetPosition({150.f, 0.f, 0.f});
 	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
-	cube1->AddChild(cube2.get());
+	cube1->AddChild(cube2);
 }
 
 void ModelViewer::Update()

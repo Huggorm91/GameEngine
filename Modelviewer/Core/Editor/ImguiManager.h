@@ -79,6 +79,8 @@ private:
 
 	void CreateSelectedObjectWindow();
 	void CreateSceneContentWindow();
+	void SceneContentButton(const std::shared_ptr<GameObject>& anObject);
+	void DropSceneContent(GameObject* aParent);
 
 	void CreatePrefabWindow();
 	void CreateNewObjectWindow();

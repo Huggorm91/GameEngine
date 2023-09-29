@@ -92,6 +92,7 @@ private:
 	SplashWindow* mySplashWindow{ nullptr };
 
 	std::string mySettingsPath{"Settings/mw_settings.json"};
+	std::string myLoadedScene;
 	ApplicationState myApplicationState;
 
 	Logger myLogger;

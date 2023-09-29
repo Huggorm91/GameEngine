@@ -17,4 +17,7 @@ protected:
 	std::shared_ptr<GameObject> GetGameObject(unsigned anID) const;
 	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject) const;
 	bool RemoveGameObject(unsigned anID) const;
+
+private:
+	bool EraseObject(unsigned anID) const;
 };

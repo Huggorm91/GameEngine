@@ -23,11 +23,26 @@ std::shared_ptr<GameObject> EditCommand::GetGameObject(unsigned anID) const
 
 std::shared_ptr<GameObject>& EditCommand::AddGameObject(const std::shared_ptr<GameObject>& anObject) const
 {
-	ModelViewer::Get().myImguiManager.AddGameObject(anObject.get());
-	return ModelViewer::Get().myGameObjects.emplace(anObject->GetID(), anObject).first->second;
+	auto& imguiManager = ModelViewer::Get().myImguiManager;
+	auto& gameObjects = ModelViewer::Get().myGameObjects;
+	for (auto& child : anObject->GetChildren())
+	{
+		AddGameObject(child);
+	}
+	imguiManager.AddGameObject(anObject.get());
+	return gameObjects.emplace(anObject->GetID(), anObject).first->second;
 }
 
 bool EditCommand::RemoveGameObject(unsigned anID) const
+{
+	for (auto& child : ModelViewer::Get().GetGameObject(anID)->GetChildren())
+	{
+		EraseObject(child->GetID());
+	}
+	return EraseObject(anID);
+}
+
+bool EditCommand::EraseObject(unsigned anID) const
 {
 	auto& gameObjects = ModelViewer::Get().myGameObjects;
 	if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
