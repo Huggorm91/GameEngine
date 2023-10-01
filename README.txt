@@ -15,3 +15,5 @@ Ctrl + Z ångra senaste redigeringen
 Ctrl + Y gör om senaste ångrade redigeringen
 
 Del raderar det valda objektet
+
+Håll in Ctrl för att markera flera objekt i scen-listan
