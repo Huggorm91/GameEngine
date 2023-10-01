@@ -12,9 +12,9 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     {
 #endif // !_RETAIL
     
-                float2 scaledUV = input.UVs[0] * MB_UVTiling;
-                float4 albedoColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
-                albedoColor = GetAlphaBlendColor(input.Color[0], albedoColor);
+                const float2 scaledUV = input.UVs[0] * MB_UVTiling;
+                const float4 textureColor = AlbedoTexture.Sample(DefaultSampler, scaledUV);
+                float4 albedoColor = GetAlphaBlendColor(input.Color[0], textureColor);
                 albedoColor = GetAlphaBlendColor(MB_AlbedoColor, albedoColor);
                 //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
@@ -45,7 +45,9 @@ DefaultPixelOutput main(DefaultVertexToPixel input)
     
                 result.Color.a = albedoColor.a;
                 result.Color.rgb = GetPblLight(data, albedoColor.rgb, materialMap.r);
-                result.Color.rgb += albedoColor.rgb * emission;
+                const float emissionMultiplier = emission * MB_EmissionIntensity;
+                const float3 emissionColor = GetAlphaBlendColor(MB_EmissionColor, float4(textureColor.rgb, 1 - MB_EmissionColor.a)).rgb * emissionMultiplier;
+                result.Color.rgb += emissionColor;
 #ifndef _RETAIL
                 break;
             }

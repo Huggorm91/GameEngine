@@ -5,14 +5,14 @@
 struct MaterialBufferData
 {
 	CommonUtilities::Vector4f AlbedoColor{};
-	CommonUtilities::Vector3f EmissionColor{};
+	CommonUtilities::Vector4f EmissionColor{};
 	float EmissionIntensity{};
 	CommonUtilities::Vector2f UVTiling{};
 	float NormalStrength{};
 	float Shininess{};
 	float Metalness{};
 
-	CommonUtilities::Vector3f padding;
+	CommonUtilities::Vector2f padding;
 };
 
 typedef ConstantBuffer<MaterialBufferData> MaterialBuffer;

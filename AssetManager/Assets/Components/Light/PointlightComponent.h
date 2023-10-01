@@ -10,8 +10,10 @@ public:
 	PointlightComponent(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	PointlightComponent(const Json::Value& aJson);
 	PointlightComponent(const PointlightComponent& aLight);
+	PointlightComponent(PointlightComponent&& aLight) = default;
 	~PointlightComponent() = default;
 	PointlightComponent& operator=(const PointlightComponent& aLight);
+	PointlightComponent& operator=(PointlightComponent&& aLight) = default;
 
 	void Init(float aRadius, float anIntensity = 1.f, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, bool aCastShadows = true);
 	void Update() override;

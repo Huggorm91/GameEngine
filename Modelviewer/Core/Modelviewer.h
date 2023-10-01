@@ -3,17 +3,16 @@
 
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
+#include "GraphicsEngine/Camera/PerspectiveCamera.h"
 #include "Logging/Logging.h"
 
-#include "AssetManager/Assets/Prefab.h"
-#include "GraphicsEngine/Camera/PerspectiveCamera.h"
-
-#include "Commands/EditCommand.h"
 
 class SplashWindow;
 
 #ifndef _RETAIL
-#include <InputHandler.h>
+#include "Editor/ImguiManager.h"
+#include "Commands/EditCommand.h"
+
 class ModelViewer: public CommonUtilities::InputObserver
 {
 #else
@@ -37,18 +36,36 @@ public:
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
+#ifndef _RETAIL
+	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
+	void SetDropFile(HDROP aHandle);
+
+	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
+
+	std::shared_ptr<GameObject>& AddGameObject(bool aAddToUndo = true);
+	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo = true);
+	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
+
+	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
+	std::shared_ptr<GameObject> GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+#else
 	GameObject& AddGameObject();
 	GameObject& AddGameObject(const GameObject& anObject);
 	GameObject& AddGameObject(GameObject&& anObject);
 
 	GameObject* GetGameObject(unsigned anID);
-	GameObject* GetGameObject(const CommonUtilities::Vector4f& anID);
+	GameObject* GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+#endif // _RETAIL
 
 	bool RemoveGameObject(unsigned anID);
 
 	void SaveState() const;
+
 	void SaveScene(const std::string& aPath) const;
 	void LoadScene(const std::string& aPath);
+
+	static inline const char* GetSceneExtension(){ return ".lvl"; }
+	static inline const char* GetScenePath(){ return "Content\\Scenes\\"; }
 
 #ifndef _RETAIL
 	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
@@ -57,19 +74,15 @@ public:
 
 private:
 #ifndef _RETAIL
-	bool myIsEditingPrefab;
-	bool myIsShowingPrefabWindow;
-	bool myIsShowingNewObjectWindow;
-	ComponentType mySelectedComponentType;
+	friend class ImguiManager;
+	friend class EditCommand;
+
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
-	GameObject* mySelectedObject; 
-	const std::string* mySelectedPrefabName;
-	Prefab myEditPrefab;
-	GameObject myNewObject;
-	std::string mySelectedPath;
-	std::unordered_map<std::string, unsigned> myImguiNameCounts;
+
+	ImguiManager myImguiManager;
+
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 #endif // _RETAIL
@@ -79,12 +92,17 @@ private:
 	SplashWindow* mySplashWindow{ nullptr };
 
 	std::string mySettingsPath{"Settings/mw_settings.json"};
+	std::string myLoadedScene;
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
 	PerspectiveCamera myCamera;
 
+#ifndef _RETAIL
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myGameObjects;
+#else
 	std::unordered_map<unsigned, GameObject> myGameObjects;
+#endif // _RETAIL
 
 	ModelViewer();
 
@@ -100,19 +118,7 @@ private:
 	void Update();
 
 #ifndef _RETAIL
-	void InitImgui();
-	void UpdateImgui();
-	void RenderImgui();
-
-	void CreatePreferenceWindow();
-	void CreateSelectedObjectWindow();
-	void CreateSceneContentWindow();
-
-	void CreatePrefabWindow();
-	void CreateNewObjectWindow();
-
-	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
-	void Undo();
-	void Redo();
+	void UndoCommand();
+	void RedoCommand();
 #endif // _RETAIL
 };

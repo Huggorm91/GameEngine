@@ -14,6 +14,12 @@ public:
 
 	static void Init();
 	static void GeneratePrimitives();
+	static void PreLoadAssets();
+
+	// Call after releasing importer in order to initialize the Importer again
+	static void RestartImporter();
+	// Uninitializes the Importer in order to free resources
+	static void ReleaseImporter();
 
 	template<class T> static T GetAsset(const std::string& anIdentifier);
 
@@ -59,25 +65,39 @@ public:
 	inline static void SavePrefab(const GameObject& anAsset, const std::string& aPath) { myPrefabManager.SavePrefab(aPath, anAsset); }
 	inline static void SaveAllPrefabs() { myPrefabManager.SaveAllPrefabs(); }
 
-	inline static std::string GetModelExtension(){ return ModelManager::GetExtension(); }
-	inline static std::string GetAnimationExtension(){ return AnimationManager::GetExtension(); }
-	inline static std::string GetTextureExtension(){ return TextureManager::GetExtension(); }
-	inline static std::string GetMaterialExtension(){ return MaterialManager::GetExtension(); }
-	inline static std::string GetShaderExtension(){ return ShaderManager::GetExtension(); }
-	inline static std::string GetPrefabExtension(){ return PrefabManager::GetExtension(); }
+	inline static const char* GetModelExtension(){ return ModelManager::GetExtension(); }
+	inline static const char* GetAnimationExtension(){ return AnimationManager::GetExtension(); }
+	inline static const char* GetTextureExtension(){ return TextureManager::GetExtension(); }
+	inline static const char* GetMaterialExtension(){ return MaterialManager::GetExtension(); }
+	inline static const char* GetShaderExtension(){ return ShaderManager::GetExtension(); }
+	inline static const char* GetPrefabExtension(){ return PrefabManager::GetExtension(); }
 
-	inline static const std::string& GetModelPath(){ return myModelManager.GetPath(); }
-	inline static const std::string& GetAnimationPath(){ return myAnimationManager.GetPath(); }
-	inline static const std::string& GetTexturePath(){ return myTextureManager.GetPath(); }
-	inline static const std::string& GetMaterialPath(){ return myMaterialManager.GetPath(); }
-	inline static const std::string& GetShaderPath(){ return myShaderManager.GetPath(); }
-	inline static const std::string& GetPrefabPath(){ return myPrefabManager.GetPath(); }
+	inline static const char* GetModelPath(){ return ModelManager::GetPath(); }
+	inline static const char* GetAnimationPath(){ return AnimationManager::GetPath(); }
+	inline static const char* GetTexturePath(){ return TextureManager::GetPath(); }
+	inline static const char* GetMaterialPath(){ return MaterialManager::GetPath(); }
+	inline static const char* GetShaderPath(){ return ShaderManager::GetPath(); }
+	inline static const char* GetPrefabPath(){ return PrefabManager::GetPath(); }
 
-	// inline static const std::unordered_set<std::string>& GetAvailableModels(){ return myModelManager.GetPath(); }
-	// inline static const std::unordered_set<std::string>& GetAvailableAnimations(){ return myAnimationManager.GetPath(); }
-	// inline static const std::unordered_set<std::string>& GetAvailableTextures(){ return myTextureManager.GetPath(); }
-	// inline static const std::unordered_set<std::string>& GetAvailableMaterials(){ return myMaterialManager.GetPath(); }
-	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetPath(); }
+	inline static const wchar_t* GetModelExtensionW(){ return ModelManager::GetExtensionW(); }
+	inline static const wchar_t* GetAnimationExtensionW(){ return AnimationManager::GetExtensionW(); }
+	inline static const wchar_t* GetTextureExtensionW(){ return TextureManager::GetExtensionW(); }
+	inline static const wchar_t* GetMaterialExtensionW(){ return MaterialManager::GetExtensionW(); }
+	inline static const wchar_t* GetShaderExtensionW(){ return ShaderManager::GetExtensionW(); }
+	inline static const wchar_t* GetPrefabExtensionW(){ return PrefabManager::GetExtensionW(); }
+
+	inline static const wchar_t* GetModelPathW(){ return ModelManager::GetPathW(); }
+	inline static const wchar_t* GetAnimationPathW(){ return AnimationManager::GetPathW(); }
+	inline static const wchar_t* GetTexturePathW(){ return TextureManager::GetPathW(); }
+	inline static const wchar_t* GetMaterialPathW(){ return MaterialManager::GetPathW(); }
+	inline static const wchar_t* GetShaderPathW(){ return ShaderManager::GetPathW(); }
+	inline static const wchar_t* GetPrefabPathW(){ return PrefabManager::GetPathW(); }
+
+	// inline static const std::unordered_set<std::string>& GetAvailableModels(){ return myModelManager.GetModellist(); }
+	// inline static const std::unordered_set<std::string>& GetAvailableAnimations(){ return myAnimationManager.GetAnimationlist(); }
+	inline static const std::unordered_set<std::string>& GetAvailableTextures(){ return myTextureManager.GetTexturelist(); }
+	// inline static const std::unordered_set<std::string>& GetAvailableMaterials(){ return myMaterialManager.GetMateriallist(); }
+	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetShaderlist(); }
 	inline static const std::unordered_set<std::string>& GetAvailablePrefabs(){ return myPrefabManager.GetPrefablist(); }
 
 private:

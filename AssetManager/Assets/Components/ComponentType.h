@@ -13,8 +13,6 @@ enum class ComponentType
 	Spotlight,
 	DebugDraw,
 	PerspectiveCamera,
-	Input,
-	Movement,
 	Count
 };
 

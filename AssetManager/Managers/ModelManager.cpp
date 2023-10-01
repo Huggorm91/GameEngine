@@ -6,13 +6,9 @@
 #include <Importer.h>
 #undef LoadModel
 
-ModelManager::ModelManager(const std::string& aPath) : myPath(aPath), myFilePaths(), myMeshData(), myModels(), mySkeletons()
-{
-}
-
 void ModelManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 void ModelManager::GeneratePrimitives()
@@ -23,6 +19,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("cube", std::vector<MeshData>{ CreateCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Cube", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -31,6 +28,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("sphere", std::vector<MeshData>{ CreateSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Sphere", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -39,6 +37,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("pyramid", std::vector<MeshData>{ CreatePyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Pyramid", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -47,6 +46,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("invertedcube", std::vector<MeshData>{ CreateInvertedCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedCube", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -55,6 +55,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("invertedsphere", std::vector<MeshData>{ CreateInvertedSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedSphere", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -63,6 +64,7 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("invertedpyramid", std::vector<MeshData>{ CreateInvertedPyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedPyramid", &modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
@@ -71,12 +73,14 @@ void ModelManager::GeneratePrimitives()
 		auto elementIter = myMeshData.emplace("plane", std::vector<MeshData>{ CreatePlaneMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
 		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Plane", & modelIter.first->first);
+		model.MarkAsPrefab();
 	}
 
 	{
 		GameObject& model = myModels.emplace("", GameObject()).first->second;
 		model.AddComponent<MeshComponent>();
 		model.AddComponent<AnimatedMeshComponent>();
+		model.MarkAsPrefab();
 	}
 }
 
@@ -88,14 +92,11 @@ GameObject* ModelManager::GetModel(const std::string& aPath)
 	}
 	else
 	{
-		std::string path = AddExtensionIfMissing(aPath, ".fbx");
-		path = GetValidPath(path, myPath);
+		std::string path = AddExtensionIfMissing(aPath, GetExtension());
+		path = GetValidPath(path, GetPath());
 		if (path.empty())
 		{
-			std::string lowerCase = aPath;
-			std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), [](unsigned char c) { return std::tolower(c); });
-
-			if (auto iter = myModels.find(lowerCase); iter != myModels.end())
+			if (auto iter = myModels.find(ToLower(aPath)); iter != myModels.end())
 			{
 				return &iter->second;
 			}
@@ -139,9 +140,22 @@ Skeleton* ModelManager::GetSkeleton(const std::string& aPath)
 	{
 		return &iter->second;
 	}
+
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetSkeleton: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto iter = mySkeletons.find(path); iter != mySkeletons.end())
+	{
+		return &iter->second;
+	}
 	else
 	{
-		return LoadSkeleton(aPath);
+		return LoadSkeleton(path);
 	}
 	AMLogger.Err("ModelManager: Could not find a Skeleton: " + aPath);
 	return nullptr;
@@ -154,6 +168,19 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 		return &model->GetComponent<MeshComponent>();
 	}
 
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetMesh: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto model = GetModel(path); model != nullptr)
+	{
+		return &model->GetComponent<MeshComponent>();
+	}
+
 	AMLogger.Err("ModelManager: Could not find a MeshComponent: " + aPath);
 	return nullptr;
 }
@@ -161,6 +188,19 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 AnimatedMeshComponent* ModelManager::GetAnimatedMesh(const std::string& aPath)
 {
 	if (auto model = GetModel(aPath); model != nullptr)
+	{
+		return &model->GetComponent<AnimatedMeshComponent>();
+	}
+
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
+	if (path.empty())
+	{
+		AMLogger.Err("ModelManager::GetAnimatedMesh: Could not find path: " + aPath);
+		return nullptr;
+	}
+
+	if (auto model = GetModel(path); model != nullptr)
 	{
 		return &model->GetComponent<AnimatedMeshComponent>();
 	}
@@ -210,6 +250,7 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 			{
 				AMLogger.Err("ModelManager: Could not create a vertex buffer for: " + aPath);
 				myMeshData.erase(aPath);
+				model.MarkAsPrefab();
 				myModels.erase(aPath);
 				return nullptr;
 			}
@@ -224,6 +265,7 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 			{
 				AMLogger.Err("ModelManager: Could not create an index buffer for: " + aPath);
 				myMeshData.erase(aPath);
+				model.MarkAsPrefab();
 				myModels.erase(aPath);
 				return nullptr;
 			}
@@ -239,7 +281,7 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 		{
 			model.AddComponent(MeshComponent(tgaMesh, elements, &modelIter.first->first));
 		}
-
+		model.MarkAsPrefab();
 		return &model;
 	}
 
@@ -251,19 +293,11 @@ GameObject* ModelManager::LoadModel(const std::string& aPath)
 
 Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, myPath, &AMLogger);
-	if (path.empty())
-	{
-		AMLogger.Err("ModelManager: Could not load model from path: " + aPath);
-		return nullptr;
-	}
-
 	TGA::FBX::Mesh tgaMesh;
 	bool success = false;
 	try
 	{
-		success = TGA::FBX::Importer::LoadMeshA(path, tgaMesh);
+		success = TGA::FBX::Importer::LoadMeshA(aPath, tgaMesh);
 	}
 	catch (const std::exception& e)
 	{
@@ -298,6 +332,7 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 			{
 				AMLogger.Err("ModelManager: Could not create a vertex buffer for: " + aPath);
 				myMeshData.erase(aPath);
+				model.MarkAsPrefab();
 				myModels.erase(aPath);
 				return nullptr;
 			}
@@ -312,6 +347,7 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 			{
 				AMLogger.Err("ModelManager: Could not create an index buffer for: " + aPath);
 				myMeshData.erase(aPath);
+				model.MarkAsPrefab();
 				myModels.erase(aPath);
 				return nullptr;
 			}
@@ -322,12 +358,14 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath)
 			auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
 			skeletonIter.first->second.SetPath(&skeletonIter.first->first);
 			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &modelIter.first->first, &skeletonIter.first->second));
+			model.MarkAsPrefab();
 			return &skeletonIter.first->second;
 		}
 	}
 
 	AMLogger.Err("ModelManager: Failed to load skeleton from: " + aPath);
 	myMeshData.erase(aPath);
+	myModels.at(aPath).MarkAsPrefab();
 	myModels.erase(aPath);
 	return nullptr;
 }

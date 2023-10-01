@@ -43,7 +43,7 @@ inline void EditCmd_ChangeComponent<CompType>::Execute()
 template<class CompType>
 inline void EditCmd_ChangeComponent<CompType>::Swap()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
+	GameObject* object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	CompType* component = object->GetComponent<CompType>(myComponentID);

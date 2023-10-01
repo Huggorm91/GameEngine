@@ -12,10 +12,14 @@ public:
 	MeshComponent(ComponentType aType);
 	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType = ComponentType::Mesh);
 	MeshComponent(const MeshComponent& aMeshComponent);
+	MeshComponent(MeshComponent&& aMeshComponent) noexcept;
 	virtual ~MeshComponent() = default;
+	MeshComponent& operator=(const MeshComponent& aComponent);
+	MeshComponent& operator=(MeshComponent&& aComponent) noexcept;
 
 	void Update() override;
 
+	void Init(GameObject* aParent) override;
 	void Init(const Json::Value& aJson) override;
 	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath);
 
@@ -23,8 +27,8 @@ public:
 	void SetOffsetRotation(const CommonUtilities::Vector3f& aRotation);
 	void SetOffsetScale(const CommonUtilities::Vector3f& aScale);
 
-	CommonUtilities::Matrix4x4f GetTransform() const;
-	CommonUtilities::Vector4f GetWorldPosition() const;
+	const CommonUtilities::Matrix4x4f& GetTransform() const;
+	const CommonUtilities::Vector4f& GetWorldPosition() const;
 
 	const std::vector<MeshElement>& GetElements() const;
 	std::vector<MeshElement>& GetElements();
@@ -44,9 +48,9 @@ public:
 	void SetIsDeferred(bool aState);
 	bool IsDeferred() const;
 
-	void BoundsHasChanged() const;
 	const std::string& GetName() const;
 
+	void TransformHasChanged() const override;
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	const MeshComponent* GetTypePointer() const override;
@@ -59,6 +63,8 @@ protected:
 	float myLerpValue;
 	CommonUtilities::Vector4f myLerpColor1;
 	CommonUtilities::Vector4f myLerpColor2;
+	std::string myLerpName1;
+	std::string myLerpName2;
 #endif // !_RETAIL
 	CommonUtilities::Vector4f myColor;
 	std::string myName;

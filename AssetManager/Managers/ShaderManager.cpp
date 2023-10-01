@@ -4,13 +4,9 @@
 #include "GraphicsEngine/InterOp/RHI.h"
 #include "GraphicsEngine/InterOp/Helpers.h"
 
-ShaderManager::ShaderManager(const std::string& aPath): myPath(aPath), myFilePaths(), myShaders()
-{
-}
-
 void ShaderManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(myPath, GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Shader* ShaderManager::GetShader(const std::string& aPath)
@@ -28,15 +24,8 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 Shader* ShaderManager::LoadShader(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath(), &AMLogger);
 
-#ifdef _DEBUG
-	path = GetValidPath(path, myPath + "Debug/", &AMLogger);
-#elif _RELEASE
-	path = GetValidPath(path, myPath + "Release/", &AMLogger);
-#elif _RETAIL
-	path = GetValidPath(path, myPath + "Retail/", &AMLogger);
-#endif // _DEBUG
-	
 	if (path.empty())
 	{
 		AMLogger.Err("ShaderManager: Could not load shader from path: " + aPath);

@@ -42,3 +42,18 @@ void AssetManager::GeneratePrimitives()
 {
 	myModelManager.GeneratePrimitives();
 }
+
+void AssetManager::PreLoadAssets()
+{
+	myTextureManager.LoadAllTextures();
+}
+
+void AssetManager::RestartImporter()
+{
+	TGA::FBX::Importer::InitImporter();
+}
+
+void AssetManager::ReleaseImporter()
+{
+	TGA::FBX::Importer::UninitImporter();
+}

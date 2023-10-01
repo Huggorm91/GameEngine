@@ -39,7 +39,7 @@
     <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObject.h">
+    <ClInclude Include="Core\Commands\EditCmd_ChangeTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Commands\EditCmd_AddComponent.h">
@@ -52,6 +52,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Editor\ImguiManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Editor\AssetTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_AddMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,13 +92,31 @@
     <ClCompile Include="Core\Commands\EditCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObject.cpp">
+    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Editor\ImguiManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Editor\AssetTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_AddMultipleGameObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

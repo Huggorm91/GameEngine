@@ -4,6 +4,7 @@
 #include <fstream>
 
 class Prefab;
+void SetGameObjectIDCount(unsigned aValue);
 
 class GameObject
 {
@@ -13,7 +14,7 @@ public:
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
-	~GameObject() = default;
+	~GameObject();
 
 	GameObject& operator=(const Prefab& aPrefab);
 	GameObject& operator=(const GameObject& aGameObject);
@@ -25,6 +26,8 @@ public:
 	T& AddComponent();
 	template<class T>
 	T& AddComponent(const T& aComponent);
+	template<class T>
+	T& AddComponent(T&& aComponent);
 
 	template<class T>
 	const T& GetComponent() const;
@@ -58,17 +61,39 @@ public:
 
 	const Transform& GetTransform() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
-	const CommonUtilities::Vector3f& GetWorldPosition() const;
+	const CommonUtilities::Vector4f& GetWorldPosition() const;
 
 	void SetActive(bool aIsActive);
 	void ToogleActive();
 	bool IsActive() const;
+
+	bool HasChild() const;
+	bool HasParent() const;
+
+	const GameObject* GetParent() const;
+	GameObject* GetParent();
+
+	void RemoveParent();
+#ifndef _RETAIL
+	void AddChild(std::shared_ptr<GameObject> anObject);
+	void RemoveChild(std::shared_ptr<GameObject> anObject);
+
+	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const;
+	std::vector<std::shared_ptr<GameObject>>& GetChildren();
+#else
+	void AddChild(GameObject* anObject);
+	void RemoveChild(GameObject* anObject);
+
+	const std::vector<GameObject*>& GetChildren() const;
+	std::vector<GameObject*>& GetChildren();
+#endif // !_RETAIL
 
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
 
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
+	const unsigned& GetIDRef() const;
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
@@ -79,7 +104,6 @@ public:
 	// Only call before creating another GameObject!
 	void MarkAsPrefab(unsigned anID);
 
-	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
@@ -87,21 +111,35 @@ private:
 	friend class PrefabManager;
 	GameObject(unsigned anID);
 #endif // !_RETAIL
+	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
 	static unsigned localIDCount;
 
 	bool myIsActive;
 	const unsigned myID;
 	unsigned myCount;
+
+	GameObject* myParent;
+
 	std::string myName;
 	std::string myImguiText;
 	Transform myTransform;
 
-#ifdef _DEBUG
+#ifndef _RETAIL
+	std::vector<std::shared_ptr<GameObject>> myChildren;
 	std::vector<const Component*> myDebugPointers;
-#endif // _DEBUG
+#else
+	std::vector<GameObject*> myChildren;
+#endif // !_RETAIL
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	CommonUtilities::Blackboard<unsigned> myComponents;
+
+	void SetParent(GameObject*);
+
+	void RemoveParentInternal();
+	void RemoveFromParent();
+
+	void TransformHasChanged();
 };
 
 template<class T>
@@ -116,9 +154,9 @@ inline T& GameObject::AddComponent()
 	}
 	myIndexList.emplace(&typeid(T), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // _DEBUG
+#endif // !_RETAIL
 	return myComponents.ChangeValue<T>(myCount++);
 }
 
@@ -134,9 +172,27 @@ inline T& GameObject::AddComponent(const T& aComponent)
 	}
 	myIndexList.emplace(&typeid(aComponent), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifdef _DEBUG
+#ifndef _RETAIL
 	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // _DEBUG
+#endif // !_RETAIL
+	return myComponents.ChangeValue<T>(myCount++);
+}
+
+template<class T>
+inline T& GameObject::AddComponent(T&& aComponent)
+{
+	if (myComponents.SetValue(myCount, std::move(aComponent)))
+	{
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.ChangeValueUnsafe<Component>(index)->ComponentPointersInvalidated();
+		}
+	}
+	myIndexList.emplace(&typeid(aComponent), myCount);
+	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
+#ifndef _RETAIL
+	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
+#endif // !_RETAIL
 	return myComponents.ChangeValue<T>(myCount++);
 }
 

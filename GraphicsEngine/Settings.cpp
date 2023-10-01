@@ -1,43 +1,35 @@
 #include "GraphicsEngine.pch.h"
 #include "Settings.h"
-#include "External/jsonCpp/json.h"
+#include <JsonVector.hpp>
+#include "AssetManager/AssetManager.h"
+#include "AssetManager/DirectoryFunctions.h"
 
 Settings::Settings(const Json::Value& aJson)
 {
-	DefaultMaterialTexture = aJson["MaterialTexture"].asString();
-	DefaultNormalTexture = aJson["NormalTexture"].asString();
-	DefaultMissingTexture = aJson["MissingTexture"].asString();
-	DefaultFXTexture = aJson["FXTexture"].asString();
-	DefaultCubeMap = aJson["CubeMap"].asString();
+	const std::string& textureExtension = ".dds";
+	DefaultMaterialTexture = AddExtensionIfMissing(aJson["MaterialTexture"].asString(), textureExtension);	
+	DefaultNormalTexture = AddExtensionIfMissing(aJson["NormalTexture"].asString(), textureExtension);
+	DefaultMissingTexture = AddExtensionIfMissing(aJson["MissingTexture"].asString(), textureExtension);
+	DefaultFXTexture = AddExtensionIfMissing(aJson["FXTexture"].asString(), textureExtension);
+	DefaultCubeMap = AddExtensionIfMissing(aJson["CubeMap"].asString(), textureExtension);
 
-	DefaultMaterial = aJson["DefaultMaterial"].asString();
+	DefaultMaterial = AddExtensionIfMissing(aJson["DefaultMaterial"].asString(), ".mat");
 
-	BackgroundColor.x = aJson["BackgroundColor"]["R"].asFloat();
-	BackgroundColor.y = aJson["BackgroundColor"]["G"].asFloat();
-	BackgroundColor.z = aJson["BackgroundColor"]["B"].asFloat();
-	BackgroundColor.w = aJson["BackgroundColor"]["A"].asFloat();
+	BackgroundColor = static_cast<CommonUtilities::Vector4f>(aJson["BackgroundColor"]);
 
-	std::string path;
-#ifdef _DEBUG
-	path = "Content/Shaders/Debug/";
-#elif _RELEASE
-	path = "Content/Shaders/Release/";
-#elif _RETAIL
-	path = "Content/Shaders/Retail/";
-#else
-	GELogger.Err("Settings: Invalid buildsettings in Settings(Json)!");
-#endif // _DEBUG
+	std::string path = AssetManager::GetShaderPath();
 
-	LuminancePS = path + aJson["LuminancePSShader"].asString();
-	BlurPS = path + aJson["BlurPSShader"].asString();
-	BloomPS = path + aJson["BloomPSShader"].asString();
-	GammaPS = path + aJson["GammaPSShader"].asString();
-	CopyPS = path + aJson["CopyPSShader"].asString();
+	const std::string& shaderExtension = ".cso";	
+	LuminancePS = AddExtensionIfMissing(path + aJson["LuminancePSShader"].asString(), shaderExtension);
+	BlurPS = AddExtensionIfMissing(path + aJson["BlurPSShader"].asString(), shaderExtension);
+	BloomPS = AddExtensionIfMissing(path + aJson["BloomPSShader"].asString(), shaderExtension);
+	GammaPS = AddExtensionIfMissing(path + aJson["GammaPSShader"].asString(), shaderExtension);
+	CopyPS = AddExtensionIfMissing(path + aJson["CopyPSShader"].asString(), shaderExtension);
 
-	GBufferPS = path + aJson["GBufferPSShader"].asString();
-	EnvironmentPS = path + aJson["EnvironmentPSShader"].asString();
-	PointlightPS = path + aJson["PointlightPSShader"].asString();
-	SpotlightPS = path + aJson["SpotlightPSShader"].asString();
+	GBufferPS = AddExtensionIfMissing(path + aJson["GBufferPSShader"].asString(), shaderExtension);
+	EnvironmentPS = AddExtensionIfMissing(path + aJson["EnvironmentPSShader"].asString(), shaderExtension);
+	PointlightPS = AddExtensionIfMissing(path + aJson["PointlightPSShader"].asString(), shaderExtension);
+	SpotlightPS = AddExtensionIfMissing(path + aJson["SpotlightPSShader"].asString(), shaderExtension);
 }
 
 Settings::operator Json::Value() const
@@ -51,12 +43,9 @@ Settings::operator Json::Value() const
 
 	json["DefaultMaterial"] = DefaultMaterial;
 
-	json["BackgroundColor"]["R"] = BackgroundColor.x;
-	json["BackgroundColor"]["G"] = BackgroundColor.y;
-	json["BackgroundColor"]["B"] = BackgroundColor.z;
-	json["BackgroundColor"]["A"] = BackgroundColor.w;
+	json["BackgroundColor"] = BackgroundColor.ToJsonColor();
 
-	const std::string comment = "// Only use 'ShaderName.cso' and not full path";
+	const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
 	size_t lastSlash = LuminancePS.find_last_of('/') + 1;
 	json["LuminancePSShader"] = LuminancePS.substr(lastSlash);
 	json["LuminancePSShader"].setComment(comment, Json::commentAfterOnSameLine);

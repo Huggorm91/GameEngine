@@ -49,5 +49,6 @@ public:
 	FORCEINLINE UINT GetBindFlags() const { return myBindFlags; }
 	FORCEINLINE UINT GetUsageFlags() const { return myUsageFlags; }
 	FORCEINLINE UINT GetAccessFlags() const { return myAccessFlags; }
+	FORCEINLINE ComPtr<ID3D11ShaderResourceView> GetSRV() const { return mySRV; }
 	FORCEINLINE bool IsValid() const { return myTexture != nullptr; }
 };

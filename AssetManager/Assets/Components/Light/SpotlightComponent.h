@@ -10,8 +10,10 @@ public:
 	SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
 	SpotlightComponent(const Json::Value& aJson);
 	SpotlightComponent(const SpotlightComponent& aLight);
+	SpotlightComponent(SpotlightComponent&& aLight) = default;
 	~SpotlightComponent() = default;
 	SpotlightComponent& operator=(const SpotlightComponent& aLight);
+	SpotlightComponent& operator=(SpotlightComponent&& aLight) = default;
 
 	void Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition = CommonUtilities::Vector3f::Null, const CommonUtilities::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
 	void Update() override;

@@ -5,13 +5,14 @@
 class EditCmd_AddGameObject : public EditCommand
 {
 public:
-	EditCmd_AddGameObject(const GameObject& anObject);
+	EditCmd_AddGameObject(const std::shared_ptr<GameObject>& anObject);
+	EditCmd_AddGameObject(GameObject&& anObject);
 	~EditCmd_AddGameObject() = default;
 
 	void Undo() override;
 	void Execute() override;
 
 protected:
-	std::shared_ptr<GameObject> myObject;
 	unsigned myID;
+	std::shared_ptr<GameObject> myObject;
 };

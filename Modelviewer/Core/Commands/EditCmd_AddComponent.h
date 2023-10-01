@@ -18,7 +18,7 @@ public:
 protected:
 	std::shared_ptr<CompType> myComponent;
 	unsigned myGameObjectID;
-	unsigned myComponentID;
+	unsigned myComponentIndex; // Make function to get Index of component in gameobject (To recreate the old memory adress)
 };
 
 template<class CompType>
@@ -30,7 +30,7 @@ inline EditCmd_AddComponent<CompType>::EditCmd_AddComponent(const CompType& aCom
 template<class CompType>
 inline void EditCmd_AddComponent<CompType>::Undo()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
+	GameObject* object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	const bool success = object->RemoveComponent<CompType>(myComponentID);
@@ -40,7 +40,7 @@ inline void EditCmd_AddComponent<CompType>::Undo()
 template<class CompType>
 inline void EditCmd_AddComponent<CompType>::Execute()
 {
-	GameObject* object = ModelViewer::Get().GetGameObject(myGameObjectID);
+	GameObject* object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	CompType& component = object->AddComponent<CompType>(*myComponent);
