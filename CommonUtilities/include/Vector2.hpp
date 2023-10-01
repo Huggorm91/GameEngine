@@ -90,6 +90,7 @@ namespace CommonUtilities
 		// In order to convert to and from Json you need to include "JsonVector.hpp"
 		explicit Vector2(Json::Value aJson);
 		explicit operator Json::Value() const;
+		Json::Value ToJsonColor() const;
 	};
 
 	template<typename T> const Vector2<T> Vector2<T>::Null{};
