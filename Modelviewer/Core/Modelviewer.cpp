@@ -403,8 +403,8 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
 
-	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube));
-	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube));
+	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
+	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
 	cube2->SetPosition({150.f, 0.f, 0.f});
 	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
 	cube1->AddChild(cube2);

@@ -42,6 +42,11 @@ bool EditCommand::RemoveGameObject(unsigned anID) const
 	return EraseObject(anID);
 }
 
+const std::vector<std::weak_ptr<GameObject>>& EditCommand::GetSelectedObjects() const
+{
+	return ModelViewer::Get().myImguiManager.mySelectedObjects;
+}
+
 bool EditCommand::EraseObject(unsigned anID) const
 {
 	auto& gameObjects = ModelViewer::Get().myGameObjects;

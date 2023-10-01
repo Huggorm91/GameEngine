@@ -57,8 +57,7 @@ private:
 	std::string myOverwriteToPath;
 	std::string mySelectedPath;
 
-	Transform myVisibleTransform;
-	Transform myApplicableTransform;
+	Transform myMultiSelectionTransform;
 
 	Prefab myEditPrefab;
 	GameObject myNewObject;

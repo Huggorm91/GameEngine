@@ -15,6 +15,12 @@ public:
 	Transform& operator=(const Transform& aTransform);
 	Transform& operator=(Transform&& aTransform) noexcept;
 
+	Transform& operator+=(const Transform& aTransform);
+	Transform& operator-=(const Transform& aTransform);
+	Transform operator+(const Transform& aTransform) const;
+	Transform operator-(const Transform& aTransform) const;
+
+
 	void SetPosition(const CommonUtilities::Vector3f& aPosition);
 	const CommonUtilities::Vector3f& GetPosition() const;
 
@@ -27,6 +33,8 @@ public:
 	const CommonUtilities::Vector4f& GetWorldPosition() const;
 	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
 
+	const Transform* GetParent() const;
+	Transform* GetParent();
 	void SetHasChanged(bool aState);
 	bool HasChanged() const;
 

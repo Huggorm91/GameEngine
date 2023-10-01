@@ -266,6 +266,10 @@ bool GameObject::IsActive() const
 
 void GameObject::SetParent(GameObject* anObject)
 {
+	if (anObject == this)
+	{
+		return;
+	}
 	RemoveFromParent();
 	myParent = anObject;
 	myTransform.SetParent(&anObject->myTransform);
@@ -316,6 +320,10 @@ void GameObject::TransformHasChanged()
 #ifndef _RETAIL
 void GameObject::AddChild(std::shared_ptr<GameObject> anObject)
 {
+	if (anObject.get() == this)
+	{
+		return;
+	}
 	anObject->SetParent(this);
 	myChildren.emplace_back(anObject);
 }

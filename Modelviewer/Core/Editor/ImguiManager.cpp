@@ -3,6 +3,7 @@
 #include "../Commands/EditCmd_AddGameobject.h"
 #include "../Commands/EditCmd_RemoveGameobject.h"
 #include "../Commands/EditCmd_RemoveMultipleGameobjects.h"
+#include "../Commands/EditCmd_ChangeMultipleGameObjects.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
@@ -20,7 +21,7 @@
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
 mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
-myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex()
+myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(), myMultiSelectionTransform()
 {
 	myNewObject.MarkAsPrefab();
 }
@@ -396,10 +397,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 		}
 		else if (mySelectedObjects.size() > 1)
 		{
-			if (myVisibleTransform.CreateMultipleSelectionImGuiComponents("Selected GameObject"))
-			{
-
-			}
+			myMultiSelectionTransform.CreateMultipleSelectionImGuiComponents("Selected GameObject");
 		}
 	}
 	ImGui::End();

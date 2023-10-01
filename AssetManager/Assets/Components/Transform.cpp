@@ -7,6 +7,7 @@
 #include "ModelViewer/Core/ModelViewer.h"
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
+#include "ModelViewer/Core/Commands/EditCmd_ChangeMultipleGameObjects.h"
 #endif // !_RETAIL
 
 Transform::Transform() : myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
@@ -55,6 +56,38 @@ Transform& Transform::operator=(Transform&& aTransform) noexcept
 	myParent = nullptr;
 	myWorldPosition = aTransform.myWorldPosition;
 	return *this;
+}
+
+Transform& Transform::operator+=(const Transform& aTransform)
+{
+	myPosition += aTransform.myPosition;
+	myRotation += aTransform.myRotation;
+	myScale *= aTransform.myScale;
+	myHasChanged = true;
+	return *this;
+}
+
+Transform& Transform::operator-=(const Transform& aTransform)
+{
+	myPosition -= aTransform.myPosition;
+	myRotation -= aTransform.myRotation;
+	myScale /= aTransform.myScale;
+	myHasChanged = true;
+	return *this;
+}
+
+Transform Transform::operator+(const Transform& aTransform) const
+{
+	Transform result = *this;
+	result += aTransform;
+	return result;
+}
+
+Transform Transform::operator-(const Transform& aTransform) const
+{
+	Transform result = *this;
+	result -= aTransform;
+	return result;
 }
 
 void Transform::SetPosition(const CommonUtilities::Vector3f& aPosition)
@@ -106,6 +139,16 @@ const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
 	return myTransform;
+}
+
+const Transform* Transform::GetParent() const
+{
+	return myParent;
+}
+
+Transform* Transform::GetParent()
+{
+	return myParent;
 }
 
 void Transform::SetHasChanged(bool aState)
@@ -173,20 +216,29 @@ bool Transform::CreateMultipleSelectionImGuiComponents(const std::string& aWindo
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
 	{
-		if (ImGui::DragFloat3("Position", &myPosition.x))
+		auto position = myPosition;
+		if (ImGui::DragFloat3("Position", &position.x))
 		{
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(position - myPosition, EditCmd_ChangeMultipleGameObjects::TransformType::Position, this));
+			myPosition = position;
 			myHasChanged = true;
 			hasChanged = true;
 		}
 
-		if (ImGui::DragFloat3("Rotation", &myRotation.x))
+		auto rotation = myRotation;
+		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(rotation - myRotation, EditCmd_ChangeMultipleGameObjects::TransformType::Rotation, this));
+			myRotation = rotation;
 			myHasChanged = true;
 			hasChanged = true;
 		}
 
-		if (ImGui::DragFloat3("Scale", &myScale.x))
+		auto scale = myScale;
+		if (ImGui::DragFloat3("Scale", &scale.x))
 		{
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(scale - myScale, EditCmd_ChangeMultipleGameObjects::TransformType::Scale, this));
+			myScale = scale;
 			myHasChanged = true;
 			hasChanged = true;
 		}

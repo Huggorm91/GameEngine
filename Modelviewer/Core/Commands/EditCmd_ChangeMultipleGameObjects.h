@@ -5,7 +5,14 @@
 class EditCmd_ChangeMultipleGameObjects : public EditCommand
 {
 public:
-	EditCmd_ChangeMultipleGameObjects(const std::vector<std::shared_ptr<GameObject>>& anObjectList, const Transform& aChange);
+	enum class TransformType
+	{
+		Position,
+		Rotation,
+		Scale
+	};
+
+	EditCmd_ChangeMultipleGameObjects(const CommonUtilities::Vector3f& aChange, TransformType aType, Transform* anEditorTransform);
 	~EditCmd_ChangeMultipleGameObjects() = default;
 
 	void Undo() override;
@@ -13,6 +20,8 @@ public:
 	bool Merge(const EditCommand* aCommand) override;
 
 protected:
-	Transform myChange;
+	TransformType myType;
+	Transform* myEditorTransform;
+	CommonUtilities::Vector3f myChange;
 	std::vector<std::shared_ptr<GameObject>> myObjects;
 };
