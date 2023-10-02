@@ -1,14 +1,7 @@
 #include "EditCmd_ChangeMultipleGameObjects.h"
 
-EditCmd_ChangeMultipleGameObjects::EditCmd_ChangeMultipleGameObjects(const CommonUtilities::Vector3f& aChange, TransformType aType, Transform* anEditorTransform) : myType(aType), myEditorTransform(anEditorTransform), myChange(aChange), myObjects()
+EditCmd_ChangeMultipleGameObjects::EditCmd_ChangeMultipleGameObjects(const CommonUtilities::Vector3f& aChange, TransformType aType, Transform* anEditorTransform) : myType(aType), myEditorTransform(anEditorTransform), myChange(aChange), myObjects(GetSelectedObjects())
 {
-	for (auto& object : GetSelectedObjects())
-	{
-		if (!object.expired())
-		{
-			myObjects.emplace_back(object.lock());
-		}
-	}
 }
 
 void EditCmd_ChangeMultipleGameObjects::Undo()
@@ -90,7 +83,7 @@ bool EditCmd_ChangeMultipleGameObjects::Merge(const EditCommand* aCommand)
 	{
 		for (size_t i = 0; i < myObjects.size(); i++)
 		{
-			if (myObjects[i] != pointer->myObjects[i])
+			if (myObjects != pointer->myObjects)
 			{
 				return false;
 			}

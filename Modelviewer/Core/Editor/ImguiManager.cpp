@@ -116,20 +116,13 @@ void ImguiManager::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::e
 	{
 		if (mySelectedObjects.size() == 1)
 		{
-			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObjects.back().lock()));
+			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(*mySelectedObjects.begin()));
 		}
 		else if (mySelectedObjects.size() > 1)
 		{
-			std::vector<std::shared_ptr<GameObject>> objectlist;
-			for (auto& pointer : mySelectedObjects)
-			{
-				if (!pointer.expired())
-				{
-					objectlist.emplace_back(pointer.lock());
-				}
-			}
-			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveMultipleGameObjects>(objectlist));
+			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveMultipleGameObjects>());
 		}
+		mySelectedObjects.clear();
 		break;
 	}
 	default:
@@ -165,6 +158,11 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	{
 		myDropfileAssettype = AssetTypes::eAssetType::Unknown;
 	}
+}
+
+void ImguiManager::AddToSelectedObjects(const std::shared_ptr<GameObject>& anObject)
+{
+	
 }
 
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
@@ -215,7 +213,7 @@ bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
 {
 	for (auto& selection : mySelectedObjects)
 	{
-		if (selection.lock() == anObject)
+		if (selection == anObject)
 		{
 			return true;
 		}
@@ -361,7 +359,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 	{
 		if (mySelectedObjects.size() == 1)
 		{
-			auto selectedObject = mySelectedObjects.back().lock();
+			std::shared_ptr<GameObject> selectedObject = *mySelectedObjects.begin();
 			selectedObject->CreateImGuiWindowContent("Selected GameObject");
 
 			ImGui::Separator();
@@ -392,7 +390,8 @@ void ImguiManager::CreateSelectedObjectWindow()
 			ImGui::SameLine(0.f, 50.f);
 			if (ImGui::Button("Delete"))
 			{
-				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(mySelectedObjects.back().lock()));
+				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(*mySelectedObjects.begin()));
+				mySelectedObjects.clear();
 			}
 		}
 		else if (mySelectedObjects.size() > 1)
@@ -438,19 +437,20 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 
 	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
 
-	if (ImGui::IsItemClicked()) 
-	{
-		if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
-		{
-			mySelectedObjects.clear();
-		}
-		mySelectedObjects.emplace_back(anObject);
-	}
+	
 
 	if (ImGui::BeginDragDropTarget()) 
 	{
 		DropSceneContent(anObject.get());
 		ImGui::EndDragDropTarget();
+	}
+	else if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+	{
+		if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+		{
+			mySelectedObjects.clear();
+		}
+		mySelectedObjects.emplace(anObject);
 	}
 
 	if (ImGui::BeginDragDropSource()) 
@@ -480,7 +480,7 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 			auto parent = myModelViewer->GetGameObject(aParent->GetID());
 			for (auto& object : mySelectedObjects)
 			{
-				parent->AddChild(object.lock());
+				parent->AddChild(object);
 			}
 			//anObject->AddChild(myModelViewer->GetGameObject(id));
 		}
@@ -488,7 +488,7 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 		{
 			for (auto& object : mySelectedObjects)
 			{
-				object.lock()->RemoveParent();
+				object->RemoveParent();
 			}
 		}
 	}

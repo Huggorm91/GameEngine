@@ -1,6 +1,6 @@
 #include "EditCmd_RemoveMultipleGameObjects.h"
 
-EditCmd_RemoveMultipleGameObjects::EditCmd_RemoveMultipleGameObjects(const std::vector<std::shared_ptr<GameObject>>& anObjectList): myObjects(anObjectList)
+EditCmd_RemoveMultipleGameObjects::EditCmd_RemoveMultipleGameObjects(): myObjects(GetSelectedObjects())
 {
 }
 

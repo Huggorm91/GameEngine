@@ -5,12 +5,12 @@
 class EditCmd_AddMultipleGameObjects : public EditCommand
 {
 public:
-	EditCmd_AddMultipleGameObjects(const std::vector<std::shared_ptr<GameObject>>& anObjectList);
+	EditCmd_AddMultipleGameObjects();
 	~EditCmd_AddMultipleGameObjects() = default;
 
 	void Undo() override;
 	void Execute() override;
 
 protected:
-	std::vector<std::shared_ptr<GameObject>> myObjects;
+	std::unordered_set<std::shared_ptr<GameObject>> myObjects;
 };

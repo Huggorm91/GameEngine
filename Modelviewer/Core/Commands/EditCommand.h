@@ -1,5 +1,6 @@
 #pragma once
 #include "AssetManager/Assets/GameObject.h"
+#include <unordered_set>
 
 class EditCommand
 {
@@ -18,7 +19,7 @@ protected:
 	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject) const;
 	bool RemoveGameObject(unsigned anID) const;
 
-	const std::vector<std::weak_ptr<GameObject>>& GetSelectedObjects() const;
+	const std::unordered_set<std::shared_ptr<GameObject>>& GetSelectedObjects() const;
 
 private:
 	bool EraseObject(unsigned anID) const;

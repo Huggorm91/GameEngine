@@ -23,5 +23,5 @@ protected:
 	TransformType myType;
 	Transform* myEditorTransform;
 	CommonUtilities::Vector3f myChange;
-	std::vector<std::shared_ptr<GameObject>> myObjects;
+	std::unordered_set<std::shared_ptr<GameObject>> myObjects;
 };

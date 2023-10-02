@@ -1,6 +1,6 @@
 #include "EditCmd_AddMultipleGameObjects.h"
 
-EditCmd_AddMultipleGameObjects::EditCmd_AddMultipleGameObjects(const std::vector<std::shared_ptr<GameObject>>& anObjectList): myObjects(anObjectList)
+EditCmd_AddMultipleGameObjects::EditCmd_AddMultipleGameObjects(): myObjects(GetSelectedObjects())
 {
 }
 

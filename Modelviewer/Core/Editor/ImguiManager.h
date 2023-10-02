@@ -5,6 +5,7 @@
 #include <AbstractClasses/InputObserver.hpp>
 #include "AssetManager/Assets/Prefab.h"
 #include "AssetTypes.h"
+#include <unordered_set>
 
 class ModelViewer;
 
@@ -49,7 +50,7 @@ private:
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
 
-	std::vector<std::weak_ptr<GameObject>> mySelectedObjects;
+	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
 
 	CommonUtilities::Vector2i myDropLocation;
 
@@ -64,6 +65,8 @@ private:
 
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
+
+	void AddToSelectedObjects(const std::shared_ptr<GameObject>& anObject);
 
 	std::string GetDropFilePath(unsigned anIndex);
 	void ReleaseDropFile();
