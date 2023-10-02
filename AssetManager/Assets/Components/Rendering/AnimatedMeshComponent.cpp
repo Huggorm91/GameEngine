@@ -89,7 +89,6 @@ void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const 
 {
 	MeshComponent::Init(anElementList, aName, aPath);
 	mySkeleton = aSkeleton;
-	ComponentPointersInvalidated();
 }
 
 void AnimatedMeshComponent::SetLooping(bool aIsLooping)
@@ -207,6 +206,11 @@ Json::Value AnimatedMeshComponent::ToJson() const
 	result["AnimationState"] = static_cast<int>(myAnimationState);
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;
+}
+
+inline std::string AnimatedMeshComponent::ToString() const
+{
+	return "AnimatedMesh";
 }
 
 const AnimatedMeshComponent* AnimatedMeshComponent::GetTypePointer() const

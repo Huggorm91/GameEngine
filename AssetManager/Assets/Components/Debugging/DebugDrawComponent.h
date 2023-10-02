@@ -34,6 +34,7 @@ public:
 	//void SetCone(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, float aHeadSize, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
 
 	//Json::Value ToJson() const override;
+	inline std::string ToString() const override;
 	const DebugDrawComponent* GetTypePointer() const override;
 
 private:

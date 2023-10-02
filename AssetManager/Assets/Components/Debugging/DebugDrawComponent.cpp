@@ -69,6 +69,11 @@ void DebugDrawComponent::SetAxisLines(const CommonUtilities::Vector3f& aCenter, 
 #endif // !_RETAIL	
 }
 
+inline std::string DebugDrawComponent::ToString() const
+{
+	return "DebugDraw";
+}
+
 const DebugDrawComponent* DebugDrawComponent::GetTypePointer() const
 {
 	return this;

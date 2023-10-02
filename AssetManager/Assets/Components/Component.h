@@ -10,11 +10,6 @@
 class GameObject;
 class Transform;
 
-namespace CommonUtilities
-{
-	enum class eInputAction : int;
-}
-
 class Component
 {
 public:
@@ -44,11 +39,11 @@ public:
 	bool IsActive() const;
 
 	virtual void TransformHasChanged() const;
-	virtual void ComponentPointersInvalidated();
 
 	virtual void CreateImGuiComponents(const std::string& aWindowName);
+	virtual inline std::string ToString() const;
 	virtual Json::Value ToJson() const;
-	virtual const Component* GetTypePointer() const;
+	virtual inline const Component* GetTypePointer() const;
 
 	// Only call before creating another Component!
 	void MarkAsPrefabComponent(unsigned anID = 0);
@@ -68,6 +63,4 @@ protected:
 
 	const Transform* GetParentTransform() const;
 	Transform* GetParentTransform();
-
-	virtual void NotifyInput(CommonUtilities::eInputAction anEvent);
 };

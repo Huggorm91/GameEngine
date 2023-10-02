@@ -1,6 +1,7 @@
 #pragma once
 #include "Components/Rendering/MeshComponent.h"
 #include "Components/Rendering/AnimatedMeshComponent.h"
+#include "Components/Rendering/ParticleEmitterComponent.h"
 #include "Components/Light/DirectionallightComponent.h"
 #include "Components/Light/PointlightComponent.h"
 #include "Components/Light/SpotlightComponent.h"

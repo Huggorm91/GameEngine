@@ -36,6 +36,7 @@ public:
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
+	inline std::string ToString() const override;
 	const PointlightComponent* GetTypePointer() const override;
 
 private:

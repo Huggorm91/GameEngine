@@ -164,6 +164,11 @@ Json::Value PointlightComponent::ToJson() const
 	return result;
 }
 
+inline std::string PointlightComponent::ToString() const
+{
+	return "Pointlight";
+}
+
 const PointlightComponent* PointlightComponent::GetTypePointer() const
 {
 	return this;

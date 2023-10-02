@@ -173,6 +173,11 @@ Json::Value SpotlightComponent::ToJson() const
 	return result;
 }
 
+inline std::string SpotlightComponent::ToString() const
+{
+	return "Spotlight";
+}
+
 const SpotlightComponent* SpotlightComponent::GetTypePointer() const
 {
 	return this;

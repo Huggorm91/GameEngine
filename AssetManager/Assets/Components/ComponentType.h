@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 
 namespace Json{ class Value; }
 
@@ -13,6 +12,7 @@ enum class ComponentType
 	Spotlight,
 	DebugDraw,
 	PerspectiveCamera,
+	ParticleEmitter,
 	Count
 };
 
@@ -22,5 +22,7 @@ class Component;
 void AddComponent(const Component* aComponent, GameObject& aParent);
 void AddComponent(const ComponentType aType, GameObject& aParent);
 void LoadComponent(const Json::Value& aJson, GameObject& aParent);
+
+// Mainly used by editor to list all types without creating instances of them.
 std::string ComponentTypeToString(const ComponentType aType);
-std::string ComponentTypeToString(const Json::Value& aJson);
+//std::string ComponentTypeToString(const Json::Value& aJson);

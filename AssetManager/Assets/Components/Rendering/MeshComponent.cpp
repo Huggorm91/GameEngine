@@ -374,6 +374,11 @@ Json::Value MeshComponent::ToJson() const
 	return result;
 }
 
+inline std::string MeshComponent::ToString() const
+{
+	return "Mesh";
+}
+
 const MeshComponent* MeshComponent::GetTypePointer() const
 {
 	return this;

@@ -158,6 +158,11 @@ Json::Value DirectionallightComponent::ToJson() const
 	return result;
 }
 
+inline std::string DirectionallightComponent::ToString() const
+{
+	return "Directionallight";
+}
+
 const DirectionallightComponent* DirectionallightComponent::GetTypePointer() const
 {
 	return this;

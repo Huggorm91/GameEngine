@@ -101,10 +101,6 @@ void Component::TransformHasChanged() const
 {
 }
 
-void Component::ComponentPointersInvalidated()
-{
-}
-
 void Component::CreateImGuiComponents(const std::string& aWindowName)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
@@ -114,6 +110,11 @@ void Component::CreateImGuiComponents(const std::string& aWindowName)
 	}
 }
 
+inline std::string Component::ToString() const
+{
+	return "Unimplemented ToString() in ComponentID: " + std::to_string(myID) + " | GameObjectID: " + std::to_string(myParent->GetID());
+}
+
 Json::Value Component::ToJson() const
 {
 	Json::Value result;
@@ -121,7 +122,7 @@ Json::Value Component::ToJson() const
 	result["Type"] = static_cast<int>(myType);
 	result["ID"] = myID;
 #ifdef _DEBUG
-	result["TypeName"] = ComponentTypeToString(myType);
+	result["TypeName"] = ToString();
 #endif // _DEBUG
 
 	return result;
@@ -163,8 +164,4 @@ Transform* Component::GetParentTransform()
 {
 	assert(myParent != nullptr && "Component not Initialized!");
 	return &myParent->myTransform;
-}
-
-void Component::NotifyInput(CommonUtilities::eInputAction anEvent)
-{
 }

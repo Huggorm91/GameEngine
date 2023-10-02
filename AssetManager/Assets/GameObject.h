@@ -145,13 +145,7 @@ private:
 template<class T>
 inline T& GameObject::AddComponent()
 {
-	if (myComponents.SetValue(myCount, T()))
-	{
-		for (auto [type, index] : myIndexList)
-		{
-			myComponents.ChangeValueUnsafe<Component>(index)->ComponentPointersInvalidated();
-		}
-	}
+	myComponents.SetValue(myCount, T());
 	myIndexList.emplace(&typeid(T), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
 #ifndef _RETAIL
@@ -163,13 +157,7 @@ inline T& GameObject::AddComponent()
 template<class T>
 inline T& GameObject::AddComponent(const T& aComponent)
 {
-	if (myComponents.SetValue(myCount, aComponent))
-	{
-		for (auto [type, index] : myIndexList)
-		{
-			myComponents.ChangeValueUnsafe<Component>(index)->ComponentPointersInvalidated();
-		}
-	}
+	myComponents.SetValue(myCount, aComponent);
 	myIndexList.emplace(&typeid(aComponent), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
 #ifndef _RETAIL
@@ -181,13 +169,7 @@ inline T& GameObject::AddComponent(const T& aComponent)
 template<class T>
 inline T& GameObject::AddComponent(T&& aComponent)
 {
-	if (myComponents.SetValue(myCount, std::move(aComponent)))
-	{
-		for (auto [type, index] : myIndexList)
-		{
-			myComponents.ChangeValueUnsafe<Component>(index)->ComponentPointersInvalidated();
-		}
-	}
+	myComponents.SetValue(myCount, std::move(aComponent));
 	myIndexList.emplace(&typeid(aComponent), myCount);
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
 #ifndef _RETAIL

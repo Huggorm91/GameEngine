@@ -56,6 +56,12 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 		aParent.AddComponent(component);
 		break;
 	}
+	case ComponentType::ParticleEmitter:
+	{
+		const ParticleEmitterComponent& component = *dynamic_cast<const ParticleEmitterComponent*>(aComponent);
+		aParent.AddComponent(component);
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -102,6 +108,11 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 		aParent.AddComponent<PerspectiveCameraComponent>();
 		break;
 	}
+	case ComponentType::ParticleEmitter:
+	{
+		aParent.AddComponent<ParticleEmitterComponent>();
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -116,16 +127,14 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	{		
 	case ComponentType::Mesh:
 	{
-		MeshComponent mesh = AssetManager::GetAsset<MeshComponent>(aJson["Path"].asString());
-		mesh.Init(aJson);
-		aParent.AddComponent(std::move(mesh));
+		auto& mesh = aParent.AddComponent(AssetManager::GetAsset<MeshComponent>(aJson["Path"].asString()));
+		mesh.Init(aJson);		
 		break;
 	}
 	case ComponentType::AnimatedMesh:
 	{
-		auto mesh = AssetManager::GetAsset<AnimatedMeshComponent>(aJson["Path"].asString());
-		mesh.Init(aJson);
-		aParent.AddComponent(std::move(mesh));
+		auto& mesh = aParent.AddComponent(AssetManager::GetAsset<AnimatedMeshComponent>(aJson["Path"].asString()));
+		mesh.Init(aJson);		
 		break;
 	}
 	case ComponentType::Directionallight:
@@ -151,6 +160,10 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	{
 		break;
 	}
+	case ComponentType::ParticleEmitter:
+	{
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -162,28 +175,42 @@ std::string ComponentTypeToString(const ComponentType aType)
 {
 	switch (aType)
 	{
-	case ComponentType::Unknown:
-		return "Unknown";
 	case ComponentType::Mesh:
+	{
 		return "Mesh";
+	}
 	case ComponentType::AnimatedMesh:
+	{
 		return "AnimatedMesh";
+	}
 	case ComponentType::Directionallight:
+	{
 		return "Directionallight";
+	}
 	case ComponentType::Pointlight:
+	{
 		return "Pointlight";
+	}
 	case ComponentType::Spotlight:
+	{
 		return "Spotlight";
+	}
 	case ComponentType::DebugDraw:
+	{
 		return "DebugDraw";
+	}
 	case ComponentType::PerspectiveCamera:
+	{
 		return "PerspectiveCamera";
+	}
+	case ComponentType::ParticleEmitter:
+	{
+		return "ParticleEmitter";
+	}
 	default:
+	{
+		AMLogger.Err("ComponentTypeToString: Invalid component type!");
 		return "Invalid";
 	}
-}
-
-std::string ComponentTypeToString(const Json::Value& aJson)
-{
-	return ComponentTypeToString(static_cast<ComponentType>(aJson["Type"].asInt()));
+	}
 }

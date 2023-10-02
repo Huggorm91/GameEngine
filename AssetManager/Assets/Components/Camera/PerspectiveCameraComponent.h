@@ -5,7 +5,7 @@
 class PerspectiveCameraComponent: public Component
 {
 public:
-	PerspectiveCameraComponent() = default;
+	PerspectiveCameraComponent();
 	PerspectiveCameraComponent(const Json::Value& aJson, GameObject* aParent);
 	PerspectiveCameraComponent(const PerspectiveCameraComponent& aLight) = default;
 	PerspectiveCameraComponent(PerspectiveCameraComponent&& aLight) = default;
@@ -14,6 +14,7 @@ public:
 	PerspectiveCameraComponent& operator=(PerspectiveCameraComponent&& aLight) = default;
 
 	//Json::Value ToJson() const override;
+	inline std::string ToString() const override;
 	const PerspectiveCameraComponent* GetTypePointer() const override;
 
 private:

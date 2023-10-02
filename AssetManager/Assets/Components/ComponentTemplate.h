@@ -11,7 +11,6 @@ class ExampleComponent : public Component
 	// 2. Add enum for new ComponentType in ComponentType.h
 	// 3. Add 'case ComponentType::Example: { const ExampleComponent& component = *dynamic_cast<const ExampleComponent*>(aComponent); aParent.AddComponent(component); break; }' to switch in AddComponent() in ComponentType.cpp
 	// 4. Add 'case ComponentType::Example: { break; }' to switch in LoadComponent() in ComponentType.cpp, and implement Constructor(Json::Value) and/or Init(Json::Value)
-	// 5. Add 'case ComponentType::Example: return "Example";' to switch in ComponentTypeToString() in ComponentType.cpp
 public:
 	ExampleComponent(); // Use base constructor: Component(ComponentType::Example)
 	ExampleComponent(const ExampleComponent& aComponent) = default;
@@ -30,11 +29,11 @@ public:
 	// void ToogleActive() override;
 
 	// void TransformHasChanged() const override;
-	// void ComponentPointersInvalidated() override;
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
-	const ExampleComponent* GetTypePointer() const override; // return this;
+	inline std::string ToString() const override;
+	inline const ExampleComponent* GetTypePointer() const override; // return this;
 
 private:
 

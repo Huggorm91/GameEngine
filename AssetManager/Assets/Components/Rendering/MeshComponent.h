@@ -53,6 +53,7 @@ public:
 	void TransformHasChanged() const override;
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
+	inline std::string ToString() const override;
 	const MeshComponent* GetTypePointer() const override;
 
 protected:
