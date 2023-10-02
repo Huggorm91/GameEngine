@@ -720,7 +720,6 @@ bool RHI::LoadPixelShader(ComPtr<ID3D11PixelShader>& outPxShader, const std::wst
 bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 {
 	assert(outTexture && "Please initialize the Texture Object before calling this function!");
-	//outTexture = std::make_shared<Texture>();
 	outTexture->myName = aFileName;
 	outTexture->myBindFlags = D3D11_BIND_SHADER_RESOURCE;
 	outTexture->myUsageFlags = D3D11_USAGE_DEFAULT;
@@ -745,15 +744,6 @@ bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 		ReportError(result, L"Failed to create a shader resource view! Please check the DirectX Debug Output for more information. If there is none make sure you set enableDeviceDebug to True.");
 		return false;
 	}
-
-	std::wstring textureName = aFileName;
-	if(const size_t pos = textureName.find_last_of(L'\\'); pos != std::wstring::npos)
-	{
-		textureName = textureName.substr(pos + 1);
-	}
-
-	textureName = textureName.substr(0, textureName.size() - 4);
-	outTexture->myName = textureName;
 
 	return true;
 }
