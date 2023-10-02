@@ -75,8 +75,8 @@ public:
 
 	void RemoveParent();
 #ifndef _RETAIL
-	void AddChild(std::shared_ptr<GameObject> anObject);
-	void RemoveChild(std::shared_ptr<GameObject> anObject);
+	void AddChild(const std::shared_ptr<GameObject>& anObject);
+	void RemoveChild(const std::shared_ptr<GameObject>& anObject);
 
 	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const;
 	std::vector<std::shared_ptr<GameObject>>& GetChildren();

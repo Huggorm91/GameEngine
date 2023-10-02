@@ -456,6 +456,10 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	if (ImGui::BeginDragDropSource()) 
 	{
 		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
+		if (!IsSelected(anObject))
+		{
+			mySelectedObjects.emplace(anObject);
+		}
 		ImGui::EndDragDropSource();
 	}
 
@@ -473,16 +477,15 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 {
 	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_SceneObject"))
 	{
-		//IM_ASSERT(payload->DataSize == sizeof(unsigned));
-		//unsigned id = *static_cast<unsigned*>(payload->Data);
+		IM_ASSERT(payload->DataSize == sizeof(unsigned));
+		unsigned id = *static_cast<unsigned*>(payload->Data);
 		if (aParent)
 		{
 			auto parent = myModelViewer->GetGameObject(aParent->GetID());
 			for (auto& object : mySelectedObjects)
 			{
 				parent->AddChild(object);
-			}
-			//anObject->AddChild(myModelViewer->GetGameObject(id));
+			}		
 		}
 		else
 		{

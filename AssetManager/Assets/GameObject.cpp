@@ -318,7 +318,7 @@ void GameObject::TransformHasChanged()
 }
 
 #ifndef _RETAIL
-void GameObject::AddChild(std::shared_ptr<GameObject> anObject)
+void GameObject::AddChild(const std::shared_ptr<GameObject>& anObject)
 {
 	if (anObject.get() == this)
 	{
@@ -328,7 +328,7 @@ void GameObject::AddChild(std::shared_ptr<GameObject> anObject)
 	myChildren.emplace_back(anObject);
 }
 
-void GameObject::RemoveChild(std::shared_ptr<GameObject> anObject)
+void GameObject::RemoveChild(const std::shared_ptr<GameObject>& anObject)
 {
 	for (auto iter = myChildren.begin(); iter != myChildren.end(); iter++)
 	{
