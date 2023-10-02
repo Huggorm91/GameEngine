@@ -403,11 +403,17 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
 
-	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
-	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
-	cube2->SetPosition({150.f, 0.f, 0.f});
-	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
-	cube1->AddChild(cube2);
+	/*{
+		auto& colorChecker = AddGameObject(AssetManager::GetAsset<GameObject>("SM_Color_Checker"), false);
+		colorChecker->SetPosition({ 0.f, 80.f, -500.f });
+		colorChecker->SetRotation({ -90.f, 0.f, 0.f });
+		colorChecker->SetScale({ 2.f, 2.f, 2.f });
+		colorChecker->SetName("ColorChecker");
+		auto& mesh = colorChecker->GetComponent<MeshComponent>();
+		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Albedo/T_Color_Checker_C"));
+		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Normal/T_Color_Checker_N"));
+		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Material/T_Color_Checker_M"));
+	}*/
 }
 
 void ModelViewer::Update()

@@ -258,6 +258,7 @@
     <None Include="Shaders\Default\GBufferData.hlsli" />
     <None Include="Shaders\Default\QuadData.hlsli" />
     <None Include="Shaders\Default\PostProcessingData.hlsli" />
+    <None Include="Shaders\Default\Tonemaps.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShaders\Default_VS.hlsl" />
