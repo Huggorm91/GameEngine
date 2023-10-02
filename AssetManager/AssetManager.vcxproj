@@ -254,6 +254,7 @@
     <ClInclude Include="Assets\Components\Debugging\DebugDrawComponent.h" />
     <ClInclude Include="Assets\Components\ComponentType.h" />
     <ClInclude Include="DirectoryFunctions.h" />
+    <ClInclude Include="Assets\Components\Particles\EmitterData.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -277,7 +278,8 @@
     <ClInclude Include="Assets\Components\Light\SpotlightComponent.h" />
     <ClInclude Include="Managers\PrefabManager.h" />
     <ClInclude Include="Assets\Prefab.h" />
-    <ClInclude Include="Assets\Components\Rendering\ParticleEmitterComponent.h" />
+    <ClInclude Include="Assets\Components\Particles\ParticleEmitterComponent.h" />
+    <ClInclude Include="Assets\Components\Particles\ParticleEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />
@@ -287,6 +289,7 @@
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
     <ClCompile Include="Assets\Components\ComponentType.cpp" />
     <ClCompile Include="DirectoryFunctions.cpp" />
+    <ClCompile Include="Assets\Components\Particles\EmitterData.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">
@@ -317,7 +320,8 @@
     <ClCompile Include="Assets\Components\Light\SpotlightComponent.cpp" />
     <ClCompile Include="Managers\PrefabManager.cpp" />
     <ClCompile Include="Assets\Prefab.cpp" />
-    <ClCompile Include="Assets\Components\Rendering\ParticleEmitterComponent.cpp" />
+    <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp" />
+    <ClCompile Include="Assets\Components\Particles\ParticleEmitter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -162,6 +162,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	case ComponentType::ParticleEmitter:
 	{
+		aParent.AddComponent(ParticleEmitterComponent(aJson));
 		break;
 	}
 	default:

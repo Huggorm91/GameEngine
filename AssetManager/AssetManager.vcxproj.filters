@@ -111,7 +111,13 @@
     <ClInclude Include="Assets\Prefab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Components\Rendering\ParticleEmitterComponent.h">
+    <ClInclude Include="Assets\Components\Particles\ParticleEmitterComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Particles\ParticleEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Particles\EmitterData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -206,7 +212,13 @@
     <ClCompile Include="Assets\Prefab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Components\Rendering\ParticleEmitterComponent.cpp">
+    <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Particles\ParticleEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Particles\EmitterData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
