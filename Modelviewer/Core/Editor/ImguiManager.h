@@ -66,8 +66,6 @@ private:
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
 
-	void AddToSelectedObjects(const std::shared_ptr<GameObject>& anObject);
-
 	std::string GetDropFilePath(unsigned anIndex);
 	void ReleaseDropFile();
 	// Returns true if another file exists

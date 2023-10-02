@@ -160,11 +160,6 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	}
 }
 
-void ImguiManager::AddToSelectedObjects(const std::shared_ptr<GameObject>& anObject)
-{
-	
-}
-
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
 {
 	LPSTR fileName = new char[1024];
@@ -436,8 +431,6 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	using namespace CommonUtilities;
 
 	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
-
-	
 
 	if (ImGui::BeginDragDropTarget()) 
 	{
