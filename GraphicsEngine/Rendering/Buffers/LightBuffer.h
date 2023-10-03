@@ -43,9 +43,9 @@ struct LightBufferData
 	float AmbientlightIntensity;
 	float ShadowBias;
 	alignas(4) bool CastDirectionalShadows;
+	int LB_ToneMapMode;
 
-
-	CommonUtilities::Vector2f paddinglb;
+	float paddinglb;
 
 	PointlightData Pointlights[MAX_LIGHTS];
 	SpotlightData Spotlights[MAX_LIGHTS];

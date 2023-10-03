@@ -44,6 +44,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.BackgroundColor;
+		myToneMap = static_cast<ToneMap>(settings.ToneMap);
 
 		// Textures
 		{
@@ -163,6 +164,8 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			myMaterialBuffer.Initialize();
 
 			myFrameBuffer.Data.ScreenSize = { static_cast<float>(RHI::GetDeviceSize().Width), static_cast<float>(RHI::GetDeviceSize().Height) };
+
+			SetToneMap(myToneMap);
 		}
 
 		if (!myLineDrawer.Init())
@@ -208,6 +211,7 @@ void GraphicsEngine::SaveSettings() const
 	settings.SpotlightPS = Helpers::string_cast<std::string>(myShaders.SpotlightPS.GetName());
 
 	settings.BackgroundColor = myBackgroundColor;
+	settings.ToneMap = static_cast<int>(myToneMap);
 
 	SaveSettings(settings);
 }
@@ -227,6 +231,59 @@ void GraphicsEngine::Swap()
 	assert(false && "Not Implemented!");
 	//CommonUtilities::Swap(myRenderCommands, myUpdateCommands);
 	// Not threadsafe until LineDrawer also swaps buffers!
+}
+
+GraphicsEngine::ToneMap GraphicsEngine::SetToneMap(ToneMap aMode)
+{
+	myToneMap = aMode;
+
+	switch (aMode)
+	{
+	case GraphicsEngine::ToneMap::Count:
+	{
+		myToneMap = ToneMap::None;
+		// Letting it fall through
+	}
+	case GraphicsEngine::ToneMap::None:
+	{
+		GELogger.Log("ToneMap: None");
+		break;
+	}
+	case GraphicsEngine::ToneMap::Reinhard:
+	{
+		GELogger.Log("ToneMap: Reinhard");
+		break;
+	}
+	case GraphicsEngine::ToneMap::UnrealEngine:
+	{
+		GELogger.Log("ToneMap: UnrealEngine");
+		break;
+	}
+	case GraphicsEngine::ToneMap::ACES:
+	{
+		GELogger.Log("ToneMap: ACES");
+		break;
+	}
+	case GraphicsEngine::ToneMap::Lottes:
+	{
+		GELogger.Log("ToneMap: Lottes");
+		break;
+	}
+	default:
+		GELogger.Err("ToneMap: Invalid option");
+		break;
+	}
+
+	myLightBuffer.Data.LB_ToneMapMode = static_cast<int>(myToneMap);
+	RHI::UpdateConstantBufferData(myLightBuffer);
+	RHI::SetConstantBuffer(PIPELINE_STAGE_PIXEL_SHADER, myLightBufferSlot, myLightBuffer);
+
+	return myToneMap;
+}
+
+GraphicsEngine::ToneMap GraphicsEngine::NextToneMap()
+{
+	return SetToneMap(static_cast<ToneMap>(static_cast<int>(myToneMap) + 1));
 }
 
 #ifndef _RETAIL
@@ -1175,7 +1232,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	const RHI::DeviceSize& size = RHI::GetDeviceSize();
 
 	// Scenebuffer
-	if (!RHI::CreateTexture(&myTextures.Scenebuffer, L"Scene_Buffer", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.Scenebuffer, L"Scene_Buffer", size.Width, size.Height, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Scenebuffer texture!");
 		return false;
@@ -1183,7 +1240,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	RHI::ClearRenderTarget(&myTextures.Scenebuffer);
 
 	// Scenebuffer, half size
-	if (!RHI::CreateTexture(&myTextures.HalfScenebuffer, L"Half_Scene_Buffer", static_cast<size_t>(size.Width * 0.5f), static_cast<size_t>(size.Height * 0.5f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.HalfScenebuffer, L"Half_Scene_Buffer", static_cast<size_t>(size.Width * 0.5f), static_cast<size_t>(size.Height * 0.5f), DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Half_Scenebuffer texture!");
 		return false;
@@ -1191,7 +1248,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	RHI::ClearRenderTarget(&myTextures.HalfScenebuffer);
 
 	// Scenebuffer, quarter size A
-	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferA, L"Quarter_Scene_Buffer_A", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferA, L"Quarter_Scene_Buffer_A", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Quarter_Scenebuffer_A texture!");
 		return false;
@@ -1199,7 +1256,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	RHI::ClearRenderTarget(&myTextures.QuarterScenebufferA);
 
 	// Scenebuffer, quarter size B
-	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferB, L"Quarter_Scene_Buffer_B", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.QuarterScenebufferB, L"Quarter_Scene_Buffer_B", static_cast<size_t>(size.Width * 0.25f), static_cast<size_t>(size.Height * 0.25f), DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Quarter_Scenebuffer_B texture!");
 		return false;
@@ -1207,7 +1264,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	RHI::ClearRenderTarget(&myTextures.QuarterScenebufferB);
 
 	// Intermediate A
-	if (!RHI::CreateTexture(&myTextures.IntermediateA, L"Intermediate_A", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.IntermediateA, L"Intermediate_A", size.Width, size.Height, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Intermediate_A texture!");
 		return false;
@@ -1215,7 +1272,7 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 	RHI::ClearRenderTarget(&myTextures.IntermediateA);
 
 	// Intermediate B
-	if (!RHI::CreateTexture(&myTextures.IntermediateB, L"Intermediate_B", size.Width, size.Height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
+	if (!RHI::CreateTexture(&myTextures.IntermediateB, L"Intermediate_B", size.Width, size.Height, DXGI_FORMAT_R16G16B16A16_FLOAT, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET))
 	{
 		GELogger.Err("Failed to create Intermediate_B texture!");
 		return false;

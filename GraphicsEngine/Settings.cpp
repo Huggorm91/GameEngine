@@ -16,6 +16,7 @@ Settings::Settings(const Json::Value& aJson)
 	DefaultMaterial = AddExtensionIfMissing(aJson["DefaultMaterial"].asString(), ".mat");
 
 	BackgroundColor = static_cast<CommonUtilities::Vector4f>(aJson["BackgroundColor"]);
+	ToneMap = aJson["ToneMap"].asInt();
 
 	std::string path = AssetManager::GetShaderPath();
 
@@ -44,6 +45,7 @@ Settings::operator Json::Value() const
 	json["DefaultMaterial"] = DefaultMaterial;
 
 	json["BackgroundColor"] = BackgroundColor.ToJsonColor();
+	json["ToneMap"] = ToneMap;
 
 	const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
 	size_t lastSlash = LuminancePS.find_last_of('/') + 1;

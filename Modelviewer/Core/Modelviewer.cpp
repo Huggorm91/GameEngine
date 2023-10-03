@@ -95,6 +95,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
 
+	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F4);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
 	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
@@ -492,6 +493,11 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eK
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
+	case CommonUtilities::eKey::F4:
+	{
+		engine.NextToneMap();
+		break;
+	}
 	case CommonUtilities::eKey::F5:
 	{
 		myDebugMode = engine.NextDebugMode();

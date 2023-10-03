@@ -58,7 +58,7 @@ float3 GetPblPointlightValue(LightData someData, PointlightData aPointLight)
     const float3 lightColor = aPointLight.Color * aPointLight.Intensity;
     const float attenuation = saturate(GetRangeAttenuation(distance((float3) someData.position, aPointLight.Position), max(aPointLight.Radius, 0.00001f)));
     
-    return saturate((kD + kS) * attenuation * lightColor * nDotL);
+    return (kD + kS) * attenuation * lightColor * nDotL;
 }
 
 float3 GetPblSpotlightValue(LightData someData, SpotlightData aSpotLight)
@@ -81,7 +81,7 @@ float3 GetPblSpotlightValue(LightData someData, SpotlightData aSpotLight)
     const float widthAttenuation = saturate((dot(-aSpotLight.LightDirection, invertedDirection) - sin(aSpotLight.OuterAngle)) / max(cos(aSpotLight.InnerAngle) - cos(aSpotLight.OuterAngle), 0.00001f));
     const float attenuation = saturate(widthAttenuation * GetRangeAttenuation(distance((float3) someData.position, aSpotLight.Position), max(aSpotLight.Range, 0.00001f)));
     
-    return saturate((kD + kS) * attenuation * lightColor * nDotL);
+    return (kD + kS) * attenuation * lightColor * nDotL;
 }
 
 float3 GetPblAmbientlight(LightData someData, float anOcclusion, float3 aDiffuseColor)
@@ -114,7 +114,7 @@ float3 GetPblDirectionallight(LightData someData)
     }
     const float3 lightColor = LB_DirectionallightColor * LB_DirectionallightIntensity * shadowMultiplier;
     
-    return saturate((kD + kS) * lightColor * nDotL);
+    return (kD + kS) * lightColor * nDotL;
 }
 
 float3 GetPblLight(LightData someData, float3 anAlbedoColor, float anOcclusion)
