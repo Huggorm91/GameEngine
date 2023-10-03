@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "PrefabManager.h"
-#include <External/jsonCpp/json.h>
-#include "../DirectoryFunctions.h"
+#include "Json/jsonCpp/json.h"
+#include "File/DirectoryFunctions.h"
 
 void PrefabManager::Init()
 {
@@ -37,7 +37,7 @@ GameObject* PrefabManager::GetTemplate(const std::string& aPath)
 	else
 	{
 		std::string path = ValidatePath(aPath);
-		if (auto iter = myUnloadedFilePaths.find(path); iter != myUnloadedFilePaths.end())
+		if (auto pathIter = myUnloadedFilePaths.find(path); pathIter != myUnloadedFilePaths.end())
 		{
 			return LoadPrefab(aPath);
 		}
@@ -64,9 +64,9 @@ void PrefabManager::CreatePrefab(const std::string& aPath, const GameObject& aPr
 	else
 	{
 		std::string path = ValidatePath(aPath);
-		if (auto iter = myUnloadedFilePaths.find(path); iter != myUnloadedFilePaths.end())
+		if (auto pathIter = myUnloadedFilePaths.find(path); pathIter != myUnloadedFilePaths.end())
 		{
-			myUnloadedFilePaths.erase(iter);
+			myUnloadedFilePaths.erase(pathIter);
 		}
 		myValidPaths.emplace(aPath);
 		myPrefabs.emplace(aPath, GameObject(0));
@@ -144,7 +144,7 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, GetPath(), &AMLogger);
+	path = CreateValidPath(path, GetPath());
 
 	if (path.empty())
 	{
@@ -172,5 +172,5 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 std::string PrefabManager::ValidatePath(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	return GetValidPath(path, GetPath(), &AMLogger);
+	return GetValidPath(path, GetPath());
 }

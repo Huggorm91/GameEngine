@@ -101,7 +101,7 @@ void Component::TransformHasChanged() const
 {
 }
 
-void Component::CreateImGuiComponents(const std::string& aWindowName)
+void Component::CreateImGuiComponents(const std::string&)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
 	if (ImGui::Checkbox("Active", &myIsActive))
@@ -142,13 +142,13 @@ void Component::MarkAsPrefabComponent(unsigned anID)
 	}	
 }
 
-const CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer() const
+const Crimson::Blackboard<unsigned int>& Component::GetComponentContainer() const
 {
 	assert(myParent != nullptr && "Component not Initialized!");
 	return myParent->myComponents;
 }
 
-CommonUtilities::Blackboard<unsigned int>& Component::GetComponentContainer()
+Crimson::Blackboard<unsigned int>& Component::GetComponentContainer()
 {
 	assert(myParent != nullptr && "Component not Initialized!");
 	return myParent->myComponents;

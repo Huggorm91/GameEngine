@@ -2,14 +2,14 @@
 #define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
 #include <shellapi.h>
-#include <AbstractClasses/InputObserver.hpp>
+#include "Input/InputObserver.hpp"
 #include "AssetManager/Assets/Prefab.h"
 #include "AssetTypes.h"
 #include <unordered_set>
 
 class ModelViewer;
 
-class ImguiManager : public CommonUtilities::InputObserver
+class ImguiManager : public Crimson::InputObserver
 {
 public:
 	ImguiManager();
@@ -25,8 +25,8 @@ public:
 	void ChangeIndexName(GameObject* anObject, const std::string& aName);
 	const std::string& GetIndexName(GameObject* anObject) const;
 
-	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction, float) override;
+	void ReceiveEvent(Crimson::eInputEvent, Crimson::eKey) override;
+	void ReceiveEvent(Crimson::eInputAction, float) override;
 
 	void SetDropFile(HDROP aHandle);
 
@@ -52,7 +52,7 @@ private:
 
 	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
 
-	CommonUtilities::Vector2i myDropLocation;
+	Crimson::Vector2i myDropLocation;
 
 	std::string myOverwriteFromPath;
 	std::string myOverwriteToPath;

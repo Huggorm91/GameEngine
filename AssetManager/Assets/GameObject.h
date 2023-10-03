@@ -55,13 +55,13 @@ public:
 	template<class T>
 	bool HasComponent() const;
 
-	void SetPosition(const CommonUtilities::Vector3f& aPosition);
-	void SetRotation(const CommonUtilities::Vector3f& aRotation);
-	void SetScale(const CommonUtilities::Vector3f& aScale);
+	void SetPosition(const Crimson::Vector3f& aPosition);
+	void SetRotation(const Crimson::Vector3f& aRotation);
+	void SetScale(const Crimson::Vector3f& aScale);
 
 	const Transform& GetTransform() const;
-	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
-	const CommonUtilities::Vector4f& GetWorldPosition() const;
+	const Crimson::Matrix4x4f& GetTransformMatrix() const;
+	const Crimson::Vector4f& GetWorldPosition() const;
 
 	void SetActive(bool aIsActive);
 	void ToogleActive();
@@ -132,7 +132,7 @@ private:
 	std::vector<GameObject*> myChildren;
 #endif // !_RETAIL
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
-	CommonUtilities::Blackboard<unsigned> myComponents;
+	Crimson::Blackboard<unsigned> myComponents;
 
 	void SetParent(GameObject*);
 

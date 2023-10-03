@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "AssetTypes.h"
 #include "AssetManager/AssetManager.h"
-#include "AssetManager/DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 #include "../Modelviewer.h"
 
 std::string AssetTypes::GetAssetTypeName(eAssetType aType)

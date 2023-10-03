@@ -2,14 +2,14 @@
 #include "GfxCmd_UpdateWorldBounds.h"
 #include "GraphicsEngine.h"
 
-GfxCmd_UpdateWorldBounds::GfxCmd_UpdateWorldBounds(const CommonUtilities::Vector3f& aMin, const CommonUtilities::Vector3f& aMax): GraphicsCommand(RenderStage::Light), myMin(aMin), myMax(aMax)
+GfxCmd_UpdateWorldBounds::GfxCmd_UpdateWorldBounds(const Crimson::Vector3f& aMin, const Crimson::Vector3f& aMax): GraphicsCommand(RenderStage::Light), myMin(aMin), myMax(aMax)
 {
 }
 
 void GfxCmd_UpdateWorldBounds::Execute()
 {
-	CommonUtilities::Vector3f& engineMin = GetWorldBoundsMin();
-	CommonUtilities::Vector3f& engineMax = GetWorldBoundsMax();
+	Crimson::Vector3f& engineMin = GetWorldBoundsMin();
+	Crimson::Vector3f& engineMax = GetWorldBoundsMax();
 	bool boundsUpdated = false;
 	if (myMin.x < engineMin.x)
 	{

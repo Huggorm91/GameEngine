@@ -9,7 +9,7 @@ LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(DirectionallightComponent
 	}
 }
 
-LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity), myShadowMap(nullptr), myCastsShadow(false)
+LitCmd_SetDirectionallight::LitCmd_SetDirectionallight(const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aColor, float anIntensity) : LightCommand(), myInvertedLightDirection(-aDirection), myColor(aColor), myIntensity(anIntensity), myShadowMap(nullptr), myCastsShadow(false)
 {	
 }
 

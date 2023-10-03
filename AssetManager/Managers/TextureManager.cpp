@@ -2,7 +2,7 @@
 #include "TextureManager.h"
 #include "GraphicsEngine/InterOp/Helpers.h"
 #include "GraphicsEngine/InterOp/RHI.h"
-#include "../DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 void TextureManager::Init()
 {
@@ -20,7 +20,7 @@ void TextureManager::LoadAllTextures()
 Texture* TextureManager::GetTexture(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("TextureManager: Could not find path: " + aPath);

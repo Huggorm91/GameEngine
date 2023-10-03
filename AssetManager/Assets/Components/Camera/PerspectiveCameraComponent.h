@@ -19,6 +19,6 @@ public:
 
 private:
 	PerspectiveCamera myCamera;
-	CommonUtilities::Vector3f myOffsetPosition;
-	CommonUtilities::Vector3f myOffsetRotation;
+	Crimson::Vector3f myOffsetPosition;
+	Crimson::Vector3f myOffsetRotation;
 };

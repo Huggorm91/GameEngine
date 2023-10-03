@@ -6,8 +6,8 @@ void LitCmd_ResetLightBuffer::Execute(const int anIndex)
 	UNREFERENCED_PARAMETER(anIndex);
 
 	LightBuffer& buffer = GetLightBuffer();
-	buffer.Data.InvertedDirection = CommonUtilities::Vector3f::Null;
-	buffer.Data.DirectionallightColor = CommonUtilities::Vector3f::Null;
+	buffer.Data.InvertedDirection = Crimson::Vector3f::Null;
+	buffer.Data.DirectionallightColor = Crimson::Vector3f::Null;
 	buffer.Data.DirectionallightIntensity = 0.f;
 	buffer.Data.CastDirectionalShadows = false;
 

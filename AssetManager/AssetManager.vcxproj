@@ -174,14 +174,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>AssetManager.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CommonUtilities\include;$(SolutionDir)ThirdParty\FBXImporter\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -189,13 +190,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>CommonUtilities-d.lib;TGAFbx.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)CommonUtilities\lib;$(SolutionDir)ThirdParty\FBXImporter\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>TGAFbx.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\FBXImporter\lib\Debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -204,7 +205,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>AssetManager.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CommonUtilities\include;$(SolutionDir)ThirdParty\FBXImporter\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -214,13 +216,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>CommonUtilities.lib;TGAFbx.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)CommonUtilities\lib;$(SolutionDir)ThirdParty\FBXImporter\lib\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>TGAFbx.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\FBXImporter\lib\Release</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -229,7 +231,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>AssetManager.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CommonUtilities\include;$(SolutionDir)ThirdParty\FBXImporter\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -239,8 +242,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>CommonUtilities.lib;TGAFbx.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)CommonUtilities\lib;$(SolutionDir)ThirdParty\FBXImporter\lib\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>TGAFbx.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\FBXImporter\lib\Release</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
@@ -253,7 +256,6 @@
     <ClInclude Include="Assets\Components\Light\DirectionallightComponent.h" />
     <ClInclude Include="Assets\Components\Debugging\DebugDrawComponent.h" />
     <ClInclude Include="Assets\Components\ComponentType.h" />
-    <ClInclude Include="DirectoryFunctions.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -286,7 +288,6 @@
     <ClCompile Include="Assets\Components\Light\DirectionallightComponent.cpp" />
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
     <ClCompile Include="Assets\Components\ComponentType.cpp" />
-    <ClCompile Include="DirectoryFunctions.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">
@@ -318,6 +319,11 @@
     <ClCompile Include="Managers\PrefabManager.cpp" />
     <ClCompile Include="Assets\Prefab.cpp" />
     <ClCompile Include="Assets\Components\Rendering\ParticleEmitterComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
+      <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

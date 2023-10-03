@@ -2,7 +2,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "Buffers/MaterialBuffer.h"
-#include <External/jsonCpp/json-forwards.h>
+#include "Json/jsonCpp/json-forwards.h"
 
 enum ePipelineStage : unsigned
 {
@@ -42,9 +42,9 @@ public:
 	// Only used for BlinnPhong
 	void SetMetalness(float aMetalness);
 	void SetNormalStrength(float aNormalStrength);
-	void SetUVTiling(const CommonUtilities::Vector2f& aUVTiling);
-	void SetAlbedoColor(const CommonUtilities::Vector4f& aColor);
-	void SetEmissionColor(const CommonUtilities::Vector4f& aColor);
+	void SetUVTiling(const Crimson::Vector2f& aUVTiling);
+	void SetAlbedoColor(const Crimson::Vector4f& aColor);
+	void SetEmissionColor(const Crimson::Vector4f& aColor);
 	void SetEmissionIntensity(float anIntensity);
 
 	void SetName(const std::string& aName);
@@ -62,9 +62,9 @@ public:
 	float GetShininess() const;
 	float GetMetalness() const;
 	float GetNormalStrength() const;
-	const CommonUtilities::Vector2f& GetUVTiling() const;
-	const CommonUtilities::Vector4f& GetAlbedoColor() const;
-	const CommonUtilities::Vector4f& GetEmissionColor() const;
+	const Crimson::Vector2f& GetUVTiling() const;
+	const Crimson::Vector4f& GetAlbedoColor() const;
+	const Crimson::Vector4f& GetEmissionColor() const;
 	float GetEmissionIntensity() const;
 
 	const std::string& GetName() const;

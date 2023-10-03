@@ -8,7 +8,7 @@ PointlightComponent::PointlightComponent():Component(ComponentType::Pointlight),
 {
 }
 
-PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows) :Component(ComponentType::Pointlight), myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
+PointlightComponent::PointlightComponent(float aRadius, float anIntensity, const Crimson::Vector3f& aColor, const Crimson::Vector3f& aPosition, bool aCastShadows) :Component(ComponentType::Pointlight), myRadius(aRadius), myIntensity(anIntensity), myPosition(aPosition), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
 {
 	if (aCastShadows)
 	{
@@ -49,7 +49,7 @@ PointlightComponent& PointlightComponent::operator=(const PointlightComponent& a
 	return *this;
 }
 
-void PointlightComponent::Init(float aRadius, float anIntensity, const CommonUtilities::Vector3f& aColor, const CommonUtilities::Vector3f& aPosition, bool aCastShadows)
+void PointlightComponent::Init(float aRadius, float anIntensity, const Crimson::Vector3f& aColor, const Crimson::Vector3f& aPosition, bool aCastShadows)
 {
 	myRadius = aRadius;
 	myIntensity = anIntensity;
@@ -83,12 +83,12 @@ void PointlightComponent::SetIntensity(float anIntensity)
 	myIntensity = anIntensity;
 }
 
-void PointlightComponent::SetPosition(const CommonUtilities::Vector3f& aPosition)
+void PointlightComponent::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myPosition = aPosition;
 }
 
-void PointlightComponent::SetColor(const CommonUtilities::Vector3f& aColor)
+void PointlightComponent::SetColor(const Crimson::Vector3f& aColor)
 {
 	myColor = aColor;
 }
@@ -103,20 +103,20 @@ float PointlightComponent::GetIntensity() const
 	return myIntensity;
 }
 
-const CommonUtilities::Vector3f& PointlightComponent::GetPosition() const
+const Crimson::Vector3f& PointlightComponent::GetPosition() const
 {
 	return myPosition;
 }
 
-const CommonUtilities::Vector3f& PointlightComponent::GetColor() const
+const Crimson::Vector3f& PointlightComponent::GetColor() const
 {
 	return myColor;
 }
 
-CommonUtilities::Matrix4x4f PointlightComponent::GetTransform() const
+Crimson::Matrix4x4f PointlightComponent::GetTransform() const
 {
 	assert(myParent != nullptr && "PointlightComponent is not Initialized!");
-	return myParent->GetTransformMatrix() * CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+	return myParent->GetTransformMatrix() * Crimson::Matrix4x4f::CreateTranslationMatrix(myPosition);
 }
 
 void PointlightComponent::SetCastShadows(bool aState)

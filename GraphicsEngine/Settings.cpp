@@ -1,8 +1,8 @@
 #include "GraphicsEngine.pch.h"
 #include "Settings.h"
-#include <JsonVector.hpp>
+#include "Json/JsonVector.hpp"
 #include "AssetManager/AssetManager.h"
-#include "AssetManager/DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 Settings::Settings(const Json::Value& aJson)
 {
@@ -15,7 +15,7 @@ Settings::Settings(const Json::Value& aJson)
 
 	DefaultMaterial = AddExtensionIfMissing(aJson["DefaultMaterial"].asString(), ".mat");
 
-	BackgroundColor = static_cast<CommonUtilities::Vector4f>(aJson["BackgroundColor"]);
+	BackgroundColor = static_cast<Crimson::Vector4f>(aJson["BackgroundColor"]);
 
 	std::string path = AssetManager::GetShaderPath();
 

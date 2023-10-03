@@ -35,7 +35,7 @@ void DebugDrawComponent::ToogleActive()
 #endif // !_RETAIL	
 }
 
-void DebugDrawComponent::SetLine(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, const CommonUtilities::Vector4f& aColor, bool aIsUI)
+void DebugDrawComponent::SetLine(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, const Crimson::Vector4f& aColor, bool aIsUI)
 {
 #ifndef _RETAIL
 	assert(myParent != nullptr && "DebugDrawerComponent not Initialized!");
@@ -49,7 +49,7 @@ void DebugDrawComponent::SetLine(const CommonUtilities::Vector3f& aFrom, const C
 #endif // !_RETAIL	
 }
 
-void DebugDrawComponent::SetAxisLines(const CommonUtilities::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const CommonUtilities::Vector3f& aXDirection, const CommonUtilities::Vector3f& aYDirection, const CommonUtilities::Vector3f& aZDirection, const CommonUtilities::Vector4f& aXColor, const CommonUtilities::Vector4f& aYColor, const CommonUtilities::Vector4f& aZColor, bool aIsUI)
+void DebugDrawComponent::SetAxisLines(const Crimson::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const Crimson::Vector3f& aXDirection, const Crimson::Vector3f& aYDirection, const Crimson::Vector3f& aZDirection, const Crimson::Vector4f& aXColor, const Crimson::Vector4f& aYColor, const Crimson::Vector4f& aZColor, bool aIsUI)
 {
 #ifndef _RETAIL
 	assert(myParent != nullptr && "DebugDrawerComponent not Initialized!");

@@ -1,33 +1,33 @@
 #include "AssetManager.pch.h"
 #include "Primitives.h"
-#include <Random.h>
 #include <math.h>
-#include <Matrix3x3.hpp>
+#include "Math/Random.h"
+#include "Math/Matrix3x3.hpp"
 
 MeshData CreateCubeMesh(const float aSize)
 {
 	return CreateCubeMesh({ aSize, aSize, aSize });
 }
 
-MeshData CreateCubeMesh(const CommonUtilities::Vector3f& aSize)
+MeshData CreateCubeMesh(const Crimson::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Cube";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
-	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
+	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
-	CommonUtilities::Vector3f upRiFr = { halfSize.x, aSize.y, -halfSize.z };
-	CommonUtilities::Vector3f upRiBa = { halfSize.x, aSize.y, halfSize.z };
+	Crimson::Vector3f upRiFr = { halfSize.x, aSize.y, -halfSize.z };
+	Crimson::Vector3f upRiBa = { halfSize.x, aSize.y, halfSize.z };
 
-	CommonUtilities::Vector3f upLeFr = { -halfSize.x, aSize.y, -halfSize.z };
-	CommonUtilities::Vector3f upLeBa = { -halfSize.x, aSize.y, halfSize.z };
+	Crimson::Vector3f upLeFr = { -halfSize.x, aSize.y, -halfSize.z };
+	Crimson::Vector3f upLeBa = { -halfSize.x, aSize.y, halfSize.z };
 
-	CommonUtilities::Vector3f doRiFr = { halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f doRiBa = { halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f doRiFr = { halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f doRiBa = { halfSize.x, 0.f, halfSize.z };
 
-	CommonUtilities::Vector3f doLeFr = { -halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f doLeBa = { -halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f doLeFr = { -halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f doLeBa = { -halfSize.x, 0.f, halfSize.z };
 
 	std::vector<Vertex> mdlVertices = {
 		// Top plane
@@ -143,30 +143,30 @@ MeshData CreatePyramidMesh(const float aSize)
 	return CreatePyramidMesh({ aSize, aSize, aSize });
 }
 
-MeshData CreatePyramidMesh(const CommonUtilities::Vector3f& aSize)
+MeshData CreatePyramidMesh(const Crimson::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Pyramid";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
-	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
+	Crimson::Vector3f halfSize = aSize * 0.5f;
 
-	CommonUtilities::Vector3f Top = { 0.f, aSize.y, 0.f };
-	CommonUtilities::Vector3f BackLeft = { -halfSize.x, 0.f, halfSize.z };
-	CommonUtilities::Vector3f BackRight = { halfSize.x, 0.f, halfSize.z };
-	CommonUtilities::Vector3f FrontLeft = { -halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f FrontRight = { halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f Top = { 0.f, aSize.y, 0.f };
+	Crimson::Vector3f BackLeft = { -halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f BackRight = { halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f FrontLeft = { -halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f FrontRight = { halfSize.x, 0.f, -halfSize.z };
 
-	CommonUtilities::Vector3f backNormal = ((BackLeft - Top).Cross(BackRight - Top)).GetNormalized();
-	CommonUtilities::Vector3f backTangent = (BackLeft - Top).GetNormalized();
+	Crimson::Vector3f backNormal = ((BackLeft - Top).Cross(BackRight - Top)).GetNormalized();
+	Crimson::Vector3f backTangent = (BackLeft - Top).GetNormalized();
 
-	CommonUtilities::Vector3f frontNormal = ((FrontRight - Top).Cross(FrontLeft - Top)).GetNormalized();
-	CommonUtilities::Vector3f frontTangent = (FrontRight - Top).GetNormalized();
+	Crimson::Vector3f frontNormal = ((FrontRight - Top).Cross(FrontLeft - Top)).GetNormalized();
+	Crimson::Vector3f frontTangent = (FrontRight - Top).GetNormalized();
 
-	CommonUtilities::Vector3f rightNormal = ((BackRight - Top).Cross(FrontRight - Top)).GetNormalized();
-	CommonUtilities::Vector3f rightTangent = (BackRight - Top).GetNormalized();
+	Crimson::Vector3f rightNormal = ((BackRight - Top).Cross(FrontRight - Top)).GetNormalized();
+	Crimson::Vector3f rightTangent = (BackRight - Top).GetNormalized();
 
-	CommonUtilities::Vector3f leftNormal = ((FrontLeft - Top).Cross(BackLeft - Top)).GetNormalized();
-	CommonUtilities::Vector3f leftTangent = (FrontLeft - Top).GetNormalized();
+	Crimson::Vector3f leftNormal = ((FrontLeft - Top).Cross(BackLeft - Top)).GetNormalized();
+	Crimson::Vector3f leftTangent = (FrontLeft - Top).GetNormalized();
 
 	std::vector<Vertex> mdlVertices = {
 		// Back Plane
@@ -258,17 +258,17 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
 	const float pi = 3.1415926535f;
 	const float pi2 = 2.f * pi;
-	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
-	CommonUtilities::Vector3f center{ 0.f, aRadius, 0.f };
+	auto random = []() {return Crimson::Random::RandomNumber(1.0f); };
+	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 
 	// Add top vertex
 	std::vector<Vertex> mdlVertices;
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, aRadius * 2.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 0.f }, CommonUtilities::Vector3f{ 0.f, 1.f, 0.f }, CommonUtilities::Vector3f{ 1.f, 0.f, 0.f });
+	mdlVertices.emplace_back(Crimson::Vector3f{ 0.f, aRadius * 2.f, 0.f }, Crimson::Vector2f{ 0.5f, 0.f }, Crimson::Vector3f{ 0.f, 1.f, 0.f }, Crimson::Vector3f{ 1.f, 0.f, 0.f });
 
 	// +1.0f because there's a gap between the poles and the first parallel.
 	const float latitudeSpacing = 1.0f / (aStackCount + 1.0f);
 	const float longitudeSpacing = 1.0f / aSliceCount;
-	CommonUtilities::Vector3f tangent(1.f, 0.f, 0.f);
+	Crimson::Vector3f tangent(1.f, 0.f, 0.f);
 
 	// generate vertices per stack / slice
 	for (int latitude = 0; latitude < aStackCount; latitude++)
@@ -276,7 +276,7 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 		for (int longitude = 0; longitude <= aSliceCount; longitude++)
 		{
 			// Scale coordinates into the 0...1 texture coordinate range,
-			CommonUtilities::Vector2f uv(longitude * longitudeSpacing, (latitude + 1) * latitudeSpacing);
+			Crimson::Vector2f uv(longitude * longitudeSpacing, (latitude + 1) * latitudeSpacing);
 
 			// Convert to spherical coordinates:
 			// theta is a longitude angle (around the equator) in radians.
@@ -290,18 +290,18 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 
 			// Usual formula for a vector in spherical coordinates.
 			// You can exchange x & z to wind the opposite way around the sphere.
-			CommonUtilities::Vector3f pos(c * cos(theta), sin(phi), c * sin(theta));
+			Crimson::Vector3f pos(c * cos(theta), sin(phi), c * sin(theta));
 			pos *= aRadius;
 			pos.y += aRadius;
 
-			CommonUtilities::Vector3f normal((pos - center).GetNormalized());
+			Crimson::Vector3f normal((pos - center).GetNormalized());
 
-			mdlVertices.emplace_back(pos, uv, normal, tangent * CommonUtilities::Matrix3x3f::CreateRotationAroundY(theta));
+			mdlVertices.emplace_back(pos, uv, normal, tangent * Crimson::Matrix3x3f::CreateRotationAroundY(theta));
 		}
 	}
 
 	// Add bottom vertex
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, 0.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 1.f }, CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ -1.f, 0.f, 0.f });
+	mdlVertices.emplace_back(Crimson::Vector3f{ 0.f, 0.f, 0.f }, Crimson::Vector2f{ 0.5f, 1.f }, Crimson::Vector3f{ 0.f, -1.f, 0.f }, Crimson::Vector3f{ -1.f, 0.f, 0.f });
 
 	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
 	{
@@ -359,25 +359,25 @@ MeshData CreateInvertedCubeMesh(const float aSize)
 	return CreateInvertedCubeMesh({ aSize, aSize, aSize });
 }
 
-MeshData CreateInvertedCubeMesh(const CommonUtilities::Vector3f& aSize)
+MeshData CreateInvertedCubeMesh(const Crimson::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "InvertedCube";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
-	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
+	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
-	CommonUtilities::Vector3f upRiFr = { halfSize.x, aSize.y, -halfSize.z };
-	CommonUtilities::Vector3f upRiBa = { halfSize.x, aSize.y, halfSize.z };
+	Crimson::Vector3f upRiFr = { halfSize.x, aSize.y, -halfSize.z };
+	Crimson::Vector3f upRiBa = { halfSize.x, aSize.y, halfSize.z };
 
-	CommonUtilities::Vector3f upLeFr = { -halfSize.x, aSize.y, -halfSize.z };
-	CommonUtilities::Vector3f upLeBa = { -halfSize.x, aSize.y, halfSize.z };
+	Crimson::Vector3f upLeFr = { -halfSize.x, aSize.y, -halfSize.z };
+	Crimson::Vector3f upLeBa = { -halfSize.x, aSize.y, halfSize.z };
 
-	CommonUtilities::Vector3f doRiFr = { halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f doRiBa = { halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f doRiFr = { halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f doRiBa = { halfSize.x, 0.f, halfSize.z };
 
-	CommonUtilities::Vector3f doLeFr = { -halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f doLeBa = { -halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f doLeFr = { -halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f doLeBa = { -halfSize.x, 0.f, halfSize.z };
 
 	std::vector<Vertex> mdlVertices = {
 		// Top plane
@@ -493,30 +493,30 @@ MeshData CreateInvertedPyramidMesh(const float aSize)
 	return CreateInvertedPyramidMesh({ aSize, aSize, aSize });
 }
 
-MeshData CreateInvertedPyramidMesh(const CommonUtilities::Vector3f& aSize)
+MeshData CreateInvertedPyramidMesh(const Crimson::Vector3f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "InvertedPyramid";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
-	CommonUtilities::Vector3f halfSize = aSize * 0.5f;
+	Crimson::Vector3f halfSize = aSize * 0.5f;
 
-	CommonUtilities::Vector3f Top = { 0.f, aSize.y, 0.f };
-	CommonUtilities::Vector3f BackLeft = { -halfSize.x, 0.f, halfSize.z };
-	CommonUtilities::Vector3f BackRight = { halfSize.x, 0.f, halfSize.z };
-	CommonUtilities::Vector3f FrontLeft = { -halfSize.x, 0.f, -halfSize.z };
-	CommonUtilities::Vector3f FrontRight = { halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f Top = { 0.f, aSize.y, 0.f };
+	Crimson::Vector3f BackLeft = { -halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f BackRight = { halfSize.x, 0.f, halfSize.z };
+	Crimson::Vector3f FrontLeft = { -halfSize.x, 0.f, -halfSize.z };
+	Crimson::Vector3f FrontRight = { halfSize.x, 0.f, -halfSize.z };
 
-	CommonUtilities::Vector3f backNormal = -((BackLeft - Top).Cross(BackRight - Top)).GetNormalized();
-	CommonUtilities::Vector3f backTangent = (BackLeft - Top).GetNormalized();
+	Crimson::Vector3f backNormal = -((BackLeft - Top).Cross(BackRight - Top)).GetNormalized();
+	Crimson::Vector3f backTangent = (BackLeft - Top).GetNormalized();
 
-	CommonUtilities::Vector3f frontNormal = -((FrontRight - Top).Cross(FrontLeft - Top)).GetNormalized();
-	CommonUtilities::Vector3f frontTangent = (FrontRight - Top).GetNormalized();
+	Crimson::Vector3f frontNormal = -((FrontRight - Top).Cross(FrontLeft - Top)).GetNormalized();
+	Crimson::Vector3f frontTangent = (FrontRight - Top).GetNormalized();
 
-	CommonUtilities::Vector3f rightNormal = -((BackRight - Top).Cross(FrontRight - Top)).GetNormalized();
-	CommonUtilities::Vector3f rightTangent = (BackRight - Top).GetNormalized();
+	Crimson::Vector3f rightNormal = -((BackRight - Top).Cross(FrontRight - Top)).GetNormalized();
+	Crimson::Vector3f rightTangent = (BackRight - Top).GetNormalized();
 
-	CommonUtilities::Vector3f leftNormal = -((FrontLeft - Top).Cross(BackLeft - Top)).GetNormalized();
-	CommonUtilities::Vector3f leftTangent = (FrontLeft - Top).GetNormalized();
+	Crimson::Vector3f leftNormal = -((FrontLeft - Top).Cross(BackLeft - Top)).GetNormalized();
+	Crimson::Vector3f leftTangent = (FrontLeft - Top).GetNormalized();
 
 	std::vector<Vertex> mdlVertices = {
 		// Back Plane
@@ -608,27 +608,27 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
 	const float pi = 3.1415926535f;
 	const float pi2 = 2.f * pi;
-	auto random = []() {return CommonUtilities::Random::RandomNumber(1.0f); };
-	CommonUtilities::Vector3f center{ 0.f, aRadius, 0.f };
+	auto random = []() {return Crimson::Random::RandomNumber(1.0f); };
+	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 	float radiansPerSlice = (360 / aSliceCount) * 0.0174532925f;
-	CommonUtilities::Matrix3x3f sliceMatrix = CommonUtilities::Matrix3x3f::CreateRotationAroundY(radiansPerSlice);
+	Crimson::Matrix3x3f sliceMatrix = Crimson::Matrix3x3f::CreateRotationAroundY(radiansPerSlice);
 
 	// Add top vertex
 	std::vector<Vertex> mdlVertices;
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, aRadius * 2.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 0.f }, CommonUtilities::Vector3f{ 0.f, -1.f, 0.f }, CommonUtilities::Vector3f{ 1.f, 0.f, 0.f });
+	mdlVertices.emplace_back(Crimson::Vector3f{ 0.f, aRadius * 2.f, 0.f }, Crimson::Vector2f{ 0.5f, 0.f }, Crimson::Vector3f{ 0.f, -1.f, 0.f }, Crimson::Vector3f{ 1.f, 0.f, 0.f });
 
 	// +1.0f because there's a gap between the poles and the first parallel.
 	const float latitudeSpacing = 1.0f / (aStackCount + 1.0f);
 	const float longitudeSpacing = 1.0f / aSliceCount;
 
-	CommonUtilities::Vector3f tangent(-1.f, 0.f, 0.f);
+	Crimson::Vector3f tangent(-1.f, 0.f, 0.f);
 // generate vertices per stack / slice
 	for (int latitude = 0; latitude < aStackCount; latitude++)
 	{
 		for (int longitude = 0; longitude <= aSliceCount; longitude++)
 		{
 			// Scale coordinates into the 0...1 texture coordinate range,
-			CommonUtilities::Vector2f uv(-longitude * longitudeSpacing, (latitude + 1) * latitudeSpacing);
+			Crimson::Vector2f uv(-longitude * longitudeSpacing, (latitude + 1) * latitudeSpacing);
 
 			// Convert to spherical coordinates:
 			// theta is a longitude angle (around the equator) in radians.
@@ -642,19 +642,19 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 
 			// Usual formula for a vector in spherical coordinates.
 			// You can exchange x & z to wind the opposite way around the sphere.
-			CommonUtilities::Vector3f pos(c * cos(theta), sin(phi), c * sin(theta));
+			Crimson::Vector3f pos(c * cos(theta), sin(phi), c * sin(theta));
 			pos *= aRadius;
 			pos.y += aRadius;
 
-			CommonUtilities::Vector3f normal((center - pos).GetNormalized());
+			Crimson::Vector3f normal((center - pos).GetNormalized());
 			uv.x = -uv.x;
 
-			mdlVertices.emplace_back(pos, uv, normal, tangent * CommonUtilities::Matrix3x3f::CreateRotationAroundY(theta));
+			mdlVertices.emplace_back(pos, uv, normal, tangent * Crimson::Matrix3x3f::CreateRotationAroundY(theta));
 		}
 	}
 
 	// Add bottom vertex
-	mdlVertices.emplace_back(CommonUtilities::Vector3f{ 0.f, 0.f, 0.f }, CommonUtilities::Vector2f{ 0.5f, 1.f }, CommonUtilities::Vector3f{ 0.f, 1.f, 0.f }, CommonUtilities::Vector3f{ -1.f, 0.f, 0.f });
+	mdlVertices.emplace_back(Crimson::Vector3f{ 0.f, 0.f, 0.f }, Crimson::Vector2f{ 0.5f, 1.f }, Crimson::Vector3f{ 0.f, 1.f, 0.f }, Crimson::Vector3f{ -1.f, 0.f, 0.f });
 
 	if (!RHI::CreateVertexBuffer(result.myVertexBuffer, mdlVertices))
 	{
@@ -715,18 +715,18 @@ MeshData CreatePlaneMesh(const float aSize)
 	return CreatePlaneMesh({ aSize, aSize });
 }
 
-MeshData CreatePlaneMesh(const CommonUtilities::Vector2f& aSize)
+MeshData CreatePlaneMesh(const Crimson::Vector2f& aSize)
 {
 	MeshData result;
 	result.myMeshName = "Plane";
-	result.myBoxSphereBounds.Init(CommonUtilities::Vector3f::Null, { aSize.x, 0.f, aSize.y });
-	CommonUtilities::Vector2f halfSize = aSize * 0.5f;
+	result.myBoxSphereBounds.Init(Crimson::Vector3f::Null, { aSize.x, 0.f, aSize.y });
+	Crimson::Vector2f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left
-	CommonUtilities::Vector3f upRi = { halfSize.x, 0.f, halfSize.y };
-	CommonUtilities::Vector3f upLe = { -halfSize.x, 0.f, halfSize.y };
-	CommonUtilities::Vector3f doRi = { halfSize.x, 0.f, -halfSize.y };
-	CommonUtilities::Vector3f doLe = { -halfSize.x, 0.f, -halfSize.y };
+	Crimson::Vector3f upRi = { halfSize.x, 0.f, halfSize.y };
+	Crimson::Vector3f upLe = { -halfSize.x, 0.f, halfSize.y };
+	Crimson::Vector3f doRi = { halfSize.x, 0.f, -halfSize.y };
+	Crimson::Vector3f doLe = { -halfSize.x, 0.f, -halfSize.y };
 
 	std::vector<Vertex> mdlVertices = {
 		// Top plane

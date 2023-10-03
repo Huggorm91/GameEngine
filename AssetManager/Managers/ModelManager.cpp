@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "ModelManager.h"
 #include "../Assets/Primitives.h"
-#include "../DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 #include <algorithm>
 #include <Importer.h>
 #undef LoadModel
@@ -96,7 +96,7 @@ GameObject* ModelManager::GetModel(const std::string& aPath)
 		path = GetValidPath(path, GetPath());
 		if (path.empty())
 		{
-			if (auto iter = myModels.find(ToLower(aPath)); iter != myModels.end())
+			if (iter = myModels.find(ToLower(aPath)); iter != myModels.end())
 			{
 				return &iter->second;
 			}
@@ -142,7 +142,7 @@ Skeleton* ModelManager::GetSkeleton(const std::string& aPath)
 	}
 
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetSkeleton: Could not find path: " + aPath);
@@ -157,8 +157,6 @@ Skeleton* ModelManager::GetSkeleton(const std::string& aPath)
 	{
 		return LoadSkeleton(path);
 	}
-	AMLogger.Err("ModelManager: Could not find a Skeleton: " + aPath);
-	return nullptr;
 }
 
 MeshComponent* ModelManager::GetMesh(const std::string& aPath)
@@ -169,7 +167,7 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 	}
 
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetMesh: Could not find path: " + aPath);
@@ -193,7 +191,7 @@ AnimatedMeshComponent* ModelManager::GetAnimatedMesh(const std::string& aPath)
 	}
 
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetAnimatedMesh: Could not find path: " + aPath);

@@ -4,7 +4,7 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
-#include <Timer.h>
+#include "Time/Timer.h"
 
 AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped), myIsLooping(false)
 {
@@ -30,7 +30,7 @@ void AnimatedMeshComponent::Update()
 
 	if (myAnimationState != AnimationState::Stopped)
 	{
-		myAnimationTimer += CommonUtilities::Timer::GetDeltaTime();
+		myAnimationTimer += Crimson::Timer::GetDeltaTime();
 		const float frameDelta = myAnimation.GetFrameDelta();
 
 		// Gives choppy animations at low FPS, skips frames
@@ -160,7 +160,7 @@ const Skeleton& AnimatedMeshComponent::GetSkeleton() const
 	return *mySkeleton;
 }
 
-const std::array<CommonUtilities::Matrix4x4f, 128>& AnimatedMeshComponent::GetBoneTransforms() const
+const std::array<Crimson::Matrix4x4f, 128>& AnimatedMeshComponent::GetBoneTransforms() const
 {
 	return myBoneTransformCache;
 }
@@ -222,14 +222,14 @@ void AnimatedMeshComponent::UpdateCache()
 {
 	assert(mySkeleton != nullptr && "AnimatedMeshComponent is not Initialized!");
 	assert(myAnimation.HasData() && "Animation has no data!");
-	UpdateHeirarchy(0, CommonUtilities::Matrix4x4f::Null);
+	UpdateHeirarchy(0, Crimson::Matrix4x4f::Null);
 }
 
-void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex, const CommonUtilities::Matrix4x4f& aParentMatrix)
+void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix)
 {
 	auto& bone = mySkeleton->GetBones()[anIndex];
 	auto& frame = myAnimation.GetFrame(myCurrentFrame);
-	CommonUtilities::Matrix4x4f matrix = GetLocalTransform(bone, frame) * aParentMatrix;
+	Crimson::Matrix4x4f matrix = GetLocalTransform(bone, frame) * aParentMatrix;
 	myBoneTransformCache[anIndex] = bone.myBindPoseInverse * matrix;
 	for (auto& childIndex : bone.myChildren)
 	{
@@ -237,7 +237,7 @@ void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex, const CommonUt
 	}
 }
 
-const CommonUtilities::Matrix4x4f& AnimatedMeshComponent::GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const
+const Crimson::Matrix4x4f& AnimatedMeshComponent::GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const
 {
 	if (auto iter = aFrame.myLocalTransforms.find(aBone.myNamespaceName); iter != aFrame.myLocalTransforms.end())
 	{

@@ -1,13 +1,13 @@
 #pragma once
-#include <Matrix4x4.hpp>
-#include <External/jsonCpp/json-forwards.h>
+#include "Math/Matrix4x4.hpp"
+#include "Json/jsonCpp/json-forwards.h"
 
 class Transform
 {
 public:
 	Transform();
 	Transform(const Json::Value& aJson);
-	Transform(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aRotation = {}, const CommonUtilities::Vector3f& aScale = {1.f, 1.f, 1.f});
+	Transform(const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aRotation = {}, const Crimson::Vector3f& aScale = {1.f, 1.f, 1.f});
 	Transform(const Transform& aTransform);
 	Transform(Transform&& aTransform) noexcept;
 	~Transform() = default;
@@ -21,17 +21,17 @@ public:
 	Transform operator-(const Transform& aTransform) const;
 
 
-	void SetPosition(const CommonUtilities::Vector3f& aPosition);
-	const CommonUtilities::Vector3f& GetPosition() const;
+	void SetPosition(const Crimson::Vector3f& aPosition);
+	const Crimson::Vector3f& GetPosition() const;
 
-	void SetRotation(const CommonUtilities::Vector3f& aRotation);
-	const CommonUtilities::Vector3f& GetRotation() const;
+	void SetRotation(const Crimson::Vector3f& aRotation);
+	const Crimson::Vector3f& GetRotation() const;
 
-	void SetScale(const CommonUtilities::Vector3f& aScale);
-	const CommonUtilities::Vector3f& GetScale() const;
+	void SetScale(const Crimson::Vector3f& aScale);
+	const Crimson::Vector3f& GetScale() const;
 
-	const CommonUtilities::Vector4f& GetWorldPosition() const;
-	const CommonUtilities::Matrix4x4f& GetTransformMatrix() const;
+	const Crimson::Vector4f& GetWorldPosition() const;
+	const Crimson::Matrix4x4f& GetTransformMatrix() const;
 
 	const Transform* GetParent() const;
 	Transform* GetParent();
@@ -52,18 +52,18 @@ private:
 
 	Transform* myParent;
 
-	CommonUtilities::Vector3f myPosition;
-	CommonUtilities::Vector3f myRotation;
-	CommonUtilities::Vector3f myScale;
+	Crimson::Vector3f myPosition;
+	Crimson::Vector3f myRotation;
+	Crimson::Vector3f myScale;
 
-	CommonUtilities::Vector4f myWorldPosition;
-	CommonUtilities::Matrix4x4f myTransform;
+	Crimson::Vector4f myWorldPosition;
+	Crimson::Matrix4x4f myTransform;
 
 	void UpdateTransform();
 
-	CommonUtilities::Matrix4x4f GetTransform() const;
-	CommonUtilities::Matrix4x4f GetTotalTransform() const;
-	CommonUtilities::Vector3f GetTotalPosition() const;
-	CommonUtilities::Vector3f GetTotalRotation() const;
-	CommonUtilities::Vector3f GetTotalScale() const;
+	Crimson::Matrix4x4f GetTransform() const;
+	Crimson::Matrix4x4f GetTotalTransform() const;
+	Crimson::Vector3f GetTotalPosition() const;
+	Crimson::Vector3f GetTotalRotation() const;
+	Crimson::Vector3f GetTotalScale() const;
 };

@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "AssetManager.h"
 #include <Importer.h>
-#include "DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 ModelManager AssetManager::myModelManager;
 AnimationManager AssetManager::myAnimationManager;

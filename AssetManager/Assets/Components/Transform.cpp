@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "Transform.h"
-#include <Conversions.hpp>
-#include <JsonVector.hpp>
+#include "Math/Conversions.hpp"
+#include "Json/JsonVector.hpp"
 
 #ifndef _RETAIL
 #include "ModelViewer/Core/ModelViewer.h"
@@ -18,7 +18,7 @@ Transform::Transform(const Json::Value& aJson) : myPosition(aJson["Position"]), 
 {
 }
 
-Transform::Transform(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aRotation, const CommonUtilities::Vector3f& aScale) :
+Transform::Transform(const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aRotation, const Crimson::Vector3f& aScale) :
 	myPosition(aPosition), myRotation(aRotation), myScale(aScale), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
 {
 	UpdateTransform();
@@ -90,40 +90,40 @@ Transform Transform::operator-(const Transform& aTransform) const
 	return result;
 }
 
-void Transform::SetPosition(const CommonUtilities::Vector3f& aPosition)
+void Transform::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myPosition = aPosition;
 	myHasChanged = true;
 }
 
-const CommonUtilities::Vector3f& Transform::GetPosition() const
+const Crimson::Vector3f& Transform::GetPosition() const
 {
 	return myPosition;
 }
 
-void Transform::SetRotation(const CommonUtilities::Vector3f& aRotation)
+void Transform::SetRotation(const Crimson::Vector3f& aRotation)
 {
 	myRotation = aRotation;
 	myHasChanged = true;
 }
 
-const CommonUtilities::Vector3f& Transform::GetRotation() const
+const Crimson::Vector3f& Transform::GetRotation() const
 {
 	return myRotation;
 }
 
-void Transform::SetScale(const CommonUtilities::Vector3f& aScale)
+void Transform::SetScale(const Crimson::Vector3f& aScale)
 {
 	myScale = aScale;
 	myHasChanged = true;
 }
 
-const CommonUtilities::Vector3f& Transform::GetScale() const
+const Crimson::Vector3f& Transform::GetScale() const
 {
 	return myScale;
 }
 
-const CommonUtilities::Vector4f& Transform::GetWorldPosition() const
+const Crimson::Vector4f& Transform::GetWorldPosition() const
 {
 	if (myHasChanged)
 	{
@@ -132,7 +132,7 @@ const CommonUtilities::Vector4f& Transform::GetWorldPosition() const
 	return myWorldPosition;
 }
 
-const CommonUtilities::Matrix4x4f& Transform::GetTransformMatrix() const
+const Crimson::Matrix4x4f& Transform::GetTransformMatrix() const
 {
 	if (myHasChanged || (myParent && myParent->myHasChanged))
 	{
@@ -209,7 +209,7 @@ void Transform::CreateImGuiComponents(const std::string&)
 #endif // !_RETAIL
 }
 
-bool Transform::CreateMultipleSelectionImGuiComponents(const std::string& aWindowName)
+bool Transform::CreateMultipleSelectionImGuiComponents(const std::string&)
 {
 #ifndef _RETAIL
 	bool hasChanged = false;
@@ -260,18 +260,18 @@ Json::Value Transform::ToJson() const
 void Transform::UpdateTransform()
 {
 	myTransform = GetTotalTransform();
-	myWorldPosition = myTransform * CommonUtilities::Vector4f{ 0.f, 0.f, 0.f, 1.f };
+	myWorldPosition = myTransform * Crimson::Vector4f{ 0.f, 0.f, 0.f, 1.f };
 	myHasChanged = false;
 }
 
-CommonUtilities::Matrix4x4f Transform::GetTransform() const
+Crimson::Matrix4x4f Transform::GetTransform() const
 {
-	return CommonUtilities::Matrix4x4f::CreateScaleMatrix(myScale) *
-		CommonUtilities::Matrix4x4f::CreateRotationMatrix(CommonUtilities::DegreeToRadian(myRotation)) *
-		CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+	return Crimson::Matrix4x4f::CreateScaleMatrix(myScale) *
+		Crimson::Matrix4x4f::CreateRotationMatrix(Crimson::DegreeToRadian(myRotation)) *
+		Crimson::Matrix4x4f::CreateTranslationMatrix(myPosition);
 }
 
-CommonUtilities::Matrix4x4f Transform::GetTotalTransform() const
+Crimson::Matrix4x4f Transform::GetTotalTransform() const
 {
 	if (myParent)
 	{
@@ -283,7 +283,7 @@ CommonUtilities::Matrix4x4f Transform::GetTotalTransform() const
 	}
 }
 
-CommonUtilities::Vector3f Transform::GetTotalPosition() const
+Crimson::Vector3f Transform::GetTotalPosition() const
 {
 	if (myParent)
 	{
@@ -295,7 +295,7 @@ CommonUtilities::Vector3f Transform::GetTotalPosition() const
 	}
 }
 
-CommonUtilities::Vector3f Transform::GetTotalRotation() const
+Crimson::Vector3f Transform::GetTotalRotation() const
 {
 	if (myParent)
 	{
@@ -307,7 +307,7 @@ CommonUtilities::Vector3f Transform::GetTotalRotation() const
 	}
 }
 
-CommonUtilities::Vector3f Transform::GetTotalScale() const
+Crimson::Vector3f Transform::GetTotalScale() const
 {
 	if (myParent)
 	{

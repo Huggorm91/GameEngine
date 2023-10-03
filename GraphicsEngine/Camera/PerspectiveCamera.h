@@ -1,22 +1,22 @@
 #pragma once
-#include <Matrix4x4.hpp>
-#include <InputMapper.h>
+#include "Math/Matrix4x4.hpp"
+#include "Input/InputMapper.h"
 #include "../Drawer/LineDrawer.h"
 
-class PerspectiveCamera : public CommonUtilities::InputObserver
+class PerspectiveCamera : public Crimson::InputObserver
 {
 public:
 	PerspectiveCamera();
 	~PerspectiveCamera() = default;
 
-	void Init(const CommonUtilities::Vector2f& aScreenSize, float aSpeed, float aRotationSpeed, float aMouseSensitivity);
+	void Init(const Crimson::Vector2f& aScreenSize, float aSpeed, float aRotationSpeed, float aMouseSensitivity);
 	void Update();
 
-	void ReceiveEvent(CommonUtilities::eInputEvent anEvent, CommonUtilities::eKey aKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction anEvent, float aValue) override;
+	void ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey) override;
+	void ReceiveEvent(Crimson::eInputAction anEvent, float aValue) override;
 
-	void SetPosition(const CommonUtilities::Vector3f& aPosition);
-	void SetRotation(const CommonUtilities::Vector3f& aRotation);
+	void SetPosition(const Crimson::Vector3f& aPosition);
+	void SetRotation(const Crimson::Vector3f& aRotation);
 
 	void SetFOV(float aDegree);
 	void SetPlanes(float aNearPlane, float aFarPlane);
@@ -26,19 +26,19 @@ public:
 
 	void SetMouseSensitivity(float aValue);
 
-	CommonUtilities::Vector3f TransformToClipSpace(const CommonUtilities::Vector3f& aPoint) const;
-	CommonUtilities::Vector2f ConvertToScreenCoordinates(const CommonUtilities::Vector3f& aClipSpacePosition, float& anOutScale) const;
+	Crimson::Vector3f TransformToClipSpace(const Crimson::Vector3f& aPoint) const;
+	Crimson::Vector2f ConvertToScreenCoordinates(const Crimson::Vector3f& aClipSpacePosition, float& anOutScale) const;
 
 private:
-	CommonUtilities::Matrix4x4f myCompassTransform;
-	CommonUtilities::Matrix4x4f myTransform;
-	CommonUtilities::Matrix4x4f myClipMatrix;
+	Crimson::Matrix4x4f myCompassTransform;
+	Crimson::Matrix4x4f myTransform;
+	Crimson::Matrix4x4f myClipMatrix;
 
-	CommonUtilities::Vector3f myCompassOffset;
-	CommonUtilities::Vector3f myPosition;
-	CommonUtilities::Vector2f myRotation;
+	Crimson::Vector3f myCompassOffset;
+	Crimson::Vector3f myPosition;
+	Crimson::Vector2f myRotation;
 
-	CommonUtilities::Vector2f myScreenResolution;
+	Crimson::Vector2f myScreenResolution;
 
 	float myRotationSpeed;
 	float myMovementSpeed;

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Rendering/LineVertex.h"
 #include "../Rendering/Shader.h"
-#include <Matrix4x4.hpp>
+#include "Math/Matrix4x4.hpp"
 #include <unordered_set>
 
 class LineDrawer
@@ -21,7 +21,7 @@ public:
 		void ToogleActive() const;
 		void SetActive(bool aValue) const;
 
-		void UpdateTransform(const CommonUtilities::Matrix4x4f& aTransform) const;
+		void UpdateTransform(const Crimson::Matrix4x4f& aTransform) const;
 
 	private:
 		const unsigned myID;
@@ -36,23 +36,23 @@ public:
 	bool Init();
 	void Render();
 
-	LineHandle AddLine(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, const CommonUtilities::Vector4f& aColor = ColorManager::GetColor("White"), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddArrow(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, float aHeadSize, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	LineHandle AddAxisLines(const CommonUtilities::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const CommonUtilities::Vector3f& aXDirection = { 1.f, 0.f, 0.f }, const CommonUtilities::Vector3f& aYDirection = { 0.f, 1.f, 0.f }, const CommonUtilities::Vector3f& aZDirection = { 0.f, 0.f, 1.f }, const CommonUtilities::Vector4f& aXColor = ColorManager::GetColor("Red"), const CommonUtilities::Vector4f& aYColor = ColorManager::GetColor("Green"), const CommonUtilities::Vector4f& aZColor = ColorManager::GetColor("Blue"), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddSquare(const CommonUtilities::Vector2f& aMin, const CommonUtilities::Vector2f& aMax, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddSquare(const CommonUtilities::Vector2f& aCenter, const CommonUtilities::Vector2f& anExtent, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCircle(const CommonUtilities::Vector2f& aCenter, float aRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddTriangle(const CommonUtilities::Vector2f& aFrom, const CommonUtilities::Vector2f& aTo, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform =CommonUtilities::Matrix4x4f::Null}, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCube(const CommonUtilities::Vector3f& aMin, const CommonUtilities::Vector3f& aMax, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCube(const CommonUtilities::Vector3f& aCenter, const CommonUtilities::Vector3f& anExtent, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddSphere(const CommonUtilities::Vector3f& aCenter, float aRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCylinder(const CommonUtilities::Vector3f& aCenter, float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCapsule(const CommonUtilities::Vector3f& aCenter, float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCone(float aHeight, float aBaseRadius, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
-	//LineHandle AddCone(float aHeight, float anAngleInRadians, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector4f& aColor = GetColor(eColor::White), const CommonUtilities::Matrix4x4f& aTransform = CommonUtilities::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	LineHandle AddLine(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, const Crimson::Vector4f& aColor = ColorManager::GetColor("White"), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddArrow(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, float aHeadSize, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	LineHandle AddAxisLines(const Crimson::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const Crimson::Vector3f& aXDirection = { 1.f, 0.f, 0.f }, const Crimson::Vector3f& aYDirection = { 0.f, 1.f, 0.f }, const Crimson::Vector3f& aZDirection = { 0.f, 0.f, 1.f }, const Crimson::Vector4f& aXColor = ColorManager::GetColor("Red"), const Crimson::Vector4f& aYColor = ColorManager::GetColor("Green"), const Crimson::Vector4f& aZColor = ColorManager::GetColor("Blue"), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddSquare(const Crimson::Vector2f& aMin, const Crimson::Vector2f& aMax, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddSquare(const Crimson::Vector2f& aCenter, const Crimson::Vector2f& anExtent, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCircle(const Crimson::Vector2f& aCenter, float aRadius, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddTriangle(const Crimson::Vector2f& aFrom, const Crimson::Vector2f& aTo, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform =Crimson::Matrix4x4f::Null}, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCube(const Crimson::Vector3f& aMin, const Crimson::Vector3f& aMax, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCube(const Crimson::Vector3f& aCenter, const Crimson::Vector3f& anExtent, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddSphere(const Crimson::Vector3f& aCenter, float aRadius, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCylinder(const Crimson::Vector3f& aCenter, float aHeight, float aBaseRadius, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCapsule(const Crimson::Vector3f& aCenter, float aHeight, float aBaseRadius, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCone(float aHeight, float aBaseRadius, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
+	//LineHandle AddCone(float aHeight, float anAngleInRadians, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aDirection, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
 
 	LineHandle GetNewHandle();
-	void UpdatePrimitiveTransform(const LineHandle& aHandle, const CommonUtilities::Matrix4x4f& aTransform);
+	void UpdatePrimitiveTransform(const LineHandle& aHandle, const Crimson::Matrix4x4f& aTransform);
 	void ActivateHandle(const LineHandle& aHandle);
 	void DeactivateHandle(const LineHandle& aHandle);
 	void DeleteHandle(const LineHandle& aHandle);
@@ -65,10 +65,10 @@ public:
 private:
 	struct LinePrimitive
 	{
-		CommonUtilities::Matrix4x4f myTransform;
-		std::vector<LineVertex> myVertices;
-		std::vector<unsigned> myIndices;
-		bool myIsUI;
+		Crimson::Matrix4x4f myTransform{};
+		std::vector<LineVertex> myVertices{};
+		std::vector<unsigned> myIndices{};
+		bool myIsUI{};
 	};
 
 	std::unordered_map<unsigned, LinePrimitive> myLines;
@@ -93,7 +93,7 @@ private:
 	unsigned AddPrimitive(const LinePrimitive& aPrimitive);
 	void UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle);
 
-	void CreateCircle(LinePrimitive& outPrimitive, unsigned aVertexCount, float aRadius, const CommonUtilities::Vector3f& aCenter, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector4f& aColor);
+	void CreateCircle(LinePrimitive& outPrimitive, unsigned aVertexCount, float aRadius, const Crimson::Vector3f& aCenter, const Crimson::Vector3f& aDirection, const Crimson::Vector4f& aColor);
 
 	void UpdateBuffers(bool aIsUI);
 };

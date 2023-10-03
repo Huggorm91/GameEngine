@@ -38,7 +38,7 @@ public:
 	bool HasSkeleton() const;
 	void SetSkeleton(Skeleton* aSkeleton);
 	const Skeleton& GetSkeleton() const;
-	const std::array<CommonUtilities::Matrix4x4f, 128>& GetBoneTransforms() const;
+	const std::array<Crimson::Matrix4x4f, 128>& GetBoneTransforms() const;
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
@@ -46,7 +46,7 @@ public:
 	const AnimatedMeshComponent* GetTypePointer() const override;
 
 private:
-	std::array<CommonUtilities::Matrix4x4f, 128> myBoneTransformCache;
+	std::array<Crimson::Matrix4x4f, 128> myBoneTransformCache;
 	Skeleton* mySkeleton;
 
 	Animation myAnimation;
@@ -56,7 +56,7 @@ private:
 	bool myIsLooping;
 
 	void UpdateCache();
-	void UpdateHeirarchy(unsigned int anIndex, const CommonUtilities::Matrix4x4f& aParentMatrix);
-	const CommonUtilities::Matrix4x4f& GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
+	void UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix);
+	const Crimson::Matrix4x4f& GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
 };
 

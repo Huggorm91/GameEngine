@@ -5,12 +5,11 @@
 #include <utility>
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
-#include <Vector3.hpp>
-#include <Container/MinHeap.hpp>
-#include <External/jsonCpp/json.h>
+#include "Math/Vector3.hpp"
+#include "Json/jsonCpp/json.h"
 #include "InterOp/Helpers.h"
 #include <fstream>
-#include <Sort.hpp>
+#include "Math/Sort.hpp"
 
 GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
 myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(),
@@ -172,7 +171,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 
 #ifndef _RETAIL
-		myGrid = myLineDrawer.AddAxisLines(CommonUtilities::Vector3f::Null, 10000000.f, true);
+		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 10000000.f, true);
 	}
 	catch (const std::exception& e)
 	{
@@ -217,7 +216,7 @@ void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
 	GELogger.SetConsoleHandle(aHandle);
 }
 
-void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector3f& aColor)
+void GraphicsEngine::SetBackGroundColor(const Crimson::Vector3f& aColor)
 {
 	myBackgroundColor = aColor;
 }
@@ -225,7 +224,7 @@ void GraphicsEngine::SetBackGroundColor(const CommonUtilities::Vector3f& aColor)
 void GraphicsEngine::Swap()
 {
 	assert(false && "Not Implemented!");
-	//CommonUtilities::Swap(myRenderCommands, myUpdateCommands);
+	//Crimson::Swap(myRenderCommands, myUpdateCommands);
 	// Not threadsafe until LineDrawer also swaps buffers!
 }
 
@@ -574,7 +573,7 @@ void GraphicsEngine::RenderFrame()
 
 		std::unordered_set<unsigned> updatedDistance;
 		updatedDistance.reserve(myRenderCommands->shadowCommands.size());
-		CommonUtilities::Vector3f position = CommonUtilities::Vector3f::Null;
+		Crimson::Vector3f position = Crimson::Vector3f::Null;
 
 		// Update position before calling a sorting algorithm with this function, and clear updatedDistance after
 		std::function<bool(ShadowData&, ShadowData&)> compare = [&position, &updatedDistance](ShadowData& aFirst, ShadowData& aSecond) -> bool{
@@ -600,15 +599,15 @@ void GraphicsEngine::RenderFrame()
 
 			// Depth sort
 			position = 3.f * myWorldRadius * myLightBuffer.Data.InvertedDirection;
-			CommonUtilities::QuickSort(objectList, compare);
+			Crimson::QuickSort(objectList, compare);
 			updatedDistance.clear();
 
-			const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, myWorldCenter);
+			const Crimson::Matrix4x4f& view = Crimson::Matrix4x4f::LookAt(position, myWorldCenter);
 
-			const CommonUtilities::Vector3f& center = CommonUtilities::Vector4f(myWorldCenter, 1.f) * view;
-			const CommonUtilities::Vector3f& leftBotNear = center - myWorldRadius;
-			const CommonUtilities::Vector3f& rightTopFar = center + myWorldRadius;
-			const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreateOrthographicMatrix(leftBotNear.x, rightTopFar.x, leftBotNear.y, rightTopFar.y, 1.f, myWorldRadius * 4.f);
+			const Crimson::Vector3f& center = Crimson::Vector4f(myWorldCenter, 1.f) * view;
+			const Crimson::Vector3f& leftBotNear = center - myWorldRadius;
+			const Crimson::Vector3f& rightTopFar = center + myWorldRadius;
+			const Crimson::Matrix4x4f& projection = Crimson::Matrix4x4f::CreateOrthographicMatrix(leftBotNear.x, rightTopFar.x, leftBotNear.y, rightTopFar.y, 1.f, myWorldRadius * 4.f);
 
 			myLightBuffer.Data.DirectionalView = view;
 			myLightBuffer.Data.DirectionalProjection = projection;
@@ -640,12 +639,12 @@ void GraphicsEngine::RenderFrame()
 
 		//		// Depth sort
 		//		position = spotLight.Position;
-		//		CommonUtilities::QuickSort(objectList, compare);
+		//		Crimson::QuickSort(objectList, compare);
 		//		updatedDistance.clear();
 
-		//		const CommonUtilities::Vector3f& target = position + spotLight.LightDirection * spotLight.Range;
-		//		const CommonUtilities::Matrix4x4f& view = CommonUtilities::Matrix4x4f::LookAt(position, target);
-		//		const CommonUtilities::Matrix4x4f& projection = CommonUtilities::Matrix4x4f::CreatePerspectiveMatrix(spotLight.OuterAngle * 2.f, 1.f, spotLight.Range, { 1.f, 1.f });
+		//		const Crimson::Vector3f& target = position + spotLight.LightDirection * spotLight.Range;
+		//		const Crimson::Matrix4x4f& view = Crimson::Matrix4x4f::LookAt(position, target);
+		//		const Crimson::Matrix4x4f& projection = Crimson::Matrix4x4f::CreatePerspectiveMatrix(spotLight.OuterAngle * 2.f, 1.f, spotLight.Range, { 1.f, 1.f });
 
 		//		spotLight.View = view;
 		//		spotLight.Projection = projection;
@@ -681,7 +680,7 @@ void GraphicsEngine::RenderFrame()
 		// 
 		//		// Depth sort
 		//		position = pointLight.Position;
-		//		CommonUtilities::QuickSort(objectList, compare);
+		//		Crimson::QuickSort(objectList, compare);
 		//		updatedDistance.clear();
 
 		//		// Draw to ShadowMap
@@ -728,7 +727,7 @@ void GraphicsEngine::RenderFrame()
 			meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
 		}
 
-		CommonUtilities::QuickSort(meshes);
+		Crimson::QuickSort(meshes);
 
 		// Draw to GBuffer
 		for (auto& mesh : meshes)
@@ -832,7 +831,7 @@ void GraphicsEngine::RenderFrame()
 			meshes.emplace_back(command, (command->GetWorldPosition() - myFrameBuffer.Data.CameraPosition).LengthSqr());
 		}
 
-		CommonUtilities::QuickSort(meshes);
+		Crimson::QuickSort(meshes);
 
 		for (auto& mesh : meshes)
 		{

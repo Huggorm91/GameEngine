@@ -77,7 +77,7 @@ public:
 	void SaveSettings() const;
 
 	void SetLoggingWindow(HANDLE aHandle);
-	void SetBackGroundColor(const CommonUtilities::Vector3f& aColor);
+	void SetBackGroundColor(const Crimson::Vector3f& aColor);
 
 	// Swaps the render buffers. Should be called before BeginFrame or after EndFrame
 	void Swap();
@@ -113,13 +113,13 @@ public:
 		return myLineDrawer;
 	}
 
-	inline const CommonUtilities::Vector3f& GetWorldBoundsMax() const {
+	inline const Crimson::Vector3f& GetWorldBoundsMax() const {
 		return myWorldMax;
 	}
-	inline const CommonUtilities::Vector3f& GetWorldBoundsMin() const {
+	inline const Crimson::Vector3f& GetWorldBoundsMin() const {
 		return myWorldMin;
 	}
-	inline const CommonUtilities::Vector3f& GetWorldBoundsOrigin() const {
+	inline const Crimson::Vector3f& GetWorldBoundsOrigin() const {
 		return myWorldCenter;
 	}
 
@@ -162,10 +162,10 @@ private:
 
 	float myWorldRadius;
 	SIZE myWindowSize;
-	CommonUtilities::Vector3f myWorldMax;
-	CommonUtilities::Vector3f myWorldMin;
-	CommonUtilities::Vector3f myWorldCenter;
-	CommonUtilities::Vector3f myBackgroundColor;
+	Crimson::Vector3f myWorldMax;
+	Crimson::Vector3f myWorldMin;
+	Crimson::Vector3f myWorldCenter;
+	Crimson::Vector3f myBackgroundColor;
 	std::string mySettingsPath;
 
 	Texture* myDirectionalShadowMap;

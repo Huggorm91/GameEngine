@@ -12,7 +12,7 @@ public:
 		Scale
 	};
 
-	EditCmd_ChangeMultipleGameObjects(const CommonUtilities::Vector3f& aChange, TransformType aType, Transform* anEditorTransform);
+	EditCmd_ChangeMultipleGameObjects(const Crimson::Vector3f& aChange, TransformType aType, Transform* anEditorTransform);
 	~EditCmd_ChangeMultipleGameObjects() = default;
 
 	void Undo() override;
@@ -22,6 +22,6 @@ public:
 protected:
 	TransformType myType;
 	Transform* myEditorTransform;
-	CommonUtilities::Vector3f myChange;
+	Crimson::Vector3f myChange;
 	std::unordered_set<std::shared_ptr<GameObject>> myObjects;
 };

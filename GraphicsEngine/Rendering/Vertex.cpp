@@ -34,7 +34,7 @@ myTangent(aVertex.Tangent[0], aVertex.Tangent[1], aVertex.Tangent[2])
 {
 }
 
-Vertex::Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector2f& aUV, const CommonUtilities::Vector3f& aNormal, const CommonUtilities::Vector3f& aTangent) :
+Vertex::Vertex(const Crimson::Vector3f& aPosition, const Crimson::Vector2f& aUV, const Crimson::Vector3f& aNormal, const Crimson::Vector3f& aTangent) :
 	myPosition(aPosition, 1.f), myColors{ {0.f, 0.f, 0.f, 1.f} }, myBoneIDs(), myBoneWeights(), myUVs{ aUV }, myNormal(aNormal), myTangent(aTangent)
 {
 }

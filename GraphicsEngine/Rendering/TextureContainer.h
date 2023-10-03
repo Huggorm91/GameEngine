@@ -1,6 +1,6 @@
 #pragma once
 #include "Texture.h"
-#include "Vector3.hpp"
+#include "Math/Vector3.hpp"
 
 struct TextureContainer
 {
@@ -22,7 +22,7 @@ struct TextureContainer
 	Texture DefaultFXTexture{};
 	Texture DefaultCubeMap{};
 
-	void ClearTextures(const CommonUtilities::Vector3f& aFillColor);
+	void ClearTextures(const Crimson::Vector3f& aFillColor);
 };
 
 struct SlotContainer

@@ -1,5 +1,5 @@
 #pragma once
-#include <Vector4.hpp>
+#include "Math/Vector4.hpp"
 
 namespace Json{ class Value; }
 
@@ -24,7 +24,7 @@ struct Settings
 	std::string PointlightPS;
 	std::string SpotlightPS;
 
-	CommonUtilities::Vector4f BackgroundColor;
+	Crimson::Vector4f BackgroundColor;
 
 	Settings() = default;
 	Settings(const Json::Value& aJson);

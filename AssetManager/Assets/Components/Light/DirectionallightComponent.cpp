@@ -7,7 +7,7 @@ DirectionallightComponent::DirectionallightComponent() : Component(ComponentType
 {
 }
 
-DirectionallightComponent::DirectionallightComponent(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows) :Component(ComponentType::Directionallight), myInvertedLightDirection(-aDirection.GetNormalized()), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr), myLightDirection(-myInvertedLightDirection)
+DirectionallightComponent::DirectionallightComponent(const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aColor, float anIntensity, bool aCastShadows) :Component(ComponentType::Directionallight), myInvertedLightDirection(-aDirection.GetNormalized()), myColor(aColor), myIntensity(anIntensity), myCastShadows(aCastShadows), myShadowMap(nullptr), myLightDirection(-myInvertedLightDirection)
 {
 	if (aCastShadows)
 	{
@@ -48,7 +48,7 @@ DirectionallightComponent& DirectionallightComponent::operator=(const Directiona
 	return *this;
 }
 
-void DirectionallightComponent::Init(const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aColor, float anIntensity, bool aCastShadows)
+void DirectionallightComponent::Init(const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aColor, float anIntensity, bool aCastShadows)
 {
 	myLightDirection = aDirection.GetNormalized();
 	myInvertedLightDirection = -myLightDirection;
@@ -72,13 +72,13 @@ void DirectionallightComponent::Update()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(*this));
 }
 
-void DirectionallightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDirection)
+void DirectionallightComponent::SetLightDirection(const Crimson::Vector3f& aDirection)
 {
 	myLightDirection = aDirection.GetNormalized();
 	myInvertedLightDirection = -myLightDirection;
 }
 
-void DirectionallightComponent::SeColor(const CommonUtilities::Vector3f& aColor)
+void DirectionallightComponent::SeColor(const Crimson::Vector3f& aColor)
 {
 	myColor = aColor;
 }
@@ -88,7 +88,7 @@ void DirectionallightComponent::SetIntensity(float anIntensity)
 	myIntensity = anIntensity;
 }
 
-CommonUtilities::Vector3f DirectionallightComponent::GetLightDirection() const
+Crimson::Vector3f DirectionallightComponent::GetLightDirection() const
 {
 #ifndef _RETAIL
 	return -myInvertedLightDirection;
@@ -97,12 +97,12 @@ CommonUtilities::Vector3f DirectionallightComponent::GetLightDirection() const
 #endif // !_RETAIL	
 }
 
-const CommonUtilities::Vector3f& DirectionallightComponent::GetInvertedLightDirection() const
+const Crimson::Vector3f& DirectionallightComponent::GetInvertedLightDirection() const
 {
 	return myInvertedLightDirection;
 }
 
-const CommonUtilities::Vector3f& DirectionallightComponent::GetColor() const
+const Crimson::Vector3f& DirectionallightComponent::GetColor() const
 {
 	return myColor;
 }
