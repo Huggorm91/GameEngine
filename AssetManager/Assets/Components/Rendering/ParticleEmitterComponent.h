@@ -21,16 +21,16 @@ public:
 	ParticleEmitterComponent& operator=(ParticleEmitterComponent&& aComponent) noexcept = default;
 
 	// void Init(const Json::Value& aJson) override;
-	void Init(GameObject* aParent) override;
-	void Update() override;
+	//void Init(GameObject* aParent) override;
+	//void Update() override;
 
 	// void SetActive(bool aIsActive) override;
 	// void ToogleActive() override;
 
-	void TransformHasChanged() const override;
+	//void TransformHasChanged() const override;
 
-	void CreateImGuiComponents(const std::string& aWindowName) override;
-	Json::Value ToJson() const override;
+	//void CreateImGuiComponents(const std::string& aWindowName) override;
+	//Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	const ParticleEmitterComponent* GetTypePointer() const override; // return this;
 

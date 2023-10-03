@@ -451,6 +451,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
 		if (!IsSelected(anObject))
 		{
+			mySelectedObjects.clear();
 			mySelectedObjects.emplace(anObject);
 		}
 		ImGui::EndDragDropSource();
