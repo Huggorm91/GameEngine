@@ -3,7 +3,7 @@
 
 struct Socket
 {
-	CommonUtilities::Matrix4x4f myRestTransform;
+	Crimson::Matrix4x4f myRestTransform;
 	std::string myNamespaceName;
 	std::string myName;
 	int myParentBoneIdx;

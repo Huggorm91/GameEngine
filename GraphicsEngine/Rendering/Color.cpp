@@ -3,11 +3,11 @@
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
 
-std::unordered_map<std::string, CommonUtilities::Vector4f> ColorManager::myColors{};
+std::unordered_map<std::string, Crimson::Vector4f> ColorManager::myColors{};
 
-CommonUtilities::Vector4f GetColor(const CommonUtilities::Vector3f& aHexValue)
+Crimson::Vector4f GetColor(const Crimson::Vector3f& aHexValue)
 {
-    return CommonUtilities::Vector4f(aHexValue/255.f, 1.f);
+    return Crimson::Vector4f(aHexValue/255.f, 1.f);
 }
 
 void ColorManager::Init(const Json::Value& someData)
@@ -31,7 +31,7 @@ Json::Value ColorManager::ToJson()
 	return result;
 }
 
-void ColorManager::AddColor(const std::string& aName, const CommonUtilities::Vector4f& aColor)
+void ColorManager::AddColor(const std::string& aName, const Crimson::Vector4f& aColor)
 {
 	myColors.emplace(aName, aColor);
 }
@@ -44,18 +44,18 @@ void ColorManager::RemoveColor(const std::string& aName)
 	}
 }
 
-CommonUtilities::Vector4f ColorManager::GetColor(const std::string& aName)
+Crimson::Vector4f ColorManager::GetColor(const std::string& aName)
 {
 	if (auto iter = myColors.find(aName); iter != myColors.end())
 	{
 		return iter->second;
 	}
-	return CommonUtilities::Vector4f();
+	return Crimson::Vector4f();
 }
 
-CommonUtilities::Vector4f ColorManager::GetColor(const CommonUtilities::Vector3f& aHexValue)
+Crimson::Vector4f ColorManager::GetColor(const Crimson::Vector3f& aHexValue)
 {
-	return CommonUtilities::Vector4f(aHexValue * 0.0039215686274509803921568627451f, 1.f); // aHexValue / 255
+	return Crimson::Vector4f(aHexValue * 0.0039215686274509803921568627451f, 1.f); // aHexValue / 255
 }
 
 std::vector<std::string> ColorManager::GetNames()
@@ -68,7 +68,7 @@ std::vector<std::string> ColorManager::GetNames()
 	return result;
 }
 
-bool ColorManager::CreateImGuiComponents(CommonUtilities::Vector4f& outColor, std::string& outSelection, const std::string& aComboName)
+bool ColorManager::CreateImGuiComponents(Crimson::Vector4f& outColor, std::string& outSelection, const std::string& aComboName)
 {
 	bool result = false;
 	bool openPopup = false;
@@ -102,7 +102,7 @@ bool ColorManager::CreateImGuiComponents(CommonUtilities::Vector4f& outColor, st
 		if (ImGui::BeginPopupModal("Add Color"))
 		{
 			static std::string name;
-			static CommonUtilities::Vector4f color = {0.f, 0.f, 0.f, 1.f};
+			static Crimson::Vector4f color = {0.f, 0.f, 0.f, 1.f};
 
 			ImGui::ColorEdit4("Color", &color.x);
 			if (ImGui::InputText("Name", &name, ImGuiInputTextFlags_EnterReturnsTrue))

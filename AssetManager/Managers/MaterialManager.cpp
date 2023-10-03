@@ -1,8 +1,8 @@
 #include "AssetManager.pch.h"
 #include "MaterialManager.h"
-#include <External/jsonCpp/json.h>
+#include "Json/jsonCpp/json.h"
 #include <fstream>
-#include "../DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 void MaterialManager::Init()
 {
@@ -56,7 +56,7 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, GetPath(), &AMLogger);
+	path = CreateValidPath(path, GetPath());
 
 	if (path.empty())
 	{
@@ -84,7 +84,7 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 Material* MaterialManager::LoadMaterial(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("MaterialManager: Could not load material from path: " + aPath);

@@ -2,12 +2,12 @@
 #include "Windows.h"
 #include "resource.h"
 #include "Core/Modelviewer.h"
-#include <InputHandler.h>
+#include "Input/InputHandler.h"
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
 
-CommonUtilities::InputHandler globalInputHandler;
+Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -21,8 +21,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
     UNREFERENCED_PARAMETER(nCmdShow);
 
-    constexpr SIZE windowSize = { 1920, 1080 };
-    constexpr LPCWSTR windowTitle = L"Modelviewer";
+    //constexpr SIZE windowSize = { 1920, 1080 };
+    //constexpr LPCWSTR windowTitle = L"Modelviewer";
 
     ModelViewer& MV = ModelViewer::Get();
 
@@ -34,7 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     setvbuf(consoleOut, nullptr, _IONBF, 1024);
 
 	HWND consoleWindow = GetConsoleWindow();
-    const CommonUtilities::Vector2i consoleSize = { 1280, 720 };
+    const Crimson::Vector2i consoleSize = { 1280, 720 };
     int monitorCount = GetSystemMetrics(SM_CMONITORS);
     if (monitorCount > 1)
     {
@@ -47,7 +47,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         RECT desktopSize;
         GetWindowRect(GetDesktopWindow(), &desktopSize);
         
-        CommonUtilities::Vector2i consolePos;
+        Crimson::Vector2i consolePos;
         if (virtualSize.left < 0 && desktopSize.right < virtualSize.right) // Secondary monitor to the left
         {
             consolePos.x = desktopSize.left - consoleSize.x;

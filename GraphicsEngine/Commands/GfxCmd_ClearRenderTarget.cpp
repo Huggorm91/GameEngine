@@ -1,7 +1,7 @@
 #include "GraphicsEngine.pch.h"
 #include "GfxCmd_ClearRenderTarget.h"
 
-GfxCmd_ClearRenderTarget::GfxCmd_ClearRenderTarget(const Texture* aTarget, const CommonUtilities::Vector4f& aColor, RenderStage aRenderStage): GraphicsCommand(aRenderStage), myTarget(aTarget), myColor(aColor)
+GfxCmd_ClearRenderTarget::GfxCmd_ClearRenderTarget(const Texture* aTarget, const Crimson::Vector4f& aColor, RenderStage aRenderStage): GraphicsCommand(aRenderStage), myTarget(aTarget), myColor(aColor)
 {
 }
 

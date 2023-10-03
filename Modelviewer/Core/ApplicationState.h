@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <JsonVector.hpp>
+#include "Json/JsonVector.hpp"
 
 struct ApplicationState
 {
@@ -9,7 +9,7 @@ struct ApplicationState
 	float CameraSpeed{};
 	float CameraRotationSpeed{};
 	float CameraMouseSensitivity{};
-	CommonUtilities::Vector2i WindowSize{};
+	Crimson::Vector2i WindowSize{};
 	std::string WindowTitle {};
 
 	ApplicationState() = default;

@@ -11,8 +11,8 @@ SpotlightComponent::SpotlightComponent() :Component(ComponentType::Spotlight), m
 {
 }
 
-SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows) :
-	Component(ComponentType::Spotlight), myRange(aRange), myIntensity(anIntensity), myInnerAngle(CommonUtilities::DegreeToRadian(anInnerAngle)), myOuterAngle(CommonUtilities::DegreeToRadian(anOuterAngle)), myPosition(aPosition),
+SpotlightComponent::SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aColor, bool aCastShadows) :
+	Component(ComponentType::Spotlight), myRange(aRange), myIntensity(anIntensity), myInnerAngle(Crimson::DegreeToRadian(anInnerAngle)), myOuterAngle(Crimson::DegreeToRadian(anOuterAngle)), myPosition(aPosition),
 	myLightDirection(aDirection.GetNormalized()), myColor(aColor), myCastShadows(aCastShadows), myShadowMap(nullptr)
 #ifndef _RETAIL
 	, myEditDirection(myLightDirection)
@@ -70,12 +70,12 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 	return *this;
 }
 
-void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const CommonUtilities::Vector3f& aDirection, const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector3f& aColor, bool aCastShadows)
+void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aColor, bool aCastShadows)
 {
 	myRange = aRange;
 	myIntensity = anIntensity;
-	myInnerAngle = CommonUtilities::DegreeToRadian(anInnerAngle);
-	myOuterAngle = CommonUtilities::DegreeToRadian(anOuterAngle);
+	myInnerAngle = Crimson::DegreeToRadian(anInnerAngle);
+	myOuterAngle = Crimson::DegreeToRadian(anOuterAngle);
 	myPosition = aPosition;
 	myLightDirection = aDirection.GetNormalized();
 	myColor = aColor;
@@ -120,12 +120,12 @@ void SpotlightComponent::SetOuterAngle(float anAngle)
 	myOuterAngle = anAngle;
 }
 
-void SpotlightComponent::SetPosition(const CommonUtilities::Vector3f& aPosition)
+void SpotlightComponent::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myPosition = aPosition;
 }
 
-void SpotlightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDirection)
+void SpotlightComponent::SetLightDirection(const Crimson::Vector3f& aDirection)
 {
 	myLightDirection = aDirection.GetNormalized();
 #ifndef _RETAIL
@@ -133,7 +133,7 @@ void SpotlightComponent::SetLightDirection(const CommonUtilities::Vector3f& aDir
 #endif // !_RETAIL
 }
 
-void SpotlightComponent::SetColor(const CommonUtilities::Vector3f& aColor)
+void SpotlightComponent::SetColor(const Crimson::Vector3f& aColor)
 {
 	myColor = aColor;
 }
@@ -214,25 +214,25 @@ float SpotlightComponent::GetOuterAngle() const
 	return myOuterAngle;
 }
 
-const CommonUtilities::Vector3f& SpotlightComponent::GetPosition() const
+const Crimson::Vector3f& SpotlightComponent::GetPosition() const
 {
 	return myPosition;
 }
 
-const CommonUtilities::Vector3f& SpotlightComponent::GetLightDirection() const
+const Crimson::Vector3f& SpotlightComponent::GetLightDirection() const
 {
 	return myLightDirection;
 }
 
-const CommonUtilities::Vector3f& SpotlightComponent::GetColor() const
+const Crimson::Vector3f& SpotlightComponent::GetColor() const
 {
 	return myColor;
 }
 
-CommonUtilities::Matrix4x4f SpotlightComponent::GetTransform() const
+Crimson::Matrix4x4f SpotlightComponent::GetTransform() const
 {
 	assert(myParent != nullptr && "PointlightComponent is not Initialized!");
-	return myParent->GetTransformMatrix() * CommonUtilities::Matrix4x4f::CreateTranslationMatrix(myPosition);
+	return myParent->GetTransformMatrix() * Crimson::Matrix4x4f::CreateTranslationMatrix(myPosition);
 }
 
 void SpotlightComponent::SetCastShadows(bool aState)

@@ -205,17 +205,17 @@ Component* GameObject::GetComponentPointer(unsigned anID)
 	return nullptr;
 }
 
-void GameObject::SetPosition(const CommonUtilities::Vector3f& aPosition)
+void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);
 }
 
-void GameObject::SetRotation(const CommonUtilities::Vector3f& aRotation)
+void GameObject::SetRotation(const Crimson::Vector3f& aRotation)
 {
 	myTransform.SetRotation(aRotation);
 }
 
-void GameObject::SetScale(const CommonUtilities::Vector3f& aScale)
+void GameObject::SetScale(const Crimson::Vector3f& aScale)
 {
 	myTransform.SetScale(aScale);
 }
@@ -225,7 +225,7 @@ const Transform& GameObject::GetTransform() const
 	return myTransform;
 }
 
-const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
+const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
@@ -237,7 +237,7 @@ const CommonUtilities::Matrix4x4f& GameObject::GetTransformMatrix() const
 	return myTransform.GetTransformMatrix();
 }
 
-const CommonUtilities::Vector4f& GameObject::GetWorldPosition() const
+const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{

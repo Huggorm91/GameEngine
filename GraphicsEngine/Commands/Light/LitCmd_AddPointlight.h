@@ -19,8 +19,8 @@ private:
 	float myRadius;
 	float myIntensity;
 	std::shared_ptr<Texture> myShadowMap;
-	CommonUtilities::Vector3f myPosition;
-	CommonUtilities::Vector3f myColor;
+	Crimson::Vector3f myPosition;
+	Crimson::Vector3f myColor;
 };
 
 typedef LitCmd_AddPointlight GfxCmd_AddPointlight;

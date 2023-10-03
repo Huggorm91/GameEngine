@@ -131,7 +131,7 @@ void MeshComponent::Init(const Json::Value& aJson)
 {
 	Component::Init(aJson);
 	myRenderShadow = aJson["RenderShadow"].asBool();
-	myColor = CommonUtilities::Vector4f(aJson["Color"]);
+	myColor = Crimson::Vector4f(aJson["Color"]);
 	myTransform = aJson["Transform"];
 	myIsDeferred = aJson["IsDeferred"].asBool();
 	for (auto& element : aJson["Elements"])
@@ -141,8 +141,8 @@ void MeshComponent::Init(const Json::Value& aJson)
 
 #ifndef _RETAIL
 	myLerpValue = aJson["LerpValue"].asFloat();
-	myLerpColor1 = CommonUtilities::Vector4f(aJson["LerpColor1"]);
-	myLerpColor2 = CommonUtilities::Vector4f(aJson["LerpColor2"]);
+	myLerpColor1 = Crimson::Vector4f(aJson["LerpColor1"]);
+	myLerpColor2 = Crimson::Vector4f(aJson["LerpColor2"]);
 #endif // !_RETAIL
 }
 
@@ -152,13 +152,13 @@ void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const st
 	myName = aName;
 	myPath = aPath;
 
-	CommonUtilities::Vector3f min;
-	CommonUtilities::Vector3f max;
+	Crimson::Vector3f min;
+	Crimson::Vector3f max;
 
 	for (auto& element : myElements)
 	{
-		const CommonUtilities::Vector3f& elementMin = element.myData->myBoxSphereBounds.GetMin();
-		const CommonUtilities::Vector3f& elementMax = element.myData->myBoxSphereBounds.GetMax();
+		const Crimson::Vector3f& elementMin = element.myData->myBoxSphereBounds.GetMin();
+		const Crimson::Vector3f& elementMax = element.myData->myBoxSphereBounds.GetMax();
 		if (elementMin.x < min.x)
 		{
 			min.x = elementMin.x;
@@ -186,27 +186,27 @@ void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const st
 		}
 	}
 
-	CommonUtilities::Vector3f center = (min + max) * 0.5f;
-	CommonUtilities::Vector3f size = max - min;
+	Crimson::Vector3f center = (min + max) * 0.5f;
+	Crimson::Vector3f size = max - min;
 	myBoxSphereBounds.Init(center, size);
 }
 
-void MeshComponent::SetOffsetPosition(const CommonUtilities::Vector3f& aPosition)
+void MeshComponent::SetOffsetPosition(const Crimson::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);
 }
 
-void MeshComponent::SetOffsetRotation(const CommonUtilities::Vector3f& aRotation)
+void MeshComponent::SetOffsetRotation(const Crimson::Vector3f& aRotation)
 {
 	myTransform.SetRotation(aRotation);
 }
 
-void MeshComponent::SetOffsetScale(const CommonUtilities::Vector3f& aScale)
+void MeshComponent::SetOffsetScale(const Crimson::Vector3f& aScale)
 {
 	myTransform.SetScale(aScale);
 }
 
-const CommonUtilities::Matrix4x4f& MeshComponent::GetTransform() const
+const Crimson::Matrix4x4f& MeshComponent::GetTransform() const
 {
 	if (myTransform.HasChanged())
 	{
@@ -215,7 +215,7 @@ const CommonUtilities::Matrix4x4f& MeshComponent::GetTransform() const
 	return myTransform.GetTransformMatrix();
 }
 
-const CommonUtilities::Vector4f& MeshComponent::GetWorldPosition() const
+const Crimson::Vector4f& MeshComponent::GetWorldPosition() const
 {
 	return myTransform.GetWorldPosition();
 }
@@ -262,12 +262,12 @@ void MeshComponent::SetFXTexture(Texture* aTexture)
 	}
 }
 
-void MeshComponent::SetColor(const CommonUtilities::Vector4f& aColor)
+void MeshComponent::SetColor(const Crimson::Vector4f& aColor)
 {
 	myColor = aColor;
 }
 
-const CommonUtilities::Vector4f& MeshComponent::GetColor() const
+const Crimson::Vector4f& MeshComponent::GetColor() const
 {
 	return myColor;
 }
@@ -306,7 +306,7 @@ void MeshComponent::TransformHasChanged() const
 {
 	const_cast<Transform&>(myTransform).SetHasChanged(true);
 	const auto& transform = myTransform.GetTransformMatrix();
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * CommonUtilities::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * CommonUtilities::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * Crimson::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * Crimson::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
 }
 
 void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
@@ -315,21 +315,21 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
 	if (ColorManager::CreateImGuiComponents(myLerpColor1, myLerpName1, "Color1"))
 	{
-		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
 	ImGui::SameLine();
 	ImGui::ColorEdit4("   ", &myLerpColor1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
 
 	if (ColorManager::CreateImGuiComponents(myLerpColor2, myLerpName2, "Color2"))
 	{
-		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
 	ImGui::SameLine();
 	ImGui::ColorEdit4("    ", &myLerpColor2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
 
 	if (ImGui::SliderFloat("Color", &myLerpValue, 0.f, 1.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 	{
-		myColor = CommonUtilities::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
+		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
 	}
 	ImGui::SameLine();
 	ImGui::ColorEdit4("  ", &myColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);

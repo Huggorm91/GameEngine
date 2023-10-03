@@ -13,7 +13,7 @@ class SplashWindow;
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
-class ModelViewer: public CommonUtilities::InputObserver
+class ModelViewer: public Crimson::InputObserver
 {
 #else
 class ModelViewer
@@ -47,14 +47,14 @@ public:
 	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
 
 	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
-	std::shared_ptr<GameObject> GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+	std::shared_ptr<GameObject> GetGameObject(const Crimson::Vector2f& aScreenPosition);
 #else
 	GameObject& AddGameObject();
 	GameObject& AddGameObject(const GameObject& anObject);
 	GameObject& AddGameObject(GameObject&& anObject);
 
 	GameObject* GetGameObject(unsigned anID);
-	GameObject* GetGameObject(const CommonUtilities::Vector2f& aScreenPosition);
+	GameObject* GetGameObject(const Crimson::Vector2f& aScreenPosition);
 #endif // _RETAIL
 
 	bool RemoveGameObject(unsigned anID);
@@ -68,8 +68,8 @@ public:
 	static inline const char* GetScenePath(){ return "Content\\Scenes\\"; }
 
 #ifndef _RETAIL
-	void ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey) override;
-	void ReceiveEvent(CommonUtilities::eInputAction, float) override;
+	void ReceiveEvent(Crimson::eInputEvent, Crimson::eKey) override;
+	void ReceiveEvent(Crimson::eInputAction, float) override;
 #endif // _RETAIL
 
 private:

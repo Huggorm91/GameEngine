@@ -28,7 +28,7 @@ void GfxCmd_RenderMesh::Execute()
 	}
 }
 
-const CommonUtilities::Vector4f& GfxCmd_RenderMesh::GetWorldPosition() const
+const Crimson::Vector4f& GfxCmd_RenderMesh::GetWorldPosition() const
 {
 	return myWorldPosition;
 }

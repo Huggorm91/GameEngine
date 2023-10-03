@@ -1,11 +1,11 @@
 #pragma once
 #include "EditCommand.h"
-#include <Vector3.hpp>
+#include "Math/Vector3.hpp"
 
 class EditCmd_ChangeTransform : public EditCommand
 {
 public:
-	EditCmd_ChangeTransform(CommonUtilities::Vector3f& aValueToChange, const CommonUtilities::Vector3f& aNewValue, bool& aHasChangedFlag);
+	EditCmd_ChangeTransform(Crimson::Vector3f& aValueToChange, const Crimson::Vector3f& aNewValue, bool& aHasChangedFlag);
 	~EditCmd_ChangeTransform() = default;
 
 	void Undo() override;
@@ -14,7 +14,7 @@ public:
 
 protected:
 	bool* myHasChangedFlag;
-	CommonUtilities::Vector3f* myPointer;
-	CommonUtilities::Vector3f myNewValue;
-	CommonUtilities::Vector3f myOldValue;
+	Crimson::Vector3f* myPointer;
+	Crimson::Vector3f myNewValue;
+	Crimson::Vector3f myOldValue;
 };

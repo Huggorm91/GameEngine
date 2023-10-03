@@ -55,7 +55,7 @@ void LineDrawer::LineHandle::SetActive(bool aValue) const
 	}
 }
 
-void LineDrawer::LineHandle::UpdateTransform(const CommonUtilities::Matrix4x4f& aTransform) const
+void LineDrawer::LineHandle::UpdateTransform(const Crimson::Matrix4x4f& aTransform) const
 {
 	GraphicsEngine::Get().GetLineDrawer().UpdatePrimitiveTransform(*this, aTransform);
 }
@@ -66,7 +66,7 @@ LineDrawer::LineHandle LineDrawer::GetNewHandle()
 	return myCounter++;
 }
 
-void LineDrawer::UpdatePrimitiveTransform(const LineHandle& aHandle, const CommonUtilities::Matrix4x4f& aTransform)
+void LineDrawer::UpdatePrimitiveTransform(const LineHandle& aHandle, const Crimson::Matrix4x4f& aTransform)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -106,10 +106,10 @@ void LineDrawer::DeactivateHandle(const LineHandle& aHandle)
 		myIsDirty = true;
 		myActiveLines.erase(iter);
 	}
-	else if (auto iter = myActiveUILines.find(aHandle.myID); iter != myActiveUILines.end())
+	else if (auto uiIter = myActiveUILines.find(aHandle.myID); uiIter != myActiveUILines.end())
 	{
 		myUIIsDirty = true;
-		myActiveUILines.erase(iter);
+		myActiveUILines.erase(uiIter);
 	}
 }
 
@@ -201,7 +201,7 @@ void LineDrawer::Render()
 	}
 }
 
-LineDrawer::LineHandle LineDrawer::AddLine(const CommonUtilities::Vector3f& aFrom, const CommonUtilities::Vector3f& aTo, const CommonUtilities::Vector4f& aColor, const CommonUtilities::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
+LineDrawer::LineHandle LineDrawer::AddLine(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, const Crimson::Vector4f& aColor, const Crimson::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
 {
 	LinePrimitive primitive;
 	primitive.myIsUI = aIsUI;
@@ -222,7 +222,7 @@ LineDrawer::LineHandle LineDrawer::AddLine(const CommonUtilities::Vector3f& aFro
 	}
 }
 
-LineDrawer::LineHandle LineDrawer::AddAxisLines(const CommonUtilities::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const CommonUtilities::Vector3f& aXDirection, const CommonUtilities::Vector3f& aYDirection, const CommonUtilities::Vector3f& aZDirection, const CommonUtilities::Vector4f& aXColor, const CommonUtilities::Vector4f& aYColor, const CommonUtilities::Vector4f& aZColor, const CommonUtilities::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
+LineDrawer::LineHandle LineDrawer::AddAxisLines(const Crimson::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const Crimson::Vector3f& aXDirection, const Crimson::Vector3f& aYDirection, const Crimson::Vector3f& aZDirection, const Crimson::Vector4f& aXColor, const Crimson::Vector4f& aYColor, const Crimson::Vector4f& aZColor, const Crimson::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
 {
 	LinePrimitive primitive;
 	primitive.myIsUI = aIsUI;

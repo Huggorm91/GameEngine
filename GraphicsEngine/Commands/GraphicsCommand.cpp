@@ -82,17 +82,17 @@ const SlotContainer& GraphicsCommand::GetTextureSlots()
     return GraphicsEngine::Get().myTextureSlots;
 }
 
-CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMin()
+Crimson::Vector3f& GraphicsCommand::GetWorldBoundsMin()
 {
     return GraphicsEngine::Get().myWorldMin;
 }
 
-CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsMax()
+Crimson::Vector3f& GraphicsCommand::GetWorldBoundsMax()
 {
     return GraphicsEngine::Get().myWorldMax;
 }
 
-CommonUtilities::Vector3f& GraphicsCommand::GetWorldBoundsOrigin()
+Crimson::Vector3f& GraphicsCommand::GetWorldBoundsOrigin()
 {
     return GraphicsEngine::Get().myWorldCenter;
 }

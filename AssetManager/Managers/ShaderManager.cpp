@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "ShaderManager.h"
-#include "../DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 #include "GraphicsEngine/InterOp/RHI.h"
 #include "GraphicsEngine/InterOp/Helpers.h"
 
@@ -24,7 +24,7 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 Shader* ShaderManager::LoadShader(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath(), &AMLogger);
+	path = GetValidPath(path, GetPath());
 
 	if (path.empty())
 	{

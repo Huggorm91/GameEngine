@@ -542,6 +542,7 @@ void RHI::ReflectShaderVariableMember(const std::wstring& aDomain, size_t& anOff
 
 void RHI::ReflectShaderVariable(const std::wstring& aDomain, size_t& anOffset, ID3D11ShaderReflectionVariable* aVariable, ShaderInfo::ConstantBufferInfo& inoutBufferInfo)
 {
+	UNREFERENCED_PARAMETER(aDomain);
 	// Get all the info about this particular variable.
 	// I.e. its description...
 	D3D11_SHADER_VARIABLE_DESC variableDesc;
@@ -658,18 +659,22 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 				case D3D_SRV_DIMENSION_TEXTURE1D:
 					{
 						textureInfo.Type = TextureType::Texture1D;
+						break;
 					}
 				case D3D_SRV_DIMENSION_TEXTURE2D:
 					{
 						textureInfo.Type = TextureType::Texture2D;
+						break;
 					}
 				case D3D_SRV_DIMENSION_TEXTURE3D:
 					{
 						textureInfo.Type = TextureType::Texture3D;
+						break;
 					}
 				default:
 					{
 						textureInfo.Type = TextureType::Unknown;
+						break;
 					}
 				}
 
@@ -768,7 +773,7 @@ bool RHI::LoadShader(Shader* outShader, const std::wstring& aFileName)
 
 	if (success)
 	{
-		outShader->myShaderObject->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(wchar_t) * aFileName.length(), aFileName.data());
+		outShader->myShaderObject->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aFileName.length()), aFileName.data());
 	}
 	return success;
 }
@@ -988,7 +993,7 @@ bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
 		return false;
 	}
 
-	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(wchar_t) * aName.length(), aName.data());
+	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aName.length()), aName.data());
 
 	if (someBindFlags & D3D11_BIND_DEPTH_STENCIL)
 	{
@@ -1329,6 +1334,8 @@ void RHI::CopyRegion(const Texture* aSource, const Texture* aDestination, unsign
 
 std::array<BYTE, 4> RHI::GetPixel(const Texture* aSource, unsigned X, unsigned Y)
 {
+	UNREFERENCED_PARAMETER(X);
+	UNREFERENCED_PARAMETER(Y);
 	std::array<BYTE, 4> bytes = { 0, 0, 0, 0 };
 
 	D3D11_MAPPED_SUBRESOURCE resource;

@@ -26,7 +26,7 @@ void GfxCmd_RenderMeshShadow::Execute()
 	}
 }
 
-const CommonUtilities::Vector3f& GfxCmd_RenderMeshShadow::GetWorldPosition() const
+const Crimson::Vector3f& GfxCmd_RenderMeshShadow::GetWorldPosition() const
 {
 	return myWorldPosition;
 }

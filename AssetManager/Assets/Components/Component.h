@@ -1,6 +1,6 @@
 #pragma once
-#include <Container/Blackboard.hpp>
-#include <JsonVector.hpp>
+#include "Container/Blackboard.hpp"
+#include "Json/JsonVector.hpp"
 #include "ComponentType.h"
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
@@ -58,8 +58,8 @@ protected:
 
 	static unsigned localIDCount;
 
-	const CommonUtilities::Blackboard<unsigned int>& GetComponentContainer() const;
-	CommonUtilities::Blackboard<unsigned int>& GetComponentContainer();
+	const Crimson::Blackboard<unsigned int>& GetComponentContainer() const;
+	Crimson::Blackboard<unsigned int>& GetComponentContainer();
 
 	const Transform* GetParentTransform() const;
 	Transform* GetParentTransform();

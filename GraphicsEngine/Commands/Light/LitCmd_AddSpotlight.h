@@ -21,9 +21,9 @@ private:
 	float myInnerAngle;
 	float myOuterAngle;
 	std::shared_ptr<Texture> myShadowMap;
-	CommonUtilities::Vector3f myPosition;
-	CommonUtilities::Vector3f myLightDirection;
-	CommonUtilities::Vector3f myColor;
+	Crimson::Vector3f myPosition;
+	Crimson::Vector3f myLightDirection;
+	Crimson::Vector3f myColor;
 };
 
 typedef LitCmd_AddSpotlight GfxCmd_AddSpotlight;

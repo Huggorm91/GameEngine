@@ -44,8 +44,8 @@ protected:
 	Material* GetDefaultMaterial();
 	const SlotContainer& GetTextureSlots();
 
-	CommonUtilities::Vector3f& GetWorldBoundsMin();
-	CommonUtilities::Vector3f& GetWorldBoundsMax();
-	CommonUtilities::Vector3f& GetWorldBoundsOrigin();
+	Crimson::Vector3f& GetWorldBoundsMin();
+	Crimson::Vector3f& GetWorldBoundsMax();
+	Crimson::Vector3f& GetWorldBoundsOrigin();
 	float& GetWorldBoundsRadius();
 };

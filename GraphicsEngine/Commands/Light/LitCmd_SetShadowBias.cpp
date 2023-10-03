@@ -5,7 +5,7 @@ LitCmd_SetShadowBias::LitCmd_SetShadowBias(float aBias): myBias(aBias)
 {
 }
 
-void LitCmd_SetShadowBias::Execute(const int anIndex)
+void LitCmd_SetShadowBias::Execute(const int)
 {
 	auto& buffer = GetLightBuffer();
 	buffer.Data.ShadowBias = myBias;

@@ -1,6 +1,6 @@
 #pragma once
+#include "Math/Vector4.hpp"
 #include <TgaFbxStructs.h>
-#include <Vector4.hpp>
 #include <wrl.h>
 using namespace Microsoft::WRL;
 
@@ -11,18 +11,18 @@ struct Vertex
 {
 	Vertex();
 	Vertex(const TGA::FBX::Vertex& aVertex);
-	Vertex(const CommonUtilities::Vector3f& aPosition, const CommonUtilities::Vector2f& aUV, const CommonUtilities::Vector3f& aNormal, const CommonUtilities::Vector3f& aTangent);
+	Vertex(const Crimson::Vector3f& aPosition, const Crimson::Vector2f& aUV, const Crimson::Vector3f& aNormal, const Crimson::Vector3f& aTangent);
 
-	CommonUtilities::Vector2f myUVs[4];
-	CommonUtilities::Vector4f myColors[4];
+	Crimson::Vector2f myUVs[4];
+	Crimson::Vector4f myColors[4];
 
-	CommonUtilities::Vector4f myPosition;
+	Crimson::Vector4f myPosition;
 
-	CommonUtilities::Vector4ui myBoneIDs;
-	CommonUtilities::Vector4f myBoneWeights;
+	Crimson::Vector4ui myBoneIDs;
+	Crimson::Vector4f myBoneWeights;
 
-	CommonUtilities::Vector3f myNormal;
-	CommonUtilities::Vector3f myTangent;
+	Crimson::Vector3f myNormal;
+	Crimson::Vector3f myTangent;
 
 	static const InputElementList InputLayoutDefinition;
 	static ComPtr<ID3D11InputLayout> InputLayout;

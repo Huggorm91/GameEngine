@@ -23,12 +23,12 @@ public:
 	void Init(const Json::Value& aJson) override;
 	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath);
 
-	void SetOffsetPosition(const CommonUtilities::Vector3f& aPosition);
-	void SetOffsetRotation(const CommonUtilities::Vector3f& aRotation);
-	void SetOffsetScale(const CommonUtilities::Vector3f& aScale);
+	void SetOffsetPosition(const Crimson::Vector3f& aPosition);
+	void SetOffsetRotation(const Crimson::Vector3f& aRotation);
+	void SetOffsetScale(const Crimson::Vector3f& aScale);
 
-	const CommonUtilities::Matrix4x4f& GetTransform() const;
-	const CommonUtilities::Vector4f& GetWorldPosition() const;
+	const Crimson::Matrix4x4f& GetTransform() const;
+	const Crimson::Vector4f& GetWorldPosition() const;
 
 	const std::vector<MeshElement>& GetElements() const;
 	std::vector<MeshElement>& GetElements();
@@ -38,8 +38,8 @@ public:
 	void SetMaterialTexture(Texture* aTexture);
 	void SetFXTexture(Texture* aTexture);
 
-	void SetColor(const CommonUtilities::Vector4f& aColor);
-	const CommonUtilities::Vector4f& GetColor() const;
+	void SetColor(const Crimson::Vector4f& aColor);
+	const Crimson::Vector4f& GetColor() const;
 
 	void SetRenderShadow(bool aState);
 	void ToogleRenderShadow();
@@ -62,15 +62,15 @@ protected:
 	const std::string* myPath;
 #ifndef _RETAIL
 	float myLerpValue;
-	CommonUtilities::Vector4f myLerpColor1;
-	CommonUtilities::Vector4f myLerpColor2;
+	Crimson::Vector4f myLerpColor1;
+	Crimson::Vector4f myLerpColor2;
 	std::string myLerpName1;
 	std::string myLerpName2;
 #endif // !_RETAIL
-	CommonUtilities::Vector4f myColor;
+	Crimson::Vector4f myColor;
 	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
-	CommonUtilities::Matrix4x4f myTransformMatrix;
+	Crimson::Matrix4x4f myTransformMatrix;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 };

@@ -18,6 +18,6 @@ LineVertex::LineVertex(float aX, float aY, float aZ, float aR, float aG, float a
 {
 }
 
-LineVertex::LineVertex(CommonUtilities::Vector3f aPosition, CommonUtilities::Vector4f aColor) : myPosition(aPosition, 1.f), myColor(aColor), myThickness()
+LineVertex::LineVertex(Crimson::Vector3f aPosition, Crimson::Vector4f aColor) : myPosition(aPosition, 1.f), myColor(aColor), myThickness()
 {
 }

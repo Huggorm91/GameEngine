@@ -10,14 +10,14 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
-#include "AssetManager/DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
 
-#include <InputMapper.h>
+#include "Input/InputMapper.h"
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
 mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
@@ -52,8 +52,8 @@ void ImguiManager::Init()
 	ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
 
 	// Setup keybinds
-	auto& input = *CommonUtilities::InputMapper::GetInstance();
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::Del);
+	auto& input = *Crimson::InputMapper::GetInstance();
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Del);
 }
 
 void ImguiManager::Update()
@@ -108,11 +108,11 @@ const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
 	return myImguiNameIndex.at(anObject);
 }
 
-void ImguiManager::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
+void ImguiManager::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
 	switch (aKey)
 	{
-	case CommonUtilities::eKey::Del:
+	case Crimson::eKey::Del:
 	{
 		if (mySelectedObjects.size() == 1)
 		{
@@ -130,7 +130,7 @@ void ImguiManager::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::e
 	}
 }
 
-void ImguiManager::ReceiveEvent(CommonUtilities::eInputAction, float)
+void ImguiManager::ReceiveEvent(Crimson::eInputAction, float)
 {
 }
 
@@ -147,7 +147,7 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	}
 	else
 	{
-		myDropLocation = CommonUtilities::Vector2i::Null;
+		myDropLocation = Crimson::Vector2i::Null;
 	}
 
 	if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
@@ -158,11 +158,6 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	{
 		myDropfileAssettype = AssetTypes::eAssetType::Unknown;
 	}
-}
-
-void ImguiManager::AddToSelectedObjects(const std::shared_ptr<GameObject>& anObject)
-{
-	
 }
 
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
@@ -433,11 +428,9 @@ void ImguiManager::CreateSceneContentWindow()
 
 void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObject)
 {
-	using namespace CommonUtilities;
+	using namespace Crimson;
 
 	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
-
-	
 
 	if (ImGui::BeginDragDropTarget()) 
 	{
@@ -458,6 +451,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
 		if (!IsSelected(anObject))
 		{
+			mySelectedObjects.clear();
 			mySelectedObjects.emplace(anObject);
 		}
 		ImGui::EndDragDropSource();
@@ -477,8 +471,8 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 {
 	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_SceneObject"))
 	{
-		IM_ASSERT(payload->DataSize == sizeof(unsigned));
-		unsigned id = *static_cast<unsigned*>(payload->Data);
+		//IM_ASSERT(payload->DataSize == sizeof(unsigned));
+		//unsigned id = *static_cast<unsigned*>(payload->Data);
 		if (aParent)
 		{
 			auto parent = myModelViewer->GetGameObject(aParent->GetID());

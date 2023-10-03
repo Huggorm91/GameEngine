@@ -4,8 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Modelviewer", "Modelviewer\Modelviewer.vcxproj", "{BC0EE161-ACEE-429C-9E4D-8DCE73A697BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C} = {ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicsEngine", "GraphicsEngine\GraphicsEngine.vcxproj", "{4A14B5D4-9D37-4A37-9D3B-D7B2BAC7B312}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C} = {ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Logging", "Logging\Logging.vcxproj", "{B4A6C56F-A9EE-4B80-A31D-3DB075F0854B}"
 EndProject
@@ -16,10 +22,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetManager", "AssetManager\AssetManager.vcxproj", "{441FCCCA-D04F-410A-976F-3D76D32B8A6C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4A14B5D4-9D37-4A37-9D3B-D7B2BAC7B312} = {4A14B5D4-9D37-4A37-9D3B-D7B2BAC7B312}
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C} = {ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}
 		{B4A6C56F-A9EE-4B80-A31D-3DB075F0854B} = {B4A6C56F-A9EE-4B80-A31D-3DB075F0854B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DearImGui", "ThirdParty\DearImGui\DearImGui.vcxproj", "{2401F8E1-66A8-4A33-A8FA-2DF968E7C84F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrimsonUtilities", "CrimsonUtilities\CrimsonUtilities.vcxproj", "{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +100,18 @@ Global
 		{2401F8E1-66A8-4A33-A8FA-2DF968E7C84F}.Retail|x64.Build.0 = Release|x64
 		{2401F8E1-66A8-4A33-A8FA-2DF968E7C84F}.Retail|x86.ActiveCfg = Release|Win32
 		{2401F8E1-66A8-4A33-A8FA-2DF968E7C84F}.Retail|x86.Build.0 = Release|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Debug|x64.ActiveCfg = Debug|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Debug|x64.Build.0 = Debug|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Debug|x86.ActiveCfg = Debug|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Debug|x86.Build.0 = Debug|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Release|x64.ActiveCfg = Release|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Release|x64.Build.0 = Release|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Release|x86.ActiveCfg = Release|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Release|x86.Build.0 = Release|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Retail|x64.ActiveCfg = Release|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Retail|x64.Build.0 = Release|x64
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Retail|x86.ActiveCfg = Release|Win32
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C}.Retail|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +119,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B4A6C56F-A9EE-4B80-A31D-3DB075F0854B} = {96475121-1117-42C3-8B1E-8A42DD6C80DE}
 		{2401F8E1-66A8-4A33-A8FA-2DF968E7C84F} = {96475121-1117-42C3-8B1E-8A42DD6C80DE}
+		{ADA69E07-F6E6-4ED5-9569-9656DCB96E3C} = {96475121-1117-42C3-8B1E-8A42DD6C80DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6291F018-61C1-4285-ACFA-72300622B6CB}

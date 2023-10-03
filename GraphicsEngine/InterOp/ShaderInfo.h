@@ -31,24 +31,24 @@ struct ShaderInfo
 
 	struct ConstantBufferInfo
 	{
-		std::wstring Name;
+		std::wstring Name{};
 		size_t Size{};
 		unsigned Slot{};
-		std::vector<VariableInfo> Variables;
-		std::unordered_map<std::wstring, size_t> VariableNameToIndex;
+		std::vector<VariableInfo> Variables{};
+		std::unordered_map<std::wstring, size_t> VariableNameToIndex{};
 	};
 
 	struct SamplerInfo
 	{
-		std::wstring Name;
+		std::wstring Name{};
 		unsigned Slot{};
 	};
 
 	struct TextureInfo
 	{
-		std::wstring Name;
+		std::wstring Name{};
 		unsigned Slot{};
-		TextureType Type;
+		TextureType Type{};
 	};
 
 	std::unordered_map<std::wstring, size_t> ConstantBufferNameToIndex;

@@ -12,8 +12,10 @@ EditCmd_AddGameObject::EditCmd_AddGameObject(GameObject&& anObject) : myObject(s
 
 void EditCmd_AddGameObject::Undo()
 {
-	const bool success = RemoveGameObject(myID);
-	assert(success && "Failed to remove GameObject");
+	if (!RemoveGameObject(myID))
+	{
+		LogError("EditCmd_AddGameObject::Undo: Failed to remove GameObject " + std::to_string(myID));
+	}	
 }
 
 void EditCmd_AddGameObject::Execute()

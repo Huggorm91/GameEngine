@@ -4,7 +4,7 @@
 
 #include "resource.h"
 
-LRESULT SplashWinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK SplashWinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -12,7 +12,7 @@ LRESULT SplashWinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 void SplashWindow::CreateAndShowWindow()
 {
     bmp = LoadBitmap(myHInstance, MAKEINTRESOURCE(IDB_SPLASHLOGO));
-    DWORD LastError = GetLastError();
+    //DWORD LastError = GetLastError();
 
     WNDCLASS splashClass = {};
     splashClass.style = 0;

@@ -13,6 +13,8 @@ void EditCmd_RemoveGameObject::Undo()
 
 void EditCmd_RemoveGameObject::Execute()
 {
-	const bool success = RemoveGameObject(myID);
-	assert(success && "Failed to remove GameObject");
+	if (!RemoveGameObject(myID))
+	{
+		LogError("EditCmd_RemoveGameObject::Execute: Failed to remove GameObject " + std::to_string(myID));
+	}
 }

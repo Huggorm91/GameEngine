@@ -3,7 +3,7 @@
 
 struct Bone
 {
-	CommonUtilities::Matrix4x4f myBindPoseInverse;
+	Crimson::Matrix4x4f myBindPoseInverse;
 	std::vector<unsigned int> myChildren;
 	std::string myNamespaceName;
 	std::string myName;

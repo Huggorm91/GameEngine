@@ -9,10 +9,10 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
-#include "AssetManager/DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
-#include <Timer.h>
-#include <InputMapper.h>
+#include "Time/Timer.h"
+#include "Input/InputMapper.h"
 
 #include <filesystem>
 
@@ -79,7 +79,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	ShowSplashScreen();
 
 	// TODO: Load all settings from json
-	auto& input = *CommonUtilities::InputMapper::GetInstance();
+	auto& input = *Crimson::InputMapper::GetInstance();
 	input.Init(myMainWindowHandle);
 	AssetManager::Init();
 #ifdef _RETAIL
@@ -95,16 +95,16 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
 
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F4);
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F5);
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F6);
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F7);
-	input.Attach(this, CommonUtilities::eInputEvent::KeyDown, CommonUtilities::eKey::F8);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
 
-	input.BindAction(CommonUtilities::eInputAction::Undo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Z, CommonUtilities::eKey::Ctrl });
-	input.BindAction(CommonUtilities::eInputAction::Redo, CommonUtilities::KeyBind{ CommonUtilities::eKey::Y, CommonUtilities::eKey::Ctrl });
-	input.Attach(this, CommonUtilities::eInputAction::Undo);
-	input.Attach(this, CommonUtilities::eInputAction::Redo);
+	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
+	input.Attach(this, Crimson::eInputAction::Undo);
+	input.Attach(this, Crimson::eInputAction::Redo);
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
@@ -121,7 +121,7 @@ int ModelViewer::Run()
 
 	//LoadScene("Default");
 	Init();
-	CommonUtilities::Timer::Init();
+	Crimson::Timer::Init();
 
 	bool isRunning = true;
 	while (isRunning)
@@ -329,7 +329,7 @@ void ModelViewer::HideSplashScreen() const
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
 	std::string path = AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = CreateValidPath(path, GetScenePath(), &myLogger);
+	path = CreateValidPath(path, GetScenePath());
 	if (path.empty())
 	{
 		myLogger.Err("Could not create filepath: " + aPath);
@@ -372,7 +372,7 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
 	std::string path = AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = GetValidPath(path, GetScenePath(), &myLogger);
+	path = GetValidPath(path, GetScenePath());
 	if (path.empty())
 	{
 		myLogger.Err("Could not find filepath: " + aPath);
@@ -421,8 +421,8 @@ void ModelViewer::Update()
 {
 	GraphicsEngine& engine = GraphicsEngine::Get();
 	engine.BeginFrame();
-	CommonUtilities::Timer::Update();
-	CommonUtilities::InputMapper::GetInstance()->Notify();
+	Crimson::Timer::Update();
+	Crimson::InputMapper::GetInstance()->Notify();
 
 #ifndef _RETAIL
 	myImguiManager.Update();
@@ -431,7 +431,7 @@ void ModelViewer::Update()
 	myCamera.Update();
 	UpdateScene();
 
-	CommonUtilities::InputMapper::GetInstance()->Update();
+	Crimson::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
 #ifndef _RETAIL
@@ -488,32 +488,32 @@ void ModelViewer::RedoCommand()
 	}	
 }
 
-void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eKey aKey)
+void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
-	case CommonUtilities::eKey::F4:
+	case Crimson::eKey::F4:
 	{
 		engine.NextToneMap();
 		break;
 	}
-	case CommonUtilities::eKey::F5:
+	case Crimson::eKey::F5:
 	{
 		myDebugMode = engine.NextDebugMode();
 		break;
 	}
-	case CommonUtilities::eKey::F6:
+	case Crimson::eKey::F6:
 	{
 		myLightMode = engine.NextLightMode();
 		break;
 	}
-	case CommonUtilities::eKey::F7:
+	case Crimson::eKey::F7:
 	{
 		myRenderMode = engine.NextRenderMode();
 		break;
 	}
-	case CommonUtilities::eKey::F8:
+	case Crimson::eKey::F8:
 	{
 		myDebugMode = engine.SetDebugMode(GraphicsEngine::DebugMode::Default);
 		myLightMode = engine.SetLightMode(GraphicsEngine::LightMode::Default);
@@ -525,18 +525,18 @@ void ModelViewer::ReceiveEvent(CommonUtilities::eInputEvent, CommonUtilities::eK
 	}
 }
 
-void ModelViewer::ReceiveEvent(CommonUtilities::eInputAction anAction, float aValue)
+void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 {
 	if (aValue < 1.5f)
 	{
 		return;
 	}
 
-	if (anAction == CommonUtilities::eInputAction::Undo)
+	if (anAction == Crimson::eInputAction::Undo)
 	{
 		UndoCommand();
 	}
-	else if(anAction == CommonUtilities::eInputAction::Redo)
+	else if(anAction == Crimson::eInputAction::Redo)
 	{
 		RedoCommand();
 	}

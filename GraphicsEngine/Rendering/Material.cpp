@@ -5,10 +5,10 @@
 
 #include "AssetManager/AssetManager.h"
 
-#include <External/jsonCpp/json.h>
+#include "Json/jsonCpp/json.h"
 
 #ifndef _RETAIL
-#include "AssetManager/DirectoryFunctions.h"
+#include "File/DirectoryFunctions.h"
 
 #include "ModelViewer/Core/ModelViewer.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
@@ -38,9 +38,9 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 	myBuffer.Data.Shininess = aJsonValue["Shininess"].asFloat();
 	myBuffer.Data.Metalness = aJsonValue["Metalness"].asFloat();
 	myBuffer.Data.NormalStrength = aJsonValue["NormalStrength"].asFloat();
-	myBuffer.Data.UVTiling = CommonUtilities::Vector2f(aJsonValue["UVTiling"]);
-	myBuffer.Data.AlbedoColor = CommonUtilities::Vector4f(aJsonValue["AlbedoColor"]);
-	myBuffer.Data.EmissionColor = CommonUtilities::Vector4f(aJsonValue["EmissionColor"]);
+	myBuffer.Data.UVTiling = Crimson::Vector2f(aJsonValue["UVTiling"]);
+	myBuffer.Data.AlbedoColor = Crimson::Vector4f(aJsonValue["AlbedoColor"]);
+	myBuffer.Data.EmissionColor = Crimson::Vector4f(aJsonValue["EmissionColor"]);
 	myBuffer.Data.EmissionIntensity = aJsonValue["EmissionIntensity"].asFloat();
 
 	for (unsigned i = 0; i < aJsonValue["Textures"].size(); i++)
@@ -117,17 +117,17 @@ void Material::SetNormalStrength(float aNormalStrength)
 	myBuffer.Data.NormalStrength = aNormalStrength;
 }
 
-void Material::SetUVTiling(const CommonUtilities::Vector2f& aUVTiling)
+void Material::SetUVTiling(const Crimson::Vector2f& aUVTiling)
 {
 	myBuffer.Data.UVTiling = aUVTiling;
 }
 
-void Material::SetAlbedoColor(const CommonUtilities::Vector4f& aColor)
+void Material::SetAlbedoColor(const Crimson::Vector4f& aColor)
 {
 	myBuffer.Data.AlbedoColor = aColor;
 }
 
-void Material::SetEmissionColor(const CommonUtilities::Vector4f& aColor)
+void Material::SetEmissionColor(const Crimson::Vector4f& aColor)
 {
 	myBuffer.Data.EmissionColor = aColor;
 }
@@ -187,17 +187,17 @@ float Material::GetNormalStrength() const
 	return myBuffer.Data.NormalStrength;
 }
 
-const CommonUtilities::Vector2f& Material::GetUVTiling() const
+const Crimson::Vector2f& Material::GetUVTiling() const
 {
 	return myBuffer.Data.UVTiling;
 }
 
-const CommonUtilities::Vector4f& Material::GetAlbedoColor() const
+const Crimson::Vector4f& Material::GetAlbedoColor() const
 {
 	return myBuffer.Data.AlbedoColor;
 }
 
-const CommonUtilities::Vector4f& Material::GetEmissionColor() const
+const Crimson::Vector4f& Material::GetEmissionColor() const
 {
 	return myBuffer.Data.EmissionColor;
 }
@@ -406,13 +406,13 @@ void Material::CreateImguiComponents(const std::string&)
 			auto albedo = buffer.AlbedoColor;
 			if (ImGui::ColorEdit4("Albedo Color", &albedo.x))
 			{
-				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector4f>>(buffer.AlbedoColor, albedo));
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<Crimson::Vector4f>>(buffer.AlbedoColor, albedo));
 			}
 
 			auto emission = buffer.EmissionColor;
 			if (ImGui::ColorEdit4("Emission Color", &emission.x))
 			{
-				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector4f>>(buffer.EmissionColor, emission));
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<Crimson::Vector4f>>(buffer.EmissionColor, emission));
 			}
 			ImGui::SameLine(); 
 			ImGui::TextDisabled("(?)");
@@ -433,7 +433,7 @@ void Material::CreateImguiComponents(const std::string&)
 			auto uv = buffer.UVTiling;
 			if (ImGui::DragFloat2("UV Tiling", &uv.x, 0.1f))
 			{
-				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<CommonUtilities::Vector2f>>(buffer.UVTiling, uv));
+				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<Crimson::Vector2f>>(buffer.UVTiling, uv));
 			}
 
 			auto normal = buffer.NormalStrength;
