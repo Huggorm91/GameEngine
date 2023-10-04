@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <cmath>
 #include <Windows.h>
-#include "UtilityFunctions.hpp"
+#include "Math.hpp"
 
 // In order to convert to and from Json you need to include "Json/JsonVector.hpp"
 namespace Json{	class Value; }

@@ -1,6 +1,6 @@
 #pragma once
 #include "XBoxController.h"
-#include "Math/UtilityFunctions.hpp"
+#include "Math/Math.hpp"
 #pragma comment(lib, "Xinput9_1_0.lib")
 
 namespace Crimson

@@ -8,7 +8,7 @@
 
 void ModelManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 void ModelManager::GeneratePrimitives()
@@ -92,11 +92,11 @@ GameObject* ModelManager::GetModel(const std::string& aPath)
 	}
 	else
 	{
-		std::string path = AddExtensionIfMissing(aPath, GetExtension());
-		path = GetValidPath(path, GetPath());
+		std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+		path = Crimson::GetValidPath(path, GetPath());
 		if (path.empty())
 		{
-			if (iter = myModels.find(ToLower(aPath)); iter != myModels.end())
+			if (iter = myModels.find(Crimson::ToLower(aPath)); iter != myModels.end())
 			{
 				return &iter->second;
 			}
@@ -141,8 +141,8 @@ Skeleton* ModelManager::GetSkeleton(const std::string& aPath)
 		return &iter->second;
 	}
 
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetSkeleton: Could not find path: " + aPath);
@@ -166,8 +166,8 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath)
 		return &model->GetComponent<MeshComponent>();
 	}
 
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetMesh: Could not find path: " + aPath);
@@ -190,8 +190,8 @@ AnimatedMeshComponent* ModelManager::GetAnimatedMesh(const std::string& aPath)
 		return &model->GetComponent<AnimatedMeshComponent>();
 	}
 
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("ModelManager::GetAnimatedMesh: Could not find path: " + aPath);

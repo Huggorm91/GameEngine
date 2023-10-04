@@ -139,7 +139,50 @@ int ModelViewer::Run()
 		// The frame update for the game does NOT happen inside the PeekMessage loop.
 		// This would cause the game to only update if there are messages and also run
 		// the update several times per frame (once for each message).
-		Update();
+		try
+		{
+			Update();
+		}
+		catch (const std::exception& anException)
+		{
+			isRunning = false;
+
+			// Center console and bring it to the front
+			{
+				HWND consoleWindow = GetConsoleWindow();
+				RECT consolePos;
+				GetWindowRect(consoleWindow, &consolePos);
+				consolePos.right = consolePos.right - consolePos.left;
+				consolePos.bottom = consolePos.bottom - consolePos.top;
+
+				RECT windowRect;
+				SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
+
+				windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (consolePos.right * 0.5f));
+				windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (consolePos.top * 0.5f));
+
+				SetWindowPos(consoleWindow, HWND_TOP, windowRect.left, windowRect.top, consolePos.right, consolePos.top, 0);
+				SetForegroundWindow(consoleWindow);
+			}
+
+			// Log crash
+			myLogger.Err("Program has crashed!");
+			myLogger.Warn("Writing exception to log file!");
+			myLogger.SetPrintToFile(true, "Logs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
+			myLogger.LogException(anException);
+
+			// Save current scene if possible
+			try
+			{
+				std::string saveName = Crimson::FileNameTimestamp() + myLoadedScene;
+				SaveScene(saveName);
+				myLogger.Succ("Saved current scene to: " + saveName);
+			}
+			catch (...)	{}
+
+			// Give user time to see error log
+			Sleep(1000);
+		}		
 	}
 
 #ifndef _RETAIL
@@ -327,8 +370,8 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
-	std::string path = AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = CreateValidPath(path, GetScenePath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
+	path = Crimson::CreateValidPath(path, GetScenePath());
 	if (path.empty())
 	{
 		myLogger.Err("Could not create filepath: " + aPath);
@@ -370,8 +413,8 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = GetValidPath(path, GetScenePath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
+	path = Crimson::GetValidPath(path, GetScenePath());
 	if (path.empty())
 	{
 		myLogger.Err("Could not find filepath: " + aPath);

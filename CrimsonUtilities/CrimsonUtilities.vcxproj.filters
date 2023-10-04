@@ -243,7 +243,7 @@
     <ClInclude Include="Time\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Math\UtilityFunctions.hpp">
+    <ClInclude Include="Math\Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Vector2.hpp">
@@ -259,6 +259,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="File\DirectoryFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="String\StringFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -308,5 +311,11 @@
     <ClCompile Include="File\DirectoryFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="String\StringFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Crimson.natvis" />
   </ItemGroup>
 </Project>

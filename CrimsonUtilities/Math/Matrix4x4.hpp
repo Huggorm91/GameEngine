@@ -1,6 +1,6 @@
 #pragma once
 #include "Vector4.hpp"
-#include "UtilityFunctions.hpp"
+#include "Math.hpp"
 #include <array>
 #include <math.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "3DColliders.hpp"
-#include "../UtilityFunctions.hpp"
+#include "../Math.hpp"
 
 namespace Crimson
 {

@@ -10,11 +10,15 @@ class Logger
 {
 	HANDLE myHandle = 0;
 	bool shouldPrintToOutput = false;
+	bool shouldPrintToFile = false;
 	bool isInitialized = false;
 	std::string myNamespace;
+	std::string myLogFile;
 
 	Logger(const std::string& aNamespace);
 	[[nodiscard]] std::string Timestamp() const;
+
+	void PrintToFile(const std::string& aString) const;
 
 public:
 
@@ -27,6 +31,9 @@ public:
 	// Tells the logger to output to the Visual Studio output window instead
 	// of a console.
 	void SetPrintToVSOutput(bool bNewValue);
+
+	// Tells the logger to output to a logfile
+	void SetPrintToFile(bool bNewValue, const std::string& aFileName);
 
 	// Log a message.
 	void Log(const std::string& aString) const;

@@ -5,11 +5,11 @@
 
 void PrefabManager::Init()
 {
-	myUnloadedFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myUnloadedFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 	
 	for (auto& path : myUnloadedFilePaths)
 	{
-		myValidPaths.emplace(RemoveStringPart(path, GetPath()));
+		myValidPaths.emplace(Crimson::RemoveStringPart(path, GetPath()));
 	}
 
 	myPrefabs.emplace("Empty", GameObject(0));
@@ -140,11 +140,11 @@ GameObject* PrefabManager::LoadPrefab(const std::string& aPath)
 void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject& aPrefab) const
 {
 	std::string path = aPath;
-	if (!HasValidExtension(aPath, GetExtension()))
+	if (!Crimson::HasValidExtension(aPath, GetExtension()))
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, GetPath());
+	path = Crimson::CreateValidPath(path, GetPath());
 
 	if (path.empty())
 	{
@@ -171,6 +171,6 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 
 std::string PrefabManager::ValidatePath(const std::string& aPath) const
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	return GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	return Crimson::GetValidPath(path, GetPath());
 }

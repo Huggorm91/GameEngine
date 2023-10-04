@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Crimson::Vector2&lt;*&gt;">
+		<DisplayString>{{ x = {x}  y = {y} }}</DisplayString>
+	</Type>
+	<Type Name="Crimson::Vector3&lt;*&gt;">
+		<DisplayString>{{ x = {x}  y = {y}  z = {z} }}</DisplayString>
+	</Type>
+	<Type Name="Crimson::Vector4&lt;*&gt;">
+		<DisplayString>{{ x = {x}  y = {y}  z = {z}  w = {w} }}</DisplayString>
+	</Type>
+	<Type Name="Crimson::Matrix2x2&lt;*&gt;">
+		<DisplayString>Matrix2x2</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>2</Size>
+				<ValuePointer>&amp;myValues[0]</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	<Type Name="Crimson::Matrix3x3&lt;*&gt;">
+		<DisplayString>Matrix3x3</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>3</Size>
+				<ValuePointer>&amp;myValues[0]</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	<Type Name="Crimson::Matrix4x4&lt;*&gt;">
+		<DisplayString>Matrix4x4</DisplayString>
+		<Expand>
+			<ArrayItems>
+				<Size>4</Size>
+				<ValuePointer>&amp;myValues[0]</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+</AutoVisualizer>

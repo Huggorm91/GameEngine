@@ -87,7 +87,7 @@ std::string AssetTypes::GetAssetPath(eAssetType aType)
 std::vector<AssetTypes::eAssetType> AssetTypes::GetPossibleTypes(const std::string& anExtension)
 {
 	std::vector<eAssetType> result;
-	std::string extension = ToLower(anExtension);
+	std::string extension = Crimson::ToLower(anExtension);
 	if (extension == AssetManager::GetModelExtension())
 	{
 		result.emplace_back(eAssetType::Model);

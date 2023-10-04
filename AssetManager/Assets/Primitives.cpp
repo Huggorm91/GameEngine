@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "Primitives.h"
 #include <math.h>
-#include "Math/Random.h"
+#include "Math/Math.hpp"
 #include "Math/Matrix3x3.hpp"
 
 MeshData CreateCubeMesh(const float aSize)
@@ -256,9 +256,6 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 	MeshData result;
 	result.myMeshName = "Sphere";
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
-	const float pi = 3.1415926535f;
-	const float pi2 = 2.f * pi;
-	auto random = []() {return Crimson::Random::RandomNumber(1.0f); };
 	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 
 	// Add top vertex
@@ -281,8 +278,8 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 			// Convert to spherical coordinates:
 			// theta is a longitude angle (around the equator) in radians.
 			// phi is a latitude angle (north or south of the equator).
-			float theta = uv.x * pi2;
-			float phi = (1.0f - uv.y - 0.5f) * pi;
+			float theta = static_cast<float>(uv.x * Crimson::Pi2);
+			float phi = static_cast<float>((1.0f - uv.y - 0.5f) * Crimson::Pi);
 
 			// This determines the radius of the ring of this line of latitude.
 			// It's widest at the equator, and narrows as phi increases/decreases.
@@ -606,9 +603,6 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 	MeshData result;
 	result.myMeshName = "InvertedSphere";
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
-	const float pi = 3.1415926535f;
-	const float pi2 = 2.f * pi;
-	auto random = []() {return Crimson::Random::RandomNumber(1.0f); };
 	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 	float radiansPerSlice = (360 / aSliceCount) * 0.0174532925f;
 	Crimson::Matrix3x3f sliceMatrix = Crimson::Matrix3x3f::CreateRotationAroundY(radiansPerSlice);
@@ -633,8 +627,8 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 			// Convert to spherical coordinates:
 			// theta is a longitude angle (around the equator) in radians.
 			// phi is a latitude angle (north or south of the equator).
-			float theta = uv.x * pi2;
-			float phi = (1.0f - uv.y - 0.5f) * pi;
+			float theta = static_cast<float>(uv.x * Crimson::Pi2);
+			float phi = static_cast<float>((1.0f - uv.y - 0.5f) * Crimson::Pi);
 
 			// This determines the radius of the ring of this line of latitude.
 			// It's widest at the equator, and narrows as phi increases/decreases.

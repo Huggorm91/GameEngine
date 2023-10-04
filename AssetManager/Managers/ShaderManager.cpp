@@ -6,7 +6,7 @@
 
 void ShaderManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Shader* ShaderManager::GetShader(const std::string& aPath)
@@ -23,8 +23,8 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 
 Shader* ShaderManager::LoadShader(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 
 	if (path.empty())
 	{

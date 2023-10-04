@@ -1,6 +1,6 @@
 #pragma once
 #include "Container/MinHeap.hpp"
-#include "UtilityFunctions.hpp"
+#include "Math.hpp"
 
 namespace Crimson
 {

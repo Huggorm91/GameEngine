@@ -1,6 +1,6 @@
 #pragma once
 #include "Vector2.hpp"
-#include "UtilityFunctions.hpp"
+#include "Math.hpp"
 #include <array>
 
 namespace Crimson

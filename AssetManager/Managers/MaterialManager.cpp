@@ -6,7 +6,7 @@
 
 void MaterialManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Material* MaterialManager::GetMaterial(const std::string& aPath)
@@ -52,11 +52,11 @@ Material* MaterialManager::CreateMaterial(const std::string& anIdentifier, Shade
 void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string& aPath)
 {
 	std::string path = aPath;
-	if (!HasValidExtension(aPath, GetExtension()))
+	if (!Crimson::HasValidExtension(aPath, GetExtension()))
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, GetPath());
+	path = Crimson::CreateValidPath(path, GetPath());
 
 	if (path.empty())
 	{
@@ -83,8 +83,8 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 
 Material* MaterialManager::LoadMaterial(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("MaterialManager: Could not load material from path: " + aPath);
