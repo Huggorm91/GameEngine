@@ -6,7 +6,7 @@
 
 void AnimationManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 Animation* AnimationManager::GetAnimation(const std::string& aPath)
@@ -23,8 +23,8 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath)
 
 Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("AnimationManager: Could not load animation from path: " + aPath);

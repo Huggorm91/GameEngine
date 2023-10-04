@@ -47,6 +47,7 @@
     <ClInclude Include="Container\MinHeap.hpp" />
     <ClInclude Include="Container\Queue.hpp" />
     <ClInclude Include="Container\Stack.hpp" />
+    <ClInclude Include="String\StringFunctions.h" />
     <ClInclude Include="Math\Conversions.hpp" />
     <ClInclude Include="Math\Dijkstra.hpp" />
     <ClInclude Include="NewCollision - WIP\EnumCollisions.h" />
@@ -96,7 +97,7 @@
     <ClInclude Include="Math\Random.h" />
     <ClInclude Include="Math\Sort.hpp" />
     <ClInclude Include="Time\Timer.h" />
-    <ClInclude Include="Math\UtilityFunctions.hpp" />
+    <ClInclude Include="Math\Math.hpp" />
     <ClInclude Include="Math\Vector2.hpp" />
     <ClInclude Include="Math\Vector3.hpp" />
     <ClInclude Include="Math\Vector4.hpp" />
@@ -131,8 +132,12 @@
     <ClCompile Include="PostMaster\Message.cpp" />
     <ClCompile Include="PostMaster\PostMaster.cpp" />
     <ClCompile Include="Math\Random.cpp" />
+    <ClCompile Include="String\StringFunctions.cpp" />
     <ClCompile Include="Time\Timer.cpp" />
     <ClCompile Include="Input\XBoxController.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Crimson.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

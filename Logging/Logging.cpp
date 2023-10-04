@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ostream>
 #include <sstream>
+#include <fstream>
 
 Logger::Logger(const std::string& aNamespace)
 {
@@ -32,6 +33,17 @@ std::string Logger::Timestamp() const
 	return result.str();
 }
 
+void Logger::PrintToFile(const std::string& aString) const
+{
+	std::fstream fileStream(myLogFile, std::ios::out | std::ios::app);
+	if (fileStream)
+	{
+		fileStream << aString << std::endl;
+		fileStream.flush();
+	}
+	fileStream.close();
+}
+
 Logger Logger::Create(const std::string& aNamespace)
 {
 	Logger aLogger(aNamespace);
@@ -50,10 +62,20 @@ void Logger::SetPrintToVSOutput(bool bNewValue)
 	shouldPrintToOutput = bNewValue;
 }
 
+void Logger::SetPrintToFile(bool bNewValue, const std::string& aFileName)
+{
+	shouldPrintToFile = bNewValue;
+	myLogFile = aFileName;
+}
+
 void Logger::Log(const std::string& aString) const
 {
 	if(isInitialized)
 	{
+		if (shouldPrintToFile)
+		{
+			PrintToFile("[" + Timestamp() + "]" + myNamespace + " [   LOG   ] " + aString);
+		}
 
 		if (shouldPrintToOutput)
 		{
@@ -78,6 +100,11 @@ void Logger::Warn(const std::string& aString) const
 {
 	if (isInitialized)
 	{
+		if (shouldPrintToFile)
+		{
+			PrintToFile("[" + Timestamp() + "]" + myNamespace + " [ WARNING ] " + aString);
+		}
+
 		if (shouldPrintToOutput)
 		{
 			const std::string message = "[" + Timestamp() + "]" + myNamespace + " [ WARNING ] " + aString;
@@ -101,6 +128,11 @@ void Logger::Err(const std::string& aString) const
 {
 	if (isInitialized)
 	{
+		if (shouldPrintToFile)
+		{
+			PrintToFile("[" + Timestamp() + "]" + myNamespace + " [  ERROR  ] " + aString);
+		}
+
 		if (shouldPrintToOutput)
 		{
 			const std::string message = "[" + Timestamp() + "]" + myNamespace + " [  ERROR  ] " + aString;
@@ -124,6 +156,11 @@ void Logger::Succ(const std::string& aString) const
 {
 	if (isInitialized)
 	{
+		if (shouldPrintToFile)
+		{
+			PrintToFile("[" + Timestamp() + "]" + myNamespace + " [ SUCCESS ] " + aString);
+		}
+
 		if (shouldPrintToOutput)
 		{
 			const std::string message = "[" + Timestamp() + "]" + "[ SUCCESS ] " + aString;
@@ -147,6 +184,11 @@ void Logger::LogException(const std::exception& anException, unsigned aLevel) co
 {
 	if (isInitialized)
 	{
+		if (shouldPrintToFile)
+		{
+			PrintToFile("[" + Timestamp() + "]" + std::string(aLevel, ' ') + "[  FATAL  ] " + anException.what());
+		}
+
 		if (shouldPrintToOutput)
 		{
 			const std::string message = "[" + Timestamp() + "]" + std::string(aLevel, ' ') + "[  FATAL  ] " + anException.what();

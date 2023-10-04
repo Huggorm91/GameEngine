@@ -19,9 +19,11 @@
 
 #include "Input/InputMapper.h"
 
+using namespace Crimson;
+
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
 mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
-myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(), myMultiSelectionTransform()
+myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(), myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("Content\\")
 {
 	myNewObject.MarkAsPrefab();
 }
@@ -32,7 +34,7 @@ void ImguiManager::Release()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 }
-
+#include "Math/Matrix.hpp"
 void ImguiManager::Init()
 {
 	myModelViewer = &ModelViewer::Get();
@@ -52,8 +54,11 @@ void ImguiManager::Init()
 	ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
 
 	// Setup keybinds
-	auto& input = *Crimson::InputMapper::GetInstance();
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Del);
+	auto& input = *InputMapper::GetInstance();
+	input.Attach(this, eInputEvent::KeyDown, eKey::Del);
+
+	// Get available files and folders
+	RefreshAvailableFiles();
 }
 
 void ImguiManager::Update()
@@ -108,11 +113,11 @@ const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
 	return myImguiNameIndex.at(anObject);
 }
 
-void ImguiManager::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
+void ImguiManager::ReceiveEvent(eInputEvent, eKey aKey)
 {
 	switch (aKey)
 	{
-	case Crimson::eKey::Del:
+	case eKey::Del:
 	{
 		if (mySelectedObjects.size() == 1)
 		{
@@ -130,7 +135,7 @@ void ImguiManager::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 	}
 }
 
-void ImguiManager::ReceiveEvent(Crimson::eInputAction, float)
+void ImguiManager::ReceiveEvent(eInputAction, float)
 {
 }
 
@@ -147,7 +152,7 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	}
 	else
 	{
-		myDropLocation = Crimson::Vector2i::Null;
+		myDropLocation = Vector2i::Null;
 	}
 
 	if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
@@ -157,6 +162,17 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	else
 	{
 		myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+	}
+}
+
+void ImguiManager::RefreshAvailableFiles()
+{
+	myAvailableFiles.clear();
+	myAvailableFiles = Crimson::GetAllFilepathsInDirectory(myAssetPath);
+	auto folders = Crimson::GetAllFoldersInDirectory(myAssetPath);
+	for (auto& folder : folders)
+	{
+		myAvailableFiles.emplace(folder);
 	}
 }
 

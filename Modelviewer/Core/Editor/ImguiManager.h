@@ -30,6 +30,8 @@ public:
 
 	void SetDropFile(HDROP aHandle);
 
+	void RefreshAvailableFiles();
+
 private:
 	friend class EditCommand;
 
@@ -50,10 +52,10 @@ private:
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
 
-	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
 
 	Crimson::Vector2i myDropLocation;
 
+	std::string myAssetPath;
 	std::string myOverwriteFromPath;
 	std::string myOverwriteToPath;
 	std::string mySelectedPath;
@@ -62,6 +64,9 @@ private:
 
 	Prefab myEditPrefab;
 	GameObject myNewObject;
+	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
+
+	std::unordered_set<std::string> myAvailableFiles;
 
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;

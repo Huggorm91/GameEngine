@@ -3,7 +3,7 @@
 #include "Ray.hpp"
 #include "Sphere.hpp"
 #include "PlaneVolume.hpp"
-#include "../UtilityFunctions.hpp"
+#include "../Math.hpp"
 
 namespace Crimson
 {

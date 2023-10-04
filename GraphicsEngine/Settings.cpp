@@ -4,6 +4,8 @@
 #include "AssetManager/AssetManager.h"
 #include "File/DirectoryFunctions.h"
 
+using namespace Crimson;
+
 Settings::Settings(const Json::Value& aJson)
 {
 	const std::string& textureExtension = ".dds";

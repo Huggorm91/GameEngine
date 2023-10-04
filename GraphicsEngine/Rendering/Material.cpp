@@ -319,19 +319,19 @@ void Material::CreateImguiComponents(const std::string&)
 		ImGui::Text(myName.c_str());
 		if (myAlbedoTexture)
 		{
-			myAlbedoName = ToString(myAlbedoTexture->GetName());
+			myAlbedoName = Crimson::ToString(myAlbedoTexture->GetName());
 		}
 		if (myNormalTexture)
 		{
-			myNormalName = ToString(myNormalTexture->GetName());
+			myNormalName = Crimson::ToString(myNormalTexture->GetName());
 		}
 		if (myMaterialTexture)
 		{
-			myMaterialName = ToString(myMaterialTexture->GetName());
+			myMaterialName = Crimson::ToString(myMaterialTexture->GetName());
 		}
 		if (myFXTexture)
 		{
-			myFXName = ToString(myFXTexture->GetName());
+			myFXName = Crimson::ToString(myFXTexture->GetName());
 		}
 
 		// TODO: Fix Imgui representation for Shaders
@@ -494,7 +494,7 @@ void Material::CreateTextureCombo(eTextureSlot aSlot)
 		{
 			Texture* current = AssetManager::GetAsset<Texture*>(path);
 			const bool isSelected = *texture == current;
-			if (ImGui::Selectable(ToString(current->GetName()).c_str(), isSelected))
+			if (ImGui::Selectable(Crimson::ToString(current->GetName()).c_str(), isSelected))
 			{
 				*texture = current;
 			}

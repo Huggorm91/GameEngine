@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "../Hash.hpp"
-#include "../UtilityFunctions.hpp"
+#include "../Math.hpp"
 
 namespace Crimson
 {

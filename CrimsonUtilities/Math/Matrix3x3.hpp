@@ -1,7 +1,7 @@
 #pragma once
 #include "Vector3.hpp"
 #include "Matrix4x4.hpp"
-#include "UtilityFunctions.hpp"
+#include "Math.hpp"
 #include <array>
 
 namespace Crimson

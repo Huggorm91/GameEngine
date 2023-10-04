@@ -6,7 +6,7 @@
 
 void TextureManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 void TextureManager::LoadAllTextures()
@@ -19,8 +19,8 @@ void TextureManager::LoadAllTextures()
 
 Texture* TextureManager::GetTexture(const std::string& aPath)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		AMLogger.Err("TextureManager: Could not find path: " + aPath);

@@ -1,6 +1,6 @@
 #pragma once
 #include "EditCommand.h"
-#include "Math/UtilityFunctions.hpp"
+#include "Math/Math.hpp"
 
 template <class T>
 class EditCmd_ChangeValue : public EditCommand

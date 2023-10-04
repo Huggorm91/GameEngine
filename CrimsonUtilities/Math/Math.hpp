@@ -1,14 +1,13 @@
 #pragma once
 #include <assert.h>
-#include <vector>
-#include <sstream>
 #include "Conversions.hpp" // Adds conversion with a single include
-constexpr auto Pi = 3.1415926535897932384626433832795;
-constexpr double Pi2 = 6.283185307179586476925286766559;
-constexpr double PiInverse = 0.31830988618379067153776752674503;
 
 namespace Crimson
 {
+	constexpr auto Pi = 3.1415926535897932384626433832795;
+	constexpr double Pi2 = 6.283185307179586476925286766559;
+	constexpr double PiInverse = 0.31830988618379067153776752674503;
+
 	template <typename T>
 	const T& Max(const T& aFirst, const T& aSecond)
 	{
@@ -96,20 +95,6 @@ namespace Crimson
 		y = y * (threehalfs - (x2 * y * y));
 
 		return y;
-	}
-
-	inline std::vector<std::string> SplitString(const std::string& anInput, const char aSplitter)
-	{
-		std::istringstream iss(anInput);
-		std::string item;
-
-		std::vector<std::string> output;
-
-		while (std::getline(iss, item, aSplitter))
-		{
-			output.push_back(item);
-		}
-		return output;
 	}
 
 	// Does comparison using only operator <
