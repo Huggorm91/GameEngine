@@ -37,6 +37,10 @@ void ImguiManager::Release()
 #include "Math/Matrix.hpp"
 void ImguiManager::Init()
 {
+	Crimson::Matrix2x2f test2x2;
+	Crimson::Matrix3x3f test3x3;
+	Crimson::Matrix4x4f test4x4;
+
 	myModelViewer = &ModelViewer::Get();
 
 	// Setup Dear ImGui context
