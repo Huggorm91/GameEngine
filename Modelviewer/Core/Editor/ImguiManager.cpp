@@ -34,14 +34,12 @@ void ImguiManager::Release()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 }
-#include "Math/Matrix.hpp"
+
 void ImguiManager::Init()
 {
-	Crimson::Matrix2x2f test2x2;
-	Crimson::Matrix3x3f test3x3;
-	Crimson::Matrix4x4f test4x4;
-
 	myModelViewer = &ModelViewer::Get();
+	auto size = GraphicsEngine::Get().GetWindowSize();
+	myWindowSize = { static_cast<float>(size.cx), static_cast<float>(size.cy) };
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -71,15 +69,32 @@ void ImguiManager::Update()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::ShowDemoWindow();
+	// Create Editor workarea
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(myWindowSize.x, myWindowSize.y));
+	auto color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(color.x, color.y, color.z, 1.f));
+	ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+	ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
+	ImGui::PopStyleColor();
+
+	CreateViewport();
+
 	CreatePreferenceWindow();
+
 	CreateDropFilePopUp();
 	CreateSceneContentWindow();
 	CreateSelectedObjectWindow();
+
+	CreateAssetBrowser();
+	CreateContentList();
+
 	CreatePrefabWindow();
 	CreateNewObjectWindow();
 
 	CreateOverwriteFilePopUp();
+	ImGui::End();
 }
 
 void ImguiManager::Render()
@@ -234,6 +249,121 @@ bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
 		}
 	}
 	return false;
+}
+
+void ImguiManager::CreateViewport()
+{
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+	if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar))
+	{
+		const Crimson::Vector2f aspectRatio = { myWindowSize.y / myWindowSize.x, myWindowSize.x / myWindowSize.y };
+
+		auto size = ImGui::GetContentRegionAvail();
+
+		const Crimson::Vector2f regionSize = { size.x, size.y };
+		const Crimson::Vector2f regionRatio = { size.y / size.x, size.x / size.y };
+
+		if (regionRatio.x < aspectRatio.x)
+		{
+			size.x = size.y / aspectRatio.x;
+		}
+		if (regionRatio.y < aspectRatio.y)
+		{
+			size.y = size.x / aspectRatio.y;
+		}
+
+		const Crimson::Vector2f off = (regionSize - Crimson::Vector2f{ size.x, size.y }) * 0.5f;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off.x);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + off.y);
+
+		ImGui::Image(GraphicsEngine::Get().GetBackBufferCopy()->GetSRV().Get(), size);
+	}
+	ImGui::End();
+	//ImGui::PopStyleVar();
+}
+
+void ImguiManager::CreateAssetBrowser()
+{
+	if (ImGui::Begin("Asset Browser", nullptr, ImGuiWindowFlags_NoTitleBar))
+	{
+		ImGui::Text(myAssetBrowserPath.c_str());
+		ImGui::Separator();
+		bool hasClicked = false;
+		for (auto file : myAssetBrowserFiles)
+		{
+			if (AssetBrowserButton(file))
+			{
+				myAssetBrowserPath = file;
+				hasClicked = true;
+			}
+		}
+
+		if (hasClicked)
+		{
+			SelectAssetBrowserPath(myAssetBrowserPath);
+		}
+	}
+	ImGui::End();
+}
+
+bool ImguiManager::AssetBrowserButton(const std::string& aPath)
+{
+	bool hasClicked = false;
+	ImGui::Text(aPath.c_str());
+	if (ImGui::IsItemClicked())
+	{
+		hasClicked = true;
+	}
+	return hasClicked;
+}
+
+void ImguiManager::CreateContentList()
+{
+	if (ImGui::Begin("Content", nullptr, ImGuiWindowFlags_NoTitleBar))
+	{
+		auto content = GetFoldersInDirectory(myAssetPath);
+		for (auto& folder : content)
+		{
+			ContentListButton(folder);
+		}
+	}
+	ImGui::End();	
+}
+
+void ImguiManager::ContentListButton(const std::string& aPath)
+{
+	auto content = GetFoldersInDirectory(aPath);
+	const bool isOpen = ImGui::TreeNodeEx(Crimson::GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
+
+	if (ImGui::IsItemClicked())
+	{
+		SelectAssetBrowserPath(aPath);
+	}
+
+	if (isOpen)
+	{
+		for (auto& folder : content)
+		{
+			ContentListButton(folder);
+		}
+		ImGui::TreePop();
+	}
+}
+
+void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
+{
+	myAssetBrowserPath = aPath;
+	if (Crimson::IsFolder(aPath))
+	{
+		auto folders = GetFoldersInDirectory(aPath);
+		auto files = GetFilepathsInDirectory(aPath);
+		myAssetBrowserFiles = folders;
+		for (auto& file : files)
+		{
+			myAssetBrowserFiles.emplace(file);
+		}
+	}	
 }
 
 void ImguiManager::CreatePreferenceWindow()
@@ -441,7 +571,7 @@ void ImguiManager::CreateSceneContentWindow()
 				SceneContentButton(object);
 			}
 			ImGui::TreePop();
-		}		
+		}
 	}
 	ImGui::End();
 }
@@ -452,7 +582,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 
 	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
 
-	if (ImGui::BeginDragDropTarget()) 
+	if (ImGui::BeginDragDropTarget())
 	{
 		DropSceneContent(anObject.get());
 		ImGui::EndDragDropTarget();
@@ -466,7 +596,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		mySelectedObjects.emplace(anObject);
 	}
 
-	if (ImGui::BeginDragDropSource()) 
+	if (ImGui::BeginDragDropSource())
 	{
 		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
 		if (!IsSelected(anObject))
@@ -499,7 +629,7 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 			for (auto& object : mySelectedObjects)
 			{
 				parent->AddChild(object);
-			}		
+			}
 		}
 		else
 		{

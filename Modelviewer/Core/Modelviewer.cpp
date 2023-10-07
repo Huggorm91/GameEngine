@@ -148,7 +148,7 @@ int ModelViewer::Run()
 			isRunning = false;
 
 			// Center console and bring it to the front
-			{
+			/*{
 				HWND consoleWindow = GetConsoleWindow();
 				RECT consolePos;
 				GetWindowRect(consoleWindow, &consolePos);
@@ -163,7 +163,8 @@ int ModelViewer::Run()
 
 				SetWindowPos(consoleWindow, HWND_TOP, windowRect.left, windowRect.top, consolePos.right, consolePos.top, 0);
 				SetForegroundWindow(consoleWindow);
-			}
+			}*/
+			SetForegroundWindow(GetConsoleWindow());
 
 			// Log crash
 			myLogger.Err("Program has crashed!");
@@ -174,7 +175,7 @@ int ModelViewer::Run()
 			// Save current scene if possible
 			try
 			{
-				std::string saveName = Crimson::FileNameTimestamp() + myLoadedScene;
+				std::string saveName = "Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
 				SaveScene(saveName);
 				myLogger.Succ("Saved current scene to: " + saveName);
 			}

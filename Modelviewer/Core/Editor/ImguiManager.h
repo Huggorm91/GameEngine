@@ -52,13 +52,15 @@ private:
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
 
-
 	Crimson::Vector2i myDropLocation;
+	Crimson::Vector2f myViewportSize;
+	Crimson::Vector2f myWindowSize;
 
 	std::string myAssetPath;
 	std::string myOverwriteFromPath;
 	std::string myOverwriteToPath;
 	std::string mySelectedPath;
+	std::string myAssetBrowserPath;
 
 	Transform myMultiSelectionTransform;
 
@@ -67,6 +69,7 @@ private:
 	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
 
 	std::unordered_set<std::string> myAvailableFiles;
+	std::unordered_set<std::string> myAssetBrowserFiles;
 
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
@@ -78,6 +81,14 @@ private:
 	bool IsLastDropFile();
 
 	bool IsSelected(const std::shared_ptr<GameObject>& anObject);
+
+	void CreateViewport();
+
+	void CreateAssetBrowser();
+	bool AssetBrowserButton(const std::string& aPath);
+	void CreateContentList();
+	void ContentListButton(const std::string& aPath);
+	void SelectAssetBrowserPath(const std::string& aPath);
 
 	void CreatePreferenceWindow();
 	void CreateDropFilePopUp();

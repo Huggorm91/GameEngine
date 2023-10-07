@@ -81,6 +81,56 @@ namespace Crimson
 		return TRUE;
 	}
 
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath)
+	{
+		std::unordered_set<std::string> result{};
+		const auto& appPath = fs::current_path();
+		fs::create_directories(aPath);
+
+		for (auto& file : fs::directory_iterator(aPath))
+		{
+			if (file.path().has_extension())
+			{
+				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				result.emplace(relativePath);
+			}
+		}
+		return result;
+	}
+
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, const std::string& anExtension)
+	{
+		std::unordered_set<std::string> result{};
+		const auto& appPath = fs::current_path();
+		fs::create_directories(aPath);
+
+		for (auto& file : fs::directory_iterator(aPath))
+		{
+			if (file.path().has_extension() && file.path().extension().string() == anExtension)
+			{
+				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				result.emplace(relativePath);
+			}
+		}
+		return result;
+	}
+
+	std::unordered_set<std::string> GetFoldersInDirectory(const std::string& aPath)
+	{
+		std::unordered_set<std::string> result{};
+		const auto& appPath = fs::current_path();
+		fs::create_directories(aPath);
+
+		for (auto& file : fs::directory_iterator(aPath))
+		{
+			if (file.is_directory())
+			{
+				result.emplace(fs::relative(file.path(), appPath).string());
+			}
+		}
+		return result;
+	}
+
 	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath)
 	{
 		std::unordered_set<std::string> result{};
@@ -126,6 +176,23 @@ namespace Crimson
 			if (file.is_directory())
 			{
 				result.emplace(fs::relative(file.path(), appPath).string());
+			}
+		}
+		return result;
+	}
+
+	std::unordered_set<std::string> SearchDirectory(const std::string& aPath, const std::string& aSearchWord)
+	{
+		std::unordered_set<std::string> result{};
+		const auto& appPath = fs::current_path();
+		fs::create_directories(aPath);
+
+		for (auto& file : fs::recursive_directory_iterator(aPath))
+		{
+			if (file.path().string().find(aSearchWord) != std::string::npos)
+			{
+				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				result.emplace(relativePath);
 			}
 		}
 		return result;
@@ -253,6 +320,14 @@ namespace Crimson
 	bool FileExists(const std::string& aFilePath)
 	{
 		return fs::exists(aFilePath);
+	}
+	bool IsFile(const std::string& aPath)
+	{
+		return fs::path(aPath).has_extension();
+	}
+	bool IsFolder(const std::string& aPath)
+	{
+		return !fs::path(aPath).has_extension();
 	}
 	std::string Timestamp()
 	{

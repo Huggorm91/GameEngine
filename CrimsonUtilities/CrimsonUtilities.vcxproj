@@ -139,6 +139,9 @@
   <ItemGroup>
     <Natvis Include="Crimson.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Crimson.natstepfilter" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

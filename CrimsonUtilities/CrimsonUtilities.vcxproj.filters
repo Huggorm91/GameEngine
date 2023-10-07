@@ -318,4 +318,7 @@
   <ItemGroup>
     <Natvis Include="Crimson.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Crimson.natstepfilter" />
+  </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 #include "Logging.h"
-
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <ostream>
@@ -35,6 +35,8 @@ std::string Logger::Timestamp() const
 
 void Logger::PrintToFile(const std::string& aString) const
 {
+	std::filesystem::path directoryPath = std::filesystem::path(myLogFile).parent_path();
+	std::filesystem::create_directories(directoryPath);
 	std::fstream fileStream(myLogFile, std::ios::out | std::ios::app);
 	if (fileStream)
 	{

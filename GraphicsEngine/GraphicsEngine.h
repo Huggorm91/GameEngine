@@ -102,6 +102,12 @@ public:
 		return myWindowSize;
 	}
 
+#ifndef _RETAIL
+	inline const Texture* GetBackBufferCopy() const{
+		return &myTextures.Scenebuffer;
+	}
+#endif // !_RETAIL
+
 	inline const Material& GetDefaultMaterial() const {
 		return myDefaultMaterial;
 	}

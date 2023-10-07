@@ -13,9 +13,15 @@ namespace Crimson
  */
 	bool ShowFileSelector(std::string& outFilePath, const std::pair<std::wstring, std::wstring>& anExtensionFilter, const std::wstring& aFolder, const std::wstring& aTitle = L"Select File");
 
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath);
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, const std::string& anExtension);
+	std::unordered_set<std::string> GetFoldersInDirectory(const std::string& aPath);
+
 	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath);
 	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, const std::string& anExtension);
 	std::unordered_set<std::string> GetAllFoldersInDirectory(const std::string& aPath);
+
+	std::unordered_set<std::string> SearchDirectory(const std::string& aPath, const std::string& aSearchWord);
 
 	std::string GetValidPath(const std::string& aPath, const std::string& aDefaultDirectory);
 	std::string CreateValidPath(const std::string& aPath, const std::string& aDefaultDirectory);
@@ -34,6 +40,8 @@ namespace Crimson
 	std::string GetAppPath();
 
 	bool FileExists(const std::string& aFilePath);
+	bool IsFile(const std::string& aPath);
+	bool IsFolder(const std::string& aPath);
 
 	[[nodiscard]] std::string Timestamp();
 	[[nodiscard]] std::string FileNameTimestamp();

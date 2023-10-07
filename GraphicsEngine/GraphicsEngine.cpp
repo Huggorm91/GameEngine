@@ -40,6 +40,8 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			GELogger.Err("Failed to initialize the RHI!");
 			return false;
 		}
+		myWindowSize.cx = RHI::GetDeviceSize().Width;
+		myWindowSize.cy = RHI::GetDeviceSize().Height;
 
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.BackgroundColor;
@@ -238,7 +240,7 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 	case GraphicsEngine::DebugMode::Count:
 	{
 		myDebugMode = DebugMode::Default;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::DebugMode::Default:
 	{
@@ -336,7 +338,7 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 	case GraphicsEngine::LightMode::Count:
 	{
 		myLightMode = LightMode::Default;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::LightMode::Default:
 	{
@@ -394,7 +396,7 @@ GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
 	case GraphicsEngine::RenderMode::Count:
 	{
 		myRenderMode = RenderMode::Mesh;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::RenderMode::Mesh:
 	{
@@ -930,6 +932,11 @@ void GraphicsEngine::RenderFrame()
 
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 	myLineDrawer.Render();
+
+#ifndef _RETAIL
+	// Create copy of backbuffer for Imgui
+	RHI::Context->CopyResource(myTextures.Scenebuffer.GetResource().Get(), myTextures.BackBuffer.GetResource().Get());
+#endif // !_RETAIL
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
