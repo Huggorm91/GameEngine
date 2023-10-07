@@ -86,8 +86,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, true);
-#endif // _RETAIL	
-	//myCamera.Init({ static_cast<float>(windowSize.cx), static_cast<float>(windowSize.cy) });
+#endif // _RETAIL
 	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
 	AssetManager::GeneratePrimitives();
 
@@ -148,7 +147,7 @@ int ModelViewer::Run()
 			isRunning = false;
 
 			// Center console and bring it to the front
-			/*{
+			{
 				HWND consoleWindow = GetConsoleWindow();
 				RECT consolePos;
 				GetWindowRect(consoleWindow, &consolePos);
@@ -159,12 +158,12 @@ int ModelViewer::Run()
 				SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 
 				windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (consolePos.right * 0.5f));
-				windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (consolePos.top * 0.5f));
+				windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (consolePos.bottom * 0.5f));
 
-				SetWindowPos(consoleWindow, HWND_TOP, windowRect.left, windowRect.top, consolePos.right, consolePos.top, 0);
+				ShowWindow(myMainWindowHandle, SW_HIDE);
+				SetWindowPos(consoleWindow, HWND_TOP, windowRect.left, windowRect.top, consolePos.right, consolePos.bottom, 0);
 				SetForegroundWindow(consoleWindow);
-			}*/
-			SetForegroundWindow(GetConsoleWindow());
+			}
 
 			// Log crash
 			myLogger.Err("Program has crashed!");
@@ -173,17 +172,20 @@ int ModelViewer::Run()
 			myLogger.LogException(anException);
 
 			// Save current scene if possible
+			std::string saveName = "Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
 			try
-			{
-				std::string saveName = "Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
+			{				
 				SaveScene(saveName);
 				myLogger.Succ("Saved current scene to: " + saveName);
 			}
-			catch (...)	{}
+			catch (...)	
+			{
+				myLogger.Err("Failed to save current scene to: " + saveName);
+			}
 
-			// Give user time to see error log
-			Sleep(1000);
-		}		
+			// Leave console up to let user read information
+			system("PAUSE");
+		}
 	}
 
 #ifndef _RETAIL
@@ -226,7 +228,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 		EditCmd_AddGameObject command(anObject);
 		command.Execute();
 	}
-	
+
 	return myGameObjects.at(anObject->GetID());
 }
 
@@ -241,7 +243,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 	{
 		EditCmd_AddGameObject command(std::move(anObject));
 		command.Execute();
-	}	
+	}
 	return myGameObjects.at(id);
 }
 
@@ -365,7 +367,7 @@ void ModelViewer::HideSplashScreen() const
 	{
 		ShowWindow(myMainWindowHandle, SW_SHOW);
 	}
-	
+
 	SetForegroundWindow(myMainWindowHandle);
 }
 
@@ -449,7 +451,7 @@ void ModelViewer::Init()
 
 	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
 	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
-	cube2->SetPosition({150.f, 0.f, 0.f});
+	cube2->SetPosition({ 150.f, 0.f, 0.f });
 	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
 	cube1->AddChild(cube2);
 }
@@ -502,7 +504,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 	if (myUndoCommands.empty() || !myUndoCommands.back()->Merge(aCommand.get()))
 	{
 		myUndoCommands.emplace_back(aCommand);
-	}	
+	}
 }
 
 void ModelViewer::UndoCommand()
@@ -512,7 +514,7 @@ void ModelViewer::UndoCommand()
 		myUndoCommands.back()->Undo();
 		myRedoCommands.emplace_back(myUndoCommands.back());
 		myUndoCommands.pop_back();
-	}	
+	}
 }
 
 void ModelViewer::RedoCommand()
@@ -522,7 +524,7 @@ void ModelViewer::RedoCommand()
 		myRedoCommands.back()->Execute();
 		myUndoCommands.emplace_back(myRedoCommands.back());
 		myRedoCommands.pop_back();
-	}	
+	}
 }
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
@@ -568,7 +570,7 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 	{
 		UndoCommand();
 	}
-	else if(anAction == Crimson::eInputAction::Redo)
+	else if (anAction == Crimson::eInputAction::Redo)
 	{
 		RedoCommand();
 	}
