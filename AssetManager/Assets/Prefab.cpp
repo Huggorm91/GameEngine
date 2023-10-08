@@ -11,7 +11,7 @@ Prefab::Prefab(GameObject* aTemplate, std::string aName): myTemplate(aTemplate),
 
 }
 
-Prefab::Prefab(std::string aName): myTemplate(AssetManager::myPrefabManager.GetTemplate(aName)), myName(aName)
+Prefab::Prefab(std::string aName): myTemplate(AssetManager::myPrefabManager.GetTemplate(aName, true)), myName(aName)
 {
 }
 

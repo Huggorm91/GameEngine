@@ -9,7 +9,7 @@ void ShaderManager::Init()
 	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
-Shader* ShaderManager::GetShader(const std::string& aPath)
+Shader* ShaderManager::GetShader(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myShaders.find(aPath); iter != myShaders.end())
 	{
@@ -17,18 +17,21 @@ Shader* ShaderManager::GetShader(const std::string& aPath)
 	}
 	else
 	{
-		return LoadShader(aPath);
+		return LoadShader(aPath, aShouldLogErrors);
 	}
 }
 
-Shader* ShaderManager::LoadShader(const std::string& aPath)
+Shader* ShaderManager::LoadShader(const std::string& aPath, bool aShouldLogErrors)
 {
 	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
 	path = Crimson::GetValidPath(path, GetPath());
 
 	if (path.empty())
 	{
-		AMLogger.Err("ShaderManager: Could not load shader from path: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("ShaderManager: Could not load shader from path: " + aPath);
+		}
 		return nullptr;
 	}
 
@@ -39,6 +42,9 @@ Shader* ShaderManager::LoadShader(const std::string& aPath)
 		return &iter.first->second;
 	}
 
-	AMLogger.Err("ShaderManager: Could not load a shader from: " + aPath);
+	if (aShouldLogErrors)
+	{
+		AMLogger.Err("ShaderManager: Could not load a shader from: " + aPath);
+	}
 	return nullptr;
 }

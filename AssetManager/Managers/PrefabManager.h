@@ -10,8 +10,8 @@ public:
 
 	void Init();
 
-	Prefab GetPrefab(const std::string& aPath);
-	GameObject* GetTemplate(const std::string& aPath);
+	Prefab GetPrefab(const std::string& aPath, bool aShouldLogErrors);
+	GameObject* GetTemplate(const std::string& aPath, bool aShouldLogErrors);
 	const std::unordered_set<std::string>& GetPrefablist() const;
 
 	void CreatePrefab(const std::string& aPath, const GameObject& aPrefab);
@@ -30,7 +30,7 @@ private:
 	std::unordered_set<std::string> myValidPaths;
 	std::unordered_set<std::string> myUnloadedFilePaths;
 
-	GameObject* LoadPrefab(const std::string& aPath);
+	GameObject* LoadPrefab(const std::string& aPath, bool aShouldLogErrors);
 	void SavePrefabToFile(const std::string& aPath, const GameObject& aPrefab) const;
 	std::string ValidatePath(const std::string& aPath) const;
 };

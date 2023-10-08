@@ -6,7 +6,7 @@
 void PrefabManager::Init()
 {
 	myUnloadedFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
-	
+
 	for (auto& path : myUnloadedFilePaths)
 	{
 		myValidPaths.emplace(Crimson::RemoveStringPart(path, GetPath()));
@@ -16,7 +16,7 @@ void PrefabManager::Init()
 	myValidPaths.emplace("Empty");
 }
 
-Prefab PrefabManager::GetPrefab(const std::string& aPath)
+Prefab PrefabManager::GetPrefab(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myPrefabs.find(aPath); iter != myPrefabs.end())
 	{
@@ -24,11 +24,11 @@ Prefab PrefabManager::GetPrefab(const std::string& aPath)
 	}
 	else
 	{
-		return { LoadPrefab(aPath), aPath };
+		return { LoadPrefab(aPath, aShouldLogErrors), aPath };
 	}
 }
 
-GameObject* PrefabManager::GetTemplate(const std::string& aPath)
+GameObject* PrefabManager::GetTemplate(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myPrefabs.find(aPath); iter != myPrefabs.end())
 	{
@@ -39,14 +39,14 @@ GameObject* PrefabManager::GetTemplate(const std::string& aPath)
 		std::string path = ValidatePath(aPath);
 		if (auto pathIter = myUnloadedFilePaths.find(path); pathIter != myUnloadedFilePaths.end())
 		{
-			return LoadPrefab(aPath);
+			return LoadPrefab(aPath, aShouldLogErrors);
 		}
 		else
 		{
 			myValidPaths.emplace(aPath);
 			myPrefabs.emplace(aPath, GameObject(0));
 			return &myPrefabs.at(aPath);
-		}		
+		}
 	}
 }
 
@@ -107,13 +107,16 @@ void PrefabManager::SaveAllPrefabs() const
 	}
 }
 
-GameObject* PrefabManager::LoadPrefab(const std::string& aPath)
+GameObject* PrefabManager::LoadPrefab(const std::string& aPath, bool aShouldLogErrors)
 {
 
 	std::string path = ValidatePath(aPath);
 	if (path.empty())
 	{
-		AMLogger.Err("PrefabManager: Could not load prefab from path: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("PrefabManager: Could not load prefab from path: " + aPath);
+		}
 		return nullptr;
 	}
 
@@ -125,7 +128,10 @@ GameObject* PrefabManager::LoadPrefab(const std::string& aPath)
 	}
 	else
 	{
-		AMLogger.Err("PrefabManager: Could not open file at: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Err("PrefabManager: Could not open file at: " + aPath);
+		}
 		fileStream.close();
 		return nullptr;
 	}
@@ -148,7 +154,7 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 
 	if (path.empty())
 	{
-		AMLogger.Err("PrefabManager: Could not save prefab to path: " + aPath);
+		AMLogger.Warn("PrefabManager: Could not save prefab to path: " + aPath);
 		return;
 	}
 

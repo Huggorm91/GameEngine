@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-namespace AssetTypes
+namespace Assets
 {
 	enum class eAssetType
 	{
@@ -14,6 +14,7 @@ namespace AssetTypes
 		Prefab,
 		Shader,
 		Scene,
+		Folder
 	};
 
 	std::string GetAssetTypeName(eAssetType aType);

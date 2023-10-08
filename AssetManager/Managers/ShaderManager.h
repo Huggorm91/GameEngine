@@ -11,7 +11,7 @@ public:
 
 	void Init();
 
-	Shader* GetShader(const std::string& aPath);
+	Shader* GetShader(const std::string& aPath, bool aShouldLogErrors);
 
 	static inline const char* GetExtension(){ return ".cso"; }
 	static inline const char* GetPath()
@@ -40,5 +40,5 @@ private:
 	std::unordered_map<std::string, Shader> myShaders;
 	std::unordered_set<std::string> myFilePaths;
 
-	Shader* LoadShader(const std::string& aPath);
+	Shader* LoadShader(const std::string& aPath, bool aShouldLogErrors);
 };

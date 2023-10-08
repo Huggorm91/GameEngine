@@ -21,9 +21,10 @@
 
 using namespace Crimson;
 
-ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr), myImguiNameCounts(),
-mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
-myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(), myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("Content\\")
+ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(), mySelectedPrefabName(nullptr),
+myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false),
+mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(),
+myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("Content\\"), myBasicAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75)
 {
 	myNewObject.MarkAsPrefab();
 }
@@ -58,6 +59,16 @@ void ImguiManager::Init()
 	// Setup keybinds
 	auto& input = *InputMapper::GetInstance();
 	input.Attach(this, eInputEvent::KeyDown, eKey::Del);
+
+	myAssetIcons.emplace(Assets::eAssetType::Unknown, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "UnknownIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Model, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "ModelIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::AnimatedModel, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "AnimatedModelIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Animation, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "AnimationIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Material, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "MaterialIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Prefab, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "PrefabIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Shader, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "ShaderIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Scene, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "SceneIcon.dds"));
+	myAssetIcons.emplace(Assets::eAssetType::Folder, AssetManager::GetAsset<Texture*>(myBasicAssetPath + "FolderIcon.dds"));
 
 	// Get available files and folders
 	RefreshAvailableFiles();
@@ -174,24 +185,86 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 		myDropLocation = Vector2i::Null;
 	}
 
-	if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
+	if (auto typeList = Assets::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
 	{
 		myDropfileAssettype = typeList.back();
 	}
 	else
 	{
-		myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+		myDropfileAssettype = Assets::eAssetType::Unknown;
 	}
 }
 
 void ImguiManager::RefreshAvailableFiles()
 {
 	myAvailableFiles.clear();
-	myAvailableFiles = Crimson::GetAllFilepathsInDirectory(myAssetPath);
+	auto files = Crimson::GetAllFilepathsInDirectory(myAssetPath);
+	for (auto& file : files)
+	{
+		auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
+		if (potentialTypes.size() == 1)
+		{
+			myAvailableFiles.emplace(file, potentialTypes.back());
+		}
+		else
+		{
+			bool isHandled = false;
+			for (auto& type : potentialTypes)
+			{
+				switch (type)
+				{
+				case Assets::eAssetType::Unknown:
+				case Assets::eAssetType::Texture:
+					break;
+				case Assets::eAssetType::Model:
+				case Assets::eAssetType::AnimatedModel:
+				case Assets::eAssetType::Animation:
+				{
+					AssetManager::SetLogErrors(false);
+					if (AssetManager::GetAsset<Animation>(file).HasData())
+					{
+						myAvailableFiles.emplace(file, Assets::eAssetType::Animation);
+						isHandled = true;
+					}
+					else
+					{
+						if (AssetManager::GetAsset<GameObject>(file).HasComponent<AnimatedMeshComponent>())
+						{
+							myAvailableFiles.emplace(file, Assets::eAssetType::AnimatedModel);
+							isHandled = true;
+						}
+						else
+						{
+							myAvailableFiles.emplace(file, Assets::eAssetType::Model);
+							isHandled = true;
+						}
+					}
+					AssetManager::SetLogErrors(true);
+					break;
+				}
+				case Assets::eAssetType::Material:
+				case Assets::eAssetType::Prefab:
+				case Assets::eAssetType::Shader:
+				case Assets::eAssetType::Scene:
+				case Assets::eAssetType::Folder:
+					break;
+				default:
+					myModelViewer->myLogger.Warn("ImguiManager::RefreshAvailableFiles: Invalid AssetType!");
+					break;
+				}
+
+				if (isHandled)
+				{
+					break;
+				}
+			}
+		}
+	}
+
 	auto folders = Crimson::GetAllFoldersInDirectory(myAssetPath);
 	for (auto& folder : folders)
 	{
-		myAvailableFiles.emplace(folder);
+		myAvailableFiles.emplace(folder, Assets::eAssetType::Folder);
 	}
 }
 
@@ -210,7 +283,7 @@ void ImguiManager::ReleaseDropFile()
 	myDropfile = NULL;
 	myDropFileCount = 0;
 	myDropFileSelection = 0;
-	myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+	myDropfileAssettype = Assets::eAssetType::Unknown;
 }
 
 bool ImguiManager::NextDropFile()
@@ -222,13 +295,13 @@ bool ImguiManager::NextDropFile()
 	}
 	else
 	{
-		if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
+		if (auto typeList = Assets::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
 		{
 			myDropfileAssettype = typeList.back();
 		}
 		else
 		{
-			myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+			myDropfileAssettype = Assets::eAssetType::Unknown;
 		}
 		return true;
 	}
@@ -289,13 +362,35 @@ void ImguiManager::CreateAssetBrowser()
 	{
 		ImGui::Text(myAssetBrowserPath.c_str());
 		ImGui::Separator();
+
+		const float spacing = 10.f;
+		const float groupsize = myAssetBrowserIconSize + spacing + (ImGui::GetStyle().ChildBorderSize *2.f);
+		const float contentsize = ImGui::GetWindowSize().x - (ImGui::GetStyle().WindowPadding.x * 2.f);
+
 		bool hasClicked = false;
+		unsigned count = 1;
 		for (auto file : myAssetBrowserFiles)
 		{
+			if (myAvailableFiles.find(file) == myAvailableFiles.end())
+			{
+				RefreshAvailableFiles();
+			}
+
 			if (AssetBrowserButton(file))
 			{
 				myAssetBrowserPath = file;
 				hasClicked = true;
+			}
+
+			const float next = groupsize + (groupsize * count);
+			if (next <= contentsize)
+			{
+				ImGui::SameLine(0.f, spacing);
+				++count;
+			}
+			else
+			{
+				count = 1;
 			}
 		}
 
@@ -310,7 +405,23 @@ void ImguiManager::CreateAssetBrowser()
 bool ImguiManager::AssetBrowserButton(const std::string& aPath)
 {
 	bool hasClicked = false;
-	ImGui::Text(aPath.c_str());
+	Texture* texture = nullptr;
+	if (auto type = myAvailableFiles[aPath]; type == Assets::eAssetType::Texture)
+	{
+		texture = AssetManager::GetAsset<Texture*>(aPath);
+	}
+	else
+	{
+		texture = myAssetIcons.at(type);
+	}
+
+	ImGui::BeginGroup();
+	ImGui::Image(texture->GetSRV().Get(), ImVec2(static_cast<float>(myAssetBrowserIconSize), static_cast<float>(myAssetBrowserIconSize)), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+	ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + static_cast<float>(myAssetBrowserIconSize));
+	ImGui::Text(Crimson::GetFileName(aPath).c_str());
+	ImGui::PopTextWrapPos();
+	ImGui::EndGroup();
+
 	if (ImGui::IsItemClicked())
 	{
 		hasClicked = true;
@@ -328,13 +439,13 @@ void ImguiManager::CreateContentList()
 			ContentListButton(folder);
 		}
 	}
-	ImGui::End();	
+	ImGui::End();
 }
 
 void ImguiManager::ContentListButton(const std::string& aPath)
 {
 	auto content = GetFoldersInDirectory(aPath);
-	const bool isOpen = ImGui::TreeNodeEx(Crimson::GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
+	const bool isOpen = ImGui::TreeNodeEx(Crimson::GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (myContentListPath == aPath ? ImGuiTreeNodeFlags_Selected : 0) | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
 
 	if (ImGui::IsItemClicked())
 	{
@@ -356,6 +467,7 @@ void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
 	myAssetBrowserPath = aPath;
 	if (Crimson::IsFolder(aPath))
 	{
+		myContentListPath = aPath;
 		auto folders = GetFoldersInDirectory(aPath);
 		auto files = GetFilepathsInDirectory(aPath);
 		myAssetBrowserFiles = folders;
@@ -363,7 +475,7 @@ void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
 		{
 			myAssetBrowserFiles.emplace(file);
 		}
-	}	
+	}
 }
 
 void ImguiManager::CreatePreferenceWindow()
@@ -429,16 +541,16 @@ void ImguiManager::CreateDropFilePopUp()
 		const std::string& filePath = GetDropFilePath(myDropFileSelection);
 		ImGui::Text("Source:");
 		ImGui::Text(filePath.c_str());
-		auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(filePath));
+		auto typeList = Assets::GetPossibleTypes(GetFileExtension(filePath));
 
 		if (typeList.size() > 1)
 		{
-			if (ImGui::BeginCombo(" ", AssetTypes::GetAssetTypeName(myDropfileAssettype).c_str()))
+			if (ImGui::BeginCombo(" ", Assets::GetAssetTypeName(myDropfileAssettype).c_str()))
 			{
 				for (auto& type : typeList)
 				{
 					const bool isSelected = myDropfileAssettype == type;
-					if (ImGui::Selectable(AssetTypes::GetAssetTypeName(type).c_str(), isSelected))
+					if (ImGui::Selectable(Assets::GetAssetTypeName(type).c_str(), isSelected))
 					{
 						myDropfileAssettype = type;
 					}
@@ -451,7 +563,7 @@ void ImguiManager::CreateDropFilePopUp()
 				ImGui::EndCombo();
 			}
 		}
-		copyPath = AssetTypes::GetAssetPath(myDropfileAssettype) + GetFileName(filePath);
+		copyPath = Assets::GetAssetPath(myDropfileAssettype) + GetFileName(filePath);
 
 		ImGui::Text("Target:");
 		ImGui::Text(copyPath.c_str());

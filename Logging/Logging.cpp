@@ -209,15 +209,15 @@ void Logger::LogException(const std::exception& anException, unsigned aLevel) co
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 
-		try
-		{
-			std::rethrow_if_nested(anException);
-		}
-		catch (const std::exception& nestedException)
-		{
-			LogException(nestedException, aLevel + 1);
-		}
-		catch (...) {} // Catch all other cases.
+		//try
+		//{
+		//	std::rethrow_if_nested(anException);
+		//}
+		//catch (const std::exception& nestedException)
+		//{
+		//	LogException(nestedException, aLevel + 1);
+		//}
+		//catch (...) {} // Catch all other cases.
 	}
 }
 

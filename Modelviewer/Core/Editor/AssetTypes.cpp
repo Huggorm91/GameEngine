@@ -4,75 +4,78 @@
 #include "File/DirectoryFunctions.h"
 #include "../Modelviewer.h"
 
-std::string AssetTypes::GetAssetTypeName(eAssetType aType)
+std::string Assets::GetAssetTypeName(eAssetType aType)
 {
 	switch (aType)
 	{
-	case AssetTypes::eAssetType::Unknown:
+	case Assets::eAssetType::Unknown:
 		return "";
-	case AssetTypes::eAssetType::Texture:
+	case Assets::eAssetType::Texture:
 		return "Texture";
-	case AssetTypes::eAssetType::Model:
+	case Assets::eAssetType::Model:
 		return "Model";
-	case AssetTypes::eAssetType::AnimatedModel:
+	case Assets::eAssetType::AnimatedModel:
 		return "AnimatedModel";
-	case AssetTypes::eAssetType::Animation:
+	case Assets::eAssetType::Animation:
 		return "Animation";
-	case AssetTypes::eAssetType::Material:
+	case Assets::eAssetType::Material:
 		return "Material";
-	case AssetTypes::eAssetType::Prefab:
+	case Assets::eAssetType::Prefab:
 		return "Prefab";
-	case AssetTypes::eAssetType::Shader:
+	case Assets::eAssetType::Shader:
 		return "Shader";
-	case AssetTypes::eAssetType::Scene:
+	case Assets::eAssetType::Scene:
 		return "Scene";
+	case Assets::eAssetType::Folder:
+		return "Folder";
 	default:
 		break;
 	}
 	return std::string();
 }
 
-std::string AssetTypes::GetAssetPath(eAssetType aType)
+std::string Assets::GetAssetPath(eAssetType aType)
 {
 	switch (aType)
 	{
-	case AssetTypes::eAssetType::Unknown:
+	case Assets::eAssetType::Unknown:
+	case Assets::eAssetType::Folder:
 	{
 		return "Content\\";
 		break;
 	}
-	case AssetTypes::eAssetType::Texture:
+	case Assets::eAssetType::Texture:
 	{
 		return AssetManager::GetTexturePath();
 		break;
 	}
-	case AssetTypes::eAssetType::Model:
-	case AssetTypes::eAssetType::AnimatedModel:
+	case Assets::eAssetType::Model:
+	case Assets::eAssetType::AnimatedModel:
 	{
 		return AssetManager::GetModelPath();
 		break;
 	}
-	case AssetTypes::eAssetType::Animation:
+	case Assets::eAssetType::Animation:
 	{
 		return AssetManager::GetAnimationPath();
 		break;
 	}
-	case AssetTypes::eAssetType::Material:
+	case Assets::eAssetType::Material:
 	{
 		return AssetManager::GetMaterialPath();
 		break;
 	}
-	case AssetTypes::eAssetType::Prefab:
+	case Assets::eAssetType::Prefab:
 	{
 		return AssetManager::GetPrefabPath();
 		break;
 	}
-	case AssetTypes::eAssetType::Shader:
+	case Assets::eAssetType::Shader:
 	{
 		return AssetManager::GetShaderPath();
 		break;
 	}
-	case AssetTypes::eAssetType::Scene:
+	case Assets::eAssetType::Scene:
 	{
 		return ModelViewer::GetScenePath();
 		break;
@@ -80,14 +83,20 @@ std::string AssetTypes::GetAssetPath(eAssetType aType)
 	default:
 		break;
 	}
-	ModelViewer::GetLogger().Err("AssetTypes: Failed to get AssetPath!");
+	ModelViewer::GetLogger().Err("Assets: Invalid Type! Failed to get AssetPath!");
 	return std::string();
 }
 
-std::vector<AssetTypes::eAssetType> AssetTypes::GetPossibleTypes(const std::string& anExtension)
+std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anExtension)
 {
 	std::vector<eAssetType> result;
 	std::string extension = Crimson::ToLower(anExtension);
+	if (extension.empty())
+	{
+		result.emplace_back(eAssetType::Folder);
+		return result;
+	}
+
 	if (extension == AssetManager::GetModelExtension())
 	{
 		result.emplace_back(eAssetType::Model);

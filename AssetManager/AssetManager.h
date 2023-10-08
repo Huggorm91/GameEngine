@@ -42,7 +42,7 @@ public:
 
 	template<> static Material GetAsset(const std::string& anIdentifier);
 	inline static Material GetAsset(const std::string& anIdentifier, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo = nullptr, Texture* aNormal = nullptr) { return *myMaterialManager.CreateMaterial(anIdentifier, aVertexShader, aPixelShader, anAlbedo, aNormal); }
-	inline static Material GetAsset(const std::string& anIdentifier, const std::string& aVertexShader, const std::string& aPixelShader, const std::string& anAlbedo = "", const std::string& aNormal = "") { return *myMaterialManager.CreateMaterial(anIdentifier, myShaderManager.GetShader(aVertexShader), myShaderManager.GetShader(aPixelShader), anAlbedo.empty() ? nullptr : myTextureManager.GetTexture(anAlbedo), aNormal.empty() ? nullptr : myTextureManager.GetTexture(aNormal)); }
+	inline static Material GetAsset(const std::string& anIdentifier, const std::string& aVertexShader, const std::string& aPixelShader, const std::string& anAlbedo = "", const std::string& aNormal = "") { return *myMaterialManager.CreateMaterial(anIdentifier, myShaderManager.GetShader(aVertexShader, myIsLoggingErrors), myShaderManager.GetShader(aPixelShader, myIsLoggingErrors), anAlbedo.empty() ? nullptr : myTextureManager.GetTexture(anAlbedo, myIsLoggingErrors), aNormal.empty() ? nullptr : myTextureManager.GetTexture(aNormal, myIsLoggingErrors)); }
 
 	inline static void CreateAsset(const GameObject& anAsset, const std::string& anIdentifier){	myPrefabManager.CreatePrefab(anIdentifier, anAsset); }
 	inline static void CreateAsset(const GameObject* anAsset, const std::string& anIdentifier){	myPrefabManager.CreatePrefab(anIdentifier, *anAsset); }
@@ -56,7 +56,7 @@ public:
 	inline static void SaveAsset(const Material& anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(&anAsset, aPath); }
 	inline static void SaveAsset(const Material* anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(anAsset, aPath); }
 
-	inline static Prefab GetPrefab(const std::string& anIdentifier) { return myPrefabManager.GetPrefab(anIdentifier); }
+	inline static Prefab GetPrefab(const std::string& anIdentifier) { return myPrefabManager.GetPrefab(anIdentifier, myIsLoggingErrors); }
 
 	inline static void CreatePrefab(const GameObject& anAsset, const std::string& anIdentifier){ myPrefabManager.CreatePrefab(anIdentifier, anAsset); }
 	inline static void CreatePrefab(const GameObject* anAsset, const std::string& anIdentifier){ myPrefabManager.CreatePrefab(anIdentifier, *anAsset); }
@@ -100,9 +100,12 @@ public:
 	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetShaderlist(); }
 	inline static const std::unordered_set<std::string>& GetAvailablePrefabs(){ return myPrefabManager.GetPrefablist(); }
 
+	inline static void SetLogErrors(bool aState){ myIsLoggingErrors = aState; }
+
 private:
 	friend class Prefab;
 
+	static bool myIsLoggingErrors;
 	static ModelManager myModelManager;
 	static AnimationManager myAnimationManager;
 	static TextureManager myTextureManager;
@@ -122,69 +125,73 @@ inline T AssetManager::GetAsset(const std::string& anIdentifier)
 template<>
 inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	if (GameObject* object = myModelManager.GetModel(anIdentifier); object != nullptr)
+	if (GameObject* object = myModelManager.GetModel(anIdentifier, myIsLoggingErrors); object != nullptr)
 	{
 		return *object;
 	}
-	return *myPrefabManager.GetTemplate(anIdentifier);
+	return *myPrefabManager.GetTemplate(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline MeshComponent AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myModelManager.GetMesh(anIdentifier);
+	return *myModelManager.GetMesh(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline AnimatedMeshComponent AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myModelManager.GetAnimatedMesh(anIdentifier);
+	return *myModelManager.GetAnimatedMesh(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Animation AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myAnimationManager.GetAnimation(anIdentifier);
+	if (Animation* animation = myAnimationManager.GetAnimation(anIdentifier, myIsLoggingErrors); animation != nullptr)
+	{
+		return *animation;
+	}
+	return Animation();
 }
 
 template<>
 inline Skeleton& AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myModelManager.GetSkeleton(anIdentifier);
+	return *myModelManager.GetSkeleton(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Skeleton* AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return myModelManager.GetSkeleton(anIdentifier);
+	return myModelManager.GetSkeleton(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Texture& AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myTextureManager.GetTexture(anIdentifier);
+	return *myTextureManager.GetTexture(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Texture* AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return myTextureManager.GetTexture(anIdentifier);
+	return myTextureManager.GetTexture(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Shader& AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myShaderManager.GetShader(anIdentifier);;
+	return *myShaderManager.GetShader(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Shader* AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return myShaderManager.GetShader(anIdentifier);
+	return myShaderManager.GetShader(anIdentifier, myIsLoggingErrors);
 }
 
 template<>
 inline Material AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return *myMaterialManager.GetMaterial(anIdentifier);
+	return *myMaterialManager.GetMaterial(anIdentifier, myIsLoggingErrors);
 }

@@ -7,6 +7,7 @@
 #include "AssetTypes.h"
 #include <unordered_set>
 
+class Texture;
 class ModelViewer;
 
 class ImguiManager : public Crimson::InputObserver
@@ -42,11 +43,13 @@ private:
 	bool myIsShowingOverwritePopUp;
 	bool myHasClosedOverwritePopUp;
 
-	AssetTypes::eAssetType myDropfileAssettype;
+	Assets::eAssetType myDropfileAssettype;
 	ComponentType mySelectedComponentType;
 
 	unsigned myDropFileCount;
 	unsigned myDropFileSelection;
+
+	float myAssetBrowserIconSize;
 
 	HDROP myDropfile;
 	ModelViewer* myModelViewer;
@@ -57,10 +60,13 @@ private:
 	Crimson::Vector2f myWindowSize;
 
 	std::string myAssetPath;
+	std::string myBasicAssetPath;
+
 	std::string myOverwriteFromPath;
 	std::string myOverwriteToPath;
 	std::string mySelectedPath;
 	std::string myAssetBrowserPath;
+	std::string myContentListPath;
 
 	Transform myMultiSelectionTransform;
 
@@ -68,9 +74,10 @@ private:
 	GameObject myNewObject;
 	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
 
-	std::unordered_set<std::string> myAvailableFiles;
 	std::unordered_set<std::string> myAssetBrowserFiles;
 
+	std::unordered_map<std::string, Assets::eAssetType> myAvailableFiles;
+	std::unordered_map<Assets::eAssetType, Texture*> myAssetIcons;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
 

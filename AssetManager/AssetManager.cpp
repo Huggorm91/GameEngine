@@ -3,6 +3,7 @@
 #include <Importer.h>
 #include "File/DirectoryFunctions.h"
 
+bool AssetManager::myIsLoggingErrors = true;
 ModelManager AssetManager::myModelManager;
 AnimationManager AssetManager::myAnimationManager;
 TextureManager AssetManager::myTextureManager;
