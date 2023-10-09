@@ -206,6 +206,16 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	}
 }
 
+void ImguiManager::ReleaseDropFile()
+{
+	DragFinish(myDropfile);
+	myDropfile = NULL;
+	myDropFileCount = 0;
+	myDropFileSelection = 0;
+	myDropfileAssettype = Assets::eAssetType::Unknown;
+	myHasGottenDropfiles = false;
+}
+
 void ImguiManager::RefreshAvailableFiles()
 {
 	myAvailableFiles.clear();
@@ -286,15 +296,6 @@ std::string ImguiManager::GetDropFilePath(unsigned anIndex)
 	std::string result(fileName, charCount);
 	delete[] fileName;
 	return result;
-}
-
-void ImguiManager::ReleaseDropFile()
-{
-	DragFinish(myDropfile);
-	myDropfile = NULL;
-	myDropFileCount = 0;
-	myDropFileSelection = 0;
-	myDropfileAssettype = Assets::eAssetType::Unknown;
 }
 
 bool ImguiManager::NextDropFile()

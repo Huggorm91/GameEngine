@@ -197,7 +197,16 @@ int ModelViewer::Run()
 #ifndef _RETAIL
 void ModelViewer::SetDropFile(HDROP aHandle)
 {
-	myImguiManager.SetDropFile(aHandle);
+	try
+	{
+		myImguiManager.SetDropFile(aHandle);
+	}
+	catch (const std::exception& anException)
+	{
+		myLogger.Err("Failed to accept dropped files!");
+		myLogger.LogException(anException);
+		myImguiManager.ReleaseDropFile();
+	}
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)

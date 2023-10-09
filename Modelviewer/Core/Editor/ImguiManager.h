@@ -30,6 +30,7 @@ public:
 	void ReceiveEvent(Crimson::eInputAction, float) override;
 
 	void SetDropFile(HDROP aHandle);
+	void ReleaseDropFile();
 
 	void RefreshAvailableFiles();
 
@@ -91,8 +92,7 @@ private:
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
 
-	std::string GetDropFilePath(unsigned anIndex);
-	void ReleaseDropFile();
+	std::string GetDropFilePath(unsigned anIndex);	
 	// Returns true if another file exists
 	bool NextDropFile();
 	bool IsLastDropFile();
