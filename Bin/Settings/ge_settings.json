@@ -1,0 +1,137 @@
+{
+	"BackgroundColor" : 
+	{
+		"A" : 0.0,
+		"B" : 0.88627451658248901,
+		"G" : 0.70980393886566162,
+		"R" : 0.0
+	},
+	"BloomPSShader" : "Bloom_PS", // Only use 'ShaderName.cso' and not full path
+	"BlurPSShader" : "Gaussian_Blur_PS", // Only use 'ShaderName.cso' and not full path
+	"Colors" : 
+	[
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 0.0,
+				"R" : 1.0
+			},
+			"Name" : "Red"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 1.0,
+				"R" : 0.0
+			},
+			"Name" : "Green"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 0.0,
+				"R" : 0.0
+			},
+			"Name" : "Black"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 1.0,
+				"G" : 0.0,
+				"R" : 0.0
+			},
+			"Name" : "Blue"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 1.0,
+				"G" : 1.0,
+				"R" : 0.0
+			},
+			"Name" : "Cyan"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 1.0,
+				"G" : 0.0,
+				"R" : 1.0
+			},
+			"Name" : "Purple"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 1.0,
+				"G" : 1.0,
+				"R" : 1.0
+			},
+			"Name" : "White"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 1.0,
+				"R" : 1.0
+			},
+			"Name" : "Yellow"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.20000000298023224,
+				"G" : 0.20000000298023224,
+				"R" : 0.20000000298023224
+			},
+			"Name" : "Gray"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 0.20000000298023224,
+				"R" : 0.40000000596046448
+			},
+			"Name" : "Brown"
+		},
+		{
+			"Color" : 
+			{
+				"A" : 1.0,
+				"B" : 0.0,
+				"G" : 0.40000000596046448,
+				"R" : 1.0
+			},
+			"Name" : "Orange"
+		}
+	],
+	"CopyPSShader" : "Copy_PS", // Only use 'ShaderName.cso' and not full path
+	"CubeMap" : "Content/Textures/CubeMaps/skansen_cubemap",
+	"DefaultMaterial" : "Default/Default_Material.mat",
+	"EnvironmentPSShader" : "Default_Environment_PS", // Only use 'ShaderName.cso' and not full path
+	"FXTexture" : "Content/Textures/Default/T_Default_Black_C",
+	"GBufferPSShader" : "Default_GBuffer_PS", // Only use 'ShaderName.cso' and not full path
+	"GammaPSShader" : "Gamma_PS", // Only use 'ShaderName.cso' and not full path
+	"LuminancePSShader" : "Luminance_PS", // Only use 'ShaderName.cso' and not full path
+	"MaterialTexture" : "Content/Textures/Default/T_Default_M",
+	"MissingTexture" : "Content/Textures/Default/T_Missing_C",
+	"NormalTexture" : "Content/Textures/Default/T_Default_Flat_N",
+	"PointlightPSShader" : "Default_Pointlight_PS", // Only use 'ShaderName.cso' and not full path
+	"SpotlightPSShader" : "Default_Spotlight_PS" // Only use 'ShaderName.cso' and not full path
+}
