@@ -87,6 +87,88 @@ std::string Assets::GetAssetPath(eAssetType aType)
 	return std::string();
 }
 
+bool Assets::IsType(eAssetType aType, std::string anAsset)
+{
+	std::string extension = Crimson::ToLower(Crimson::GetFileExtension(anAsset));
+
+	switch (aType)
+	{
+	case Assets::eAssetType::Unknown:
+	{
+		return true;
+	}
+	case Assets::eAssetType::Texture:
+	{
+		if (extension == AssetManager::GetTextureExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Model:
+	case Assets::eAssetType::AnimatedModel:
+	{
+		if (extension == AssetManager::GetModelExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Animation:
+	{
+		if (extension == AssetManager::GetAnimationExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Material:
+	{
+		if (extension == AssetManager::GetMaterialExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Prefab:
+	{
+		if (extension == AssetManager::GetPrefabExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Shader:
+	{
+		if (extension == AssetManager::GetShaderExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Scene:
+	{
+		if (extension == ModelViewer::GetSceneExtension())
+		{
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Folder:
+	{
+		if (extension.empty())
+		{
+			return true;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+
+	return false;
+}
+
 std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anExtension)
 {
 	std::vector<eAssetType> result;

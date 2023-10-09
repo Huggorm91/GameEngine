@@ -20,5 +20,7 @@ namespace Assets
 	std::string GetAssetTypeName(eAssetType aType);
 	std::string GetAssetPath(eAssetType aType);
 
+	bool IsType(eAssetType aType, std::string anAsset);
+
 	std::vector<eAssetType> GetPossibleTypes(const std::string& anExtension);
 }

@@ -36,12 +36,17 @@ public:
 private:
 	friend class EditCommand;
 
-	bool myIsEditingPrefab;
 	bool myIsShowingPrefabWindow;
 	bool myIsShowingNewObjectWindow;
-	bool myIsShowingDragFilePopUp;
-	bool myIsShowingOverwritePopUp;
-	bool myHasClosedOverwritePopUp;
+
+	bool myShouldOpenOverwritePopUp;
+	bool myOverwriteAppliedToAll;
+
+	bool myHasAddedAssetFiles;
+
+	bool myViewportAwaitsFile;
+	bool myShouldOpenPopUp;
+	bool myHasGottenDropfiles;
 
 	Assets::eAssetType myDropfileAssettype;
 	ComponentType mySelectedComponentType;
@@ -49,6 +54,7 @@ private:
 	unsigned myDropFileCount;
 	unsigned myDropFileSelection;
 
+	float myRefreshTimer;
 	float myAssetBrowserIconSize;
 
 	HDROP myDropfile;
@@ -60,10 +66,11 @@ private:
 	Crimson::Vector2f myWindowSize;
 
 	std::string myAssetPath;
-	std::string myBasicAssetPath;
+	std::string myInternalAssetPath;
 
-	std::string myOverwriteFromPath;
-	std::string myOverwriteToPath;
+	std::string myPopUpMessage;
+	std::string myLatestAddedFile;
+
 	std::string mySelectedPath;
 	std::string myAssetBrowserPath;
 	std::string myContentListPath;
@@ -73,6 +80,9 @@ private:
 	Prefab myEditPrefab;
 	GameObject myNewObject;
 	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
+
+	std::vector<std::string> myOverwriteFromPaths;
+	std::vector<std::string> myOverwriteToPaths;
 
 	std::unordered_set<std::string> myAssetBrowserFiles;
 
@@ -86,6 +96,7 @@ private:
 	// Returns true if another file exists
 	bool NextDropFile();
 	bool IsLastDropFile();
+	void CopyAllDropFiles(const std::string& aTargetFolder);
 
 	bool IsSelected(const std::shared_ptr<GameObject>& anObject);
 
@@ -98,7 +109,7 @@ private:
 	void SelectAssetBrowserPath(const std::string& aPath);
 
 	void CreatePreferenceWindow();
-	void CreateDropFilePopUp();
+	void CreatePopUp();
 
 	void CreateSelectedObjectWindow();
 	void CreateSceneContentWindow();

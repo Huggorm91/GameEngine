@@ -117,7 +117,6 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	//LoadScene("Default");
 	Init();
 	Crimson::Timer::Init();
 
@@ -176,7 +175,7 @@ int ModelViewer::Run()
 			try
 			{				
 				SaveScene(saveName);
-				myLogger.Succ("Saved current scene to: " + saveName);
+				myLogger.Succ("Saved current scene as: " + saveName);
 			}
 			catch (...)	
 			{
@@ -373,7 +372,11 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
+	std::string path = aPath;
+	if (!Crimson::HasValidExtension(aPath, GetSceneExtension()))
+	{
+		path += GetSceneExtension();
+	}
 	path = Crimson::CreateValidPath(path, GetScenePath());
 	if (path.empty())
 	{
