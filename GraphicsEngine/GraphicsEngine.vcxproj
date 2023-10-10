@@ -383,6 +383,7 @@
     <None Include="Shaders\Default\BrdfData.hlsli" />
     <None Include="Shaders\Default\LineData.hlsli" />
     <None Include="Shaders\Default\MaterialData.hlsli" />
+    <None Include="Shaders\Default\Tonemaps.hlsli" />
     <None Include="Shaders\Default\VertexInput.hlsli" />
     <None Include="Shaders\Default\GBufferData.hlsli" />
     <None Include="Shaders\Default\PhongFunctions.hlsli" />

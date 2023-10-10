@@ -95,6 +95,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
 
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
@@ -560,6 +561,11 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
+	case Crimson::eKey::F4:
+	{
+		engine.NextToneMap();
+		break;
+	}
 	case Crimson::eKey::F5:
 	{
 		myDebugMode = engine.NextDebugMode();

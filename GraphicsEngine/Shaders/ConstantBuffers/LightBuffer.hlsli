@@ -40,8 +40,9 @@ cbuffer LightBuffer : register(b2)
     float LB_AmbientlightIntensity;
     float LB_ShadowBias;
     bool LB_CastDirectionalShadows;
+    int LB_ToneMapMode;
     
-    float2 paddinglb;
+    float paddinglb;
     
     PointlightData LB_Pointlights[8];
     SpotlightData LB_Spotlights[8];

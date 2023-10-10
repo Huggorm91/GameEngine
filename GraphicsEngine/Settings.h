@@ -25,6 +25,7 @@ struct Settings
 	std::string SpotlightPS;
 
 	Crimson::Vector4f BackgroundColor;
+	int ToneMap;
 
 	Settings() = default;
 	Settings(const Json::Value& aJson);

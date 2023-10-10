@@ -18,6 +18,19 @@ public:
 		static GraphicsEngine myInstance; return myInstance;
 	}
 
+	enum class ToneMap
+	{
+		None,
+		Reinhard,
+		UnrealEngine,
+		ACES,
+		Lottes,
+		Count
+	};
+
+	ToneMap SetToneMap(ToneMap aMode);
+	ToneMap NextToneMap();
+
 #ifndef _RETAIL
 	enum class DebugMode
 	{
@@ -65,7 +78,7 @@ public:
 	RenderMode SetRenderMode(RenderMode aMode);
 	RenderMode NextRenderMode();
 #endif // !_RETAIL
-
+	
 /**
  * Initializes the Graphics Engine with the specified settings.
  * @param windowHandle The window that will contain this Graphics Engine.
@@ -142,6 +155,7 @@ private:
 
 	bool myIsUsingBloom;
 
+	ToneMap myToneMap;
 #ifndef _RETAIL
 	DebugMode myDebugMode;
 	LightMode myLightMode;
