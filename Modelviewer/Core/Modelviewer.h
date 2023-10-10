@@ -77,6 +77,9 @@ private:
 	friend class ImguiManager;
 	friend class EditCommand;
 
+	bool myIsInPlayMode;
+	bool myIsMaximized;
+
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;

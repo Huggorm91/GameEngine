@@ -26,6 +26,7 @@ public:
 	virtual void Init(const Json::Value& aJson);
 	virtual void Init(GameObject* aParent);
 	virtual void Update();
+	virtual void Render();
 
 	const GameObject& GetParent() const;
 	GameObject& GetParent();

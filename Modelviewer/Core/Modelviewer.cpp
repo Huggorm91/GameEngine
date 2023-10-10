@@ -18,7 +18,7 @@
 
 ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false)
 #endif // _RETAIL
 {
 }
@@ -51,6 +51,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 		flags = WS_OVERLAPPEDWINDOW | WS_POPUP;
 	}
+	myIsMaximized = myApplicationState.StartMaximized;
 
 	// Get center of screen
 	RECT windowRect;
@@ -98,6 +99,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Pause);
 
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
@@ -398,13 +401,8 @@ void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 	int i = 0;
 	for (auto& [id, object] : myGameObjects)
 	{
-#ifndef _RETAIL
 		scene["GameObjects"][i] = object->ToJson();
 		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
-#else
-		scene["GameObjects"][i] = object->ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
-#endif // !_RETAIL
 
 		i++;
 	}
@@ -449,9 +447,21 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 
 	myLoadedScene = aPath;
 	SetGameObjectIDCount(json["GameObjectIDCount"].asUInt());
+
+	std::unordered_multimap<unsigned, unsigned> childlist;
 	for (auto& object : json["GameObjects"])
 	{
-		AddGameObject(object, false);
+		auto& newObject = AddGameObject(object, false);
+		unsigned parentID = GameObject::GetParentID(object);
+		if (parentID != 0)
+		{
+			childlist.emplace(parentID, newObject->GetID());
+		}
+	}
+
+	for (auto& [parentID, childID] : childlist)
+	{
+		GetGameObject(parentID)->AddChild(GetGameObject(childID));
 	}
 }
 
@@ -460,12 +470,6 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
-
-	auto& cube1 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
-	auto& cube2 = AddGameObject(AssetManager::GetAsset(Primitives::Cube), false);
-	cube2->SetPosition({ 150.f, 0.f, 0.f });
-	cube2->GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
-	cube1->AddChild(cube2);
 }
 
 void ModelViewer::Update()
@@ -497,9 +501,16 @@ void ModelViewer::UpdateScene()
 	for (auto& [id, object] : myGameObjects)
 	{
 #ifndef _RETAIL
-		object->Update();
+		if (myIsInPlayMode)
+		{
+			object->Update();
+		}
+		else
+		{
+			object->Render();
+		}
 #else
-		object->Update();
+		object.Update();
 #endif // !_RETAIL
 	}
 }
@@ -541,6 +552,11 @@ void ModelViewer::RedoCommand()
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
+	if (aKey == Crimson::eKey::Pause)
+	{
+		myIsInPlayMode = !myIsInPlayMode;
+	}
+
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
@@ -573,6 +589,10 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 
 void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 {
+	if (myIsInPlayMode)
+	{
+		return;
+	}
 	if (aValue < 1.5f)
 	{
 		return;

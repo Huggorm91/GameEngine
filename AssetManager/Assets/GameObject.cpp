@@ -181,6 +181,22 @@ void GameObject::Update()
 	}
 }
 
+void GameObject::Render()
+{
+	if (myIsActive)
+	{
+		if (myTransform.HasChanged())
+		{
+			TransformHasChanged();
+		}
+
+		for (auto [type, index] : myIndexList)
+		{
+			myComponents.ChangeValueUnsafe<Component>(index)->Render();
+		}
+	}
+}
+
 const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
 	for (auto [type, index] : myIndexList)
@@ -315,6 +331,13 @@ void GameObject::TransformHasChanged()
 	{
 		child->TransformHasChanged();
 	}
+}
+
+bool GameObject::IsRelated(GameObject* anObject)
+{
+	assert(!"Not Implemented!");
+	UNREFERENCED_PARAMETER(anObject);
+	return false;
 }
 
 #ifndef _RETAIL
@@ -477,6 +500,15 @@ Json::Value GameObject::ToJson() const
 	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();
 
+	if (myParent)
+	{
+		result["ParentID"] = myParent->myID;
+	}
+	else
+	{
+		result["ParentID"] = 0u;
+	}
+
 	result["Components"] = Json::arrayValue;
 	const Component* component = nullptr;
 	unsigned i = 0;
@@ -511,6 +543,11 @@ void GameObject::MarkAsPrefab(unsigned anID)
 		const_cast<unsigned&>(myID) = anID;
 		localIDCount--;
 	}
+}
+
+unsigned GameObject::GetParentID(const Json::Value& aJson)
+{
+	return aJson["ParentID"].asUInt();
 }
 
 void SetGameObjectIDCount(unsigned aValue)

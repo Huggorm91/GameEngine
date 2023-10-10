@@ -22,6 +22,7 @@ public:
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
+	void Render() override;
 
 	void Init(const Json::Value& aJson) override;
 	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton);

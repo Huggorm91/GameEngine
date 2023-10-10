@@ -57,6 +57,10 @@ void Component::Update()
 {
 }
 
+void Component::Render()
+{
+}
+
 const GameObject& Component::GetParent() const
 {
 	return *myParent;

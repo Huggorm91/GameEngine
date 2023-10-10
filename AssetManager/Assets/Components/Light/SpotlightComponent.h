@@ -17,6 +17,7 @@ public:
 
 	void Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition = Crimson::Vector3f::Null, const Crimson::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
 	void Update() override;
+	void Render() override;
 
 	void SetRange(float aRange);
 	void SetIntensity(float anIntensity);

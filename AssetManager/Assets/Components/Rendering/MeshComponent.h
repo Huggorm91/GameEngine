@@ -18,6 +18,7 @@ public:
 	MeshComponent& operator=(MeshComponent&& aComponent) noexcept;
 
 	void Update() override;
+	void Render() override;
 
 	void Init(GameObject* aParent) override;
 	void Init(const Json::Value& aJson) override;

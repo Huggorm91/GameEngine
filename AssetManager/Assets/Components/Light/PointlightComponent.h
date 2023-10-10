@@ -17,6 +17,7 @@ public:
 
 	void Init(float aRadius, float anIntensity = 1.f, const Crimson::Vector3f& aColor = { 1.f, 1.f, 1.f }, const Crimson::Vector3f& aPosition = Crimson::Vector3f::Null, bool aCastShadows = true);
 	void Update() override;
+	void Render() override;
 
 	void SetRadius(float aRadius);
 	void SetIntensity(float anIntensity);

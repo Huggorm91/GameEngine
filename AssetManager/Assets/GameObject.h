@@ -21,6 +21,7 @@ public:
 	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
 	void Update();
+	void Render();
 
 	template<class T>
 	T& AddComponent();
@@ -104,6 +105,7 @@ public:
 	// Only call before creating another GameObject!
 	void MarkAsPrefab(unsigned anID);
 
+	static unsigned GetParentID(const Json::Value& aJson);
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
@@ -134,12 +136,14 @@ private:
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	Crimson::Blackboard<unsigned> myComponents;
 
-	void SetParent(GameObject*);
+	void SetParent(GameObject* anObject);
 
 	void RemoveParentInternal();
 	void RemoveFromParent();
 
 	void TransformHasChanged();
+
+	bool IsRelated(GameObject* anObject);
 };
 
 template<class T>

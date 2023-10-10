@@ -92,6 +92,11 @@ void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngl
 
 void SpotlightComponent::Update()
 {
+	Render();
+}
+
+void SpotlightComponent::Render()
+{
 	if (!myIsActive)
 	{
 		return;
