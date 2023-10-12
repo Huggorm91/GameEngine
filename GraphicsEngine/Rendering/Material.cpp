@@ -1,15 +1,13 @@
 #include "GraphicsEngine.pch.h"
 #include "Material.h"
 #include "../GraphicsEngine.h"
-#include "../InterOp/Helpers.h"
 
 #include "AssetManager/AssetManager.h"
 
+#include "File/DirectoryFunctions.h"
 #include "Json/jsonCpp/json.h"
 
 #ifndef _RETAIL
-#include "File/DirectoryFunctions.h"
-
 #include "ModelViewer/Core/ModelViewer.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
 
@@ -317,73 +315,27 @@ void Material::CreateImguiComponents(const std::string&)
 	if (ImGui::TreeNode("Material"))
 	{
 		ImGui::Text(myName.c_str());
-		if (myAlbedoTexture)
-		{
-			myAlbedoName = Crimson::ToString(myAlbedoTexture->GetName());
-		}
-		if (myNormalTexture)
-		{
-			myNormalName = Crimson::ToString(myNormalTexture->GetName());
-		}
-		if (myMaterialTexture)
-		{
-			myMaterialName = Crimson::ToString(myMaterialTexture->GetName());
-		}
-		if (myFXTexture)
-		{
-			myFXName = Crimson::ToString(myFXTexture->GetName());
-		}
 
 		// TODO: Fix Imgui representation for Shaders
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		if (ImGui::TreeNode("Textures"))
 		{
-			CreateTextureCombo(TextureSlot_Albedo);
+			Texture albedo;
+			CreateTextureCombo(myAlbedoTexture, TextureSlot_Albedo);
 			ImGui::SameLine();
-			if (myAlbedoTexture)
-			{
-				ImGui::Image(myAlbedoTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetAlbedoTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(myAlbedoTexture);
 
-
-			CreateTextureCombo(TextureSlot_Normal);
+			CreateTextureCombo(myNormalTexture, TextureSlot_Normal);
 			ImGui::SameLine();
-			if (myNormalTexture)
-			{
-				ImGui::Image(myNormalTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetNormalTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(myNormalTexture);
 
-
-			CreateTextureCombo(TextureSlot_Material);
+			CreateTextureCombo(myMaterialTexture, TextureSlot_Material);
 			ImGui::SameLine();
-			if (myMaterialTexture)
-			{
-				ImGui::Image(myMaterialTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetMaterialTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(myMaterialTexture);
 
-
-			CreateTextureCombo(TextureSlot_FX);
+			CreateTextureCombo(myFXTexture, TextureSlot_FX);
 			ImGui::SameLine();
-			if (myFXTexture)
-			{
-				ImGui::Image(myFXTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetFXTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(myFXTexture);
 
 			if (!myTextures.empty())
 			{
@@ -392,7 +344,7 @@ void Material::CreateImguiComponents(const std::string&)
 				{
 					ImGui::Text(("Slot " + std::to_string(binding.slot) + ": ").c_str());
 					ImGui::SameLine();
-					ImGui::Image(binding.texture->GetSRV().Get(), ImVec2(75, 75));
+					CreateTextureImage(binding.texture);
 				}
 			}
 			ImGui::TreePop();
@@ -414,7 +366,7 @@ void Material::CreateImguiComponents(const std::string&)
 			{
 				ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeValue<Crimson::Vector4f>>(buffer.EmissionColor, emission));
 			}
-			ImGui::SameLine(); 
+			ImGui::SameLine();
 			ImGui::TextDisabled("(?)");
 			if (ImGui::BeginItemTooltip())
 			{
@@ -452,51 +404,18 @@ void Material::CreateImguiComponents(const std::string&)
 }
 
 #ifndef _RETAIL
-void Material::CreateTextureCombo(eTextureSlot aSlot)
+void Material::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 {
-	Texture** texture = nullptr;
-	std::string* name = nullptr;
-
-	switch (aSlot)
-	{
-	case TextureSlot_Albedo:
-	{
-		texture = &myAlbedoTexture;
-		name = &myAlbedoName;
-		break;
-	}
-	case TextureSlot_Normal:
-	{
-		texture = &myNormalTexture;
-		name = &myNormalName;
-		break;
-	}
-	case TextureSlot_Material:
-	{
-		texture = &myMaterialTexture;
-		name = &myMaterialName;
-		break;
-	}
-	case TextureSlot_FX:
-	{
-		texture = &myFXTexture;
-		name = &myFXName;
-		break;
-	}
-	default:
-		return;
-	}
-
 	ImGui::PushID(aSlot);
-	if (ImGui::BeginCombo("", name->c_str(), ImGuiComboFlags_HeightLarge))
+	if (ImGui::BeginCombo("", Crimson::ToString(aTexture->GetName()).c_str(), ImGuiComboFlags_HeightLarge))
 	{
 		for (auto& path : AssetManager::GetAvailableTextures())
 		{
 			Texture* current = AssetManager::GetAsset<Texture*>(path);
-			const bool isSelected = *texture == current;
+			const bool isSelected = aTexture == current;
 			if (ImGui::Selectable(Crimson::ToString(current->GetName()).c_str(), isSelected))
 			{
-				*texture = current;
+				aTexture = current;
 			}
 
 			if (isSelected)
@@ -504,13 +423,40 @@ void Material::CreateTextureCombo(eTextureSlot aSlot)
 				ImGui::SetItemDefaultFocus();
 			}
 
-			constexpr int imageSize = 30;
+			constexpr float imageSize = 30.f;
 			ImGui::SameLine(ImGui::GetContentRegionAvail().x - imageSize);
 			ImGui::Image(current->GetSRV().Get(), ImVec2(imageSize, imageSize));
 		}
 		ImGui::EndCombo();
 	}
 	ImGui::PopID();
+}
+
+void Material::CreateTextureImage(Texture*& aTexture)
+{
+	constexpr float imageSize = 75.f;
+	if (aTexture)
+	{
+		ImGui::Image(aTexture->GetSRV().Get(), ImVec2(imageSize, imageSize));
+	}
+	else
+	{
+		ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetFXTexture()->GetSRV().Get(), ImVec2(imageSize, imageSize));
+	}
+	AcceptDropPayload(aTexture);
+}
+
+void Material::AcceptDropPayload(Texture*& aTexture)
+{
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Texture"))
+		{
+			IM_ASSERT(payload->DataSize == sizeof(Texture*));
+			aTexture = *static_cast<Texture**>(payload->Data);
+		}
+		ImGui::EndDragDropTarget();
+	}
 }
 #endif // !_RETAIL
 

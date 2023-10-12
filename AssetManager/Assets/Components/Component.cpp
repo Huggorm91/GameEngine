@@ -143,7 +143,16 @@ void Component::MarkAsPrefabComponent(unsigned anID)
 	{
 		const_cast<unsigned&>(myID) = anID;
 		localIDCount--;
-	}	
+	}
+}
+
+void Component::CopyID(const Component* aComponent, bool aDecrementIDCount)
+{
+	if (aDecrementIDCount)
+	{
+		localIDCount--;
+	}
+	const_cast<unsigned&>(myID) = aComponent->myID;
 }
 
 const Crimson::Blackboard<unsigned int>& Component::GetComponentContainer() const

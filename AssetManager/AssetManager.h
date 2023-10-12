@@ -34,6 +34,8 @@ public:
 	template<> static Skeleton& GetAsset(const std::string& anIdentifier);
 	template<> static Skeleton* GetAsset(const std::string& anIdentifier);
 
+	// template<Texture> will not cache the loaded resource!
+	template<> static Texture GetAsset(const std::string& anIdentifier);
 	template<> static Texture& GetAsset(const std::string& anIdentifier);
 	template<> static Texture* GetAsset(const std::string& anIdentifier);
 
@@ -164,6 +166,12 @@ template<>
 inline Skeleton* AssetManager::GetAsset(const std::string& anIdentifier)
 {
 	return myModelManager.GetSkeleton(anIdentifier, myIsLoggingErrors);
+}
+
+template<>
+inline Texture AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return myTextureManager.GetUncachedTexture(anIdentifier, myIsLoggingErrors);
 }
 
 template<>

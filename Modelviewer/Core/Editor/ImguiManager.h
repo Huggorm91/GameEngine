@@ -34,6 +34,8 @@ public:
 
 	void RefreshAvailableFiles();
 
+	void SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr<GameObject>>* aList);
+
 private:
 	friend class EditCommand;
 
@@ -61,6 +63,7 @@ private:
 	HDROP myDropfile;
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>>* myActiveObjects;
 
 	Crimson::Vector2i myDropLocation;
 	Crimson::Vector2f myViewportSize;
@@ -80,7 +83,7 @@ private:
 
 	Prefab myEditPrefab;
 	GameObject myNewObject;
-	std::unordered_set<std::shared_ptr<GameObject>> mySelectedObjects;
+	std::unordered_set<GameObject*> mySelectedObjects;
 
 	std::vector<std::string> myOverwriteFromPaths;
 	std::vector<std::string> myOverwriteToPaths;
@@ -88,11 +91,11 @@ private:
 	std::unordered_set<std::string> myAssetBrowserFiles;
 
 	std::unordered_map<std::string, Assets::eAssetType> myAvailableFiles;
-	std::unordered_map<Assets::eAssetType, Texture*> myAssetIcons;
+	std::unordered_map<Assets::eAssetType, Texture> myAssetIcons;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
-	std::unordered_map<GameObject*, std::string> myImguiNameIndex;
+	std::unordered_map<unsigned, std::string> myImguiNameIndex;
 
-	std::string GetDropFilePath(unsigned anIndex);	
+	std::string GetDropFilePath(unsigned anIndex);
 	// Returns true if another file exists
 	bool NextDropFile();
 	bool IsLastDropFile();
@@ -100,6 +103,7 @@ private:
 
 	bool IsSelected(const std::shared_ptr<GameObject>& anObject);
 
+	void CreateMenubar();
 	void CreateViewport();
 
 	void CreateAssetBrowser();
@@ -120,4 +124,23 @@ private:
 	void CreateNewObjectWindow();
 
 	void CreateOverwriteFilePopUp();
+
+	template<typename T>
+	bool CreateDragSource(const std::string& aPayloadName, T* aPayload, const std::string& aTooltip = "");
 };
+
+template<typename T>
+inline bool ImguiManager::CreateDragSource(const std::string& aPayloadName, T* aPayload, const std::string& aTooltip)
+{
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	{
+		ImGui::SetDragDropPayload(aPayloadName.c_str(), aPayload, sizeof(T));
+		if (!aTooltip.empty())
+		{
+			ImGui::Text(aTooltip.c_str());
+		}
+		ImGui::EndDragDropSource();
+		return true;
+	}
+	return false;
+}

@@ -4,7 +4,6 @@
 #include "Commands/EditCmd_RemoveGameobject.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "GraphicsEngine/InterOp/Helpers.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
@@ -18,7 +17,7 @@
 
 ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false)
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false), myIsMaximized(false)
 #endif // _RETAIL
 {
 }
@@ -39,7 +38,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle{ Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle) };
+	std::wstring stdTitle{ Crimson::ToWString(myApplicationState.WindowTitle) };
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
@@ -94,6 +93,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 #ifndef _RETAIL
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
+	myImguiManager.SetActiveObjects(&myGameObjects);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
@@ -177,11 +177,11 @@ int ModelViewer::Run()
 			// Save current scene if possible
 			std::string saveName = "Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
 			try
-			{				
+			{
 				SaveScene(saveName);
 				myLogger.Succ("Saved current scene as: " + saveName);
 			}
-			catch (...)	
+			catch (...)
 			{
 				myLogger.Err("Failed to save current scene to: " + saveName);
 			}
@@ -462,7 +462,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 
 	for (auto& [parentID, childID] : childlist)
 	{
-		GetGameObject(parentID)->AddChild(GetGameObject(childID));
+		GetGameObject(parentID)->AddChild(GetGameObject(childID).get());
 	}
 }
 
@@ -499,21 +499,28 @@ void ModelViewer::Update()
 
 void ModelViewer::UpdateScene()
 {
-	for (auto& [id, object] : myGameObjects)
-	{
 #ifndef _RETAIL
-		if (myIsInPlayMode)
+	if (myIsInPlayMode)
+	{
+		for (auto& [id, object] : myPlayModeGameObjects)
 		{
 			object->Update();
 		}
-		else
+	}
+	else
+	{
+		for (auto& [id, object] : myGameObjects)
 		{
 			object->Render();
 		}
-#else
-		object.Update();
-#endif // !_RETAIL
 	}
+#else
+	for (auto& [id, object] : myGameObjects)
+	{
+		object.Update();
+	}
+#endif // !_RETAIL
+
 }
 
 #ifndef _RETAIL
@@ -556,6 +563,21 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 	if (aKey == Crimson::eKey::Pause)
 	{
 		myIsInPlayMode = !myIsInPlayMode;
+		if (myIsInPlayMode)
+		{
+			for (auto& [id, object] : myGameObjects)
+			{
+				auto copy = std::make_shared<GameObject>(*object);
+				copy->CopyIDsOf(*object, true);
+				myPlayModeGameObjects.emplace(id, copy);
+			}
+			myImguiManager.SetActiveObjects(&myPlayModeGameObjects);
+		}
+		else
+		{
+			myImguiManager.SetActiveObjects(&myGameObjects);
+			myPlayModeGameObjects.clear();
+		}
 	}
 
 	auto& engine = GraphicsEngine::Get();

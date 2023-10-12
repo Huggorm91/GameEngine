@@ -5,12 +5,12 @@ ParticleEmitterComponent::ParticleEmitterComponent(): Component(ComponentType::P
 {
 }
 
-ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson)
+ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& )
 {
 	assert(!"Not Implemented");
 }
 
-void ParticleEmitterComponent::Init(GameObject* aParent)
+void ParticleEmitterComponent::Init(GameObject* )
 {
 	assert(!"Not Implemented");
 }
@@ -30,7 +30,7 @@ void ParticleEmitterComponent::AddEmitter()
 	myEmitters.emplace_back(ParticleEmitter(static_cast<unsigned>(myEmitters.size())));
 }
 
-void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowName)
+void ParticleEmitterComponent::CreateImGuiComponents(const std::string& )
 {
 	assert(!"Not Implemented");
 }

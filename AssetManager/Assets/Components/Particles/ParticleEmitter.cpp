@@ -1,12 +1,12 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitter.h"
-#include "External/jsonCpp/json.h"
+#include "Json/jsonCpp/json.h"
 
 ParticleEmitter::ParticleEmitter(unsigned anID): myID(anID), myTransform()
 {
 }
 
-void ParticleEmitter::Init(const EmitterData* someData)
+void ParticleEmitter::Init(const EmitterData*)
 {
 }
 

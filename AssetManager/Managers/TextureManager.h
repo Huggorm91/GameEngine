@@ -12,6 +12,7 @@ public:
 	void Init();
 	void LoadAllTextures();
 
+	Texture GetUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const;
 	Texture* GetTexture(const std::string& aPath, bool aShouldLogErrors);
 	const std::unordered_set<std::string>& GetTexturelist() const;
 
@@ -25,5 +26,6 @@ private:
 	std::unordered_set<std::string> myLoadedTextures;
 	std::unordered_set<std::string> myFilePaths;
 
+	Texture LoadUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const;
 	Texture* LoadTexture(const std::string& aPath, bool aShouldLogErrors);
 };

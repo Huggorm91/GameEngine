@@ -305,18 +305,14 @@ void GameObject::RemoveFromParent()
 	{
 		for (auto iter = myParent->myChildren.begin(); iter != myParent->myChildren.end(); iter++)
 		{
-#ifndef _RETAIL
-			if (iter->get() == this)
-#else
 			if ((*iter) == this)
-#endif // !_RETAIL
 			{
 				myParent->myChildren.erase(iter);
 				break;
 			}
-			}
 		}
 	}
+}
 
 void GameObject::TransformHasChanged()
 {
@@ -335,47 +331,66 @@ void GameObject::TransformHasChanged()
 
 bool GameObject::IsRelated(GameObject* anObject)
 {
-	assert(!"Not Implemented!");
-	UNREFERENCED_PARAMETER(anObject);
+	if (IsChildRecursive(anObject))
+	{
+		return true;
+	}
+	return IsParentRecursive(anObject);
+}
+
+bool GameObject::IsChildRecursive(GameObject* anObject)
+{
+	if (IsChild(anObject))
+	{
+		return true;
+	}
+
+	for (auto& child : myChildren)
+	{
+		if (child->IsChildRecursive(anObject))
+		{
+			return true;
+		}
+	}
 	return false;
 }
 
-#ifndef _RETAIL
-void GameObject::AddChild(const std::shared_ptr<GameObject>& anObject)
+bool GameObject::IsChild(GameObject* anObject)
 {
-	if (anObject.get() == this)
+	for (auto& child : myChildren)
+	{
+		if (child == anObject)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GameObject::IsParentRecursive(GameObject* anObject)
+{
+	if (myParent)
+	{
+		if (IsParent(anObject))
+		{
+			return true;
+		}
+		return myParent->IsParentRecursive(anObject);
+	}
+	return false;
+}
+
+bool GameObject::IsParent(GameObject* anObject)
+{
+	return myParent == anObject;
+}
+
+void GameObject::AddChild(GameObject* anObject)
+{
+	if (anObject == this || IsRelated(anObject))
 	{
 		return;
 	}
-	anObject->SetParent(this);
-	myChildren.emplace_back(anObject);
-}
-
-void GameObject::RemoveChild(const std::shared_ptr<GameObject>& anObject)
-{
-	for (auto iter = myChildren.begin(); iter != myChildren.end(); iter++)
-	{
-		if (*iter == anObject)
-		{
-			(*iter)->RemoveParentInternal();
-			myChildren.erase(iter);
-			return;
-		}
-	}
-}
-
-const std::vector<std::shared_ptr<GameObject>>& GameObject::GetChildren() const
-{
-	return myChildren;
-}
-
-std::vector<std::shared_ptr<GameObject>>& GameObject::GetChildren()
-{
-	return myChildren;
-}
-#else
-void GameObject::AddChild(GameObject* anObject)
-{
 	anObject->SetParent(this);
 	myChildren.emplace_back(anObject);
 }
@@ -386,7 +401,7 @@ void GameObject::RemoveChild(GameObject* anObject)
 	{
 		if (*iter == anObject)
 		{
-			(*iter)->RemoveParent();
+			(*iter)->RemoveParentInternal();
 			myChildren.erase(iter);
 			return;
 		}
@@ -402,8 +417,6 @@ std::vector<GameObject*>& GameObject::GetChildren()
 {
 	return myChildren;
 }
-#endif // !_RETAIL
-
 
 const GameObject* GameObject::GetParent() const
 {
@@ -452,11 +465,6 @@ unsigned int GameObject::GetID() const
 	return myID;
 }
 
-const unsigned& GameObject::GetIDRef() const
-{
-	return myID;
-}
-
 void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 {
 	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
@@ -488,8 +496,8 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 					ImGui::TreePop();
 				}
 			}
+		}
 	}
-}
 }
 
 Json::Value GameObject::ToJson() const
@@ -542,6 +550,20 @@ void GameObject::MarkAsPrefab(unsigned anID)
 	{
 		const_cast<unsigned&>(myID) = anID;
 		localIDCount--;
+	}
+}
+
+void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
+{
+	if (aDecrementIDCount)
+	{
+		localIDCount--;
+	}
+	const_cast<unsigned&>(myID) = anObject.myID;
+
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->CopyID(anObject.myComponents.GetValueUnsafe<Component>(index), aDecrementIDCount);
 	}
 }
 

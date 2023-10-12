@@ -94,18 +94,13 @@ private:
 	Texture* myMaterialTexture;
 	Texture* myFXTexture;
 
-#ifndef _RETAIL
-	std::string myAlbedoName;
-	std::string myNormalName;
-	std::string myMaterialName;
-	std::string myFXName;
-#endif // !_RETAIL
-
 	std::string myName;
 	std::vector<TextureBinding> myTextures;
 	MaterialBuffer myBuffer;
 
 #ifndef _RETAIL
-	void CreateTextureCombo(eTextureSlot aSlot);
+	void CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot);
+	void CreateTextureImage(Texture*& aTexture);
+	void AcceptDropPayload(Texture*& aTexture);
 #endif // !_RETAIL
 };

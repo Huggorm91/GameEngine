@@ -48,6 +48,8 @@ public:
 
 	// Only call before creating another Component!
 	void MarkAsPrefabComponent(unsigned anID = 0);
+	void CopyID(const Component* aComponent, bool aDecrementIDCount = false);
+
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 

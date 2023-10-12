@@ -1,15 +1,15 @@
 #pragma once
-#include <Vector4.hpp>
+#include "Math/Vector4.hpp"
 
 struct EmitterData
 {
 	float SpawnRate;
 	float LifeTime;
 	float GravityScale;
-	CommonUtilities::Vector3f StartVelocity;
-	CommonUtilities::Vector3f EndVelocity;
-	CommonUtilities::Vector3f StartSize;
-	CommonUtilities::Vector3f EndSize;
-	CommonUtilities::Vector4f StartColor;
-	CommonUtilities::Vector4f EndColor;
+	Crimson::Vector3f StartVelocity;
+	Crimson::Vector3f EndVelocity;
+	Crimson::Vector3f StartSize;
+	Crimson::Vector3f EndSize;
+	Crimson::Vector4f StartColor;
+	Crimson::Vector4f EndColor;
 };

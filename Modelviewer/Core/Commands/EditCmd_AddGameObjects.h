@@ -2,11 +2,11 @@
 #include "EditCommand.h"
 #include "AssetManager/Assets/GameObject.h"
 
-class EditCmd_AddMultipleGameObjects : public EditCommand
+class EditCmd_AddGameObjects : public EditCommand
 {
 public:
-	EditCmd_AddMultipleGameObjects();
-	~EditCmd_AddMultipleGameObjects() = default;
+	EditCmd_AddGameObjects();
+	~EditCmd_AddGameObjects() = default;
 
 	void Undo() override;
 	void Execute() override;

@@ -243,7 +243,7 @@ GraphicsEngine::ToneMap GraphicsEngine::SetToneMap(ToneMap aMode)
 	case GraphicsEngine::ToneMap::Count:
 	{
 		myToneMap = ToneMap::None;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::ToneMap::None:
 	{

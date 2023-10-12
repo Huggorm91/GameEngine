@@ -103,6 +103,7 @@ private:
 
 #ifndef _RETAIL
 	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myGameObjects;
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayModeGameObjects;
 #else
 	std::unordered_map<unsigned, GameObject> myGameObjects;
 #endif // _RETAIL

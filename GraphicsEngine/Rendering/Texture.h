@@ -52,4 +52,21 @@ public:
 	FORCEINLINE ComPtr<ID3D11Resource> GetResource() const { return myTexture; }
 	FORCEINLINE ComPtr<ID3D11ShaderResourceView> GetSRV() const { return mySRV; }
 	FORCEINLINE bool IsValid() const { return myTexture != nullptr; }
+
+	enum TextureDimension
+	{
+		Unknown,
+		Buffer,
+		Texture1D,
+		Texture2D,
+		Texture3D,
+	};
+
+	FORCEINLINE TextureDimension GetType() const {
+		D3D11_RESOURCE_DIMENSION dimension;
+		myTexture->GetType(&dimension);
+		return static_cast<TextureDimension>(dimension);
+	}
+
+	unsigned GetArraySize() const;
 };

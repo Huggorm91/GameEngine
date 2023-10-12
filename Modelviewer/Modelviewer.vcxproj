@@ -246,6 +246,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Editor\AssetTypes.h" />
     <ClInclude Include="Core\Modelviewer.h" />
     <ClInclude Include="Core\ApplicationState.h" />
@@ -253,14 +255,12 @@
     <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeTransform.h" />
     <ClInclude Include="Core\Commands\EditCmd_AddComponent.h" />
-    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h" />
-    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h" />
     <ClInclude Include="Core\Editor\ImguiManager.h" />
-    <ClInclude Include="Core\Commands\EditCmd_AddMultipleGameObjects.h" />
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h" />
-    <ClInclude Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
@@ -268,15 +268,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\ApplicationState.cpp" />
-    <ClCompile Include="Core\Commands\EditCommand.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp" />
+    <ClCompile Include="Core\Commands\EditCommand.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp" />
     <ClCompile Include="Core\Editor\AssetTypes.cpp" />
     <ClCompile Include="Core\Editor\ImguiManager.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_AddMultipleGameObjects.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_AddGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
