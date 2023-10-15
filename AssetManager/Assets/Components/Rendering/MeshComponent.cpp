@@ -20,7 +20,7 @@ MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransfor
 {
 }
 
-MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f }, 
+MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f },
 myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix(), myIsDeferred(true)
 #ifndef _RETAIL
 , myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
@@ -32,7 +32,7 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 	}
 }
 
-MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), 
+MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
 myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
 #ifndef _RETAIL
 , myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
@@ -44,7 +44,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 	}
 }
 
-MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept: Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
+MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
 myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
 #ifndef _RETAIL
 , myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
@@ -53,7 +53,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 	if (myParent)
 	{
 		myTransform.SetParent(GetParentTransform());
-	}	
+	}
 }
 
 MeshComponent& MeshComponent::operator=(const MeshComponent& aMeshComponent)
@@ -138,6 +138,7 @@ void MeshComponent::Init(const Json::Value& aJson)
 	myRenderShadow = aJson["RenderShadow"].asBool();
 	myColor = Crimson::Vector4f(aJson["Color"]);
 	myTransform = aJson["Transform"];
+	myTransform.SetParent(GetParentTransform());
 	myIsDeferred = aJson["IsDeferred"].asBool();
 	for (auto& element : aJson["Elements"])
 	{
@@ -340,7 +341,7 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::ColorEdit4("  ", &myColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
 
 	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
-	
+
 	for (int i = 0; i < myElements.size(); i++)
 	{
 		ImGui::PushID(i);
@@ -355,13 +356,13 @@ Json::Value MeshComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
 	result["RenderShadow"] = myRenderShadow;
-	result["IsDeferred"]= myIsDeferred;
+	result["IsDeferred"] = myIsDeferred;
 	result["Color"] = myColor.ToJsonColor();
 	result["Transform"] = myTransform.ToJson();
 	if (myPath)
 	{
 		result["Path"] = *myPath;
-	}	
+	}
 	result["Elements"] = Json::arrayValue;
 	for (int i = 0; i < myElements.size(); i++)
 	{

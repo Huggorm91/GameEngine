@@ -11,9 +11,9 @@
 #include "ModelViewer/Core/ModelViewer.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
 
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
+#include "ImGui/imgui_impl_dx11.h"
 #endif // !_RETAIL
 
 Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr)

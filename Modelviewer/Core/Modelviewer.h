@@ -4,6 +4,7 @@
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Camera/PerspectiveCamera.h"
+#include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 
 
@@ -64,9 +65,6 @@ public:
 	void SaveScene(const std::string& aPath) const;
 	void LoadScene(const std::string& aPath);
 
-	static inline const char* GetSceneExtension(){ return ".lvl"; }
-	static inline const char* GetScenePath(){ return "Content\\Scenes\\"; }
-
 #ifndef _RETAIL
 	void ReceiveEvent(Crimson::eInputEvent, Crimson::eKey) override;
 	void ReceiveEvent(Crimson::eInputAction, float) override;
@@ -102,17 +100,17 @@ private:
 	PerspectiveCamera myCamera;
 
 #ifndef _RETAIL
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myGameObjects;
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayModeGameObjects;
+	EditorScene myScene;
+	Scene myPlayScene;
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayScenePointers;
 #else
-	std::unordered_map<unsigned, GameObject> myGameObjects;
+	Scene myScene;
 #endif // _RETAIL
 
 	ModelViewer();
 
 	void ShowSplashScreen();
 	void HideSplashScreen() const;
-	size_t LoadAllAssets();
 
 	void LoadState();
 

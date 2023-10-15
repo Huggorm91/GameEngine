@@ -531,6 +531,49 @@ Json::Value GameObject::ToJson() const
 	return result;
 }
 
+struct GameObjectData
+{
+	unsigned ID;
+	unsigned ParentID;
+	unsigned ComponentCount;
+	bool IsActive;
+};
+
+void GameObject::Serialize(std::ostream& aStream) const
+{
+	Binary::eType type = Binary::GameObject;
+	GameObjectData data;
+	data.ID = myID;
+	data.ParentID = myParent ? myParent->myID : 0u;
+	data.ComponentCount = myCount;
+	data.IsActive = myIsActive;
+	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
+	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
+
+	for (auto [compType, index] : myIndexList)
+	{
+		myComponents.GetValueUnsafe<Component>(index)->Serialize(aStream);
+	}
+}
+
+unsigned GameObject::Deserialize(std::istream& aStream)
+{
+	GameObjectData data;
+	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
+	const_cast<unsigned&>(myID) = data.ID;
+	for (unsigned i = 0; i < data.ComponentCount; i++)
+	{
+		Binary::eType type;
+		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
+		if (type != Binary::Component)
+		{
+			throw std::runtime_error("GameObject::Deserialize: Invalid Binary::Type when loading components. ID: " + std::to_string(myID));
+		}
+		LoadComponent(aStream, *this);
+	}
+	return data.ParentID;
+}
+
 void GameObject::MarkAsPrefab()
 {
 	if (myID != 0)

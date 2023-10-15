@@ -12,10 +12,10 @@
 #include "AssetManager/AssetManager.h"
 #include "File/DirectoryFunctions.h"
 
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
 
 #include "Input/InputMapper.h"
 #include "Time/Timer.h"
@@ -26,7 +26,7 @@ ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindo
 myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myEditPrefab("Empty"), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myHasGottenDropfiles(false),
 mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myShouldOpenOverwritePopUp(false), myOverwriteFromPaths(), myOverwriteToPaths(), myImguiNameIndex(), myViewportAwaitsFile(false),
 myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
-myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr)
+myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f)
 {
 	myNewObject.MarkAsPrefab();
 }
@@ -94,7 +94,7 @@ void ImguiManager::Update()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	myRefreshTimer += Crimson::Timer::GetDeltaTime();
+	myRefreshTimer += Timer::GetDeltaTime();
 	if (myRefreshTimer >= 60.f)
 	{
 		myRefreshTimer = 0.f;
@@ -105,7 +105,7 @@ void ImguiManager::Update()
 	// Create Editor workarea
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(myWindowSize.x, myWindowSize.y));
-	auto color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+	const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(color.x, color.y, color.z, 1.f));
 	ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
 	ImGui::PopStyleColor();
@@ -229,10 +229,10 @@ void ImguiManager::ReleaseDropFile()
 void ImguiManager::RefreshAvailableFiles()
 {
 	myAvailableFiles.clear();
-	auto files = Crimson::GetAllFilepathsInDirectory(myAssetPath);
+	auto files = GetAllFilepathsInDirectory(myAssetPath);
 	for (auto& file : files)
 	{
-		auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
+		auto potentialTypes = Assets::GetPossibleTypes(GetFileExtension(file));
 		if (potentialTypes.size() == 1)
 		{
 			myAvailableFiles.emplace(file, potentialTypes.back());
@@ -292,7 +292,7 @@ void ImguiManager::RefreshAvailableFiles()
 		}
 	}
 
-	auto folders = Crimson::GetAllFoldersInDirectory(myAssetPath);
+	auto folders = GetAllFoldersInDirectory(myAssetPath);
 	for (auto& folder : folders)
 	{
 		myAvailableFiles.emplace(folder, Assets::eAssetType::Folder);
@@ -362,7 +362,7 @@ void ImguiManager::CopyAllDropFiles(const std::string& aTargetFolder)
 		{
 			target += "\\";
 		}
-		target += Crimson::GetFileName(source);
+		target += GetFileName(source);
 
 		if (CopyFileA(source.c_str(), target.c_str(), TRUE) == 0)
 		{
@@ -405,7 +405,7 @@ void ImguiManager::CreateViewport()
 {
 	if (myModelViewer->myIsInPlayMode)
 	{
-		auto color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+		const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, color.y, color.z, 1.f));
 	}
 	if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar))
@@ -444,12 +444,12 @@ void ImguiManager::CreateViewport()
 				}
 			}
 		}
-		const Crimson::Vector2f aspectRatio = { myWindowSize.y / myWindowSize.x, myWindowSize.x / myWindowSize.y };
+		const Vector2f aspectRatio = { myWindowSize.y / myWindowSize.x, myWindowSize.x / myWindowSize.y };
 
 		auto size = ImGui::GetContentRegionAvail();
 
-		const Crimson::Vector2f regionSize = { size.x, size.y };
-		const Crimson::Vector2f regionRatio = { size.y / size.x, size.x / size.y };
+		const Vector2f regionSize = { size.x, size.y };
+		const Vector2f regionRatio = { size.y / size.x, size.x / size.y };
 
 		if (regionRatio.x < aspectRatio.x)
 		{
@@ -460,7 +460,7 @@ void ImguiManager::CreateViewport()
 			size.y = size.x / aspectRatio.y;
 		}
 
-		const Crimson::Vector2f off = (regionSize - Crimson::Vector2f{ size.x, size.y }) * 0.5f;
+		const Vector2f off = (regionSize - Vector2f{ size.x, size.y }) * 0.5f;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off.x);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + off.y);
 
@@ -502,9 +502,9 @@ void ImguiManager::CreateAssetBrowser()
 		{
 			myHasGottenDropfiles = false;
 			std::string target = myAssetBrowserPath;
-			if (Crimson::IsFile(target))
+			if (IsFile(target))
 			{
-				target = Crimson::GetContainingFolder(target);
+				target = GetContainingFolder(target);
 			}
 
 			CopyAllDropFiles(target);
@@ -520,7 +520,7 @@ void ImguiManager::CreateAssetBrowser()
 
 		if (myAssetBrowserPath != myAssetPath)
 		{
-			std::string parentFolder = Crimson::GetContainingFolder(myAssetBrowserPath);
+			std::string parentFolder = GetContainingFolder(myAssetBrowserPath);
 			ImGui::BeginGroup();
 			ImGui::Image(myAssetIcons.at(static_cast<Assets::eAssetType>(-1)).GetSRV().Get(), ImVec2(myAssetBrowserIconSize, myAssetBrowserIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
 			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + myAssetBrowserIconSize);
@@ -543,7 +543,7 @@ void ImguiManager::CreateAssetBrowser()
 		
 
 		bool hasClicked = false;
-		for (auto file : myAssetBrowserFiles)
+		for (auto& file : myAssetBrowserFiles)
 		{
 			if (AssetBrowserButton(file))
 			{
@@ -600,7 +600,7 @@ bool ImguiManager::AssetBrowserButton(const std::string& aPath)
 	ImGui::BeginGroup();
 	ImGui::Image(texture->GetSRV().Get(), ImVec2(myAssetBrowserIconSize, myAssetBrowserIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
 	ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + myAssetBrowserIconSize);
-	ImGui::Text(Crimson::GetFileName(aPath).c_str());
+	ImGui::Text(GetFileName(aPath).c_str());
 	ImGui::PopTextWrapPos();
 	ImGui::EndGroup();
 
@@ -673,7 +673,7 @@ void ImguiManager::CreateContentList()
 void ImguiManager::ContentListButton(const std::string& aPath)
 {
 	auto content = GetFoldersInDirectory(aPath);
-	const bool isOpen = ImGui::TreeNodeEx(Crimson::GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (myContentListPath == aPath ? ImGuiTreeNodeFlags_Selected : 0) | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
+	const bool isOpen = ImGui::TreeNodeEx(GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (myContentListPath == aPath ? ImGuiTreeNodeFlags_Selected : 0) | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
 
 	if (ImGui::IsItemClicked())
 	{
@@ -692,20 +692,20 @@ void ImguiManager::ContentListButton(const std::string& aPath)
 
 void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
 {
-	if (!Crimson::FileExists(aPath))
+	if (!FileExists(aPath))
 	{
 		if (myAvailableFiles.find(aPath) != myAvailableFiles.end())
 		{
 			RefreshAvailableFiles();
 		}
-		myAssetBrowserPath = Crimson::GetContainingFolder(aPath);
+		myAssetBrowserPath = GetContainingFolder(aPath);
 	}
 	else
 	{
 		myAssetBrowserPath = aPath;
 	}
 
-	if (Crimson::IsFolder(myAssetBrowserPath))
+	if (IsFolder(myAssetBrowserPath))
 	{
 		myContentListPath = myAssetBrowserPath;
 		auto folders = GetFoldersInDirectory(myAssetBrowserPath);

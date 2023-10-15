@@ -269,6 +269,23 @@ namespace Crimson
 		return false;
 	}
 
+	bool HasValidExtension(const std::string& aPath, const std::vector<std::string>& anExtensionList)
+	{
+		if (size_t index = aPath.find_last_of('.'); index != std::string::npos)
+		{
+			std::string extension = aPath.substr(index);
+			for (auto& ext : anExtensionList)
+			{
+				if (extension == ext)
+				{
+					return true;
+				}
+			}			
+		}
+
+		return false;
+	}
+
 	std::string GetRelativePath(const std::string& aFullPath)
 	{
 		const std::string& appPath = fs::current_path().string();

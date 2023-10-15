@@ -3,9 +3,9 @@
 #include "resource.h"
 #include "Core/Modelviewer.h"
 #include "Input/InputHandler.h"
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
 
 Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);

@@ -28,6 +28,7 @@ namespace Crimson
 
 	std::string AddExtensionIfMissing(const std::string& aPath, const std::string& anExtension);
 	bool HasValidExtension(const std::string& aPath, const std::string& anExtension);
+	bool HasValidExtension(const std::string& aPath, const std::vector<std::string>& anExtensionList);
 
 	std::string GetRelativePath(const std::string& aFullPath);
 	std::string GetFullPath(const std::string& aRelativePath);

@@ -64,7 +64,7 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 		return;
 	}
 
-	std::fstream fileStream(path, std::ios::out);
+	std::fstream fileStream(path, std::ios::out | std::ios::trunc);
 	if (fileStream)
 	{
 		Json::Value material = aMaterial->ToJson();

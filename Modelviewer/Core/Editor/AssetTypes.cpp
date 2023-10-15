@@ -77,7 +77,7 @@ std::string Assets::GetAssetPath(eAssetType aType)
 	}
 	case Assets::eAssetType::Scene:
 	{
-		return ModelViewer::GetScenePath();
+		return AssetManager::GetScenePath();
 		break;
 	}
 	default:
@@ -148,7 +148,7 @@ bool Assets::IsType(eAssetType aType, std::string anAsset)
 	}
 	case Assets::eAssetType::Scene:
 	{
-		if (extension == ModelViewer::GetSceneExtension())
+		if (extension == AssetManager::GetSceneExtension() || extension == AssetManager::GetSceneBinaryExtension())
 		{
 			return true;
 		}
@@ -210,7 +210,7 @@ std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anEx
 		result.emplace_back(eAssetType::Texture);
 	}
 
-	if (extension == ModelViewer::GetSceneExtension())
+	if (extension == AssetManager::GetSceneExtension() || extension == AssetManager::GetSceneBinaryExtension())
 	{
 		result.emplace_back(eAssetType::Scene);
 	}

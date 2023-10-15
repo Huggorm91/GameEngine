@@ -954,22 +954,37 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 			// Bloom
-			//RHI::SetBlendState(myAlphaBlend);
 			RHI::SetPixelShader(&myShaders.BloomPS);
 			RHI::SetRenderTarget(&myTextures.IntermediateB, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, &myTextures.HalfScenebuffer);
 			RHI::Draw(4);
 
+#ifndef _RETAIL
+			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+#else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+#endif // !_RETAIL
+			
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
 			RHI::EndEvent();
 		}
 		else
 		{
+#ifndef _RETAIL
+			// Copy Scenebuffer onto IntermediateA in order to be able to Gamma correct onto Scenebuffer
+			RHI::SetPixelShader(&myShaders.CopyPS);
+			RHI::SetRenderTarget(&myTextures.IntermediateA, nullptr);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
+			RHI::Draw(4);
+
+			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateA);
+#else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
+#endif // !_RETAIL			
 		}
 
 		// Gamma correction
@@ -978,21 +993,15 @@ void GraphicsEngine::RenderFrame()
 		RHI::Draw(4);
 	}
 #ifndef _RETAIL
-	else
-	{
-		RHI::SetPixelShader(&myShaders.CopyPS);
-		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
-		RHI::Draw(4);
-	}
+	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+#else
+	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
 
-	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 	myLineDrawer.Render();
 
 #ifndef _RETAIL
-	// Create copy of backbuffer for Imgui
-	RHI::Context->CopyResource(myTextures.Scenebuffer.GetResource().Get(), myTextures.BackBuffer.GetResource().Get());
+	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
 }
 

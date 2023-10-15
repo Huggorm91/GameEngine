@@ -1,7 +1,7 @@
 #include "GraphicsEngine.pch.h"
 #include "Color.h"
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
 
 std::unordered_map<std::string, Crimson::Vector4f> ColorManager::myColors{};
 

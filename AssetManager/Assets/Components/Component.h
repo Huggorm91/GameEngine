@@ -1,9 +1,10 @@
 #pragma once
 #include "Container/Blackboard.hpp"
 #include "Json/JsonVector.hpp"
+#include "../Binary.h"
 #include "ComponentType.h"
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
 
 // A template to build new components can be found in ComponentTemplate.h
 
@@ -45,6 +46,9 @@ public:
 	virtual inline std::string ToString() const;
 	virtual Json::Value ToJson() const;
 	virtual inline const Component* GetTypePointer() const;
+
+	virtual void Serialize(std::ostream& aStream) const;
+	virtual void Deserialize(std::istream& aStream);
 
 	// Only call before creating another Component!
 	void MarkAsPrefabComponent(unsigned anID = 0);

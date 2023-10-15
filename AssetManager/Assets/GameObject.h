@@ -1,7 +1,6 @@
 #pragma once
 #include "Components/Component.h"
 #include "Components/Transform.h"
-#include <fstream>
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
@@ -90,7 +89,10 @@ public:
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
-	//void ToBinary(std::ofstream& aStream) const;
+
+	void Serialize(std::ostream& aStream) const;
+	// Returns parent ID. Has no parent if 0.
+	unsigned Deserialize(std::istream& aStream);
 
 	// Only call before creating another GameObject!
 	void MarkAsPrefab();

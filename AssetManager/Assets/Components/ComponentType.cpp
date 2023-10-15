@@ -172,6 +172,69 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 }
 
+void LoadComponent(std::istream& aStream, GameObject& aParent)
+{
+	ComponentType type;
+	aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
+
+	switch (type)
+	{
+	case ComponentType::Mesh:
+	{
+		auto& mesh = aParent.AddComponent<MeshComponent>();
+		mesh.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::AnimatedMesh:
+	{
+		auto& mesh = aParent.AddComponent<AnimatedMeshComponent>();
+		mesh.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Directionallight:
+	{
+		auto& light = aParent.AddComponent<DirectionallightComponent>();
+		light.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Pointlight:
+	{
+		auto& light = aParent.AddComponent<PointlightComponent>();
+		light.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Spotlight:
+	{
+		auto& light = aParent.AddComponent<SpotlightComponent>();
+		light.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::DebugDraw:
+	{
+		auto& debug = aParent.AddComponent<DebugDrawComponent>();
+		debug.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::PerspectiveCamera:
+	{
+		auto& camera = aParent.AddComponent<PerspectiveCameraComponent>();
+		camera.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::ParticleEmitter:
+	{
+		auto& emitter = aParent.AddComponent<ParticleEmitterComponent>();
+		emitter.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Count:
+		break;
+	default:
+		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		break;
+	}
+}
+
 std::string ComponentTypeToString(const ComponentType aType)
 {
 	switch (aType)

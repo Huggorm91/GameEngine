@@ -109,7 +109,6 @@ void PrefabManager::SaveAllPrefabs() const
 
 GameObject* PrefabManager::LoadPrefab(const std::string& aPath, bool aShouldLogErrors)
 {
-
 	std::string path = ValidatePath(aPath);
 	if (path.empty())
 	{
@@ -158,7 +157,7 @@ void PrefabManager::SavePrefabToFile(const std::string& aPath, const GameObject&
 		return;
 	}
 
-	std::fstream fileStream(path, std::ios::out);
+	std::fstream fileStream(path, std::ios::out | std::ios::trunc);
 	if (fileStream)
 	{
 		Json::Value prefab = aPrefab.ToJson();

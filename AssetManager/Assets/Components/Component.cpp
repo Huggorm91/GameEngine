@@ -137,6 +137,30 @@ const Component* Component::GetTypePointer() const
 	return this;
 }
 
+void Component::Serialize(std::ostream& aStream) const
+{
+	Binary::eType type = Binary::Component;
+
+	struct ComponentData
+	{
+		ComponentType Type;
+		unsigned ID;
+		bool IsActive;
+	}data;
+
+	data.Type = myType;
+	data.ID = myID;
+	data.IsActive = myIsActive;
+	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
+	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
+}
+
+void Component::Deserialize(std::istream& aStream)
+{
+	aStream.read(reinterpret_cast<char*>(const_cast<unsigned*>(&myID)), sizeof(myID));
+	aStream.read(reinterpret_cast<char*>(&myIsActive), sizeof(myIsActive));
+}
+
 void Component::MarkAsPrefabComponent(unsigned anID)
 {
 	if (myID != anID)

@@ -8,6 +8,7 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/Assets/Binary.h"
 #include "File/DirectoryFunctions.h"
 
 #include "Time/Timer.h"
@@ -15,9 +16,9 @@
 
 #include <filesystem>
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false), myIsMaximized(false)
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers()
 #endif // _RETAIL
 {
 }
@@ -93,7 +94,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 #ifndef _RETAIL
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
-	myImguiManager.SetActiveObjects(&myGameObjects);
+	myImguiManager.SetActiveObjects(&myScene.GameObjects);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
@@ -226,7 +227,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 		command.Execute();
 	}
 
-	return myGameObjects.at(newObject->GetID());
+	return myScene.GameObjects.at(newObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
@@ -241,7 +242,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 		command.Execute();
 	}
 
-	return myGameObjects.at(anObject->GetID());
+	return myScene.GameObjects.at(anObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
@@ -256,14 +257,14 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 		EditCmd_AddGameObject command(std::move(anObject));
 		command.Execute();
 	}
-	return myGameObjects.at(id);
+	return myScene.GameObjects.at(id);
 }
 
 std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		return iter->second;
 	}
@@ -274,7 +275,7 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
 		return true;
@@ -285,24 +286,24 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 GameObject& ModelViewer::AddGameObject()
 {
 	GameObject newObject;
-	auto iter = myGameObjects.emplace(newobject->GetID(), std::move(newObject));
+	auto iter = myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject));
 	return iter.first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
 {
 	GameObject newObject(anObject);
-	return myGameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
+	return myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
 {
-	return myGameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
+	return myScene.GameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
 }
 
 GameObject* ModelViewer::GetGameObject(unsigned anID)
 {
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		return &iter->second;
 	}
@@ -311,9 +312,9 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 
 bool ModelViewer::RemoveGameObject(unsigned anID)
 {
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
-		myGameObjects.erase(iter);
+		myScene.GameObjects.erase(iter);
 		return true;
 	}
 	return false;
@@ -385,85 +386,21 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
-	std::string path = aPath;
-	if (!Crimson::HasValidExtension(aPath, GetSceneExtension()))
-	{
-		path += GetSceneExtension();
-	}
-	path = Crimson::CreateValidPath(path, GetScenePath());
-	if (path.empty())
-	{
-		myLogger.Err("Could not create filepath: " + aPath);
-	}
-	Json::Value scene;
-	scene["GameObjectIDCount"] = GameObject::GetIDCount();
-	scene["GameObjects"] = Json::arrayValue;
-
-	int i = 0;
-	for (auto& [id, object] : myGameObjects)
-	{
-		scene["GameObjects"][i] = object->ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
-
-		i++;
-	}
-
-	std::fstream fileStream(path, std::ios::out);
-	if (fileStream)
-	{
-		Json::StreamWriterBuilder builder;
-		builder["commentStyle"] = "All";
-		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-		writer->write(scene, &fileStream);
-		fileStream.flush();
-	}
-	else
-	{
-		myLogger.Err("Could not open file at: " + aPath);
-	}
-	myLogger.Log("Successfully saved scene to: " + path);
-	fileStream.close();
+	AssetManager::SaveAsset(myScene, aPath);
 }
 
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = Crimson::GetValidPath(path, GetScenePath());
-	if (path.empty())
-	{
-		myLogger.Err("Could not find filepath: " + aPath);
-	}
-
-	Json::Value json;
-	std::fstream fileStream(path, std::ios::in);
-	if (fileStream)
-	{
-		fileStream >> json;
-	}
-	else
-	{
-		myLogger.Err("Could not open file at: " + aPath);
-	}
-	fileStream.close();
-
 	myLoadedScene = aPath;
-	SetGameObjectIDCount(json["GameObjectIDCount"].asUInt());
-
-	std::unordered_multimap<unsigned, unsigned> childlist;
-	for (auto& object : json["GameObjects"])
+#ifndef _RETAIL
+	myScene = AssetManager::GetAsset<EditorScene>(aPath);
+	for (auto& [id, object] : myScene.GameObjects)
 	{
-		auto& newObject = AddGameObject(object, false);
-		unsigned parentID = GameObject::GetParentID(object);
-		if (parentID != 0)
-		{
-			childlist.emplace(parentID, newObject->GetID());
-		}
+		myImguiManager.AddGameObject(object.get());
 	}
-
-	for (auto& [parentID, childID] : childlist)
-	{
-		GetGameObject(parentID)->AddChild(GetGameObject(childID).get());
-	}
+#else
+	myScene = AssetManager::GetAsset<Scene>(aPath);
+#endif // !_RETAIL
 }
 
 void ModelViewer::Init()
@@ -502,20 +439,20 @@ void ModelViewer::UpdateScene()
 #ifndef _RETAIL
 	if (myIsInPlayMode)
 	{
-		for (auto& [id, object] : myPlayModeGameObjects)
+		for (auto& [id, object] : myPlayScene.GameObjects)
 		{
-			object->Update();
+			object.Update();
 		}
 	}
 	else
 	{
-		for (auto& [id, object] : myGameObjects)
+		for (auto& [id, object] : myScene.GameObjects)
 		{
 			object->Render();
 		}
 	}
 #else
-	for (auto& [id, object] : myGameObjects)
+	for (auto& [id, object] : myScene.GameObjects)
 	{
 		object.Update();
 	}
@@ -526,6 +463,11 @@ void ModelViewer::UpdateScene()
 #ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
+	if (myIsInPlayMode)
+	{
+		return;
+	}
+
 	// Potential future problem with using infinite Undo-stack
 	if (myRedoCommands.size() > 0)
 	{
@@ -565,18 +507,21 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 		myIsInPlayMode = !myIsInPlayMode;
 		if (myIsInPlayMode)
 		{
-			for (auto& [id, object] : myGameObjects)
+			myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
+			for (auto& [id, object] : myScene.GameObjects)
 			{
-				auto copy = std::make_shared<GameObject>(*object);
-				copy->CopyIDsOf(*object, true);
-				myPlayModeGameObjects.emplace(id, copy);
+				auto copy = *object;
+				copy.CopyIDsOf(*object, true);
+				myPlayScene.GameObjects.emplace(id, copy);
+				myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
 			}
-			myImguiManager.SetActiveObjects(&myPlayModeGameObjects);
+			myImguiManager.SetActiveObjects(&myPlayScenePointers);
 		}
 		else
 		{
-			myImguiManager.SetActiveObjects(&myGameObjects);
-			myPlayModeGameObjects.clear();
+			myImguiManager.SetActiveObjects(&myScene.GameObjects);
+			myPlayScenePointers.clear();
+			myPlayScene = Scene();
 		}
 	}
 
