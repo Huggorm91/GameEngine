@@ -1,0 +1,52 @@
+#pragma once
+
+namespace Crimson
+{
+	enum class eMessageType : int
+	{
+		PlayerDied,
+		PlayerLooseHealth,
+		PlayerAddHealth,
+		PlayerKnockBack,
+		EnemyCreated,
+		EnemyDied,
+		NextLevel,
+		LevelLoaded,
+		SoundEvent,
+		GameOver,
+		AnimationInterval,
+		AnimationDone,
+		PlayerCrawl,
+		PlayerWalk,
+		PlayerRun,
+		PlayerReleasedGrab,
+		PlayerStartedGrabbing,
+		Paused,
+		UnPaused,
+		ControllerActivated,
+		ChangeCameraOffset,
+		ChangeBorderSize,
+		Credits,
+		PlayerLeftLadder,
+		PlayerRespawn,
+		Ending,
+		EnemyDespawn,
+		EnemyAttack,
+		EnemyPassive,
+		EnemyDefault,
+		EnemyVentilation,
+		PlayerOnLadder,
+		PlayerInput,
+		PlayerAttack,
+		ActivatePowerup,
+		HealthPickup,
+		StopAllSounds,
+		OutroSequenceGood,
+		OutroSequenceBad,
+		CreateHealthPickup,
+		StartBoss,
+		GoodEnding,
+		BadEnding,
+		OpenDoor
+	};
+}

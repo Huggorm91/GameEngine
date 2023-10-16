@@ -1,0 +1,14 @@
+{
+	"AmbientIntensity" : 1.0,
+	"CameraMouseSensitivity" : 1.0,
+	"CameraRotationSpeed" : 2.0,
+	"CameraSpeed" : 200.0,
+	"ShadowBias" : 0.00060000002849847078,
+	"StartMaximized" : true,
+	"WindowSize" : 
+	{
+		"X" : 1980,
+		"Y" : 1080
+	},
+	"WindowTitle" : "ModelViewer"
+}
