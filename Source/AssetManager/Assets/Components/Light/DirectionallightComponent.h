@@ -17,6 +17,7 @@ public:
 
 	void Init(const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aColor = { 1.f, 1.f, 1.f }, float anIntensity = 1.f, bool aCastShadows = true);
 	void Update() override;
+	void Render() override;
 
 	void SetLightDirection(const Crimson::Vector3f& aDirection);
 	void SeColor(const Crimson::Vector3f& aColor);

@@ -5,22 +5,66 @@
 #include "Commands/EditCmd_RemoveGameobject.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "GraphicsEngine/InterOp/Helpers.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/Assets/Binary.h"
 #include "File/DirectoryFunctions.h"
 
 #include "Time/Timer.h"
 #include "Input/InputMapper.h"
 #include "Json\jsonCpp\json.h"
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myGameObjects()
+
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers()
 #endif // _RETAIL
 {
+}
+
+void ModelViewer::HandleCrash(const std::exception& anException)
+{
+	// Center console and bring it to the front
+	{
+		HWND consoleWindow = GetConsoleWindow();
+		RECT consolePos;
+		GetWindowRect(consoleWindow, &consolePos);
+		consolePos.right = consolePos.right - consolePos.left;
+		consolePos.bottom = consolePos.bottom - consolePos.top;
+
+		RECT windowRect;
+		SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
+
+		windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (consolePos.right * 0.5f));
+		windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (consolePos.bottom * 0.5f));
+
+		ShowWindow(myMainWindowHandle, SW_HIDE);
+		SetWindowPos(consoleWindow, HWND_TOP, windowRect.left, windowRect.top, consolePos.right, consolePos.bottom, 0);
+		SetForegroundWindow(consoleWindow);
+	}
+
+	// Log crash
+	myLogger.Err("Program has crashed!");
+	myLogger.Warn("Writing exception to log file!");
+	myLogger.SetPrintToFile(true, "Logs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
+	myLogger.LogException(anException);
+
+	// Save current scene if possible
+	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
+	try
+	{
+		SaveScene("..\\" + saveName);
+		myLogger.Succ("Saved current scene to: " + saveName);
+	}
+	catch (...)
+	{
+		myLogger.Err("Failed to save current scene to: " + saveName);
+	}
+
+	// Leave console up to let user read information
+	system("PAUSE");
 }
 
 bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
@@ -28,6 +72,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myLogger = Logger::Create("ModelViewer");
 	myModuleHandle = aHInstance;
 	LoadState();
+
+	myLogger.Log(Crimson::GetAppPath());
 
 	constexpr LPCWSTR windowClassName = L"ModelViewerMainWindow";
 
@@ -39,7 +85,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpszClassName = windowClassName;
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle{ Helpers::string_cast<std::wstring>(myApplicationState.WindowTitle) };
+	std::wstring stdTitle{ Crimson::ToWString(myApplicationState.WindowTitle) };
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
@@ -51,6 +97,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 		flags = WS_OVERLAPPEDWINDOW | WS_POPUP;
 	}
+	myIsMaximized = myApplicationState.StartMaximized;
 
 	// Get center of screen
 	RECT windowRect;
@@ -81,25 +128,27 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	// TODO: Load all settings from json
 	auto& input = *Crimson::InputMapper::GetInstance();
 	input.Init(myMainWindowHandle);
-	AssetManager::Init();
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, true);
-#endif // _RETAIL	
-	//myCamera.Init({ static_cast<float>(windowSize.cx), static_cast<float>(windowSize.cy) });
+#endif // _RETAIL
 	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
+	AssetManager::Init();
 	AssetManager::GeneratePrimitives();
 
 #ifndef _RETAIL
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
+	myImguiManager.SetActiveObjects(&myScene.GameObjects);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Pause);
 
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
@@ -119,7 +168,6 @@ int ModelViewer::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	//LoadScene("Default");
 	Init();
 	Crimson::Timer::Init();
 
@@ -140,7 +188,20 @@ int ModelViewer::Run()
 		// The frame update for the game does NOT happen inside the PeekMessage loop.
 		// This would cause the game to only update if there are messages and also run
 		// the update several times per frame (once for each message).
-		Update();
+		try
+		{
+			Update();
+		}
+		catch (const std::exception& anException)
+		{
+			isRunning = false;
+			HandleCrash(anException);
+		}
+		catch (...)
+		{
+			isRunning = false;
+			HandleCrash(std::invalid_argument("Caught unknown Error!"));
+		}
 	}
 
 #ifndef _RETAIL
@@ -153,7 +214,16 @@ int ModelViewer::Run()
 #ifndef _RETAIL
 void ModelViewer::SetDropFile(HDROP aHandle)
 {
-	myImguiManager.SetDropFile(aHandle);
+	try
+	{
+		myImguiManager.SetDropFile(aHandle);
+	}
+	catch (const std::exception& anException)
+	{
+		myLogger.Err("Failed to accept dropped files!");
+		myLogger.LogException(anException);
+		myImguiManager.ReleaseDropFile();
+	}
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
@@ -169,7 +239,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 		command.Execute();
 	}
 
-	return myGameObjects.at(newObject->GetID());
+	return myScene.GameObjects.at(newObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
@@ -183,8 +253,8 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 		EditCmd_AddGameObject command(anObject);
 		command.Execute();
 	}
-	
-	return myGameObjects.at(anObject->GetID());
+
+	return myScene.GameObjects.at(anObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
@@ -198,15 +268,15 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 	{
 		EditCmd_AddGameObject command(std::move(anObject));
 		command.Execute();
-	}	
-	return myGameObjects.at(id);
+	}
+	return myScene.GameObjects.at(id);
 }
 
 std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		return iter->second;
 	}
@@ -217,7 +287,7 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
 		return true;
@@ -228,24 +298,24 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 GameObject& ModelViewer::AddGameObject()
 {
 	GameObject newObject;
-	auto iter = myGameObjects.emplace(newobject->GetID(), std::move(newObject));
+	auto iter = myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject));
 	return iter.first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
 {
 	GameObject newObject(anObject);
-	return myGameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
+	return myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
 {
-	return myGameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
+	return myScene.GameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
 }
 
 GameObject* ModelViewer::GetGameObject(unsigned anID)
 {
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
 		return &iter->second;
 	}
@@ -254,9 +324,9 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 
 bool ModelViewer::RemoveGameObject(unsigned anID)
 {
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
-		myGameObjects.erase(iter);
+		myScene.GameObjects.erase(iter);
 		return true;
 	}
 	return false;
@@ -322,80 +392,27 @@ void ModelViewer::HideSplashScreen() const
 	{
 		ShowWindow(myMainWindowHandle, SW_SHOW);
 	}
-	
+
 	SetForegroundWindow(myMainWindowHandle);
 }
 
 void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
 {
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = Crimson::CreateValidPath(path, GetScenePath());
-	if (path.empty())
-	{
-		myLogger.Err("Could not create filepath: " + aPath);
-	}
-	Json::Value scene;
-	scene["GameObjectIDCount"] = GameObject::GetIDCount();
-	scene["GameObjects"] = Json::arrayValue;
-
-	int i = 0;
-	for (auto& [id, object] : myGameObjects)
-	{
-#ifndef _RETAIL
-		scene["GameObjects"][i] = object->ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
-#else
-		scene["GameObjects"][i] = object->ToJson();
-		scene["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(object->GetID()), Json::commentBefore);
-#endif // !_RETAIL
-
-		i++;
-	}
-
-	std::fstream fileStream(path, std::ios::out);
-	if (fileStream)
-	{
-		Json::StreamWriterBuilder builder;
-		builder["commentStyle"] = "All";
-		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-		writer->write(scene, &fileStream);
-		fileStream.flush();
-	}
-	else
-	{
-		myLogger.Err("Could not open file at: " + aPath);
-	}
-	myLogger.Log("Successfully saved scene to: " + path);
-	fileStream.close();
+	AssetManager::SaveAsset(myScene, aPath, false);
 }
 
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetSceneExtension());
-	path = Crimson::GetValidPath(path, GetScenePath());
-	if (path.empty())
-	{
-		myLogger.Err("Could not find filepath: " + aPath);
-	}
-
-	Json::Value json;
-	std::fstream fileStream(path, std::ios::in);
-	if (fileStream)
-	{
-		fileStream >> json;
-	}
-	else
-	{
-		myLogger.Err("Could not open file at: " + aPath);
-	}
-	fileStream.close();
-
 	myLoadedScene = aPath;
-	SetGameObjectIDCount(json["GameObjectIDCount"].asUInt());
-	for (auto& object : json["GameObjects"])
+#ifndef _RETAIL
+	myScene = AssetManager::GetAsset<EditorScene>(aPath);
+	for (auto& [id, object] : myScene.GameObjects)
 	{
-		AddGameObject(object, false);
+		myImguiManager.AddGameObject(object.get());
 	}
+#else
+	myScene = AssetManager::GetAsset<Scene>(aPath);
+#endif // !_RETAIL
 }
 
 void ModelViewer::Init()
@@ -403,18 +420,6 @@ void ModelViewer::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
-
-	/*{
-		auto& colorChecker = AddGameObject(AssetManager::GetAsset<GameObject>("SM_Color_Checker"), false);
-		colorChecker->SetPosition({ 0.f, 80.f, -500.f });
-		colorChecker->SetRotation({ -90.f, 0.f, 0.f });
-		colorChecker->SetScale({ 2.f, 2.f, 2.f });
-		colorChecker->SetName("ColorChecker");
-		auto& mesh = colorChecker->GetComponent<MeshComponent>();
-		mesh.SetAlbedoTexture(AssetManager::GetAsset<Texture*>("Albedo/T_Color_Checker_C"));
-		mesh.SetNormalTexture(AssetManager::GetAsset<Texture*>("Normal/T_Color_Checker_N"));
-		mesh.SetMaterialTexture(AssetManager::GetAsset<Texture*>("Material/T_Color_Checker_M"));
-	}*/
 }
 
 void ModelViewer::Update()
@@ -439,23 +444,43 @@ void ModelViewer::Update()
 #endif // _RETAIL
 
 	engine.EndFrame();
+	throw std::runtime_error("test");
 }
 
 void ModelViewer::UpdateScene()
 {
-	for (auto& [id, object] : myGameObjects)
-	{
 #ifndef _RETAIL
-		object->Update();
-#else
-		object->Update();
-#endif // !_RETAIL
+	if (myIsInPlayMode)
+	{
+		for (auto& [id, object] : myPlayScene.GameObjects)
+		{
+			object.Update();
+		}
 	}
+	else
+	{
+		for (auto& [id, object] : myScene.GameObjects)
+		{
+			object->Render();
+		}
+	}
+#else
+	for (auto& [id, object] : myScene.GameObjects)
+	{
+		object.Update();
+	}
+#endif // !_RETAIL
+
 }
 
 #ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
+	if (myIsInPlayMode)
+	{
+		return;
+	}
+
 	// Potential future problem with using infinite Undo-stack
 	if (myRedoCommands.size() > 0)
 	{
@@ -465,7 +490,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 	if (myUndoCommands.empty() || !myUndoCommands.back()->Merge(aCommand.get()))
 	{
 		myUndoCommands.emplace_back(aCommand);
-	}	
+	}
 }
 
 void ModelViewer::UndoCommand()
@@ -475,7 +500,7 @@ void ModelViewer::UndoCommand()
 		myUndoCommands.back()->Undo();
 		myRedoCommands.emplace_back(myUndoCommands.back());
 		myUndoCommands.pop_back();
-	}	
+	}
 }
 
 void ModelViewer::RedoCommand()
@@ -485,11 +510,34 @@ void ModelViewer::RedoCommand()
 		myRedoCommands.back()->Execute();
 		myUndoCommands.emplace_back(myRedoCommands.back());
 		myRedoCommands.pop_back();
-	}	
+	}
 }
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
+	if (aKey == Crimson::eKey::Pause)
+	{
+		myIsInPlayMode = !myIsInPlayMode;
+		if (myIsInPlayMode)
+		{
+			myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
+			for (auto& [id, object] : myScene.GameObjects)
+			{
+				auto copy = *object;
+				copy.CopyIDsOf(*object, true);
+				myPlayScene.GameObjects.emplace(id, copy);
+				myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
+			}
+			myImguiManager.SetActiveObjects(&myPlayScenePointers);
+		}
+		else
+		{
+			myImguiManager.SetActiveObjects(&myScene.GameObjects);
+			myPlayScenePointers.clear();
+			myPlayScene = Scene();
+		}
+	}
+
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
@@ -527,6 +575,10 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 
 void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 {
+	if (myIsInPlayMode)
+	{
+		return;
+	}
 	if (aValue < 1.5f)
 	{
 		return;
@@ -536,7 +588,7 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 	{
 		UndoCommand();
 	}
-	else if(anAction == Crimson::eInputAction::Redo)
+	else if (anAction == Crimson::eInputAction::Redo)
 	{
 		RedoCommand();
 	}

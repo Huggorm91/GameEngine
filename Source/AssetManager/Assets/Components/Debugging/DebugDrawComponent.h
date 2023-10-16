@@ -15,7 +15,7 @@ public:
 	DebugDrawComponent& operator=(const DebugDrawComponent& aLight) = default;
 	DebugDrawComponent& operator=(DebugDrawComponent&& aLight) = default;
 
-	void Update() override;
+	void TransformHasChanged() const override;
 
 	void SetActive(bool aIsActive) override;
 	void ToogleActive() override;

@@ -63,6 +63,15 @@ void AnimatedMeshComponent::Update()
 		}
 	}
 
+	Render();
+}
+
+void AnimatedMeshComponent::Render()
+{
+	if (!myIsActive)
+	{
+		return;
+	}
 	if (myRenderShadow)
 	{
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));

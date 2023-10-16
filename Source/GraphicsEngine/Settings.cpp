@@ -6,21 +6,27 @@
 
 using namespace Crimson;
 
-Settings::Settings(const Json::Value& aJson)
+Settings::Settings(const Json::Value& aJson, const std::string& anAssetPath)
 {
 	const std::string& textureExtension = ".dds";
-	DefaultMaterialTexture = AddExtensionIfMissing(aJson["MaterialTexture"].asString(), textureExtension);	
-	DefaultNormalTexture = AddExtensionIfMissing(aJson["NormalTexture"].asString(), textureExtension);
-	DefaultMissingTexture = AddExtensionIfMissing(aJson["MissingTexture"].asString(), textureExtension);
-	DefaultFXTexture = AddExtensionIfMissing(aJson["FXTexture"].asString(), textureExtension);
-	DefaultCubeMap = AddExtensionIfMissing(aJson["CubeMap"].asString(), textureExtension);
+	DefaultMaterialTexture = anAssetPath + AddExtensionIfMissing(aJson["MaterialTexture"].asString(), textureExtension);
+	DefaultNormalTexture = anAssetPath + AddExtensionIfMissing(aJson["NormalTexture"].asString(), textureExtension);
+	DefaultMissingTexture = anAssetPath + AddExtensionIfMissing(aJson["MissingTexture"].asString(), textureExtension);
+	DefaultFXTexture = anAssetPath + AddExtensionIfMissing(aJson["FXTexture"].asString(), textureExtension);
+	DefaultCubeMap = anAssetPath + AddExtensionIfMissing(aJson["CubeMap"].asString(), textureExtension);
 
-	DefaultMaterial = AddExtensionIfMissing(aJson["DefaultMaterial"].asString(), ".mat");
+	DefaultMaterial = anAssetPath + AddExtensionIfMissing(aJson["DefaultMaterial"].asString(), ".mat");
 
 	BackgroundColor = static_cast<Crimson::Vector4f>(aJson["BackgroundColor"]);
 	ToneMap = aJson["ToneMap"].asInt();
 
-	std::string path = AssetManager::GetShaderPath();
+#ifdef _DEBUG
+	std::string path = anAssetPath + "Debug\\";
+#elif _RELEASE
+	std::string path = anAssetPath + "Release\\";
+#elif _RETAIL
+	std::string path = anAssetPath + "Retail\\";
+#endif // _DEBUG 
 
 	const std::string& shaderExtension = ".cso";	
 	LuminancePS = AddExtensionIfMissing(path + aJson["LuminancePSShader"].asString(), shaderExtension);

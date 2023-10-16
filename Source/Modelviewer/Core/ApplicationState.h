@@ -1,6 +1,4 @@
 ﻿#pragma once
-#include <string>
-#include "Math\Vector2.hpp"
 namespace Json{ class Value; }
 
 struct ApplicationState

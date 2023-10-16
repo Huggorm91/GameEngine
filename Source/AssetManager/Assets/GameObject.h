@@ -1,7 +1,6 @@
 #pragma once
 #include "Components/Component.h"
 #include "Components/Transform.h"
-#include <fstream>
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
@@ -21,6 +20,7 @@ public:
 	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
 	void Update();
+	void Render();
 
 	template<class T>
 	T& AddComponent();
@@ -72,38 +72,37 @@ public:
 
 	const GameObject* GetParent() const;
 	GameObject* GetParent();
-
 	void RemoveParent();
-#ifndef _RETAIL
-	void AddChild(const std::shared_ptr<GameObject>& anObject);
-	void RemoveChild(const std::shared_ptr<GameObject>& anObject);
 
-	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const;
-	std::vector<std::shared_ptr<GameObject>>& GetChildren();
-#else
 	void AddChild(GameObject* anObject);
 	void RemoveChild(GameObject* anObject);
 
 	const std::vector<GameObject*>& GetChildren() const;
 	std::vector<GameObject*>& GetChildren();
-#endif // !_RETAIL
+
 
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
 
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
-	const unsigned& GetIDRef() const;
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
-	//void ToBinary(std::ofstream& aStream) const;
+
+	void Serialize(std::ostream& aStream) const;
+	// Returns parent ID. Has no parent if 0.
+	unsigned Deserialize(std::istream& aStream);
 
 	// Only call before creating another GameObject!
 	void MarkAsPrefab();
 	// Only call before creating another GameObject!
 	void MarkAsPrefab(unsigned anID);
 
+	// Excpects GameObjects to already be copies of eachother.
+	void CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount = false);
+
+	static unsigned GetParentID(const Json::Value& aJson);
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
@@ -126,20 +125,25 @@ private:
 	Transform myTransform;
 
 #ifndef _RETAIL
-	std::vector<std::shared_ptr<GameObject>> myChildren;
 	std::vector<const Component*> myDebugPointers;
-#else
-	std::vector<GameObject*> myChildren;
 #endif // !_RETAIL
+
+	std::vector<GameObject*> myChildren;
 	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
 	Crimson::Blackboard<unsigned> myComponents;
 
-	void SetParent(GameObject*);
+	void SetParent(GameObject* anObject);
 
 	void RemoveParentInternal();
 	void RemoveFromParent();
 
 	void TransformHasChanged();
+
+	bool IsRelated(GameObject* anObject);
+	bool IsChildRecursive(GameObject* anObject);
+	bool IsChild(GameObject* anObject);
+	bool IsParentRecursive(GameObject* anObject);
+	bool IsParent(GameObject* anObject);
 };
 
 template<class T>

@@ -1,9 +1,9 @@
 #include "GraphicsEngine.pch.h"
 #include "Material.h"
 #include "../GraphicsEngine.h"
-#include "../InterOp/Helpers.h"
 #include "Json/JsonVector.hpp"
 #include "AssetManager/AssetManager.h"
+#include "File/DirectoryFunctions.h"
 
 Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr)
 {
@@ -216,7 +216,7 @@ Json::Value Material::ToJson() const
 		Json::Value texture;
 		if (binding.texture)
 		{
-			texture["Texture"] = Helpers::string_cast<std::string>(binding.texture->GetName());
+			texture["Texture"] = Crimson::ToString(binding.texture->GetName());
 		}
 		else
 		{
@@ -229,9 +229,7 @@ Json::Value Material::ToJson() const
 
 	if (myVertexShader)
 	{
-		std::string path = Helpers::string_cast<std::string>(myVertexShader->GetName());
-		size_t lastSlash = path.find_last_of('/') + 1;
-		result["VertexShader"] = path.substr(lastSlash);
+		result["VertexShader"] = Crimson::GetFileName(Crimson::ToString(myVertexShader->GetName()));
 
 		const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
 		result["VertexShader"].setComment(comment, Json::commentAfterOnSameLine);
@@ -242,9 +240,7 @@ Json::Value Material::ToJson() const
 	}
 	if (myPixelShader)
 	{
-		std::string path = Helpers::string_cast<std::string>(myPixelShader->GetName());
-		size_t lastSlash = path.find_last_of('/') + 1;
-		result["PixelShader"] = path.substr(lastSlash);
+		result["PixelShader"] = Crimson::GetFileName(Crimson::ToString(myPixelShader->GetName()));
 
 		const std::string& comment = "// Only use 'ShaderName.cso' and not full path";
 		result["PixelShader"].setComment(comment, Json::commentAfterOnSameLine);
@@ -256,7 +252,7 @@ Json::Value Material::ToJson() const
 
 	if (myAlbedoTexture)
 	{
-		result["AlbedoTexture"] = Helpers::string_cast<std::string>(myAlbedoTexture->GetName());
+		result["AlbedoTexture"] = Crimson::ToString(myAlbedoTexture->GetName());
 	}
 	else
 	{
@@ -264,7 +260,7 @@ Json::Value Material::ToJson() const
 	}
 	if (myNormalTexture)
 	{
-		result["NormalTexture"] = Helpers::string_cast<std::string>(myNormalTexture->GetName());
+		result["NormalTexture"] = Crimson::ToString(myNormalTexture->GetName());
 	}
 	else
 	{
@@ -272,7 +268,7 @@ Json::Value Material::ToJson() const
 	}
 	if (myMaterialTexture)
 	{
-		result["MaterialTexture"] = Helpers::string_cast<std::string>(myMaterialTexture->GetName());
+		result["MaterialTexture"] = Crimson::ToString(myMaterialTexture->GetName());
 	}
 	else
 	{
@@ -280,7 +276,7 @@ Json::Value Material::ToJson() const
 	}
 	if (myFXTexture)
 	{
-		result["FXTexture"] = Helpers::string_cast<std::string>(myFXTexture->GetName());
+		result["FXTexture"] = Crimson::ToString(myFXTexture->GetName());
 	}
 	else
 	{

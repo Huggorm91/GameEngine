@@ -81,101 +81,149 @@ namespace Crimson
 		return TRUE;
 	}
 
-	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath)
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
 			if (file.path().has_extension())
 			{
-				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				const std::string& relativePath = fs::relative(file.path(), dirPath).string();
 				result.emplace(relativePath);
 			}
 		}
 		return result;
 	}
 
-	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, const std::string& anExtension)
+	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, const std::string& anExtension, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
 			if (file.path().has_extension() && file.path().extension().string() == anExtension)
 			{
-				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				const std::string& relativePath = fs::relative(file.path(), dirPath).string();
 				result.emplace(relativePath);
 			}
 		}
 		return result;
 	}
 
-	std::unordered_set<std::string> GetFoldersInDirectory(const std::string& aPath)
+	std::unordered_set<std::string> GetFoldersInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
 			if (file.is_directory())
 			{
-				result.emplace(fs::relative(file.path(), appPath).string());
+				result.emplace(fs::relative(file.path(), dirPath).string());
 			}
 		}
 		return result;
 	}
 
-	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath)
+	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
 			if (file.path().has_extension())
 			{
-				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				const std::string& relativePath = fs::relative(file.path(), dirPath).string();
 				result.emplace(relativePath);
 			}
 		}
 		return result;
 	}
 
-	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, const std::string& anExtension)
+	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, const std::string& anExtension, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
 			if (file.path().has_extension() && file.path().extension().string() == anExtension)
 			{
-				const std::string& relativePath = fs::relative(file.path(), appPath).string();
+				const std::string& relativePath = fs::relative(file.path(), dirPath).string();
 				result.emplace(relativePath);
 			}
 		}
 		return result;
 	}
 
-	std::unordered_set<std::string> GetAllFoldersInDirectory(const std::string& aPath)
+	std::unordered_set<std::string> GetAllFoldersInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
 		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
+		fs::path dirPath;
+		if (aGetRelativeToAppPath)
+		{
+			dirPath = fs::current_path();
+		}
+		else
+		{
+			dirPath = aPath;
+		}
 		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
 			if (file.is_directory())
 			{
-				result.emplace(fs::relative(file.path(), appPath).string());
+				result.emplace(fs::relative(file.path(), dirPath).string());
 			}
 		}
 		return result;
@@ -280,7 +328,7 @@ namespace Crimson
 				{
 					return true;
 				}
-			}			
+			}
 		}
 
 		return false;
@@ -332,6 +380,11 @@ namespace Crimson
 	std::string GetAppPath()
 	{
 		return fs::current_path().string();
+	}
+
+	void SetAppPath(const std::string& aPath)
+	{
+		fs::current_path(aPath);
 	}
 
 	bool FileExists(const std::string& aFilePath)

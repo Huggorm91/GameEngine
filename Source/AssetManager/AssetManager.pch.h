@@ -11,6 +11,13 @@
 #define NOMINMAX
 
 // add headers that you want to pre-compile here
+#include <fstream>
+#include <string>
+#include <array>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
 #include <Windows.h>
 #include <d3d11.h>
 #include <wrl.h>

@@ -21,5 +21,5 @@ void EditCmd_AddGameObject::Undo()
 
 void EditCmd_AddGameObject::Execute()
 {
-	AddGameObject(myObject);
+	AddGameObject(myObject, nullptr);
 }

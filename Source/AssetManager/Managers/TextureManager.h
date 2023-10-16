@@ -12,7 +12,8 @@ public:
 	void Init();
 	void LoadAllTextures();
 
-	Texture* GetTexture(const std::string& aPath);
+	Texture GetUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const;
+	Texture* GetTexture(const std::string& aPath, bool aShouldLogErrors);
 	const std::unordered_set<std::string>& GetTexturelist() const;
 
 	static inline const char* GetExtension(){ return ".dds"; }
@@ -25,5 +26,6 @@ private:
 	std::unordered_set<std::string> myLoadedTextures;
 	std::unordered_set<std::string> myFilePaths;
 
-	Texture* LoadTexture(const std::string& aPath);
+	Texture LoadUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const;
+	Texture* LoadTexture(const std::string& aPath, bool aShouldLogErrors);
 };

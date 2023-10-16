@@ -1,7 +1,8 @@
 #pragma once
-#include "Texture.h"
-#include "Shader.h"
 #include "Buffers/MaterialBuffer.h"
+
+class Texture;
+class Shader;
 
 enum ePipelineStage : unsigned
 {
@@ -92,13 +93,6 @@ private:
 	Texture* myNormalTexture;
 	Texture* myMaterialTexture;
 	Texture* myFXTexture;
-
-#ifndef _RETAIL
-	std::string myAlbedoName;
-	std::string myNormalName;
-	std::string myMaterialName;
-	std::string myFXName;
-#endif // !_RETAIL
 
 	std::string myName;
 	std::vector<TextureBinding> myTextures;

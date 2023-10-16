@@ -26,7 +26,7 @@ MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransfor
 {
 }
 
-MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f }, 
+MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f },
 myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix(), myIsDeferred(true)
 #ifndef _RETAIL
 , myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
@@ -38,7 +38,7 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 	}
 }
 
-MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds), 
+MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
 myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
 #ifndef _RETAIL
 , myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
@@ -50,7 +50,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 	}
 }
 
-MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept: Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
+MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
 myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
 #ifndef _RETAIL
 , myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
@@ -59,7 +59,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 	if (myParent)
 	{
 		myTransform.SetParent(GetParentTransform());
-	}	
+	}
 }
 
 MeshComponent& MeshComponent::operator=(const MeshComponent& aMeshComponent)
@@ -114,6 +114,11 @@ MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
 
 void MeshComponent::Update()
 {
+	Render();
+}
+
+void MeshComponent::Render()
+{
 	if (!myIsActive)
 	{
 		return;
@@ -139,6 +144,7 @@ void MeshComponent::Init(const Json::Value& aJson)
 	myRenderShadow = aJson["RenderShadow"].asBool();
 	myColor = Crimson::Vector4f(aJson["Color"]);
 	myTransform = aJson["Transform"];
+	myTransform.SetParent(GetParentTransform());
 	myIsDeferred = aJson["IsDeferred"].asBool();
 	for (auto& element : aJson["Elements"])
 	{
@@ -357,13 +363,13 @@ Json::Value MeshComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
 	result["RenderShadow"] = myRenderShadow;
-	result["IsDeferred"]= myIsDeferred;
+	result["IsDeferred"] = myIsDeferred;
 	result["Color"] = myColor.ToJsonColor();
 	result["Transform"] = myTransform.ToJson();
 	if (myPath)
 	{
 		result["Path"] = *myPath;
-	}	
+	}
 	result["Elements"] = Json::arrayValue;
 	for (int i = 0; i < myElements.size(); i++)
 	{
@@ -398,73 +404,27 @@ void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 	if (ImGui::TreeNode("Material"))
 	{
 		ImGui::Text(myName.c_str());
-		if (aMaterial.myAlbedoTexture)
-		{
-			aMaterial.myAlbedoName = Crimson::ToString(aMaterial.myAlbedoTexture->GetName());
-		}
-		if (aMaterial.myNormalTexture)
-		{
-			aMaterial.myNormalName = Crimson::ToString(aMaterial.myNormalTexture->GetName());
-		}
-		if (aMaterial.myMaterialTexture)
-		{
-			aMaterial.myMaterialName = Crimson::ToString(aMaterial.myMaterialTexture->GetName());
-		}
-		if (aMaterial.myFXTexture)
-		{
-			aMaterial.myFXName = Crimson::ToString(aMaterial.myFXTexture->GetName());
-		}
 
 		// TODO: Fix Imgui representation for Shaders
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		if (ImGui::TreeNode("Textures"))
 		{
-			CreateTextureCombo(TextureSlot_Albedo, aMaterial);
+			Texture albedo;
+			CreateTextureCombo(aMaterial.myAlbedoTexture, TextureSlot_Albedo);
 			ImGui::SameLine();
-			if (aMaterial.myAlbedoTexture)
-			{
-				ImGui::Image(aMaterial.myAlbedoTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetAlbedoTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(aMaterial.myAlbedoTexture);
 
-
-			CreateTextureCombo(TextureSlot_Normal, aMaterial);
+			CreateTextureCombo(aMaterial.myNormalTexture, TextureSlot_Normal);
 			ImGui::SameLine();
-			if (aMaterial.myNormalTexture)
-			{
-				ImGui::Image(aMaterial.myNormalTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetNormalTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(aMaterial.myNormalTexture);
 
-
-			CreateTextureCombo(TextureSlot_Material, aMaterial);
+			CreateTextureCombo(aMaterial.myMaterialTexture, TextureSlot_Material);
 			ImGui::SameLine();
-			if (aMaterial.myMaterialTexture)
-			{
-				ImGui::Image(aMaterial.myMaterialTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetMaterialTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(aMaterial.myMaterialTexture);
 
-
-			CreateTextureCombo(TextureSlot_FX, aMaterial);
+			CreateTextureCombo(aMaterial.myFXTexture, TextureSlot_FX);
 			ImGui::SameLine();
-			if (aMaterial.myFXTexture)
-			{
-				ImGui::Image(aMaterial.myFXTexture->GetSRV().Get(), ImVec2(75, 75));
-			}
-			else
-			{
-				ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetFXTexture()->GetSRV().Get(), ImVec2(75, 75));
-			}
+			CreateTextureImage(aMaterial.myFXTexture);
 
 			if (!aMaterial.myTextures.empty())
 			{
@@ -473,7 +433,7 @@ void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 				{
 					ImGui::Text(("Slot " + std::to_string(binding.slot) + ": ").c_str());
 					ImGui::SameLine();
-					ImGui::Image(binding.texture->GetSRV().Get(), ImVec2(75, 75));
+					CreateTextureImage(binding.texture);
 				}
 			}
 			ImGui::TreePop();
@@ -531,51 +491,18 @@ void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 	}
 }
 
-void MeshComponent::CreateTextureCombo(eTextureSlot aSlot, Material& aMaterial)
+void MeshComponent::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 {
-	Texture** texture = nullptr;
-	std::string* name = nullptr;
-
-	switch (aSlot)
-	{
-	case TextureSlot_Albedo:
-	{
-		texture = &aMaterial.myAlbedoTexture;
-		name = &aMaterial.myAlbedoName;
-		break;
-	}
-	case TextureSlot_Normal:
-	{
-		texture = &aMaterial.myNormalTexture;
-		name = &aMaterial.myNormalName;
-		break;
-	}
-	case TextureSlot_Material:
-	{
-		texture = &aMaterial.myMaterialTexture;
-		name = &aMaterial.myMaterialName;
-		break;
-	}
-	case TextureSlot_FX:
-	{
-		texture = &aMaterial.myFXTexture;
-		name = &aMaterial.myFXName;
-		break;
-	}
-	default:
-		return;
-	}
-
 	ImGui::PushID(aSlot);
-	if (ImGui::BeginCombo("", name->c_str(), ImGuiComboFlags_HeightLarge))
+	if (ImGui::BeginCombo("", Crimson::ToString(aTexture->GetName()).c_str(), ImGuiComboFlags_HeightLarge))
 	{
 		for (auto& path : AssetManager::GetAvailableTextures())
 		{
 			Texture* current = AssetManager::GetAsset<Texture*>(path);
-			const bool isSelected = *texture == current;
+			const bool isSelected = aTexture == current;
 			if (ImGui::Selectable(Crimson::ToString(current->GetName()).c_str(), isSelected))
 			{
-				*texture = current;
+				aTexture = current;
 			}
 
 			if (isSelected)
@@ -583,12 +510,39 @@ void MeshComponent::CreateTextureCombo(eTextureSlot aSlot, Material& aMaterial)
 				ImGui::SetItemDefaultFocus();
 			}
 
-			constexpr int imageSize = 30;
+			constexpr float imageSize = 30.f;
 			ImGui::SameLine(ImGui::GetContentRegionAvail().x - imageSize);
 			ImGui::Image(current->GetSRV().Get(), ImVec2(imageSize, imageSize));
 		}
 		ImGui::EndCombo();
 	}
 	ImGui::PopID();
+}
+
+void MeshComponent::CreateTextureImage(Texture*& aTexture)
+{
+	constexpr float imageSize = 75.f;
+	if (aTexture)
+	{
+		ImGui::Image(aTexture->GetSRV().Get(), ImVec2(imageSize, imageSize));
+	}
+	else
+	{
+		ImGui::Image(GraphicsEngine::Get().GetDefaultMaterial().GetFXTexture()->GetSRV().Get(), ImVec2(imageSize, imageSize));
+	}
+	AcceptDropPayload(aTexture);
+}
+
+void MeshComponent::AcceptDropPayload(Texture*& aTexture)
+{
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Texture"))
+		{
+			IM_ASSERT(payload->DataSize == sizeof(Texture*));
+			aTexture = *static_cast<Texture**>(payload->Data);
+		}
+		ImGui::EndDragDropTarget();
+	}
 }
 #endif // !_RETAIL

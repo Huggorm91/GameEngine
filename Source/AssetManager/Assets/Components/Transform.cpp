@@ -5,7 +5,7 @@
 
 #ifndef _RETAIL
 #include "ModelViewer/Core/ModelViewer.h"
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
+#include "ImGui/imgui.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeMultipleGameObjects.h"
 #endif // !_RETAIL

@@ -1,8 +1,4 @@
 #pragma once
-#include <unordered_set>
-#include <string>
-#include <memory>
-
 class GameObject;
 
 class EditCommand
@@ -19,11 +15,18 @@ protected:
 	void LogMessage(const std::string& anError) const;
 
 	std::shared_ptr<GameObject> GetGameObject(unsigned anID) const;
-	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject) const;
+	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, const std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>>* aChildList) const;
 	bool RemoveGameObject(unsigned anID) const;
 
-	const std::unordered_set<std::shared_ptr<GameObject>>& GetSelectedObjects() const;
+	std::unordered_set<std::shared_ptr<GameObject>> GetSelectedObjects() const;
+	void SetSelectedObjects(const std::unordered_set<std::shared_ptr<GameObject>>& aList) const;
+	void ClearSelectedObjects() const;
+
+	std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>> GetChildrenOf(const std::shared_ptr<GameObject>& anObject) const;
 
 private:
 	bool EraseObject(unsigned anID) const;
+
+	std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>> GetChildrenInternal(const std::shared_ptr<GameObject>& anObject) const;
+	std::unordered_set<std::shared_ptr<GameObject>> GetChildList(const std::shared_ptr<GameObject>& anObject) const;
 };

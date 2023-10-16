@@ -1,7 +1,4 @@
 #pragma once
-#include <string>
-#include "Math/Vector4.hpp"
-
 namespace Json{ class Value; }
 
 struct Settings
@@ -29,6 +26,6 @@ struct Settings
 	int ToneMap;
 
 	Settings() = default;
-	Settings(const Json::Value& aJson);
+	Settings(const Json::Value& aJson, const std::string& anAssetPath);
 	operator Json::Value() const;
 };

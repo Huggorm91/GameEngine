@@ -1,25 +1,13 @@
 #pragma once
-
-#include <array>
 #include "d3d11.h"
 #include "d3d11_1.h"
 #include "d3d11shader.h"
 #include "d3dcompiler.h"
-
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "ShaderInfo.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-// This is for the ComPtrs.
-// Don't mistake it for the ATL CComPtr!
-#include <unordered_map>
-#include <wrl.h>
 class Shader;
-using namespace Microsoft::WRL;
 
 //struct Vertex;
 class Texture;

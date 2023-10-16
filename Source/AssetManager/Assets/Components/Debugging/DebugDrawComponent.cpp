@@ -12,7 +12,7 @@ DebugDrawComponent::DebugDrawComponent() : Component(ComponentType::DebugDraw)
 {
 }
 
-void DebugDrawComponent::Update()
+void DebugDrawComponent::TransformHasChanged() const
 {
 #ifndef _RETAIL
 	myHandle.UpdateTransform(myParent->GetTransformMatrix());

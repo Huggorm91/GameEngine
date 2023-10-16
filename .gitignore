@@ -36,9 +36,11 @@ bld/
 [Bb]in/*.exe
 [Bb]in/*.pdb
 [Bb]in/*.ini
+[Bb]in/Logs
+[Bb]in/Crashdump
 [Bb]in/README.txt
-[Bb]in/Content
-/GraphicsEngine/Shaders/Include/
+Content
+*/GraphicsEngine/Shaders/Include/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

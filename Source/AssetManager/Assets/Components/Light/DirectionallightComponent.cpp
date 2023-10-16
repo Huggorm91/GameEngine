@@ -64,6 +64,11 @@ void DirectionallightComponent::Init(const Crimson::Vector3f& aDirection, const 
 
 void DirectionallightComponent::Update()
 {
+	Render();
+}
+
+void DirectionallightComponent::Render()
+{
 	if (!myIsActive)
 	{
 		return;

@@ -1,19 +1,17 @@
 #include "GraphicsEngine.pch.h"
 #include "GraphicsEngine.h"
 #include "AssetManager/AssetManager.h"
-#include <filesystem>
-#include <utility>
+#include <fstream>
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
-#include "Math/Vector3.hpp"
 #include "Json/jsonCpp/json.h"
-#include "InterOp/Helpers.h"
-#include <fstream>
 #include "Math/Sort.hpp"
+#include "File/DirectoryFunctions.h"
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(), mySettingsPath("Settings/ge_settings.json"),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(), myObjectBuffer(), myLightBuffer(),
-myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders(), myIsUsingBloom(true)
+GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(),
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(), 
+myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders(), myIsUsingBloom(true),
+myAssetPath("Settings\\EngineAssets\\"), mySettingsPath("Settings\\ge_settings.json")
 #ifndef _RETAIL
 , myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
 #endif // !_RETAIL	
@@ -28,8 +26,6 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 	try
 	{
 #endif
-		GELogger.SetPrintToVSOutput(false);
-
 		myWindowHandle = windowHandle;
 
 		if (!RHI::Initialize(myWindowHandle,
@@ -40,6 +36,8 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			GELogger.Err("Failed to initialize the RHI!");
 			return false;
 		}
+		myWindowSize.cx = RHI::GetDeviceSize().Width;
+		myWindowSize.cy = RHI::GetDeviceSize().Height;
 
 		Settings settings = LoadSettings();
 		myBackgroundColor = settings.BackgroundColor;
@@ -190,24 +188,24 @@ void GraphicsEngine::SaveSettings() const
 {
 	Settings settings;
 
-	settings.DefaultMissingTexture = Helpers::string_cast<std::string>(myTextures.MissingTexture.GetName());
-	settings.DefaultNormalTexture = Helpers::string_cast<std::string>(myTextures.DefaultNormalTexture.GetName());
-	settings.DefaultMaterialTexture = Helpers::string_cast<std::string>(myTextures.DefaultMaterialTexture.GetName());
-	settings.DefaultFXTexture = Helpers::string_cast<std::string>(myTextures.DefaultFXTexture.GetName());
-	settings.DefaultCubeMap = Helpers::string_cast<std::string>(myTextures.DefaultCubeMap.GetName());
+	settings.DefaultMissingTexture = Crimson::ToString(myTextures.MissingTexture.GetName());
+	settings.DefaultNormalTexture = Crimson::ToString(myTextures.DefaultNormalTexture.GetName());
+	settings.DefaultMaterialTexture = Crimson::ToString(myTextures.DefaultMaterialTexture.GetName());
+	settings.DefaultFXTexture = Crimson::ToString(myTextures.DefaultFXTexture.GetName());
+	settings.DefaultCubeMap = Crimson::ToString(myTextures.DefaultCubeMap.GetName());
 
 	settings.DefaultMaterial = myDefaultMaterial.GetName();
 
-	settings.LuminancePS = Helpers::string_cast<std::string>(myShaders.LuminancePS.GetName());
-	settings.BlurPS = Helpers::string_cast<std::string>(myShaders.BlurPS.GetName());
-	settings.BloomPS = Helpers::string_cast<std::string>(myShaders.BloomPS.GetName());
-	settings.GammaPS = Helpers::string_cast<std::string>(myShaders.GammaPS.GetName());
-	settings.CopyPS = Helpers::string_cast<std::string>(myShaders.CopyPS.GetName());
+	settings.LuminancePS = Crimson::ToString(myShaders.LuminancePS.GetName());
+	settings.BlurPS = Crimson::ToString(myShaders.BlurPS.GetName());
+	settings.BloomPS = Crimson::ToString(myShaders.BloomPS.GetName());
+	settings.GammaPS = Crimson::ToString(myShaders.GammaPS.GetName());
+	settings.CopyPS = Crimson::ToString(myShaders.CopyPS.GetName());
 
-	settings.GBufferPS = Helpers::string_cast<std::string>(myShaders.GBufferPS.GetName());
-	settings.EnvironmentPS = Helpers::string_cast<std::string>(myShaders.EnvironmentPS.GetName());
-	settings.PointlightPS = Helpers::string_cast<std::string>(myShaders.PointlightPS.GetName());
-	settings.SpotlightPS = Helpers::string_cast<std::string>(myShaders.SpotlightPS.GetName());
+	settings.GBufferPS = Crimson::ToString(myShaders.GBufferPS.GetName());
+	settings.EnvironmentPS = Crimson::ToString(myShaders.EnvironmentPS.GetName());
+	settings.PointlightPS = Crimson::ToString(myShaders.PointlightPS.GetName());
+	settings.SpotlightPS = Crimson::ToString(myShaders.SpotlightPS.GetName());
 
 	settings.BackgroundColor = myBackgroundColor;
 	settings.ToneMap = static_cast<int>(myToneMap);
@@ -241,7 +239,7 @@ GraphicsEngine::ToneMap GraphicsEngine::SetToneMap(ToneMap aMode)
 	case GraphicsEngine::ToneMap::Count:
 	{
 		myToneMap = ToneMap::None;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::ToneMap::None:
 	{
@@ -295,7 +293,7 @@ GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 	case GraphicsEngine::DebugMode::Count:
 	{
 		myDebugMode = DebugMode::Default;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::DebugMode::Default:
 	{
@@ -393,7 +391,7 @@ GraphicsEngine::LightMode GraphicsEngine::SetLightMode(LightMode aMode)
 	case GraphicsEngine::LightMode::Count:
 	{
 		myLightMode = LightMode::Default;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::LightMode::Default:
 	{
@@ -451,7 +449,7 @@ GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
 	case GraphicsEngine::RenderMode::Count:
 	{
 		myRenderMode = RenderMode::Mesh;
-		// Letting it fall through
+		[[fallthrough]];
 	}
 	case GraphicsEngine::RenderMode::Mesh:
 	{
@@ -952,22 +950,37 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 			// Bloom
-			//RHI::SetBlendState(myAlphaBlend);
 			RHI::SetPixelShader(&myShaders.BloomPS);
 			RHI::SetRenderTarget(&myTextures.IntermediateB, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, &myTextures.HalfScenebuffer);
 			RHI::Draw(4);
 
+#ifndef _RETAIL
+			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+#else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+#endif // !_RETAIL
+			
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
 			RHI::EndEvent();
 		}
 		else
 		{
+#ifndef _RETAIL
+			// Copy Scenebuffer onto IntermediateA in order to be able to Gamma correct onto Scenebuffer
+			RHI::SetPixelShader(&myShaders.CopyPS);
+			RHI::SetRenderTarget(&myTextures.IntermediateA, nullptr);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
+			RHI::Draw(4);
+
+			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateA);
+#else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
+#endif // !_RETAIL			
 		}
 
 		// Gamma correction
@@ -976,17 +989,16 @@ void GraphicsEngine::RenderFrame()
 		RHI::Draw(4);
 	}
 #ifndef _RETAIL
-	else
-	{
-		RHI::SetPixelShader(&myShaders.CopyPS);
-		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
-		RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
-		RHI::Draw(4);
-	}
+	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+#else
+	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
 
-	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 	myLineDrawer.Render();
+
+#ifndef _RETAIL
+	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
+#endif // !_RETAIL
 }
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
@@ -1283,35 +1295,35 @@ bool GraphicsEngine::CreatePostProcessingTextures()
 void GraphicsEngine::LoadDefaultTextures(const Settings& someSettings)
 {
 	// FX
-	if (!RHI::LoadTexture(&myTextures.DefaultFXTexture, Helpers::string_cast<std::wstring>(someSettings.DefaultFXTexture)))
+	if (!RHI::LoadTexture(&myTextures.DefaultFXTexture, Crimson::ToWString(someSettings.DefaultFXTexture)))
 	{
 		GELogger.Err("Failed to load default FX texture!");
 	}
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultFXTextureSlot, &myTextures.DefaultFXTexture);
 
 	// Material
-	if (!RHI::LoadTexture(&myTextures.DefaultMaterialTexture, Helpers::string_cast<std::wstring>(someSettings.DefaultMaterialTexture)))
+	if (!RHI::LoadTexture(&myTextures.DefaultMaterialTexture, Crimson::ToWString(someSettings.DefaultMaterialTexture)))
 	{
 		GELogger.Err("Failed to load default material texture!");
 	}
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultMaterialTextureSlot, &myTextures.DefaultMaterialTexture);
 
 	// Normal
-	if (!RHI::LoadTexture(&myTextures.DefaultNormalTexture, Helpers::string_cast<std::wstring>(someSettings.DefaultNormalTexture)))
+	if (!RHI::LoadTexture(&myTextures.DefaultNormalTexture, Crimson::ToWString(someSettings.DefaultNormalTexture)))
 	{
 		GELogger.Err("Failed to load default normal texture!");
 	}
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultNormalTextureSlot, &myTextures.DefaultNormalTexture);
 
 	// Missing
-	if (!RHI::LoadTexture(&myTextures.MissingTexture, Helpers::string_cast<std::wstring>(someSettings.DefaultMissingTexture)))
+	if (!RHI::LoadTexture(&myTextures.MissingTexture, Crimson::ToWString(someSettings.DefaultMissingTexture)))
 	{
 		GELogger.Err("Failed to load default missing texture!");
 	}
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.MissingTextureSlot, &myTextures.MissingTexture);
 
 	// CubeMap
-	if (!RHI::LoadTexture(&myTextures.DefaultCubeMap, Helpers::string_cast<std::wstring>(someSettings.DefaultCubeMap)))
+	if (!RHI::LoadTexture(&myTextures.DefaultCubeMap, Crimson::ToWString(someSettings.DefaultCubeMap)))
 	{
 		GELogger.Err("Failed to load default cubemap!");
 	}
@@ -1321,63 +1333,63 @@ void GraphicsEngine::LoadDefaultTextures(const Settings& someSettings)
 bool GraphicsEngine::LoadShaders(const Settings& someSettings)
 {
 	// Luminance
-	if (!RHI::LoadShader(&myShaders.LuminancePS, Helpers::string_cast<std::wstring>(someSettings.LuminancePS)))
+	if (!RHI::LoadShader(&myShaders.LuminancePS, Crimson::ToWString(someSettings.LuminancePS)))
 	{
 		GELogger.Err("Failed to load Luminance Shader!");
 		return false;
 	}
 
 	// Blur
-	if (!RHI::LoadShader(&myShaders.BlurPS, Helpers::string_cast<std::wstring>(someSettings.BlurPS)))
+	if (!RHI::LoadShader(&myShaders.BlurPS, Crimson::ToWString(someSettings.BlurPS)))
 	{
 		GELogger.Err("Failed to load Blur Shader!");
 		return false;
 	}
 
 	// Bloom
-	if (!RHI::LoadShader(&myShaders.BloomPS, Helpers::string_cast<std::wstring>(someSettings.BloomPS)))
+	if (!RHI::LoadShader(&myShaders.BloomPS, Crimson::ToWString(someSettings.BloomPS)))
 	{
 		GELogger.Err("Failed to load Bloom Shader!");
 		return false;
 	}
 
 	// Gamma
-	if (!RHI::LoadShader(&myShaders.GammaPS, Helpers::string_cast<std::wstring>(someSettings.GammaPS)))
+	if (!RHI::LoadShader(&myShaders.GammaPS, Crimson::ToWString(someSettings.GammaPS)))
 	{
 		GELogger.Err("Failed to load Gamma Shader!");
 		return false;
 	}
 
 	// Copy
-	if (!RHI::LoadShader(&myShaders.CopyPS, Helpers::string_cast<std::wstring>(someSettings.CopyPS)))
+	if (!RHI::LoadShader(&myShaders.CopyPS, Crimson::ToWString(someSettings.CopyPS)))
 	{
 		GELogger.Err("Failed to load Copy Shader!");
 		return false;
 	}
 
 	// GBuffer
-	if (!RHI::LoadShader(&myShaders.GBufferPS, Helpers::string_cast<std::wstring>(someSettings.GBufferPS)))
+	if (!RHI::LoadShader(&myShaders.GBufferPS, Crimson::ToWString(someSettings.GBufferPS)))
 	{
 		GELogger.Err("Failed to load GBuffer Shader!");
 		return false;
 	}
 
 	// Environment
-	if (!RHI::LoadShader(&myShaders.EnvironmentPS, Helpers::string_cast<std::wstring>(someSettings.EnvironmentPS)))
+	if (!RHI::LoadShader(&myShaders.EnvironmentPS, Crimson::ToWString(someSettings.EnvironmentPS)))
 	{
 		GELogger.Err("Failed to load Environment Shader!");
 		return false;
 	}
 
 	// Pointlight
-	if (!RHI::LoadShader(&myShaders.PointlightPS, Helpers::string_cast<std::wstring>(someSettings.PointlightPS)))
+	if (!RHI::LoadShader(&myShaders.PointlightPS, Crimson::ToWString(someSettings.PointlightPS)))
 	{
 		GELogger.Err("Failed to load Pointlight Shader!");
 		return false;
 	}
 
 	// Spotlight
-	if (!RHI::LoadShader(&myShaders.SpotlightPS, Helpers::string_cast<std::wstring>(someSettings.SpotlightPS)))
+	if (!RHI::LoadShader(&myShaders.SpotlightPS, Crimson::ToWString(someSettings.SpotlightPS)))
 	{
 		GELogger.Err("Failed to load Spotlight Shader!");
 		return false;
@@ -1403,7 +1415,7 @@ Settings GraphicsEngine::LoadSettings()
 	}
 
 	ColorManager::Init(json["Colors"]);
-	return Settings(json);
+	return Settings(json, myAssetPath);
 }
 
 void GraphicsEngine::SaveSettings(const Settings& someSettings) const

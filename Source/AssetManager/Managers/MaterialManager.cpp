@@ -6,10 +6,10 @@ using namespace Crimson;
 
 void MaterialManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
-Material* MaterialManager::GetMaterial(const std::string& aPath)
+Material* MaterialManager::GetMaterial(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myMaterials.find(aPath); iter != myMaterials.end())
 	{
@@ -17,7 +17,7 @@ Material* MaterialManager::GetMaterial(const std::string& aPath)
 	}
 	else
 	{
-		return LoadMaterial(aPath);
+		return LoadMaterial(aPath, aShouldLogErrors);
 	}
 }
 
@@ -46,25 +46,25 @@ Material* MaterialManager::CreateMaterial(const std::string& anIdentifier, Shade
 	{
 		auto newIter = myMaterials.emplace(anIdentifier, Material{ anIdentifier, aVertexShader, aPixelShader, anAlbedo, aNormal });
 		return &newIter.first->second;
-	}	
+	}
 }
 
 void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string& aPath)
 {
 	std::string path = aPath;
-	if (!HasValidExtension(aPath, GetExtension()))
+	if (!Crimson::HasValidExtension(aPath, GetExtension()))
 	{
 		path += GetExtension();
 	}
-	path = CreateValidPath(path, GetPath());
+	path = Crimson::CreateValidPath(path, GetPath());
 
 	if (path.empty())
 	{
-		AMLogger.Err("MaterialManager: Could not save material to path: " + aPath);
+		AMLogger.Warn("MaterialManager: Could not save material to path: " + aPath);
 		return;
 	}
 
-	std::fstream fileStream(path, std::ios::out);
+	std::fstream fileStream(path, std::ios::out | std::ios::trunc);
 	if (fileStream)
 	{
 		Json::Value material = aMaterial->ToJson();
@@ -81,13 +81,16 @@ void MaterialManager::SaveMaterial(const Material* aMaterial, const std::string&
 	fileStream.close();
 }
 
-Material* MaterialManager::LoadMaterial(const std::string& aPath)
+Material* MaterialManager::LoadMaterial(const std::string& aPath, bool aShouldLogErrors)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
-		AMLogger.Err("MaterialManager: Could not load material from path: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("MaterialManager: Could not load material from path: " + aPath);
+		}
 		return nullptr;
 	}
 
@@ -99,13 +102,16 @@ Material* MaterialManager::LoadMaterial(const std::string& aPath)
 	}
 	else
 	{
-		AMLogger.Err("MaterialManager: Could not open file at: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Err("MaterialManager: Could not open file at: " + aPath);
+		}
 		fileStream.close();
 		return nullptr;
 	}
 	fileStream.close();
-	
+
 	auto iter = myMaterials.emplace(path, json);
 
-    return &iter.first->second;
+	return &iter.first->second;
 }

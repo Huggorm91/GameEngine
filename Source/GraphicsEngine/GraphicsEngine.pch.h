@@ -13,16 +13,18 @@
 // add headers that you want to pre-compile here
 #include <Windows.h>
 #include <d3d11.h>
-#include "InterOp/Helpers.h"
-#include "InterOp/RHI.h"
-#include "Logging/Logging.h"
-#include "Math/Matrix4x4.hpp"
+#include <string>
+#include <array>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <wrl.h>
+using namespace Microsoft::WRL;
 
-#ifndef _RETAIL
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
-#endif // !_RETAIL
+#include "InterOp/RHI.h"
+#include "Math/Matrix4x4.hpp"
+#include "Logging/Logging.h"
 
 inline Logger GELogger;
 #endif //GRAPHICSENGINE_PCH

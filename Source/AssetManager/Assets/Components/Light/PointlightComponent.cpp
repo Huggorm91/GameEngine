@@ -65,6 +65,11 @@ void PointlightComponent::Init(float aRadius, float anIntensity, const Crimson::
 
 void PointlightComponent::Update()
 {
+	Render();
+}
+
+void PointlightComponent::Render()
+{
 	if (!myIsActive)
 	{
 		return;

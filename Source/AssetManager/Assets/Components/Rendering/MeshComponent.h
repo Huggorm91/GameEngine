@@ -18,6 +18,7 @@ public:
 	MeshComponent& operator=(MeshComponent&& aComponent) noexcept;
 
 	void Update() override;
+	void Render() override;
 
 	void Init(GameObject* aParent) override;
 	void Init(const Json::Value& aJson) override;
@@ -76,6 +77,8 @@ protected:
 
 #ifndef _RETAIL
 	void CreateMaterialImGui(Material& aMaterial);
-	void CreateTextureCombo(eTextureSlot aSlot, Material& aMaterial);
+	void CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot);
+	void CreateTextureImage(Texture*& aTexture);
+	void AcceptDropPayload(Texture*& aTexture);
 #endif // !_RETAIL
 };

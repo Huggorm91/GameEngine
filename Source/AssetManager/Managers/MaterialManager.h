@@ -13,7 +13,7 @@ public:
 
 	void Init();
 
-	Material* GetMaterial(const std::string& aPath);
+	Material* GetMaterial(const std::string& aPath, bool aShouldLogErrors);
 
 	Material* CreateMaterial(const Material& anAsset, const std::string& anIdentifier);
 	Material* CreateMaterial(const std::string& anIdentifier, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal);
@@ -29,5 +29,5 @@ private:
 	std::unordered_map<std::string, Material> myMaterials;
 	std::unordered_set<std::string> myFilePaths;
 
-	Material* LoadMaterial(const std::string& aPath);
+	Material* LoadMaterial(const std::string& aPath, bool aShouldLogErrors);
 };

@@ -122,16 +122,17 @@
 		}
 	],
 	"CopyPSShader" : "Copy_PS", // Only use 'ShaderName.cso' and not full path
-	"CubeMap" : "Content/Textures/CubeMaps/skansen_cubemap",
-	"DefaultMaterial" : "Default/Default_Material.mat",
+	"CubeMap" : "skansen_cubemap.dds",
+	"DefaultMaterial" : "Default_Material.mat",
 	"EnvironmentPSShader" : "Default_Environment_PS", // Only use 'ShaderName.cso' and not full path
-	"FXTexture" : "Content/Textures/Default/T_Default_Black_C",
+	"FXTexture" : "T_Default_Black_C.dds",
 	"GBufferPSShader" : "Default_GBuffer_PS", // Only use 'ShaderName.cso' and not full path
 	"GammaPSShader" : "Gamma_PS", // Only use 'ShaderName.cso' and not full path
 	"LuminancePSShader" : "Luminance_PS", // Only use 'ShaderName.cso' and not full path
-	"MaterialTexture" : "Content/Textures/Default/T_Default_M",
-	"MissingTexture" : "Content/Textures/Default/T_Missing_C",
-	"NormalTexture" : "Content/Textures/Default/T_Default_Flat_N",
+	"MaterialTexture" : "T_Default_M.dds",
+	"MissingTexture" : "T_Missing_C.dds",
+	"NormalTexture" : "T_Default_Flat_N.dds",
 	"PointlightPSShader" : "Default_Pointlight_PS", // Only use 'ShaderName.cso' and not full path
-	"SpotlightPSShader" : "Default_Spotlight_PS" // Only use 'ShaderName.cso' and not full path
+	"SpotlightPSShader" : "Default_Spotlight_PS", // Only use 'ShaderName.cso' and not full path
+	"ToneMap" : 2
 }

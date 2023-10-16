@@ -183,7 +183,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -208,7 +208,7 @@
       <PreprocessorDefinitions>NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -234,7 +234,7 @@
       <PreprocessorDefinitions>NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -252,6 +252,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Editor\AssetTypes.h" />
     <ClInclude Include="Core\Modelviewer.h" />
     <ClInclude Include="Core\ApplicationState.h" />
@@ -259,14 +261,12 @@
     <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeTransform.h" />
     <ClInclude Include="Core\Commands\EditCmd_AddComponent.h" />
-    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h" />
-    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h" />
     <ClInclude Include="Core\Editor\ImguiManager.h" />
-    <ClInclude Include="Core\Commands\EditCmd_AddMultipleGameObjects.h" />
+    <ClInclude Include="Core\Commands\EditCmd_AddGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h" />
-    <ClInclude Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.h" />
+    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h" />
     <ClInclude Include="ModelViewer.pch.h" />
     <ClInclude Include="Resource.h" />
@@ -275,15 +275,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\ApplicationState.cpp" />
-    <ClCompile Include="Core\Commands\EditCommand.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp" />
+    <ClCompile Include="Core\Commands\EditCommand.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp" />
     <ClCompile Include="Core\Editor\AssetTypes.cpp" />
     <ClCompile Include="Core\Editor\ImguiManager.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_AddMultipleGameObjects.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_AddGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp" />
-    <ClCompile Include="Core\Commands\EditCmd_RemoveMultipleGameObjects.cpp" />
+    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />

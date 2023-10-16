@@ -193,7 +193,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>GraphicsEngine.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -203,15 +203,18 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\Debug\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\Debug\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\$(ConfigurationName)\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_DEBUG</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\" "$(SolutionDir)..\Content\Shaders\$(ConfigurationName)\" /R /S /Y </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -224,7 +227,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>GraphicsEngine.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -236,15 +239,18 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\Release\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\Release\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\$(ConfigurationName)\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_RELEASE</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\" "$(SolutionDir)..\Content\Shaders\$(ConfigurationName)\" /R /S /Y </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">
     <ClCompile>
@@ -257,7 +263,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>GraphicsEngine.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)CrimsonUtilities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -269,15 +275,18 @@
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>$(SolutionDir)Bin\Content\Shaders\Retail\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\%(Filename).cso</ObjectFileOutput>
       <VariableName>BuiltIn_%(Filename)_ByteCode</VariableName>
-      <HeaderFileOutput>$(ProjectDir)Shaders\Include\Retail\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>$(ProjectDir)Shaders\Include\$(ConfigurationName)\%(Filename).h</HeaderFileOutput>
       <PreprocessorDefinitions>_HLSL;_RETAIL</PreprocessorDefinitions>
     </FxCompile>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)..\Bin\Settings\EngineAssets\$(ConfigurationName)\" "$(SolutionDir)..\Content\Shaders\$(ConfigurationName)\" /R /S /Y </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Camera\PerspectiveCamera.h" />
@@ -310,7 +319,6 @@
     <ClInclude Include="GraphicsEngine.h" />
     <ClInclude Include="GraphicsEngine.pch.h" />
     <ClInclude Include="InterOp\DDSTextureLoader11.h" />
-    <ClInclude Include="InterOp\Helpers.h" />
     <ClInclude Include="InterOp\RHI.h" />
     <ClInclude Include="Rendering\Buffers\ConstantBuffer.h" />
     <ClInclude Include="Rendering\Buffers\FrameBuffer.h" />
@@ -360,7 +368,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="InterOp\Helpers.cpp" />
     <ClCompile Include="InterOp\RHI.cpp" />
     <ClCompile Include="Rendering\Buffers\ConstantBuffer.cpp" />
     <ClCompile Include="Rendering\Shader.cpp" />

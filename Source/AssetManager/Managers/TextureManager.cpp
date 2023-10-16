@@ -6,24 +6,42 @@ using namespace Crimson;
 
 void TextureManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
 void TextureManager::LoadAllTextures()
 {
 	for (auto& path : myFilePaths)
 	{
-		LoadTexture(path);
+		LoadTexture(path, true);
 	}
 }
 
-Texture* TextureManager::GetTexture(const std::string& aPath)
+Texture TextureManager::GetUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
-		AMLogger.Err("TextureManager: Could not find path: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("TextureManager: Could not find path: " + aPath);
+		}
+		return Texture();
+	}
+	return LoadUncachedTexture(path, aShouldLogErrors);
+}
+
+Texture* TextureManager::GetTexture(const std::string& aPath, bool aShouldLogErrors)
+{
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
+	if (path.empty())
+	{
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("TextureManager: Could not find path: " + aPath);
+		}
 		return nullptr;
 	}
 
@@ -33,7 +51,7 @@ Texture* TextureManager::GetTexture(const std::string& aPath)
 	}
 	else
 	{
-		return LoadTexture(path);
+		return LoadTexture(path, aShouldLogErrors);
 	}
 }
 
@@ -42,7 +60,22 @@ const std::unordered_set<std::string>& TextureManager::GetTexturelist() const
 	return myLoadedTextures;
 }
 
-Texture* TextureManager::LoadTexture(const std::string& aPath)
+Texture TextureManager::LoadUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const
+{
+	Texture texture;
+	if (RHI::LoadTexture(&texture, Crimson::ToWString(aPath)))
+	{
+		return texture;
+	}
+
+	if (aShouldLogErrors)
+	{
+		AMLogger.Err("TextureManager: Could not load a texture from: " + aPath);
+	}
+	return Texture();
+}
+
+Texture* TextureManager::LoadTexture(const std::string& aPath, bool aShouldLogErrors)
 {
 	Texture texture;
 	if (RHI::LoadTexture(&texture, Crimson::ToWString(aPath)))
@@ -52,6 +85,9 @@ Texture* TextureManager::LoadTexture(const std::string& aPath)
 		return &iter.first->second;
 	}
 
-	AMLogger.Err("TextureManager: Could not load a texture from: " + aPath);
+	if (aShouldLogErrors)
+	{
+		AMLogger.Err("TextureManager: Could not load a texture from: " + aPath);
+	}
 	return nullptr;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Container/Blackboard.hpp"
+#include "../Binary.h"
 #include "ComponentType.h"
 
 class Transform;
@@ -21,6 +22,7 @@ public:
 	virtual void Init(const Json::Value& aJson);
 	virtual void Init(GameObject* aParent);
 	virtual void Update();
+	virtual void Render();
 
 	const GameObject& GetParent() const;
 	GameObject& GetParent();
@@ -40,8 +42,13 @@ public:
 	virtual Json::Value ToJson() const;
 	virtual inline const Component* GetTypePointer() const;
 
+	virtual void Serialize(std::ostream& aStream) const;
+	virtual void Deserialize(std::istream& aStream);
+
 	// Only call before creating another Component!
 	void MarkAsPrefabComponent(unsigned anID = 0);
+	void CopyID(const Component* aComponent, bool aDecrementIDCount = false);
+
 	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
 	static unsigned GetIDCount() { return localIDCount; }
 

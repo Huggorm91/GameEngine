@@ -23,13 +23,13 @@ public:
 	void Init();
 	void GeneratePrimitives();
 
-	GameObject* GetModel(const std::string& aPath);
+	GameObject* GetModel(const std::string& aPath, bool aShouldLogErrors);
 	GameObject* GetModel(Primitives aPrimitive);
 
-	Skeleton* GetSkeleton(const std::string& aPath);
+	Skeleton* GetSkeleton(const std::string& aPath, bool aShouldLogErrors);
 
-	MeshComponent* GetMesh(const std::string& aPath);
-	AnimatedMeshComponent* GetAnimatedMesh(const std::string& aPath);
+	MeshComponent* GetMesh(const std::string& aPath, bool aShouldLogErrors);
+	AnimatedMeshComponent* GetAnimatedMesh(const std::string& aPath, bool aShouldLogErrors);
 
 	static inline const char* GetExtension(){ return ".fbx"; }
 	static inline const char* GetPath(){ return "..\\Content\\Models\\"; }
@@ -42,6 +42,6 @@ private:
 	std::unordered_map<std::string, Skeleton> mySkeletons;
 	std::unordered_set<std::string> myFilePaths;
 
-	GameObject* LoadModel(const std::string& aPath);
-	Skeleton* LoadSkeleton(const std::string& aPath);
+	GameObject* LoadModel(const std::string& aPath, bool aShouldLogErrors);
+	Skeleton* LoadSkeleton(const std::string& aPath, bool aShouldLogErrors);
 };

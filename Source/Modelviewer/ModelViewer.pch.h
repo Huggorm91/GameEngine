@@ -11,6 +11,16 @@
 #define NOMINMAX
 
 // add headers that you want to pre-compile here
+#include <fstream>
+#include <string>
+#include <array>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <wrl.h>
+using namespace Microsoft::WRL;
+
 #include "Logging/Logging.h"
 #include "AssetManager/AssetManager.h"
 #include "File/DirectoryFunctions.h"

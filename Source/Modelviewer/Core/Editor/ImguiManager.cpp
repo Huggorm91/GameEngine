@@ -2,26 +2,29 @@
 #include "ImguiManager.h"
 #include "../Modelviewer.h"
 #include "../Commands/EditCmd_AddGameobject.h"
-#include "../Commands/EditCmd_RemoveGameobject.h"
-#include "../Commands/EditCmd_RemoveMultipleGameobjects.h"
+#include "../Commands/EditCmd_AddGameobjects.h"
+#include "../Commands/EditCmd_RemoveGameobjects.h"
 #include "../Commands/EditCmd_ChangeMultipleGameObjects.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_stdlib.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
+#include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imgui_impl_dx11.h"
 
 #include "Input/InputMapper.h"
+#include "Time/Timer.h"
 
 using namespace Crimson;
 
-ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myIsEditingPrefab(false), mySelectedPath(), myNewObject(std::make_shared<GameObject>()), mySelectedPrefabName(nullptr), myImguiNameCounts(),
-mySelectedComponentType(ComponentType::Mesh), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myIsShowingDragFilePopUp(false), mySelectedObjects(), myDropfileAssettype(AssetTypes::eAssetType::Unknown),
-myIsShowingOverwritePopUp(false), myHasClosedOverwritePopUp(false), myOverwriteFromPath(), myOverwriteToPath(), myImguiNameIndex(), myMultiSelectionTransform()
+ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myOverwriteAppliedToAll(false), mySelectedPath(), myNewObject(std::make_shared<GameObject>()), mySelectedPrefabName(nullptr),
+myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myHasGottenDropfiles(false),
+mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myShouldOpenOverwritePopUp(false), myOverwriteFromPaths(), myOverwriteToPaths(), myImguiNameIndex(), myViewportAwaitsFile(false),
+myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("..\\Content\\"), myAssetPathNoDots("Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
+myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f)
 {
 	myNewObject->MarkAsPrefab();
 }
@@ -36,24 +39,51 @@ void ImguiManager::Release()
 void ImguiManager::Init()
 {
 	myModelViewer = &ModelViewer::Get();
+	auto size = GraphicsEngine::Get().GetWindowSize();
+	myWindowSize = { static_cast<float>(size.cx), static_cast<float>(size.cy) };
 
 	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
-
-	//ImGui::StyleColorsLight();
+	{
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+	}
 
 	// Setup Platform/Renderer backends
-	ImGui_ImplWin32_Init(myModelViewer->myMainWindowHandle);
-	ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
+	{
+		ImGui_ImplWin32_Init(myModelViewer->myMainWindowHandle);
+		ImGui_ImplDX11_Init(RHI::Device.Get(), RHI::Context.Get());
+	}
 
 	// Setup keybinds
-	auto& input = *Crimson::InputMapper::GetInstance();
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Del);
+	{
+		auto& input = *InputMapper::GetInstance();
+		input.Attach(this, eInputEvent::KeyDown, eKey::Del);
+	}
+
+	// Load AssetBrowser icons
+	{
+		myAssetIcons.emplace(Assets::eAssetType::Unknown, AssetManager::GetAsset<Texture>(myInternalAssetPath + "UnknownIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Model, AssetManager::GetAsset<Texture>(myInternalAssetPath + "ModelIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::AnimatedModel, AssetManager::GetAsset<Texture>(myInternalAssetPath + "AnimatedModelIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Animation, AssetManager::GetAsset<Texture>(myInternalAssetPath + "AnimationIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Material, AssetManager::GetAsset<Texture>(myInternalAssetPath + "MaterialIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Prefab, AssetManager::GetAsset<Texture>(myInternalAssetPath + "PrefabIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Shader, AssetManager::GetAsset<Texture>(myInternalAssetPath + "ShaderIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Scene, AssetManager::GetAsset<Texture>(myInternalAssetPath + "SceneIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Folder, AssetManager::GetAsset<Texture>(myInternalAssetPath + "FolderIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Texture, AssetManager::GetAsset<Texture>(myInternalAssetPath + "TextureIcon.dds"));
+		myAssetIcons.emplace(static_cast<Assets::eAssetType>(-1), AssetManager::GetAsset<Texture>(myInternalAssetPath + "StepOutIcon.dds"));
+	}
+
+	// Get available files and folders
+	{
+		RefreshAvailableFiles();
+		SelectAssetBrowserPath(myAssetPath);
+	}
 }
 
 void ImguiManager::Update()
@@ -62,15 +92,43 @@ void ImguiManager::Update()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::ShowDemoWindow();
+	myRefreshTimer += Timer::GetDeltaTime();
+	if (myRefreshTimer >= 60.f)
+	{
+		myRefreshTimer = 0.f;
+		RefreshAvailableFiles();
+		SelectAssetBrowserPath(myAssetBrowserPath);
+	}
+
+	// Create Editor workarea
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(myWindowSize.x, myWindowSize.y));
+	const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(color.x, color.y, color.z, 1.f));
+	ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+	ImGui::PopStyleColor();
+
+	CreateMenubar();
+
+	ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
+
+	CreateViewport();
+
 	CreatePreferenceWindow();
-	CreateDropFilePopUp();
+
 	CreateSceneContentWindow();
 	CreateSelectedObjectWindow();
+
+	CreateAssetBrowser();
+	CreateContentList();
+
 	CreatePrefabWindow();
 	CreateNewObjectWindow();
 
+	CreatePopUp();
 	CreateOverwriteFilePopUp();
+	ImGui::End();
 }
 
 void ImguiManager::Render()
@@ -81,7 +139,7 @@ void ImguiManager::Render()
 
 void ImguiManager::AddGameObject(GameObject* anObject)
 {
-	if (myImguiNameIndex.find(anObject) != myImguiNameIndex.end())
+	if (myImguiNameIndex.find(anObject->GetID()) != myImguiNameIndex.end())
 	{
 		return;
 	}
@@ -89,40 +147,36 @@ void ImguiManager::AddGameObject(GameObject* anObject)
 	if (auto iter = myImguiNameCounts.find(anObject->GetName()); iter != myImguiNameCounts.end())
 	{
 		std::string text = anObject->GetName() + " (" + std::to_string(iter->second++) + ")";
-		myImguiNameIndex.emplace(anObject, text);
+		myImguiNameIndex.emplace(anObject->GetID(), text);
 	}
 	else
 	{
 		myImguiNameCounts.emplace(anObject->GetName(), 1);
-		myImguiNameIndex.emplace(anObject, anObject->GetName());
+		myImguiNameIndex.emplace(anObject->GetID(), anObject->GetName());
 	}
 }
 
 void ImguiManager::ChangeIndexName(GameObject* anObject, const std::string& aName)
 {
-	myImguiNameIndex.at(anObject) = aName;
+	myImguiNameIndex.at(anObject->GetID()) = aName;
 }
 
 const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
 {
-	return myImguiNameIndex.at(anObject);
+	return myImguiNameIndex.at(anObject->GetID());
 }
 
-void ImguiManager::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
+void ImguiManager::ReceiveEvent(eInputEvent, eKey aKey)
 {
 	switch (aKey)
 	{
-	case Crimson::eKey::Del:
+	case eKey::Del:
 	{
-		if (mySelectedObjects.size() == 1)
+		if (mySelectedObjects.size() > 0)
 		{
-			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(*mySelectedObjects.begin()));
+			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObjects>());
+			mySelectedObjects.clear();
 		}
-		else if (mySelectedObjects.size() > 1)
-		{
-			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveMultipleGameObjects>());
-		}
-		mySelectedObjects.clear();
 		break;
 	}
 	default:
@@ -130,13 +184,13 @@ void ImguiManager::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 	}
 }
 
-void ImguiManager::ReceiveEvent(Crimson::eInputAction, float)
+void ImguiManager::ReceiveEvent(eInputAction, float)
 {
 }
 
 void ImguiManager::SetDropFile(HDROP aHandle)
 {
-	myIsShowingDragFilePopUp = true;
+	myHasGottenDropfiles = true;
 	myDropfile = aHandle;
 	myDropFileSelection = 0;
 	myDropFileCount = DragQueryFileA(aHandle, 0xFFFFFFFF, NULL, 0);
@@ -147,17 +201,118 @@ void ImguiManager::SetDropFile(HDROP aHandle)
 	}
 	else
 	{
-		myDropLocation = Crimson::Vector2i::Null;
+		myDropLocation = Vector2i::Null;
 	}
 
-	if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
+	if (auto typeList = Assets::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
 	{
 		myDropfileAssettype = typeList.back();
 	}
 	else
 	{
-		myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+		myDropfileAssettype = Assets::eAssetType::Unknown;
 	}
+}
+
+void ImguiManager::ReleaseDropFile()
+{
+	DragFinish(myDropfile);
+	myDropfile = NULL;
+	myDropFileCount = 0;
+	myDropFileSelection = 0;
+	myDropfileAssettype = Assets::eAssetType::Unknown;
+	myHasGottenDropfiles = false;
+}
+
+void ImguiManager::RefreshAvailableFiles()
+{
+	myAvailableFiles.clear();
+	auto files = GetAllFilepathsInDirectory(myAssetPath, true);
+	for (auto& file : files)
+	{
+		auto potentialTypes = Assets::GetPossibleTypes(GetFileExtension(file));
+		if (potentialTypes.size() == 1)
+		{
+			myAvailableFiles.emplace(file, potentialTypes.back());
+		}
+		else
+		{
+			bool isHandled = false;
+			for (auto& type : potentialTypes)
+			{
+				switch (type)
+				{
+				case Assets::eAssetType::Unknown:
+				case Assets::eAssetType::Texture:
+					break;
+				case Assets::eAssetType::Model:
+				case Assets::eAssetType::AnimatedModel:
+				case Assets::eAssetType::Animation:
+				{
+					AssetManager::SetLogErrors(false);
+					if (AssetManager::GetAsset<Animation>(file).HasData())
+					{
+						myAvailableFiles.emplace(file, Assets::eAssetType::Animation);
+						isHandled = true;
+					}
+					else
+					{
+						if (AssetManager::GetAsset<GameObject>(file).HasComponent<AnimatedMeshComponent>())
+						{
+							myAvailableFiles.emplace(file, Assets::eAssetType::AnimatedModel);
+							isHandled = true;
+						}
+						else
+						{
+							myAvailableFiles.emplace(file, Assets::eAssetType::Model);
+							isHandled = true;
+						}
+					}
+					AssetManager::SetLogErrors(true);
+					break;
+				}
+				case Assets::eAssetType::Material:
+				case Assets::eAssetType::Prefab:
+				case Assets::eAssetType::Shader:
+				case Assets::eAssetType::Scene:
+				case Assets::eAssetType::Folder:
+					break;
+				default:
+					myModelViewer->myLogger.Warn("ImguiManager::RefreshAvailableFiles: Invalid AssetType!");
+					break;
+				}
+
+				if (isHandled)
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	auto folders = GetAllFoldersInDirectory(myAssetPath, true);
+	for (auto& folder : folders)
+	{
+		myAvailableFiles.emplace(folder, Assets::eAssetType::Folder);
+	}
+}
+
+void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr<GameObject>>* aList)
+{
+	myActiveObjects = aList;
+
+	std::unordered_set<GameObject*> newSelection;
+	for (auto& current : mySelectedObjects)
+	{
+		for (auto& [id, object] : *myActiveObjects)
+		{
+			if (current->GetID() == id)
+			{
+				newSelection.emplace(object.get());
+			}
+		}
+	}
+	mySelectedObjects = newSelection;
 }
 
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
@@ -169,15 +324,6 @@ std::string ImguiManager::GetDropFilePath(unsigned anIndex)
 	return result;
 }
 
-void ImguiManager::ReleaseDropFile()
-{
-	DragFinish(myDropfile);
-	myDropfile = NULL;
-	myDropFileCount = 0;
-	myDropFileSelection = 0;
-	myDropfileAssettype = AssetTypes::eAssetType::Unknown;
-}
-
 bool ImguiManager::NextDropFile()
 {
 	if (++myDropFileSelection >= myDropFileCount)
@@ -187,13 +333,13 @@ bool ImguiManager::NextDropFile()
 	}
 	else
 	{
-		if (auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
+		if (auto typeList = Assets::GetPossibleTypes(GetFileExtension(GetDropFilePath(myDropFileSelection))); typeList.size() == 1)
 		{
 			myDropfileAssettype = typeList.back();
 		}
 		else
 		{
-			myDropfileAssettype = AssetTypes::eAssetType::Unknown;
+			myDropfileAssettype = Assets::eAssetType::Unknown;
 		}
 		return true;
 	}
@@ -204,16 +350,380 @@ bool ImguiManager::IsLastDropFile()
 	return myDropFileCount == 0 || myDropFileSelection == myDropFileCount - 1;
 }
 
+void ImguiManager::CopyAllDropFiles(const std::string& aTargetFolder)
+{
+	do
+	{
+		std::string source = GetDropFilePath(myDropFileSelection);
+		std::string target = aTargetFolder;
+		if (target.back() != '\\' && target.back() != '/')
+		{
+			target += "\\";
+		}
+		target += GetFileName(source);
+
+		if (CopyFileA(source.c_str(), target.c_str(), TRUE) == 0)
+		{
+			if (FileExists(target))
+			{
+				myOverwriteFromPaths.emplace_back(source);
+				myOverwriteToPaths.emplace_back(target);
+				myShouldOpenOverwritePopUp = true;
+			}
+			else
+			{
+				myModelViewer->GetLogger().Err("ImGui Manager: Failed to copy file to path: " + target);
+			}
+		}
+		else
+		{
+			myHasAddedAssetFiles = true;
+			myLatestAddedFile = target;
+		}
+	} while (NextDropFile());
+}
+
 bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
 {
 	for (auto& selection : mySelectedObjects)
 	{
-		if (selection == anObject)
+		if (selection == anObject.get())
 		{
 			return true;
 		}
 	}
 	return false;
+}
+
+void ImguiManager::CreateMenubar()
+{
+}
+
+void ImguiManager::CreateViewport()
+{
+	if (myModelViewer->myIsInPlayMode)
+	{
+		const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, color.y, color.z, 1.f));
+	}
+	if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar))
+	{
+		if (myHasGottenDropfiles && ImGui::IsWindowHovered())
+		{
+			myHasGottenDropfiles = false;
+
+			if (myDropFileCount == 1 &&
+				Assets::IsType(Assets::eAssetType::Texture, GetDropFilePath(myDropFileSelection)) &&
+				!mySelectedObjects.empty())
+			{
+				CopyAllDropFiles(AssetManager::GetTexturePath());
+				myViewportAwaitsFile = true;
+			}
+			else
+			{
+				myShouldOpenPopUp = true;
+				myPopUpMessage = "Can only drop a single Texture-file in Viewport,\nand must have at least 1 selected GameObject!";
+			}
+		}
+
+		if (myViewportAwaitsFile && myHasAddedAssetFiles)
+		{
+			myViewportAwaitsFile = false;
+			Texture* texture = AssetManager::GetAsset<Texture*>(myLatestAddedFile);
+			for (auto& object : mySelectedObjects)
+			{
+				for (auto& component : object->GetComponents<MeshComponent>())
+				{
+					component->SetAlbedoTexture(texture);
+				}
+				for (auto& component : object->GetComponents<AnimatedMeshComponent>())
+				{
+					component->SetAlbedoTexture(texture);
+				}
+			}
+		}
+		const Vector2f aspectRatio = { myWindowSize.y / myWindowSize.x, myWindowSize.x / myWindowSize.y };
+
+		auto size = ImGui::GetContentRegionAvail();
+
+		const Vector2f regionSize = { size.x, size.y };
+		const Vector2f regionRatio = { size.y / size.x, size.x / size.y };
+
+		if (regionRatio.x < aspectRatio.x)
+		{
+			size.x = size.y / aspectRatio.x;
+		}
+		if (regionRatio.y < aspectRatio.y)
+		{
+			size.y = size.x / aspectRatio.y;
+		}
+
+		const Vector2f off = (regionSize - Vector2f{ size.x, size.y }) * 0.5f;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off.x);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + off.y);
+
+		ImGui::Image(GraphicsEngine::Get().GetBackBufferCopy()->GetSRV().Get(), size);
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Texture"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Texture*));
+				Texture* texture = *static_cast<Texture**>(payload->Data);
+				for (auto& object : mySelectedObjects)
+				{
+					for (auto& component : object->GetComponents<MeshComponent>())
+					{
+						component->SetAlbedoTexture(texture);
+					}
+					for (auto& component : object->GetComponents<AnimatedMeshComponent>())
+					{
+						component->SetAlbedoTexture(texture);
+					}
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	}
+	ImGui::End();
+	if (myModelViewer->myIsInPlayMode)
+	{
+		ImGui::PopStyleColor();
+	}
+}
+
+void ImguiManager::CreateAssetBrowser()
+{
+	if (ImGui::Begin("Asset Browser", nullptr, ImGuiWindowFlags_NoTitleBar))
+	{
+		if (myHasGottenDropfiles && myDropFileCount > 0 && ImGui::IsWindowHovered())
+		{
+			myHasGottenDropfiles = false;
+			std::string target = myAssetBrowserPath;
+			if (IsFile(target))
+			{
+				target = GetContainingFolder(target);
+			}
+
+			CopyAllDropFiles(target);
+		}
+
+		ImGui::Text(GetPathWithoutDots(myAssetBrowserPath).c_str());
+		ImGui::Separator();
+
+		const float spacing = 10.f;
+		const float groupsize = myAssetBrowserIconSize + spacing + (ImGui::GetStyle().ChildBorderSize * 2.f);
+		const float contentsize = ImGui::GetWindowSize().x - (ImGui::GetStyle().WindowPadding.x * 2.f);
+		unsigned count = 1;
+
+		if (myAssetBrowserPath != myAssetPath)
+		{
+			std::string parentFolder = GetContainingFolder(myAssetBrowserPath);
+			if (IsFile(myAssetBrowserPath))
+			{
+				parentFolder.pop_back();
+				parentFolder = GetContainingFolder(parentFolder);
+			}
+			ImGui::BeginGroup();
+			ImGui::Image(myAssetIcons.at(static_cast<Assets::eAssetType>(-1)).GetSRV().Get(), ImVec2(myAssetBrowserIconSize, myAssetBrowserIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + myAssetBrowserIconSize);
+			ImGui::Text(GetPathWithoutDots(parentFolder).c_str());
+			ImGui::PopTextWrapPos();
+			ImGui::EndGroup();
+
+			if (ImGui::IsItemClicked())
+			{
+				if (parentFolder.back() == '\\' && parentFolder != myAssetPath)
+				{
+					parentFolder.pop_back();
+				}
+				SelectAssetBrowserPath(parentFolder);
+			}
+
+			ImGui::SameLine(0.f, spacing);
+			++count;
+		}
+		
+
+		bool hasClicked = false;
+		for (auto& file : myAssetBrowserFiles)
+		{
+			if (AssetBrowserButton(file))
+			{
+				myAssetBrowserPath = file;
+				hasClicked = true;
+			}
+
+			const float next = groupsize + (groupsize * count);
+			if (next <= contentsize)
+			{
+				ImGui::SameLine(0.f, spacing);
+				++count;
+			}
+			else
+			{
+				count = 1;
+			}
+		}
+
+		if (hasClicked)
+		{
+			SelectAssetBrowserPath(myAssetBrowserPath);
+		}
+	}
+	ImGui::End();
+}
+
+bool ImguiManager::AssetBrowserButton(const std::string& aPath)
+{
+	const bool isSelected = myAssetBrowserPath == aPath;
+	bool hasClicked = false;
+	Texture* texture = nullptr;
+	Assets::eAssetType type = myAvailableFiles[aPath];
+	if (type == Assets::eAssetType::Texture)
+	{
+		texture = AssetManager::GetAsset<Texture*>(aPath);
+		if (texture->GetArraySize() != 1)
+		{
+			texture = &myAssetIcons.at(type);
+		}
+	}
+	else
+	{
+		texture = &myAssetIcons.at(type);
+	}
+
+	if (isSelected)
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->ChannelsSplit(2);
+		draw_list->ChannelsSetCurrent(1);
+	}
+
+	ImGui::BeginGroup();
+	ImGui::Image(texture->GetSRV().Get(), ImVec2(myAssetBrowserIconSize, myAssetBrowserIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+	ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + myAssetBrowserIconSize);
+	ImGui::Text(GetFileName(aPath).c_str());
+	ImGui::PopTextWrapPos();
+	ImGui::EndGroup();
+
+	if (isSelected)
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->ChannelsSetCurrent(0);
+		ImVec2 p_min = ImGui::GetItemRectMin();
+		ImVec2 p_max = ImGui::GetItemRectMax();
+		draw_list->AddRectFilled(p_min, p_max, IM_COL32(255, 255, 255, 127));
+		draw_list->ChannelsMerge();
+	}
+
+	switch (type)
+	{
+	case Assets::eAssetType::Unknown:
+		break;
+	case Assets::eAssetType::Texture:
+	{
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("Dragged_Texture", &texture, sizeof(Texture*));
+			ImGui::Image(texture->GetSRV().Get(), ImVec2(50.f, 50.f));
+			ImGui::Text("Will be set as Albedo-texture for selected object if dropped in viewport");
+			ImGui::EndDragDropSource();
+			return true;
+		}
+		break;
+	}
+	case Assets::eAssetType::Model:
+		break;
+	case Assets::eAssetType::AnimatedModel:
+		break;
+	case Assets::eAssetType::Animation:
+		break;
+	case Assets::eAssetType::Material:
+		break;
+	case Assets::eAssetType::Prefab:
+		break;
+	case Assets::eAssetType::Shader:
+		break;
+	case Assets::eAssetType::Scene:
+		break;
+	case Assets::eAssetType::Folder:
+		break;
+	default:
+		break;
+	}
+
+	if (ImGui::IsItemClicked())
+	{
+		hasClicked = true;
+	}
+	return hasClicked;
+}
+
+void ImguiManager::CreateContentList()
+{
+	if (ImGui::Begin("Content", nullptr, ImGuiWindowFlags_NoTitleBar))
+	{
+		auto content = GetFoldersInDirectory(myAssetPath, true);
+		for (auto& folder : content)
+		{
+			ContentListButton(folder);
+		}
+	}
+	ImGui::End();
+}
+
+void ImguiManager::ContentListButton(const std::string& aPath)
+{
+	auto content = GetFoldersInDirectory(aPath, true);
+	const bool isOpen = ImGui::TreeNodeEx(GetFileName(aPath).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | (myContentListPath == aPath ? ImGuiTreeNodeFlags_Selected : 0) | (content.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
+
+	if (ImGui::IsItemClicked())
+	{
+		SelectAssetBrowserPath(aPath);
+	}
+
+	if (isOpen)
+	{
+		for (auto& folder : content)
+		{
+			ContentListButton(folder);
+		}
+		ImGui::TreePop();
+	}
+}
+
+void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
+{
+	if (!FileExists(aPath))
+	{
+		if (myAvailableFiles.find(aPath) != myAvailableFiles.end())
+		{
+			RefreshAvailableFiles();
+		}
+		myAssetBrowserPath = GetContainingFolder(aPath);
+	}
+	else
+	{
+		myAssetBrowserPath = aPath;
+	}
+
+	if (IsFolder(myAssetBrowserPath))
+	{
+		myContentListPath = myAssetBrowserPath;
+		auto folders = GetFoldersInDirectory(myAssetBrowserPath, true);
+		auto files = GetFilepathsInDirectory(myAssetBrowserPath, true);
+		myAssetBrowserFiles = folders;
+		for (auto& file : files)
+		{
+			myAssetBrowserFiles.emplace(file);
+		}
+	}
+}
+
+std::string ImguiManager::GetPathWithoutDots(const std::string& aPath)
+{
+	return aPath.substr(3);
 }
 
 void ImguiManager::CreatePreferenceWindow()
@@ -265,86 +775,32 @@ void ImguiManager::CreatePreferenceWindow()
 	ImGui::End();
 }
 
-void ImguiManager::CreateDropFilePopUp()
+void ImguiManager::CreatePopUp()
 {
-	if (myIsShowingDragFilePopUp)
+	if (myHasGottenDropfiles)
 	{
-		ImGui::OpenPopup("DropFile");
-		myIsShowingDragFilePopUp = false;
+		myHasGottenDropfiles = false;
+		myPopUpMessage = "Invalid droplocation!\nDrop files on Assetbrowser to add them to the selected folder!";
+		ImGui::OpenPopup("PopUp");
 	}
 
-	if (ImGui::BeginPopupModal("DropFile"))
+	if (myShouldOpenPopUp)
 	{
-		std::string copyPath;
-		const std::string& filePath = GetDropFilePath(myDropFileSelection);
-		ImGui::Text("Source:");
-		ImGui::Text(filePath.c_str());
-		auto typeList = AssetTypes::GetPossibleTypes(GetFileExtension(filePath));
+		myShouldOpenPopUp = false;
+		ImGui::OpenPopup("PopUp");
+	}
 
-		if (typeList.size() > 1)
+	if (ImGui::BeginPopupModal("PopUp", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text(myPopUpMessage.c_str());
+
+		ImVec2 buttonSize(100.f, 0.f);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonSize.x);
+		if (ImGui::Button("Close", buttonSize))
 		{
-			if (ImGui::BeginCombo(" ", AssetTypes::GetAssetTypeName(myDropfileAssettype).c_str()))
-			{
-				for (auto& type : typeList)
-				{
-					const bool isSelected = myDropfileAssettype == type;
-					if (ImGui::Selectable(AssetTypes::GetAssetTypeName(type).c_str(), isSelected))
-					{
-						myDropfileAssettype = type;
-					}
-
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
-		}
-		copyPath = AssetTypes::GetAssetPath(myDropfileAssettype) + GetFileName(filePath);
-
-		ImGui::Text("Target:");
-		ImGui::Text(copyPath.c_str());
-
-		ImGui::Separator();
-		if (ImGui::Button("Close"))
-		{
-			ReleaseDropFile();
 			ImGui::CloseCurrentPopup();
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Add"))
-		{
-			if (CopyFileA(filePath.c_str(), copyPath.c_str(), TRUE) == 0)
-			{
-				if (FileExists(copyPath))
-				{
-					myOverwriteFromPath = filePath;
-					myOverwriteToPath = copyPath;
-					ImGui::CloseCurrentPopup();
-					myIsShowingOverwritePopUp = true;
-				}
-				else
-				{
-					myModelViewer->GetLogger().Err("ImGui Manager: Failed to copy file to path: " + copyPath);
-				}
-			}
-			else
-			{
-				if (!NextDropFile())
-				{
-					ImGui::CloseCurrentPopup();
-				}
-			}
-		}
 		ImGui::EndPopup();
-	}
-	else if (myHasClosedOverwritePopUp && myDropfile) // Select next file after Overwrite Popup finnished
-	{
-		if (NextDropFile())
-		{
-			myIsShowingDragFilePopUp = true;
-		}
 	}
 }
 
@@ -354,7 +810,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 	{
 		if (mySelectedObjects.size() == 1)
 		{
-			std::shared_ptr<GameObject> selectedObject = *mySelectedObjects.begin();
+			GameObject* selectedObject = *mySelectedObjects.begin();
 			selectedObject->CreateImGuiWindowContent("Selected GameObject");
 
 			ImGui::Separator();
@@ -385,7 +841,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 			ImGui::SameLine(0.f, 50.f);
 			if (ImGui::Button("Delete"))
 			{
-				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObject>(*mySelectedObjects.begin()));
+				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObjects>());
 				mySelectedObjects.clear();
 			}
 		}
@@ -409,9 +865,14 @@ void ImguiManager::CreateSceneContentWindow()
 			ImGui::EndDragDropTarget();
 		}
 
+		if (ImGui::IsItemClicked())
+		{
+			mySelectedObjects.clear();
+		}
+
 		if (isOpen)
 		{
-			for (auto& [id, object] : myModelViewer->myGameObjects)
+			for (auto& [id, object] : *myActiveObjects)
 			{
 				if (object->HasParent())
 				{
@@ -421,7 +882,7 @@ void ImguiManager::CreateSceneContentWindow()
 				SceneContentButton(object);
 			}
 			ImGui::TreePop();
-		}		
+		}
 	}
 	ImGui::End();
 }
@@ -430,9 +891,9 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 {
 	using namespace Crimson;
 
-	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject.get()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
+	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject->GetID()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
 
-	if (ImGui::BeginDragDropTarget()) 
+	if (ImGui::BeginDragDropTarget())
 	{
 		DropSceneContent(anObject.get());
 		ImGui::EndDragDropTarget();
@@ -443,16 +904,17 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		{
 			mySelectedObjects.clear();
 		}
-		mySelectedObjects.emplace(anObject);
+		mySelectedObjects.emplace(anObject.get());
 	}
 
-	if (ImGui::BeginDragDropSource()) 
+	if (ImGui::BeginDragDropSource())
 	{
-		ImGui::SetDragDropPayload("Dragged_SceneObject", &anObject->GetIDRef(), sizeof(unsigned));
+		const unsigned id = anObject->GetID();
+		ImGui::SetDragDropPayload("Dragged_SceneObject", &id, sizeof(unsigned));
 		if (!IsSelected(anObject))
 		{
 			mySelectedObjects.clear();
-			mySelectedObjects.emplace(anObject);
+			mySelectedObjects.emplace(anObject.get());
 		}
 		ImGui::EndDragDropSource();
 	}
@@ -479,7 +941,7 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 			for (auto& object : mySelectedObjects)
 			{
 				parent->AddChild(object);
-			}		
+			}
 		}
 		else
 		{
@@ -620,79 +1082,133 @@ void ImguiManager::CreateNewObjectWindow()
 
 void ImguiManager::CreateOverwriteFilePopUp()
 {
-	static auto closeOverwritePopUp = [&]{
-		myOverwriteFromPath = "";
-		myOverwriteToPath = "";
-		myHasClosedOverwritePopUp = true;
-		ImGui::CloseCurrentPopup();
-	};
-
-	// Leaves myOverwriteFromPath & myOverwriteToPath with their latest paths for error handling and debugging
-	static auto errorCloseOverwritePopUp = [&]{
-		myHasClosedOverwritePopUp = true;
-		ImGui::CloseCurrentPopup();
-		ImGui::EndPopup();
-	};
-
-	if (myHasClosedOverwritePopUp)
+	if (myHasAddedAssetFiles)
 	{
-		myHasClosedOverwritePopUp = false;
+		RefreshAvailableFiles();
+		SelectAssetBrowserPath(myAssetBrowserPath);
+		myHasAddedAssetFiles = false;
 	}
 
-	if (myIsShowingOverwritePopUp)
+	if (myShouldOpenOverwritePopUp)
 	{
-		ImGui::OpenPopup("OverwriteFile");
-		myIsShowingOverwritePopUp = false;
+		if (myOverwriteFromPaths.size() != myOverwriteToPaths.size())
+		{
+			ModelViewer::GetLogger().Warn("ImGui Manager: Amount of source files does not match target files!");
+			myOverwriteFromPaths.clear();
+			myOverwriteToPaths.clear();
+		}
+		else
+		{
+			ImGui::OpenPopup("OverwriteFile");
+		}
+		myShouldOpenOverwritePopUp = false;
 	}
 
 	if (ImGui::BeginPopupModal("OverwriteFile"))
 	{
+		const std::string* source = &myOverwriteFromPaths.back();
+		const std::string* target = &myOverwriteToPaths.back();
+
+		ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
 		ImGui::Text("From:");
-		ImGui::Text(myOverwriteFromPath.c_str());
+		ImGui::Text(source->c_str());
 		ImGui::Separator();
 		ImGui::Text("To:");
-		ImGui::Text(myOverwriteToPath.c_str());
+		ImGui::Text(target->c_str());
+		ImGui::PopTextWrapPos();
 
-		if (ImGui::Button("Close"))
+		ImGui::Checkbox("Apply to all", &myOverwriteAppliedToAll);
+
+		if (ImGui::Button("Ignore"))
 		{
-			closeOverwritePopUp();
+			if (myOverwriteAppliedToAll)
+			{
+				myOverwriteFromPaths.clear();
+				myOverwriteToPaths.clear();
+			}
+			else
+			{
+				myOverwriteFromPaths.pop_back();
+				myOverwriteToPaths.pop_back();
+			}
 		}
 		ImGui::SameLine();
 
 		if (ImGui::Button("Overwrite"))
 		{
-			if (CopyFileA(myOverwriteFromPath.c_str(), myOverwriteToPath.c_str(), FALSE) == 0)
-			{
-				std::string filename = RemoveFileExtension(GetFileName(myOverwriteToPath));
-				std::string extension = GetFileExtension(myOverwriteToPath);
-				ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + filename + extension + "\" in folder: " + GetContainingFolder(myOverwriteToPath));
-				errorCloseOverwritePopUp();
-				return;
-			}
+			auto overwriteFile = [this](const std::string& aSource, const std::string& aTarget){
+				if (CopyFileA(aSource.c_str(), aTarget.c_str(), FALSE) == 0)
+				{
+					ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + GetFileName(aTarget) + "\" in folder: " + GetContainingFolder(aTarget));
+				}
+				else
+				{
+					myLatestAddedFile = aTarget;
+				}
+			};
 
-			closeOverwritePopUp();
+			if (myOverwriteAppliedToAll)
+			{
+				for (auto sourceIter = myOverwriteFromPaths.rbegin(), targetIter = myOverwriteToPaths.rbegin(); sourceIter != myOverwriteFromPaths.rend(); sourceIter++, targetIter++)
+				{
+					overwriteFile(*sourceIter, *targetIter);
+				}
+				myOverwriteFromPaths.clear();
+				myOverwriteToPaths.clear();
+			}
+			else
+			{
+				overwriteFile(*source, *target);
+				myOverwriteFromPaths.pop_back();
+				myOverwriteToPaths.pop_back();
+			}
+			myHasAddedAssetFiles = true;
 		}
 		ImGui::SameLine();
 
 		if (ImGui::Button("Create Copy"))
 		{
-			std::string path = GetContainingFolder(myOverwriteToPath);
-			std::string filename = RemoveFileExtension(GetFileName(myOverwriteToPath));
-			std::string extension = GetFileExtension(myOverwriteToPath);
-			int i = 1;
+			auto copyFile = [this](const std::string& aSource, const std::string& aTarget){
+				std::string path = GetContainingFolder(aTarget);
+				std::string filename = RemoveFileExtension(GetFileName(aTarget));
+				std::string extension = GetFileExtension(aTarget);
+				int i = 1;
 
-			while (CopyFileA(myOverwriteFromPath.c_str(), (path + filename + "(" + std::to_string(i) + ")" + extension).c_str(), TRUE) == 0)
-			{
-				i++;
-				if (i == 32)
+				while (CopyFileA(aSource.c_str(), (path + filename + "(" + std::to_string(i) + ")" + extension).c_str(), TRUE) == 0)
 				{
-					ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + filename + extension + "\" in folder: " + GetContainingFolder(myOverwriteToPath));
-					errorCloseOverwritePopUp();
-					return;
+					if (i++ == 32)
+					{
+						ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + filename + extension + "\" in folder: " + path);
+						break;
+					}
 				}
-			}
+				if (i < 33)
+				{
+					myLatestAddedFile = path + filename + "(" + std::to_string(i) + ")" + extension;
+				}
+			};
 
-			closeOverwritePopUp();
+			if (myOverwriteAppliedToAll)
+			{
+				for (auto sourceIter = myOverwriteFromPaths.rbegin(), targetIter = myOverwriteToPaths.rbegin(); sourceIter != myOverwriteFromPaths.rend(); sourceIter++, targetIter++)
+				{
+					copyFile(*sourceIter, *targetIter);
+				}
+				myOverwriteFromPaths.clear();
+				myOverwriteToPaths.clear();
+			}
+			else
+			{
+				copyFile(*source, *target);
+				myOverwriteFromPaths.pop_back();
+				myOverwriteToPaths.pop_back();
+			}
+			myHasAddedAssetFiles = true;
+		}
+
+		if (myOverwriteFromPaths.empty())
+		{
+			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
 	}

@@ -3,12 +3,14 @@
 #include <Importer.h>
 #include "File/DirectoryFunctions.h"
 
+bool AssetManager::myIsLoggingErrors = true;
 ModelManager AssetManager::myModelManager;
 AnimationManager AssetManager::myAnimationManager;
 TextureManager AssetManager::myTextureManager;
 ShaderManager AssetManager::myShaderManager;
 MaterialManager AssetManager::myMaterialManager;
 PrefabManager AssetManager::myPrefabManager;
+SceneManager AssetManager::mySceneManager;
 
 void AssetManager::Init()
 {
@@ -27,6 +29,7 @@ void AssetManager::Init()
 		myShaderManager.Init();
 		myMaterialManager.Init();
 		myPrefabManager.Init();
+		mySceneManager.Init();
 
 #ifdef _DEBUG
 	}

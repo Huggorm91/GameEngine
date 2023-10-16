@@ -7,10 +7,10 @@ using namespace Crimson;
 
 void AnimationManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
-Animation* AnimationManager::GetAnimation(const std::string& aPath)
+Animation* AnimationManager::GetAnimation(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myAnimations.find(aPath); iter != myAnimations.end())
 	{
@@ -18,17 +18,20 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath)
 	}
 	else
 	{
-		return LoadAnimation(aPath);
+		return LoadAnimation(aPath, aShouldLogErrors);
 	}
 }
 
-Animation* AnimationManager::LoadAnimation(const std::string& aPath)
+Animation* AnimationManager::LoadAnimation(const std::string& aPath, bool aShouldLogErrors)
 {
-	std::string path = AddExtensionIfMissing(aPath, GetExtension());
-	path = GetValidPath(path, GetPath());
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
 	if (path.empty())
 	{
-		AMLogger.Err("AnimationManager: Could not load animation from path: " + aPath);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("AnimationManager: Could not load animation from path: " + aPath);
+		}
 		return nullptr;
 	}
 
@@ -40,8 +43,12 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 	}
 	catch (const std::exception& e)
 	{
-		AMLogger.Err("AnimationManager: Could not load animation from: " + aPath);
-		AMLogger.LogException(e);
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("AnimationManager: Could not load animation from: " + aPath);
+			AMLogger.Err(e.what());
+		}
+		return nullptr;
 	}
 
 	if (success)
@@ -52,6 +59,9 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath)
 		return &iter.first->second;
 	}
 
-	AMLogger.Err("AnimationManager: Something went wrong when loading animation at: " + aPath);
+	if (aShouldLogErrors)
+	{
+		AMLogger.Err("AnimationManager: Something went wrong when loading animation at: " + aPath);
+	}
 	return nullptr;
 }

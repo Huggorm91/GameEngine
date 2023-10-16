@@ -11,7 +11,7 @@ public:
 
 	void Init();
 
-	Animation* GetAnimation(const std::string& aPath);
+	Animation* GetAnimation(const std::string& aPath, bool aShouldLogErrors);
 
 	static inline const char* GetExtension(){ return ".fbx"; }
 	static inline const char* GetPath(){ return "..\\Content\\Animations\\"; }
@@ -23,5 +23,5 @@ private:
 	std::unordered_map<std::string, AnimationData> myAnimationData;
 	std::unordered_set<std::string> myFilePaths;
 
-	Animation* LoadAnimation(const std::string& aPath);
+	Animation* LoadAnimation(const std::string& aPath, bool aShouldLogErrors);
 };
