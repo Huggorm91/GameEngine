@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="File\FileSelectors.h" />
     <ClInclude Include="File\DirectoryFunctions.h" />
     <ClInclude Include="NewCollision - WIP\CollisionObject.hpp" />
     <ClInclude Include="NewCollision - WIP\CollisionObject2D.hpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="Input\XBoxController.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="File\FileSelectors.cpp" />
     <ClCompile Include="File\DirectoryFunctions.cpp" />
     <ClCompile Include="Hash\CityHash\city-test.cc">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
@@ -262,6 +264,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -282,6 +285,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>

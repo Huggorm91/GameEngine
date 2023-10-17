@@ -41,6 +41,8 @@ public:
 	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
 	void SetDropFile(HDROP aHandle);
 
+	void SetPlayMode(bool aState);
+
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
 
 	std::shared_ptr<GameObject>& AddGameObject(bool aAddToUndo = true);
@@ -62,7 +64,7 @@ public:
 
 	void SaveState() const;
 
-	void SaveScene(const std::string& aPath) const;
+	void SaveScene(const std::string& aPath);
 	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL
@@ -75,6 +77,7 @@ private:
 	friend class ImguiManager;
 	friend class EditCommand;
 
+	bool mySceneIsEdited;
 	bool myIsInPlayMode;
 	bool myIsMaximized;
 
@@ -92,8 +95,7 @@ private:
 
 	SplashWindow* mySplashWindow{ nullptr };
 
-	std::string mySettingsPath{"Settings/mw_settings.json"};
-	std::string myLoadedScene;
+	const std::string mySettingsPath{"Settings/mw_settings.json"};
 	ApplicationState myApplicationState;
 
 	Logger myLogger;

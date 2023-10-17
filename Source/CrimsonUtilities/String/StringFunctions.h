@@ -12,4 +12,7 @@ namespace Crimson
 
 	std::string RemoveStringPart(const std::string& aString, const std::string& aPartToRemove);
 	std::vector<std::string> SplitString(const std::string& anInput, const char aSplitter);
+
+	[[nodiscard]] std::string Timestamp();
+	[[nodiscard]] std::string FileNameTimestamp();
 }

@@ -19,7 +19,8 @@
 
 ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager(), myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers()
+, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
+, myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
 #endif // _RETAIL
 {
 }
@@ -52,7 +53,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	myLogger.LogException(anException);
 
 	// Save current scene if possible
-	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myLoadedScene;
+	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.Name;
 	try
 	{
 		SaveScene("..\\" + saveName);
@@ -75,7 +76,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	myLogger.Log(Crimson::GetAppPath());
 
-	constexpr LPCWSTR windowClassName = L"ModelViewerMainWindow";
+	constexpr LPCWSTR windowClassName = L"CrimsonEngine_MainWindow";
 
 	// First we create our Window Class
 	WNDCLASS windowClass = {};
@@ -188,9 +189,14 @@ int ModelViewer::Run()
 		// The frame update for the game does NOT happen inside the PeekMessage loop.
 		// This would cause the game to only update if there are messages and also run
 		// the update several times per frame (once for each message).
+#ifndef _DEBUG
 		try
 		{
+#endif // _DEBUG
+
 			Update();
+
+#ifndef _DEBUG
 		}
 		catch (const std::exception& anException)
 		{
@@ -202,6 +208,7 @@ int ModelViewer::Run()
 			isRunning = false;
 			HandleCrash(std::invalid_argument("Caught unknown Error!"));
 		}
+#endif // _DEBUG
 	}
 
 #ifndef _RETAIL
@@ -223,6 +230,29 @@ void ModelViewer::SetDropFile(HDROP aHandle)
 		myLogger.Err("Failed to accept dropped files!");
 		myLogger.LogException(anException);
 		myImguiManager.ReleaseDropFile();
+	}
+}
+
+void ModelViewer::SetPlayMode(bool aState)
+{
+	myIsInPlayMode = aState;
+	if (myIsInPlayMode)
+	{
+		myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
+		for (auto& [id, object] : myScene.GameObjects)
+		{
+			auto copy = *object;
+			copy.CopyIDsOf(*object, true);
+			myPlayScene.GameObjects.emplace(id, copy);
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
+		}
+		myImguiManager.SetActiveObjects(&myPlayScenePointers);
+	}
+	else
+	{
+		myImguiManager.SetActiveObjects(&myScene.GameObjects);
+		myPlayScenePointers.clear();
+		myPlayScene = Scene();
 	}
 }
 
@@ -396,22 +426,42 @@ void ModelViewer::HideSplashScreen() const
 	SetForegroundWindow(myMainWindowHandle);
 }
 
-void ModelViewer::ModelViewer::SaveScene(const std::string& aPath) const
+void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
 {
+	myScene.Name = Crimson::GetFileNameWithoutExtension(aPath);
+	myScene.Path = aPath;
 	AssetManager::SaveAsset(myScene, aPath, false);
+	mySceneIsEdited = false;
 }
 
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 {
-	myLoadedScene = aPath;
+	// TODO: Check if scene is edited and confirm loading a new file
+	myUndoCommands.clear();
+	myRedoCommands.clear();
+
+	if (aPath.empty())
+	{
+		myScene = {};
+	}
+
 #ifndef _RETAIL
-	myScene = AssetManager::GetAsset<EditorScene>(aPath);
+	else
+	{
+		myScene = AssetManager::GetAsset<EditorScene>(aPath);
+	}
+	myImguiManager.Reset();
+	SetPlayMode(false);
+
 	for (auto& [id, object] : myScene.GameObjects)
 	{
 		myImguiManager.AddGameObject(object.get());
 	}
 #else
-	myScene = AssetManager::GetAsset<Scene>(aPath);
+	else
+	{
+		myScene = AssetManager::GetAsset<Scene>(aPath);
+	}
 #endif // !_RETAIL
 }
 
@@ -490,6 +540,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 	{
 		myUndoCommands.emplace_back(aCommand);
 	}
+	mySceneIsEdited = true;
 }
 
 void ModelViewer::UndoCommand()
@@ -499,6 +550,7 @@ void ModelViewer::UndoCommand()
 		myUndoCommands.back()->Undo();
 		myRedoCommands.emplace_back(myUndoCommands.back());
 		myUndoCommands.pop_back();
+		mySceneIsEdited = true;
 	}
 }
 
@@ -509,6 +561,7 @@ void ModelViewer::RedoCommand()
 		myRedoCommands.back()->Execute();
 		myUndoCommands.emplace_back(myRedoCommands.back());
 		myRedoCommands.pop_back();
+		mySceneIsEdited = true;
 	}
 }
 
@@ -516,25 +569,7 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
 	if (aKey == Crimson::eKey::Pause)
 	{
-		myIsInPlayMode = !myIsInPlayMode;
-		if (myIsInPlayMode)
-		{
-			myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
-			for (auto& [id, object] : myScene.GameObjects)
-			{
-				auto copy = *object;
-				copy.CopyIDsOf(*object, true);
-				myPlayScene.GameObjects.emplace(id, copy);
-				myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
-			}
-			myImguiManager.SetActiveObjects(&myPlayScenePointers);
-		}
-		else
-		{
-			myImguiManager.SetActiveObjects(&myScene.GameObjects);
-			myPlayScenePointers.clear();
-			myPlayScene = Scene();
-		}
+		SetPlayMode(!myIsInPlayMode);
 	}
 
 	auto& engine = GraphicsEngine::Get();

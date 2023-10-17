@@ -25,6 +25,7 @@ public:
 	void AddGameObject(GameObject* anObject);
 	void ChangeIndexName(GameObject* anObject, const std::string& aName);
 	const std::string& GetIndexName(GameObject* anObject) const;
+	void Reset();
 
 	void ReceiveEvent(Crimson::eInputEvent, Crimson::eKey) override;
 	void ReceiveEvent(Crimson::eInputAction, float) override;
@@ -69,9 +70,8 @@ private:
 	Crimson::Vector2f myViewportSize;
 	Crimson::Vector2f myWindowSize;
 
-	std::string myAssetPath;
-	std::string myAssetPathNoDots;
-	std::string myInternalAssetPath;
+	const std::string myAssetPath;
+	const std::string myInternalAssetPath;
 
 	std::string myPopUpMessage;
 	std::string myLatestAddedFile;
@@ -101,6 +101,7 @@ private:
 	bool IsLastDropFile();
 	void CopyAllDropFiles(const std::string& aTargetFolder);
 
+	void AddToSelection(GameObject* anObject);
 	bool IsSelected(const std::shared_ptr<GameObject>& anObject);
 
 	void CreateMenubar();

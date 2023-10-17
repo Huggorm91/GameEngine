@@ -5,7 +5,7 @@
 struct Scene
 {
 	unsigned GameObjectIDCount = 0;
-	std::string Name{};
+	std::string Name = "NewScene";
 	std::unordered_map<unsigned, GameObject> GameObjects;
 
 	Scene() = default;
@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& aStream, const Scene& aScene);
 struct EditorScene
 {
 	unsigned GameObjectIDCount = 0;
-	std::string Name{};
+	std::string Name = "NewScene";
 	std::string Path{};
 	std::unordered_map<unsigned, std::shared_ptr<GameObject>> GameObjects;
 

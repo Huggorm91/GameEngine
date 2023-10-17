@@ -15,6 +15,7 @@
 #include "ImGui/imgui_impl_win32.h"
 #include "ImGui/imgui_impl_dx11.h"
 
+#include "File\FileSelectors.h"
 #include "Input/InputMapper.h"
 #include "Time/Timer.h"
 
@@ -23,7 +24,7 @@ using namespace Crimson;
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myOverwriteAppliedToAll(false), mySelectedPath(), myNewObject(std::make_shared<GameObject>()), mySelectedPrefabName(nullptr),
 myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myHasGottenDropfiles(false),
 mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myShouldOpenOverwritePopUp(false), myOverwriteFromPaths(), myOverwriteToPaths(), myImguiNameIndex(), myViewportAwaitsFile(false),
-myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("..\\Content\\"), myAssetPathNoDots("Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
+myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("..\\Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
 myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f)
 {
 	myNewObject->MarkAsPrefab();
@@ -105,7 +106,7 @@ void ImguiManager::Update()
 	ImGui::SetNextWindowSize(ImVec2(myWindowSize.x, myWindowSize.y));
 	const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(color.x, color.y, color.z, 1.f));
-	ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+	ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar);
 	ImGui::PopStyleColor();
 
 	CreateMenubar();
@@ -164,6 +165,14 @@ void ImguiManager::ChangeIndexName(GameObject* anObject, const std::string& aNam
 const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
 {
 	return myImguiNameIndex.at(anObject->GetID());
+}
+
+void ImguiManager::Reset()
+{
+	mySelectedObjects.clear();
+	myActiveObjects = nullptr;
+	myImguiNameCounts.clear();
+	myImguiNameIndex.clear();
 }
 
 void ImguiManager::ReceiveEvent(eInputEvent, eKey aKey)
@@ -313,6 +322,7 @@ void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr
 		}
 	}
 	mySelectedObjects = newSelection;
+	myMultiSelectionTransform = Transform();
 }
 
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
@@ -383,6 +393,12 @@ void ImguiManager::CopyAllDropFiles(const std::string& aTargetFolder)
 	} while (NextDropFile());
 }
 
+void ImguiManager::AddToSelection(GameObject* anObject)
+{
+	myMultiSelectionTransform = Transform();
+	mySelectedObjects.emplace(anObject);
+}
+
 bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
 {
 	for (auto& selection : mySelectedObjects)
@@ -397,6 +413,38 @@ bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
 
 void ImguiManager::CreateMenubar()
 {
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New Scene"))
+			{
+				myModelViewer->LoadScene("");
+			}
+			if (ImGui::MenuItem("Open Scene"))
+			{
+				std::wstring extensions = L"*" + std::wstring(AssetManager::GetSceneExtensionW()) + L";*";
+				extensions += std::wstring(AssetManager::GetSceneBinaryExtensionW()) + L";";
+				std::string path;
+				if (Crimson::ShowOpenFileSelector(path, { L"Scenes", extensions }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				{
+					myModelViewer->LoadScene(path);
+				}
+			}
+			if (ImGui::MenuItem("Save Scene"))
+			{
+				std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneExtension(), true));
+				std::string path;
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				{
+					myModelViewer->SaveScene(path);
+				}
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
 }
 
 void ImguiManager::CreateViewport()
@@ -533,7 +581,7 @@ void ImguiManager::CreateAssetBrowser()
 
 			if (ImGui::IsItemClicked())
 			{
-				if (parentFolder.back() == '\\' && parentFolder != myAssetPath)
+				if (!parentFolder.empty() && parentFolder.back() == '\\' && parentFolder != myAssetPath)
 				{
 					parentFolder.pop_back();
 				}
@@ -543,7 +591,7 @@ void ImguiManager::CreateAssetBrowser()
 			ImGui::SameLine(0.f, spacing);
 			++count;
 		}
-		
+
 
 		bool hasClicked = false;
 		for (auto& file : myAssetBrowserFiles)
@@ -723,7 +771,11 @@ void ImguiManager::SelectAssetBrowserPath(const std::string& aPath)
 
 std::string ImguiManager::GetPathWithoutDots(const std::string& aPath)
 {
-	return aPath.substr(3);
+	if (aPath.size() > 3 && aPath.front() == '.')
+	{
+		return aPath.substr(3);
+	}
+	return aPath;
 }
 
 void ImguiManager::CreatePreferenceWindow()
@@ -857,7 +909,7 @@ void ImguiManager::CreateSceneContentWindow()
 {
 	if (ImGui::Begin("Scene"))
 	{
-		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myLoadedScene.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.Name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -904,7 +956,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		{
 			mySelectedObjects.clear();
 		}
-		mySelectedObjects.emplace(anObject.get());
+		AddToSelection(anObject.get());
 	}
 
 	if (ImGui::BeginDragDropSource())
@@ -914,7 +966,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 		if (!IsSelected(anObject))
 		{
 			mySelectedObjects.clear();
-			mySelectedObjects.emplace(anObject.get());
+			AddToSelection(anObject.get());
 		}
 		ImGui::EndDragDropSource();
 	}
@@ -999,7 +1051,7 @@ void ImguiManager::CreatePrefabWindow()
 
 		if (ImGui::Button("Select Prefab"))
 		{
-			if (ShowFileSelector(mySelectedPath, { L"Prefab files", std::wstring(L"*") + AssetManager::GetPrefabExtensionW() }, ToWString(GetFullPath(AssetManager::GetPrefabPath())), L"Select Prefab"))
+			if (ShowOpenFileSelector(mySelectedPath, { L"Prefab files", std::wstring(L"*") + AssetManager::GetPrefabExtensionW() }, ToWString(GetAbsolutePath(AssetManager::GetPrefabPath())), L"Select Prefab"))
 			{
 				myModelViewer->myLogger.Log("Selected File!");
 			}
@@ -1170,7 +1222,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 		{
 			auto copyFile = [this](const std::string& aSource, const std::string& aTarget){
 				std::string path = GetContainingFolder(aTarget);
-				std::string filename = RemoveFileExtension(GetFileName(aTarget));
+				std::string filename = GetFileNameWithoutExtension(aTarget);
 				std::string extension = GetFileExtension(aTarget);
 				int i = 1;
 

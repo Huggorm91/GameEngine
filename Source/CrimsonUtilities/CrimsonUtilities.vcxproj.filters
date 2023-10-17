@@ -264,6 +264,9 @@
     <ClInclude Include="String\StringFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="File\FileSelectors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Hash\CityHash\city.cc">
@@ -312,6 +315,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="String\StringFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="File\FileSelectors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

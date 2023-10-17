@@ -1,85 +1,9 @@
 #include "DirectoryFunctions.h"
 #include <filesystem>
-#include <ShObjIdl.h>
-#include <assert.h>
-#include <sstream>
 
 namespace Crimson
 {
 	namespace fs = std::filesystem;
-
-	bool ShowFileSelector(std::string& outFilePath, const std::pair<std::wstring, std::wstring>& anExtensionFilter, const std::wstring& aFolder, const std::wstring& aTitle)
-	{
-		// https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ifiledialog
-
-		HRESULT f_SysHr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-		if (FAILED(f_SysHr))
-		{
-			return FALSE;
-		}
-
-		IFileOpenDialog* f_FileSystem = nullptr;
-		f_SysHr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&f_FileSystem));
-		if (FAILED(f_SysHr)) {
-			CoUninitialize();
-			return FALSE;
-		}
-
-		// https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/ne-shobjidl_core-_fileopendialogoptions
-		f_FileSystem->SetOptions(FOS_HIDEPINNEDPLACES);
-
-		// Example for multiple filters
-		//COMDLG_FILTERSPEC ComDlgFS[3] = { {L"C++ code files", L"*.cpp;*.h;*.rc"},{L"Executable Files", L"*.exe;*.dll"}, {L"All Files",L"*.*"} };
-		//pFileOpen->SetFileTypes(3, ComDlgFS);
-		COMDLG_FILTERSPEC ComDlgFS{ anExtensionFilter.first.c_str(), anExtensionFilter.second.c_str() };
-		f_FileSystem->SetFileTypes(1, &ComDlgFS);
-
-		f_FileSystem->SetTitle(aTitle.c_str());
-
-		IShellItem* folder = NULL;
-		f_SysHr = SHCreateItemFromParsingName(aFolder.c_str(), NULL, IID_PPV_ARGS(&folder));
-		if (SUCCEEDED(f_SysHr))
-		{
-			// Only forces folder first time
-			//f_FileSystem->SetDefaultFolder(folder);
-
-			// Forces folder every time
-			f_FileSystem->SetFolder(folder);
-			folder->Release();
-		}
-
-		f_SysHr = f_FileSystem->Show(NULL);
-		if (FAILED(f_SysHr)) {
-			f_FileSystem->Release();
-			CoUninitialize();
-			return FALSE;
-		}
-
-		IShellItem* f_Files;
-		f_SysHr = f_FileSystem->GetResult(&f_Files);
-		if (FAILED(f_SysHr)) {
-			f_FileSystem->Release();
-			CoUninitialize();
-			return FALSE;
-		}
-
-		PWSTR f_Path;
-		f_SysHr = f_Files->GetDisplayName(SIGDN_FILESYSPATH, &f_Path);
-		if (FAILED(f_SysHr)) {
-			f_Files->Release();
-			f_FileSystem->Release();
-			CoUninitialize();
-			return FALSE;
-		}
-
-		outFilePath = ToString(f_Path);
-
-		CoTaskMemFree(f_Path);
-		f_Files->Release();
-		f_FileSystem->Release();
-		CoUninitialize();
-		return TRUE;
-	}
 
 	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
@@ -291,9 +215,13 @@ namespace Crimson
 		return fullPath;
 	}
 
-	std::string AddExtensionIfMissing(const std::string& aPath, const std::string& anExtension)
+	std::string AddExtensionIfMissing(const std::string& aPath, const std::string& anExtension, bool aForceExtension)
 	{
-		if (fs::path path = aPath; path.has_extension())
+		if (aForceExtension && fs::path(aPath).extension() != anExtension)
+		{
+			return aPath + anExtension;
+		}
+		else if (fs::path(aPath).has_extension())
 		{
 			return aPath;
 		}
@@ -336,13 +264,12 @@ namespace Crimson
 
 	std::string GetRelativePath(const std::string& aFullPath)
 	{
-		const std::string& appPath = fs::current_path().string();
-		return fs::relative(aFullPath, appPath).string();
+		return fs::relative(aFullPath, fs::current_path()).string();
 	}
 
-	std::string GetFullPath(const std::string& aRelativePath)
+	std::string GetAbsolutePath(const std::string& aRelativePath)
 	{
-		return fs::current_path().string() + "\\" + aRelativePath;
+		return fs::absolute(fs::current_path().string() + "\\" + aRelativePath).string();
 	}
 
 	std::string GetContainingFolder(const std::string& aFilePath)
@@ -351,6 +278,10 @@ namespace Crimson
 		if (lastSlash == std::string::npos)
 		{
 			lastSlash = aFilePath.find_last_of('/');
+			if (lastSlash == std::string::npos)
+			{
+				return std::string();
+			}
 		}
 		return aFilePath.substr(0, lastSlash + 1);
 	}
@@ -361,20 +292,33 @@ namespace Crimson
 		if (lastSlash == std::string::npos)
 		{
 			lastSlash = aFilePath.find_last_of('/');
+			if (lastSlash == std::string::npos)
+			{
+				return aFilePath;
+			}
 		}
 		return aFilePath.substr(lastSlash + 1);
 	}
 
+	std::string GetFileNameWithoutExtension(const std::string& aFilePath)
+	{
+		return RemoveFileExtension(GetFileName(aFilePath));
+	}
+
 	std::string GetFileExtension(const std::string& aFilePath)
 	{
-		size_t lastSlash = aFilePath.find_last_of('.');
-		return aFilePath.substr(lastSlash);
+		size_t lastDot = aFilePath.find_last_of('.');
+		if (lastDot == std::string::npos)
+		{
+			return std::string();
+		}
+		return aFilePath.substr(lastDot);
 	}
 
 	std::string RemoveFileExtension(const std::string& aFilePath)
 	{
-		size_t lastSlash = aFilePath.find_last_of('.');
-		return aFilePath.substr(0, lastSlash);
+		size_t lastDot = aFilePath.find_last_of('.');
+		return aFilePath.substr(0, lastDot);
 	}
 
 	std::string GetAppPath()
@@ -391,52 +335,14 @@ namespace Crimson
 	{
 		return fs::exists(aFilePath);
 	}
+
 	bool IsFile(const std::string& aPath)
 	{
 		return fs::path(aPath).has_extension();
 	}
+
 	bool IsFolder(const std::string& aPath)
 	{
 		return !fs::path(aPath).has_extension();
-	}
-	std::string Timestamp()
-	{
-		SYSTEMTIME st;
-		GetSystemTime(&st);
-
-		std::stringstream result;
-		result << std::setfill('0') << std::setw(2) << st.wYear;
-		result << "/";
-		result << std::setfill('0') << std::setw(2) << st.wMonth;
-		result << "/";
-		result << std::setfill('0') << std::setw(2) << st.wDay;
-		result << " - ";
-		result << std::setfill('0') << std::setw(2) << st.wHour;
-		result << ":";
-		result << std::setfill('0') << std::setw(2) << st.wMinute;
-		result << ":";
-		result << std::setfill('0') << std::setw(2) << st.wSecond;
-
-		return result.str();
-	}
-	std::string FileNameTimestamp()
-	{
-		SYSTEMTIME st;
-		GetSystemTime(&st);
-
-		std::stringstream result;
-		result << std::setfill('0') << std::setw(2) << st.wYear;
-		result << ".";
-		result << std::setfill('0') << std::setw(2) << st.wMonth;
-		result << ".";
-		result << std::setfill('0') << std::setw(2) << st.wDay;
-		result << "_";
-		result << std::setfill('0') << std::setw(2) << st.wHour;
-		result << ".";
-		result << std::setfill('0') << std::setw(2) << st.wMinute;
-		result << ".";
-		result << std::setfill('0') << std::setw(2) << st.wSecond;
-
-		return result.str();
 	}
 }
