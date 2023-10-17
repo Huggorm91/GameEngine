@@ -17,6 +17,7 @@ struct TextureContainer
 	Texture IntermediateB{};
 
 	Texture MissingTexture{};
+	Texture DefaultAlbedoTexture{};
 	Texture DefaultNormalTexture{};
 	Texture DefaultMaterialTexture{};
 	Texture DefaultFXTexture{};

@@ -122,7 +122,7 @@
 		}
 	],
 	"CopyPSShader" : "Copy_PS", // Only use 'ShaderName.cso' and not full path
-	"CubeMap" : "skansen_cubemap.dds",
+	"CubeMap" : "nice_cubemap.dds",
 	"DefaultMaterial" : "Default_Material.mat",
 	"EnvironmentPSShader" : "Default_Environment_PS", // Only use 'ShaderName.cso' and not full path
 	"FXTexture" : "T_Default_Black_C.dds",

@@ -444,7 +444,6 @@ void ModelViewer::Update()
 #endif // _RETAIL
 
 	engine.EndFrame();
-	throw std::runtime_error("test");
 }
 
 void ModelViewer::UpdateScene()
