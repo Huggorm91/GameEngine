@@ -55,6 +55,9 @@ namespace Crimson
 
 		inline static Vector3<T> Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage);
 
+		void Serialize(std::ostream& aStream) const;
+		void Deserialize(std::istream& aStream);
+
 		Vector3<T> operator-() const;
 
 		inline Vector3<T>& operator+=(const Vector3<T>& aVector);
@@ -278,6 +281,18 @@ namespace Crimson
 		return Vector3<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
 						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
 						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage));
+	}
+
+	template<typename T>
+	inline void Vector3<T>::Serialize(std::ostream& aStream) const
+	{
+		aStream.write(reinterpret_cast<const char*>(&x), sizeof(x) * 3);
+	}
+
+	template<typename T>
+	inline void Vector3<T>::Deserialize(std::istream& aStream)
+	{
+		aStream.read(reinterpret_cast<char*>(&x), sizeof(x) * 3);
 	}
 
 	template<class T>

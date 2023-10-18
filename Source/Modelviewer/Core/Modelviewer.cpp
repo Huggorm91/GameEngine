@@ -56,7 +56,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.Name;
 	try
 	{
-		SaveScene("..\\" + saveName);
+		SaveScene("..\\" + saveName, false);
 		myLogger.Succ("Saved current scene to: " + saveName);
 	}
 	catch (...)
@@ -426,11 +426,11 @@ void ModelViewer::HideSplashScreen() const
 	SetForegroundWindow(myMainWindowHandle);
 }
 
-void ModelViewer::ModelViewer::SaveScene(const std::string& aPath)
+void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 {
 	myScene.Name = Crimson::GetFileNameWithoutExtension(aPath);
 	myScene.Path = aPath;
-	AssetManager::SaveAsset(myScene, aPath, false);
+	AssetManager::SaveAsset(myScene, aPath, aAsBinary);
 	mySceneIsEdited = false;
 }
 

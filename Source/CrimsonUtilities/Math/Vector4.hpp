@@ -55,6 +55,9 @@ namespace Crimson
 
 		inline static Vector4<T> Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage);
 
+		void Serialize(std::ostream& aStream) const;
+		void Deserialize(std::istream& aStream);
+
 		Vector4<T> operator-() const;
 
 		inline Vector4& operator+=(const Vector4<T>& aVector);
@@ -262,6 +265,18 @@ namespace Crimson
 						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
 						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage),
 						  Crimson::Lerp(aFrom.w, aTo.w, aPercentage));
+	}
+
+	template<typename T>
+	inline void Vector4<T>::Serialize(std::ostream& aStream) const
+	{
+		aStream.write(reinterpret_cast<const char*>(&x), sizeof(x) * 4);
+	}
+
+	template<typename T>
+	inline void Vector4<T>::Deserialize(std::istream& aStream)
+	{
+		aStream.read(reinterpret_cast<char*>(&x), sizeof(x) * 4);
 	}
 
 	template <typename T>

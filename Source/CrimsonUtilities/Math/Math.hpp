@@ -7,6 +7,8 @@ namespace Crimson
 	constexpr auto Pi = 3.1415926535897932384626433832795;
 	constexpr double Pi2 = 6.283185307179586476925286766559;
 	constexpr double PiInverse = 0.31830988618379067153776752674503;
+	constexpr float FloatTolerance = 0.0000001f;
+	constexpr double DoubleTolerance = 0.000000000001;
 
 	template <typename T>
 	const T& Max(const T& aFirst, const T& aSecond)

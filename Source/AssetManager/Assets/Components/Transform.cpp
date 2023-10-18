@@ -257,6 +257,20 @@ Json::Value Transform::ToJson() const
 	return result;
 }
 
+void Transform::Serialize(std::ostream& aStream) const
+{
+	myPosition.Serialize(aStream);
+	myRotation.Serialize(aStream);
+	myScale.Serialize(aStream);
+}
+
+void Transform::Deserialize(std::istream& aStream)
+{
+	myPosition.Deserialize(aStream);
+	myRotation.Deserialize(aStream);
+	myScale.Deserialize(aStream);
+}
+
 void Transform::UpdateTransform()
 {
 	myTransform = GetTotalTransform();

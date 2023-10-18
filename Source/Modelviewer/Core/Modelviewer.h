@@ -6,7 +6,11 @@
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 
-
+// TODO: 
+// Make all saved filepaths relative to the assettypes folder
+// Serialize components
+// Deserialize components
+//
 class SplashWindow;
 class GameObject;
 
@@ -64,7 +68,7 @@ public:
 
 	void SaveState() const;
 
-	void SaveScene(const std::string& aPath);
+	void SaveScene(const std::string& aPath, bool aAsBinary);
 	void LoadScene(const std::string& aPath);
 
 #ifndef _RETAIL

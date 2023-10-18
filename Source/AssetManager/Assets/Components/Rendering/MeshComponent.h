@@ -53,6 +53,10 @@ public:
 
 	void TransformHasChanged() const override;
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 	Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	const MeshComponent* GetTypePointer() const override;
@@ -61,17 +65,9 @@ protected:
 	bool myIsDeferred;
 	bool myRenderShadow;
 	const std::string* myPath;
-#ifndef _RETAIL
-	float myLerpValue;
-	Crimson::Vector4f myLerpColor1;
-	Crimson::Vector4f myLerpColor2;
-	std::string myLerpName1;
-	std::string myLerpName2;
-#endif // !_RETAIL
 	Crimson::Vector4f myColor;
 	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
-	Crimson::Matrix4x4f myTransformMatrix;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 

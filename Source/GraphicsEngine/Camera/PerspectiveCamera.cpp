@@ -15,8 +15,8 @@ void PerspectiveCamera::Init(const Crimson::Vector2f& aScreenSize, float aSpeed,
 {
 	myScreenResolution = aScreenSize;
 
-	myClipMatrix(3, 4) = 1.f;
-	myClipMatrix(4, 4) = 0.f;
+	myClipMatrix.m34 = 1.f;
+	myClipMatrix.m44 = 0.f;
 
 	myPosition = { 0.f, 200.f, 0.f };
 	myRotationSpeed = aRotationSpeed;
@@ -200,15 +200,15 @@ void PerspectiveCamera::SetRotation(const Crimson::Vector3f& aRotation)
 
 void PerspectiveCamera::SetFOV(float aDegree)
 {
-	myClipMatrix(1, 1) = CalculateFOV(Crimson::DegreeToRadian(aDegree));
-	myClipMatrix(2, 2) = myClipMatrix(1, 1) * (myScreenResolution.x / myScreenResolution.y);
+	myClipMatrix.m11 = CalculateFOV(Crimson::DegreeToRadian(aDegree));
+	myClipMatrix.m22 = myClipMatrix.m11 * (myScreenResolution.x / myScreenResolution.y);
 }
 
 void PerspectiveCamera::SetPlanes(float aNearPlane, float aFarPlane)
 {
 	const float divideInverse = 1.f / (aFarPlane - aNearPlane);
-	myClipMatrix(3, 3) = aFarPlane * divideInverse;
-	myClipMatrix(4, 3) = -aNearPlane * aFarPlane * divideInverse;
+	myClipMatrix.m33 = aFarPlane * divideInverse;
+	myClipMatrix.m43 = -aNearPlane * aFarPlane * divideInverse;
 }
 
 void PerspectiveCamera::SetMovementSpeed(float aSpeed)
@@ -252,9 +252,9 @@ void PerspectiveCamera::UpdateTransform()
 {
 	myTransform = Crimson::Matrix4x4f::CreateRotationAroundX(myRotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(myRotation.y);
 
-	myTransform(4, 1) = myPosition.x;
-	myTransform(4, 2) = myPosition.y;
-	myTransform(4, 3) = myPosition.z;
+	myTransform.m41 = myPosition.x;
+	myTransform.m42 = myPosition.y;
+	myTransform.m43 = myPosition.z;
 
 #ifndef _RETAIL
 	// Transform if using UI
@@ -263,13 +263,13 @@ void PerspectiveCamera::UpdateTransform()
 
 	// Transform if using worldspace
 	Crimson::Vector3f forward = Crimson::Vector4f{ myCompassOffset, 1.f } *myTransform;
-	myCompassTransform(4, 1) = forward.x;
-	myCompassTransform(4, 2) = forward.y;
-	myCompassTransform(4, 3) = forward.z;
+	myCompassTransform.m41 = forward.x;
+	myCompassTransform.m42 = forward.y;
+	myCompassTransform.m43 = forward.z;
 	myCompass.UpdateTransform(myCompassTransform);
 #endif // _RETAIL
 
-	myTransform = Crimson::Matrix4x4f::GetFastInverse(myTransform);
+	myTransform = myTransform.GetInverse();
 	myHasChanged = false;
 }
 

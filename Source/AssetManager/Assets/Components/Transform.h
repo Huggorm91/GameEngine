@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/Matrix4x4.hpp"
-#include "Json/jsonCpp/json-forwards.h"
+namespace Json{ class Value; }
 
 class Transform
 {
@@ -45,7 +45,10 @@ public:
 
 	void CreateImGuiComponents(const std::string& aWindowName);
 	bool CreateMultipleSelectionImGuiComponents(const std::string& aWindowName);
+
 	Json::Value ToJson() const;
+	void Serialize(std::ostream& aStream) const;
+	void Deserialize(std::istream& aStream);
 
 private:
 	bool myHasChanged;

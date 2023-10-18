@@ -438,7 +438,17 @@ void ImguiManager::CreateMenubar()
 				std::string path;
 				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
-					myModelViewer->SaveScene(path);
+					myModelViewer->SaveScene(path, false);
+				}
+			}
+			if (ImGui::MenuItem("Save As Binary"))
+			{
+				std::wstring extension = std::wstring(AssetManager::GetSceneBinaryExtensionW());
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneBinaryExtension(), true));
+				std::string path;
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				{
+					myModelViewer->SaveScene(path, true);
 				}
 			}
 			ImGui::EndMenu();
@@ -816,12 +826,6 @@ void ImguiManager::CreatePreferenceWindow()
 		if (ImGui::Button("Save Preferences"))
 		{
 			myModelViewer->SaveState();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Save Scene"))
-		{
-			// Add file selector
-			myModelViewer->SaveScene("Default");
 		}
 	}
 	ImGui::End();

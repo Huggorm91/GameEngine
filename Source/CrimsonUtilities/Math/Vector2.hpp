@@ -1,7 +1,8 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <cmath>
+#include <istream>
+#include <ostream>
 #include "Math.hpp"
 
 // In order to convert to and from Json you need to include "Json/JsonVector.hpp"
@@ -61,6 +62,9 @@ namespace Crimson
 		inline Vector2<T> Clamp(T aMin, T aMax);
 		inline Vector2<T> Clamp(const Vector2<T>& aMin, const Vector2<T>& aMax);
 		inline static Vector2<T> Lerp(const Vector2<T>& aFrom, const Vector2<T>& aTo, float aPercentage);
+
+		void Serialize(std::ostream& aStream) const;
+		void Deserialize(std::istream& aStream);
 
 		inline Vector2<T> operator-() const;
 
@@ -301,6 +305,18 @@ namespace Crimson
 	{
 		return Vector2<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
 						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage));
+	}
+
+	template<typename T>
+	inline void Vector2<T>::Serialize(std::ostream& aStream) const
+	{
+		aStream.write(reinterpret_cast<const char*>(&x), sizeof(x) * 2);
+	}
+
+	template<typename T>
+	inline void Vector2<T>::Deserialize(std::istream& aStream)
+	{
+		aStream.read(reinterpret_cast<char*>(&x), sizeof(x) * 2);
 	}
 
 	template <typename T>

@@ -12,25 +12,16 @@
 #include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
 #endif // !_RETAIL
 
-MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix(), myIsDeferred(true)
-#ifndef _RETAIL
-, myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
-#endif // !_RETAIL
+MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myIsDeferred(true)
 {
 }
 
-MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myTransformMatrix(), myIsDeferred(true)
-#ifndef _RETAIL
-, myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
-#endif // !_RETAIL
+MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myIsDeferred(true)
 {
 }
 
 MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f },
-myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myTransformMatrix(), myIsDeferred(true)
-#ifndef _RETAIL
-, myLerpValue(), myLerpColor1{ 0.f, 0.f, 0.f, 1.f }, myLerpColor2{ 0.f, 0.f, 0.f, 1.f }
-#endif // !_RETAIL
+myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myIsDeferred(true)
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
 	{
@@ -39,10 +30,7 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 }
 
 MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
-myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
-#ifndef _RETAIL
-, myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
-#endif // !_RETAIL
+myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
 {
 	if (myParent)
 	{
@@ -51,10 +39,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 }
 
 MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
-myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myTransformMatrix(aMeshComponent.myTransformMatrix), myIsDeferred(aMeshComponent.myIsDeferred)
-#ifndef _RETAIL
-, myLerpValue(aMeshComponent.myLerpValue), myLerpColor1(aMeshComponent.myLerpColor1), myLerpColor2(aMeshComponent.myLerpColor2)
-#endif // !_RETAIL
+myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
 {
 	if (myParent)
 	{
@@ -72,13 +57,8 @@ MeshComponent& MeshComponent::operator=(const MeshComponent& aMeshComponent)
 	myName = aMeshComponent.myName;
 	myPath = aMeshComponent.myPath;
 	myRenderShadow = aMeshComponent.myRenderShadow;
-	myTransformMatrix = aMeshComponent.myTransformMatrix;
 	myIsDeferred = aMeshComponent.myIsDeferred;
-#ifndef _RETAIL
-	myLerpValue = aMeshComponent.myLerpValue;
-	myLerpColor1 = aMeshComponent.myLerpColor1;
-	myLerpColor2 = aMeshComponent.myLerpColor2;
-#endif // !_RETAIL
+
 	if (myParent)
 	{
 		myTransform.SetParent(GetParentTransform());
@@ -97,13 +77,8 @@ MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
 	myName = aMeshComponent.myName;
 	myPath = aMeshComponent.myPath;
 	myRenderShadow = aMeshComponent.myRenderShadow;
-	myTransformMatrix = aMeshComponent.myTransformMatrix;
 	myIsDeferred = aMeshComponent.myIsDeferred;
-#ifndef _RETAIL
-	myLerpValue = aMeshComponent.myLerpValue;
-	myLerpColor1 = aMeshComponent.myLerpColor1;
-	myLerpColor2 = aMeshComponent.myLerpColor2;
-#endif // !_RETAIL
+
 	if (myParent)
 	{
 		myTransform.SetParent(GetParentTransform());
@@ -150,12 +125,6 @@ void MeshComponent::Init(const Json::Value& aJson)
 	{
 		myElements[element["Index"].asInt()].myMaterial = element["Material"];
 	}
-
-#ifndef _RETAIL
-	myLerpValue = aJson["LerpValue"].asFloat();
-	myLerpColor1 = Crimson::Vector4f(aJson["LerpColor1"]);
-	myLerpColor2 = Crimson::Vector4f(aJson["LerpColor2"]);
-#endif // !_RETAIL
 }
 
 void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath)
@@ -325,26 +294,8 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
-	if (ColorManager::CreateImGuiComponents(myLerpColor1, myLerpName1, "Color1"))
-	{
-		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
-	}
-	ImGui::SameLine();
-	ImGui::ColorEdit4("   ", &myLerpColor1.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
 
-	if (ColorManager::CreateImGuiComponents(myLerpColor2, myLerpName2, "Color2"))
-	{
-		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
-	}
-	ImGui::SameLine();
-	ImGui::ColorEdit4("    ", &myLerpColor2.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
-
-	if (ImGui::SliderFloat("Color", &myLerpValue, 0.f, 1.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
-	{
-		myColor = Crimson::Vector4f::Lerp(myLerpColor1, myLerpColor2, myLerpValue);
-	}
-	ImGui::SameLine();
-	ImGui::ColorEdit4("  ", &myColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoPicker);
+	ImGui::ColorEdit4("Color", &myColor.x);
 
 	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
 	
@@ -357,6 +308,25 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 	}
 
 	myTransform.CreateImGuiComponents(aWindowName);
+}
+
+void MeshComponent::Serialize(std::ostream& aStream) const
+{
+	aStream;
+	/*Component::Serialize(aStream);
+	myIsDeferred;
+	myRenderShadow;
+	std::string* myPath;
+	myColor;
+	myName;
+	myBoxSphereBounds;
+	myElements;
+	Transform myTransform;*/
+}
+
+void MeshComponent::Deserialize(std::istream& aStream)
+{
+	aStream;
 }
 
 Json::Value MeshComponent::ToJson() const
@@ -377,12 +347,6 @@ Json::Value MeshComponent::ToJson() const
 		element["Index"] = i;
 		element["Material"] = myElements[i].myMaterial.ToJson();
 	}
-
-#ifndef _RETAIL
-	result["LerpValue"] = myLerpValue;
-	result["LerpColor1"] = myLerpColor1.ToJsonColor();
-	result["LerpColor2"] = myLerpColor2.ToJsonColor();
-#endif // !_RETAIL
 
 	return result;
 }

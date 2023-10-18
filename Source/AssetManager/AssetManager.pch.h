@@ -26,6 +26,7 @@ using namespace Microsoft::WRL;
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_stdlib.h"
 
+#include "Math/Matrix4x4.hpp"
 #include "Json/JsonVector.hpp"
 #include "File/DirectoryFunctions.h"
 
