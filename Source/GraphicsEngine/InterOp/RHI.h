@@ -110,7 +110,7 @@ public:
 	 * @param outCBuffer The resulting Constant Buffer pointer.
 	 * @param aSize The size of the constant buffer object to create. Should probably be a sizeof some struct. Must be a multiple of 16 bytes, and max size is 65536 bytes, or 64kB!
 	 */
-	static bool CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize);
+	static bool CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize, const std::wstring& aName);
 
 	/**
 	 * Updates the Constant Buffer object in Graphics Card memory with the provided data.

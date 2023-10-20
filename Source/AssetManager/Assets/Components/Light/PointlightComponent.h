@@ -35,15 +35,18 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	const PointlightComponent* GetTypePointer() const override;
 
 private:
+	std::shared_ptr<Texture> myShadowMap;
 	Crimson::Vector3f myPosition;
 	Crimson::Vector3f myColor;
-	std::shared_ptr<Texture> myShadowMap;
 	float myRadius;
 	float myIntensity;
 	bool myCastShadows;

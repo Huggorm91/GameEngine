@@ -206,10 +206,38 @@ void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName
 	}
 }
 
+void AnimatedMeshComponent::Serialize(std::ostream& aStream) const
+{
+	MeshComponent::Serialize(aStream);
+	size_t skeletonSize = mySkeleton ? mySkeleton->GetPath().size() + 1 : 1;
+	aStream.write(mySkeleton ? mySkeleton->GetPath().c_str() : "\0", skeletonSize);
+	size_t animationSize = myAnimation.HasData() ? myAnimation.GetPath().size() + 1 : 1;
+	aStream.write(myAnimation.HasData() ? myAnimation.GetPath().c_str() : "\0", animationSize);
+
+	size_t size = sizeof(myAnimationTimer) + sizeof(myCurrentFrame) + sizeof(myAnimationState) + sizeof(myIsLooping);
+	aStream.write(reinterpret_cast<const char*>(&myAnimationTimer), size);
+}
+
+void AnimatedMeshComponent::Deserialize(std::istream& aStream)
+{
+	MeshComponent::Deserialize(aStream);
+	std::string skeletonPath;
+	std::getline(aStream, skeletonPath, '\0');
+	std::string animationPath;
+	std::getline(aStream, animationPath, '\0');
+
+	size_t size = sizeof(myAnimationTimer) + sizeof(myCurrentFrame) + sizeof(myAnimationState) + sizeof(myIsLooping);
+	aStream.read(reinterpret_cast<char*>(&myAnimationTimer), size);
+
+	mySkeleton = AssetManager::GetAsset<Skeleton*>(skeletonPath);
+	myAnimation = AssetManager::GetAsset<Animation>(animationPath);
+	UpdateCache();
+}
+
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation.GetName();
+	result["Animation"] = myAnimation.GetPath();
 	result["AnimationTimer"] = myAnimationTimer;
 	result["CurrentFrame"] = myCurrentFrame;
 	result["AnimationState"] = static_cast<int>(myAnimationState);

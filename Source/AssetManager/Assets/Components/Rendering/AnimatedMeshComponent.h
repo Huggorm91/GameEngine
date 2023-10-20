@@ -42,6 +42,10 @@ public:
 	const std::array<Crimson::Matrix4x4f, 128>& GetBoneTransforms() const;
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 	Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	const AnimatedMeshComponent* GetTypePointer() const override;

@@ -322,7 +322,7 @@ void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr
 		}
 	}
 	mySelectedObjects = newSelection;
-	myMultiSelectionTransform = Transform();
+	//myMultiSelectionTransform = Transform();
 }
 
 std::string ImguiManager::GetDropFilePath(unsigned anIndex)
@@ -395,7 +395,7 @@ void ImguiManager::CopyAllDropFiles(const std::string& aTargetFolder)
 
 void ImguiManager::AddToSelection(GameObject* anObject)
 {
-	myMultiSelectionTransform = Transform();
+	//myMultiSelectionTransform = Transform();
 	mySelectedObjects.emplace(anObject);
 }
 

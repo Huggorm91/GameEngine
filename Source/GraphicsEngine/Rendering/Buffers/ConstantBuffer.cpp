@@ -11,9 +11,9 @@ ConstantBufferBase& ConstantBufferBase::operator=(const ConstantBufferBase& aBas
 	return *this;
 }
 
-bool ConstantBufferBase::Initialize()
+bool ConstantBufferBase::Initialize(const std::wstring& aName)
 {
-	return RHI::CreateConstantBuffer(myBuffer, myDataSize);
+	return RHI::CreateConstantBuffer(myBuffer, myDataSize, aName);
 }
 
 ConstantBufferBase::~ConstantBufferBase()

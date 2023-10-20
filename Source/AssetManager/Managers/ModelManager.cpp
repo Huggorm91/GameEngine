@@ -174,22 +174,6 @@ MeshComponent* ModelManager::GetMesh(const std::string& aPath, bool aShouldLogEr
 		return &model->GetComponent<MeshComponent>();
 	}
 
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
-	path = Crimson::GetValidPath(path, GetPath());
-	if (path.empty())
-	{
-		if (aShouldLogErrors)
-		{
-			AMLogger.Warn("ModelManager::GetMesh: Could not find path: " + aPath);
-		}
-		return nullptr;
-	}
-
-	if (auto model = GetModel(path, aShouldLogErrors); model != nullptr)
-	{
-		return &model->GetComponent<MeshComponent>();
-	}
-
 	if (aShouldLogErrors)
 	{
 		AMLogger.Warn("ModelManager: Could not find a MeshComponent: " + aPath);
@@ -204,26 +188,42 @@ AnimatedMeshComponent* ModelManager::GetAnimatedMesh(const std::string& aPath, b
 		return &model->GetComponent<AnimatedMeshComponent>();
 	}
 
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
-	path = Crimson::GetValidPath(path, GetPath());
-	if (path.empty())
-	{
-		if (aShouldLogErrors)
-		{
-			AMLogger.Warn("ModelManager::GetAnimatedMesh: Could not find path: " + aPath);
-		}
-		return nullptr;
-	}
-
-	if (auto model = GetModel(path, aShouldLogErrors); model != nullptr)
-	{
-		return &model->GetComponent<AnimatedMeshComponent>();
-	}
-
 	if (aShouldLogErrors)
 	{
 		AMLogger.Warn("ModelManager: Could not find an AnimatedMeshComponent: " + aPath);
 	}
+	return nullptr;
+}
+
+std::vector<MeshElement> ModelManager::GetMeshElements(const std::string& aPath, bool aShouldLogErrors)
+{
+	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
+	{
+		return model->GetComponent<MeshComponent>().GetElements();
+	}
+
+	if (aShouldLogErrors)
+	{
+		AMLogger.Warn("ModelManager: Could not find any MeshElements: " + aPath);
+	}
+
+	return std::vector<MeshElement>();
+}
+
+const std::string* ModelManager::GetMeshPathPointer(const std::string& aPath)
+{
+	if (auto iter = myMeshData.find(aPath); iter != myMeshData.end())
+	{
+		return &iter->first;
+	}
+
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = Crimson::GetValidPath(path, GetPath());
+	if (auto iter = myMeshData.find(path); iter != myMeshData.end())
+	{
+		return &iter->first;
+	}
+
 	return nullptr;
 }
 

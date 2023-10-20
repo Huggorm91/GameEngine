@@ -64,10 +64,10 @@ public:
 protected:
 	bool myIsDeferred;
 	bool myRenderShadow;
-	const std::string* myPath;
 	Crimson::Vector4f myColor;
-	std::string myName;
 	BoxSphereBounds myBoxSphereBounds;
+	const std::string* myPath;
+	std::string myName;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 

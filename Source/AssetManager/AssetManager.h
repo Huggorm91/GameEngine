@@ -29,6 +29,8 @@ public:
 
 	template<> static MeshComponent GetAsset(const std::string& anIdentifier);
 	template<> static AnimatedMeshComponent GetAsset(const std::string& anIdentifier);
+	template<> static std::vector<MeshElement> GetAsset(const std::string& anIdentifier);
+	template<> static const std::string* GetAsset(const std::string& anIdentifier);
 
 	template<> static Animation GetAsset(const std::string& anIdentifier);
 
@@ -132,7 +134,7 @@ private:
 /*******************************************************************************************************************************************************/
 
 template<class T>
-inline T AssetManager::GetAsset(const std::string& anIdentifier)
+inline T AssetManager::GetAsset(const std::string&)
 {
 	return nullptr;
 }
@@ -157,6 +159,18 @@ template<>
 inline AnimatedMeshComponent AssetManager::GetAsset(const std::string& anIdentifier)
 {
 	return *myModelManager.GetAnimatedMesh(anIdentifier, myIsLoggingErrors);
+}
+
+template<>
+inline std::vector<MeshElement> AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return myModelManager.GetMeshElements(anIdentifier, myIsLoggingErrors);
+}
+
+template<>
+inline const std::string* AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return myModelManager.GetMeshPathPointer(anIdentifier);
 }
 
 template<>

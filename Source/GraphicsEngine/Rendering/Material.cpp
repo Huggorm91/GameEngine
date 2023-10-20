@@ -12,7 +12,7 @@ Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextur
 Material::Material(const Material& aMaterial) : myVertexShader(aMaterial.myVertexShader), myPixelShader(aMaterial.myPixelShader), myTextures(aMaterial.myTextures), myBuffer(aMaterial.myBuffer), myName(aMaterial.myName), myAlbedoTexture(aMaterial.myAlbedoTexture), myFXTexture(aMaterial.myFXTexture),
 myNormalTexture(aMaterial.myNormalTexture), myMaterialTexture(aMaterial.myMaterialTexture)
 {
-	myBuffer.Initialize();
+	myBuffer.Initialize(L"MaterialBuffer");
 }
 
 Material::Material(const Json::Value& aJsonValue) : myVertexShader(aJsonValue["VertexShader"].isNull() ? nullptr : AssetManager::GetAsset<Shader*>(aJsonValue["VertexShader"].asString())),
@@ -35,13 +35,13 @@ myFXTexture(aJsonValue["FXTexture"].isNull() ? nullptr : AssetManager::GetAsset<
 		const Json::Value& texture = aJsonValue["Textures"][i];
 		myTextures.emplace_back(texture["Texture"].isNull() ? nullptr : AssetManager::GetAsset<Texture*>(texture["Texture"].asString()), texture["Stage"].asUInt(), texture["Slot"].asUInt());
 	}
-	myBuffer.Initialize();
+	myBuffer.Initialize(L"MaterialBuffer");
 }
 
 Material::Material(const std::string& aName, Shader* aVertexShader, Shader* aPixelShader, Texture* anAlbedo, Texture* aNormal, Texture* aMaterial, Texture* aFX) : myVertexShader(aVertexShader), myPixelShader(aPixelShader), myTextures(),
 myBuffer(), myName(aName), myAlbedoTexture(anAlbedo), myNormalTexture(aNormal), myMaterialTexture(aMaterial), myFXTexture(aFX)
 {
-	myBuffer.Initialize();
+	myBuffer.Initialize(L"MaterialBuffer");
 }
 
 Material& Material::operator=(const Material& aMaterial)
@@ -55,7 +55,7 @@ Material& Material::operator=(const Material& aMaterial)
 	myMaterialTexture = aMaterial.myMaterialTexture;
 	myFXTexture = aMaterial.myFXTexture;
 	myBuffer = aMaterial.myBuffer;
-	myBuffer.Initialize();
+	myBuffer.Initialize(L"MaterialBuffer");
 	return *this;
 }
 

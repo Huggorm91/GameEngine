@@ -341,7 +341,7 @@ bool RHI::CreateIndexBuffer(ComPtr<ID3D11Buffer>& outIxBuffer, const std::vector
 	return true;
 }
 
-bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize)
+bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize, const std::wstring& aName)
 {
 	// Max CBuffer size per buffer in bytes.
 	assert(aSize <= 65536);
@@ -363,6 +363,9 @@ bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize)
 		ReportError(result, L"Failed to create constant buffer!");
 		return false;
 	}
+	
+	outCBuffer->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aName.length()), aName.data());
+	
 
 	return true;
 }

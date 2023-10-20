@@ -33,16 +33,19 @@ public:
 	bool IsCastingShadows() const;
 	std::shared_ptr<Texture>& GetShadowMap();
 
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	const DirectionallightComponent* GetTypePointer() const override;
 
 private:
+	std::shared_ptr<Texture> myShadowMap;
 	Crimson::Vector3f myInvertedLightDirection;
 	Crimson::Vector3f myLightDirection;
 	Crimson::Vector3f myColor;
-	std::shared_ptr<Texture> myShadowMap;
 	float myIntensity;
 	bool myCastShadows;
 

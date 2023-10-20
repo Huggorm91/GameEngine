@@ -22,7 +22,7 @@ protected:
 	ConstantBufferBase& operator=(const ConstantBufferBase& aBase);
 
 public:
-	bool Initialize();
+	bool Initialize(const std::wstring& aName);
 	virtual ~ConstantBufferBase();
 };
 

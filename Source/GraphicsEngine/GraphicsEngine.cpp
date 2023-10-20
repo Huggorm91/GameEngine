@@ -155,10 +155,10 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			myLightBufferSlot = 2;
 			myMaterialBufferSlot = 3;
 
-			myFrameBuffer.Initialize();
-			myObjectBuffer.Initialize();
-			myLightBuffer.Initialize();
-			myMaterialBuffer.Initialize();
+			myFrameBuffer.Initialize(L"FrameBuffer");
+			myObjectBuffer.Initialize(L"ObjectBuffer");
+			myLightBuffer.Initialize(L"LightBuffer");
+			myMaterialBuffer.Initialize(L"MaterialBuffer");
 
 			myFrameBuffer.Data.ScreenSize = { static_cast<float>(RHI::GetDeviceSize().Width), static_cast<float>(RHI::GetDeviceSize().Height) };
 

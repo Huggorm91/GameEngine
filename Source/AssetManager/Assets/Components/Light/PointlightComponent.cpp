@@ -148,6 +148,20 @@ std::shared_ptr<Texture>& PointlightComponent::GetShadowMap()
 	return myShadowMap;
 }
 
+void PointlightComponent::Serialize(std::ostream& aStream) const
+{
+	Component::Serialize(aStream);
+	size_t size = sizeof(myPosition) + sizeof(myColor) + sizeof(myRadius) + sizeof(myIntensity) + sizeof(myCastShadows);
+	aStream.write(reinterpret_cast<const char*>(&myPosition), size);
+}
+
+void PointlightComponent::Deserialize(std::istream& aStream)
+{
+	Component::Deserialize(aStream);
+	size_t size = sizeof(myPosition) + sizeof(myColor) + sizeof(myRadius) + sizeof(myIntensity) + sizeof(myCastShadows);
+	aStream.read(reinterpret_cast<char*>(&myPosition), size);
+}
+
 void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);

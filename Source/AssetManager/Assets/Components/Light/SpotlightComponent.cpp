@@ -264,3 +264,17 @@ std::shared_ptr<Texture>& SpotlightComponent::GetShadowMap()
 	return myShadowMap;
 }
 
+void SpotlightComponent::Serialize(std::ostream& aStream) const
+{
+	Component::Serialize(aStream);
+	size_t size = sizeof(myPosition) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myRange) + sizeof(myIntensity) + sizeof(myInnerAngle) + sizeof(myOuterAngle) + sizeof(myCastShadows);
+	aStream.write(reinterpret_cast<const char*>(&myPosition), size);
+}
+
+void SpotlightComponent::Deserialize(std::istream& aStream)
+{
+	Component::Deserialize(aStream);
+	size_t size = sizeof(myPosition) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myRange) + sizeof(myIntensity) + sizeof(myInnerAngle) + sizeof(myOuterAngle) + sizeof(myCastShadows);
+	aStream.read(reinterpret_cast<char*>(&myPosition), size);
+}
+

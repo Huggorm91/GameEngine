@@ -312,21 +312,27 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 
 void MeshComponent::Serialize(std::ostream& aStream) const
 {
-	aStream;
-	/*Component::Serialize(aStream);
-	myIsDeferred;
-	myRenderShadow;
-	std::string* myPath;
-	myColor;
-	myName;
-	myBoxSphereBounds;
-	myElements;
-	Transform myTransform;*/
+	Component::Serialize(aStream);
+	size_t size = sizeof(myIsDeferred) + sizeof(myRenderShadow) + sizeof(myColor) + sizeof(myBoxSphereBounds);
+	aStream.write(reinterpret_cast<const char*>(&myIsDeferred), size);
+	size_t pathSize = myPath ? myPath->size() + 1 : 1;
+	aStream.write(myPath ? myPath->c_str() : "\0", pathSize);
+	aStream.write(myName.c_str(), myName.size() + 1);
+	myTransform.Serialize(aStream);
 }
 
 void MeshComponent::Deserialize(std::istream& aStream)
 {
-	aStream;
+	Component::Deserialize(aStream);
+	size_t size = sizeof(myIsDeferred) + sizeof(myRenderShadow) + sizeof(myColor) + sizeof(myBoxSphereBounds);
+	aStream.read(reinterpret_cast<char*>(&myIsDeferred), size);
+	std::string path;
+	std::getline(aStream, path, '\0');
+	std::getline(aStream, myName, '\0');
+	myTransform.Deserialize(aStream);
+
+	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(path);
+	myPath = AssetManager::GetAsset <std::string*>(path);
 }
 
 Json::Value MeshComponent::ToJson() const

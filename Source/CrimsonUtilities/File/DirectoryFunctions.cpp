@@ -7,7 +7,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -17,7 +22,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
@@ -32,7 +36,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetFilepathsInDirectory(const std::string& aPath, const std::string& anExtension, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -42,7 +51,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
@@ -57,7 +65,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetFoldersInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -67,7 +80,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::directory_iterator(aPath))
 		{
@@ -81,7 +93,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -91,7 +108,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
@@ -106,7 +122,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetAllFilepathsInDirectory(const std::string& aPath, const std::string& anExtension, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -116,7 +137,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
@@ -131,7 +151,12 @@ namespace Crimson
 
 	std::unordered_set<std::string> GetAllFoldersInDirectory(const std::string& aPath, bool aGetRelativeToAppPath)
 	{
-		std::unordered_set<std::string> result{};
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
+
 		fs::path dirPath;
 		if (aGetRelativeToAppPath)
 		{
@@ -141,7 +166,6 @@ namespace Crimson
 		{
 			dirPath = aPath;
 		}
-		fs::create_directories(aPath);
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
@@ -155,10 +179,13 @@ namespace Crimson
 
 	std::unordered_set<std::string> SearchDirectory(const std::string& aPath, const std::string& aSearchWord)
 	{
-		std::unordered_set<std::string> result{};
-		const auto& appPath = fs::current_path();
-		fs::create_directories(aPath);
+		std::unordered_set<std::string> result;
+		if (!fs::exists(aPath))
+		{
+			return result;
+		}
 
+		const auto& appPath = fs::current_path();
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
 			if (file.path().string().find(aSearchWord) != std::string::npos)

@@ -141,6 +141,20 @@ std::shared_ptr<Texture>& DirectionallightComponent::GetShadowMap()
 	return myShadowMap;
 }
 
+void DirectionallightComponent::Serialize(std::ostream& aStream) const
+{
+	Component::Serialize(aStream);
+	size_t size = sizeof(myInvertedLightDirection) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myIntensity) + sizeof(myCastShadows);
+	aStream.write(reinterpret_cast<const char*>(&myInvertedLightDirection), size);
+}
+
+void DirectionallightComponent::Deserialize(std::istream& aStream)
+{
+	Component::Deserialize(aStream);
+	size_t size = sizeof(myInvertedLightDirection) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myIntensity) + sizeof(myCastShadows);
+	aStream.read(reinterpret_cast<char*>(&myInvertedLightDirection), size);
+}
+
 void DirectionallightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);

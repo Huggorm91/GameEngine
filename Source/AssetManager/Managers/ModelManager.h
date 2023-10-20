@@ -30,6 +30,8 @@ public:
 
 	MeshComponent* GetMesh(const std::string& aPath, bool aShouldLogErrors);
 	AnimatedMeshComponent* GetAnimatedMesh(const std::string& aPath, bool aShouldLogErrors);
+	std::vector<MeshElement> GetMeshElements(const std::string& aPath, bool aShouldLogErrors);
+	const std::string* GetMeshPathPointer(const std::string& aPath);
 
 	static inline const char* GetExtension(){ return ".fbx"; }
 	static inline const char* GetPath(){ return "..\\Content\\Models\\"; }
