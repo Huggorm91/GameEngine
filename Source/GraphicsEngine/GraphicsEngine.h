@@ -228,6 +228,7 @@ private:
 
 	void LoadDefaultTextures(const Settings& someSettings);
 	bool LoadShaders(const Settings& someSettings);
+	void LoadMaterial(const Settings& someSettings);
 
 	Settings LoadSettings();
 	void SaveSettings(const Settings& someSettings) const;

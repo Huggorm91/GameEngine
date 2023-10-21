@@ -36,6 +36,7 @@ struct SlotContainer
 	unsigned IntermediateBSlot{};
 
 	unsigned MissingTextureSlot{};
+	unsigned DefaultAlbedoTextureSlot{};
 	unsigned DefaultNormalTextureSlot{};
 	unsigned DefaultMaterialTextureSlot{};
 	unsigned DefaultFXTextureSlot{};

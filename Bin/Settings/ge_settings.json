@@ -1,4 +1,5 @@
 {
+	"AlbedoTexture" : "Default_Albedo.dds",
 	"BackgroundColor" : 
 	{
 		"A" : 0.0,
@@ -122,16 +123,42 @@
 		}
 	],
 	"CopyPSShader" : "Copy_PS", // Only use 'ShaderName.cso' and not full path
-	"CubeMap" : "nice_cubemap.dds",
-	"DefaultMaterial" : "Default_Material.mat",
+	"CubeMap" : "Default_CubeMap.dds",
+	"DefaultMaterial":
+	{
+		"AlbedoColor" : 
+		{
+			"A" : 0.0,
+			"B" : 0.0,
+			"G" : 0.0,
+			"R" : 0.0
+		},
+		"EmissionColor" : 
+		{
+			"B" : 0.0,
+			"G" : 0.0,
+			"R" : 0.0
+		},
+		"EmissionIntensity" : 0.0,
+		"Metalness" : 0.0,
+		"NormalStrength" : 1.0,
+		"Shininess" : 62.0,
+		"UVTiling" : 
+		{
+			"X" : 1.0,
+			"Y" : 1.0
+		}
+	},
+	"DefaultPSShader" : "Default_Forward_PS", // Only use 'ShaderName.cso' and not full path
+	"DefaultVSShader" : "Default_VS", // Only use 'ShaderName.cso' and not full path
 	"EnvironmentPSShader" : "Default_Environment_PS", // Only use 'ShaderName.cso' and not full path
-	"FXTexture" : "T_Default_Black_C.dds",
+	"FXTexture" : "Default_FX.dds",
 	"GBufferPSShader" : "Default_GBuffer_PS", // Only use 'ShaderName.cso' and not full path
 	"GammaPSShader" : "Gamma_PS", // Only use 'ShaderName.cso' and not full path
 	"LuminancePSShader" : "Luminance_PS", // Only use 'ShaderName.cso' and not full path
-	"MaterialTexture" : "T_Default_M.dds",
-	"MissingTexture" : "T_Missing_C.dds",
-	"NormalTexture" : "T_Default_Flat_N.dds",
+	"MaterialTexture" : "Default_Material.dds",
+	"MissingTexture" : "Missing_Texture.dds",
+	"NormalTexture" : "Default_Normal.dds",
 	"PointlightPSShader" : "Default_Pointlight_PS", // Only use 'ShaderName.cso' and not full path
 	"SpotlightPSShader" : "Default_Spotlight_PS", // Only use 'ShaderName.cso' and not full path
 	"ToneMap" : 2

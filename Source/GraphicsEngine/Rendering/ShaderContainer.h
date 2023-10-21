@@ -3,6 +3,8 @@
 
 struct ShaderContainer
 {
+	Shader DefaultPS{};
+	Shader DefaultVS{};
 	Shader QuadVS{};
 
 	Shader LuminancePS{};

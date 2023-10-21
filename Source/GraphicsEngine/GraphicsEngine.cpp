@@ -1,6 +1,5 @@
 #include "GraphicsEngine.pch.h"
 #include "GraphicsEngine.h"
-#include "AssetManager/AssetManager.h"
 #include <fstream>
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
@@ -46,10 +45,11 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		// Textures
 		{
 			myTextureSlots.MissingTextureSlot = 99u;
-			myTextureSlots.DefaultNormalTextureSlot = 98u;
-			myTextureSlots.DefaultMaterialTextureSlot = 97u;
-			myTextureSlots.DefaultFXTextureSlot = 96u;
-			myTextureSlots.BrdfLUTTextureSlot = 95u;
+			myTextureSlots.DefaultAlbedoTextureSlot = 98u;
+			myTextureSlots.DefaultNormalTextureSlot = 97u;
+			myTextureSlots.DefaultMaterialTextureSlot = 96u;
+			myTextureSlots.DefaultFXTextureSlot = 95u;
+			myTextureSlots.BrdfLUTTextureSlot = 94u;
 			myTextureSlots.DefaultCubeMapSlot = 100u;
 
 			myTextureSlots.GBufferSlot = 10u;
@@ -57,9 +57,9 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			myTextureSlots.IntermediateASlot = 20u;
 			myTextureSlots.IntermediateBSlot = 21u;
 
-			myTextureSlots.DirectionalShadowMapSlot = 94u;
+			myTextureSlots.DirectionalShadowMapSlot = 93u;
 			myTextureSlots.PointShadowMapSlot = 120u;
-			myTextureSlots.SpotShadowMapSlot = 86u;
+			myTextureSlots.SpotShadowMapSlot = 85u;
 
 			if (!CreateLUTTexture())
 			{
@@ -130,20 +130,20 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			}
 		}
 
-		// Material
-		{
-			myDefaultMaterial = AssetManager::GetAsset<Material>(settings.DefaultMaterial);
-			if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
-			{
-				GELogger.Err("Failed to create InputLayout!");
-				return false;
-			}
-		}
-
 		// Shaders
 		{
 			if (!LoadShaders(settings))
 			{
+				return false;
+			}
+		}
+
+		// Material
+		{
+			LoadMaterial(settings);
+			if (!RHI::CreateInputLayout(Vertex::InputLayout, Vertex::InputLayoutDefinition, myDefaultMaterial.GetVertexShader()->GetBlob(), myDefaultMaterial.GetVertexShader()->GetBlobSize()))
+			{
+				GELogger.Err("Failed to create InputLayout!");
 				return false;
 			}
 		}
@@ -188,13 +188,24 @@ void GraphicsEngine::SaveSettings() const
 {
 	Settings settings;
 
+	auto& material = settings.DefaultMaterial;	
+	material.Shininess = myDefaultMaterial.GetShininess();
+	material.Metalness = myDefaultMaterial.GetMetalness();
+	material.NormalStrength = myDefaultMaterial.GetNormalStrength();
+	material.UVTiling = myDefaultMaterial.GetUVTiling();
+	material.AlbedoColor = myDefaultMaterial.GetAlbedoColor();
+	material.EmissionColor = myDefaultMaterial.GetEmissionColor();
+	material.EmissionIntensity = myDefaultMaterial.GetEmissionIntensity();
+
 	settings.DefaultMissingTexture = Crimson::ToString(myTextures.MissingTexture.GetName());
+	settings.DefaultAlbedoTexture = Crimson::ToString(myTextures.DefaultAlbedoTexture.GetName());
 	settings.DefaultNormalTexture = Crimson::ToString(myTextures.DefaultNormalTexture.GetName());
 	settings.DefaultMaterialTexture = Crimson::ToString(myTextures.DefaultMaterialTexture.GetName());
 	settings.DefaultFXTexture = Crimson::ToString(myTextures.DefaultFXTexture.GetName());
 	settings.DefaultCubeMap = Crimson::ToString(myTextures.DefaultCubeMap.GetName());
 
-	settings.DefaultMaterial = myDefaultMaterial.GetName();
+	settings.DefaultVSShader = Crimson::ToString(myShaders.DefaultVS.GetName());
+	settings.DefaultPSShader = Crimson::ToString(myShaders.DefaultPS.GetName());
 
 	settings.LuminancePS = Crimson::ToString(myShaders.LuminancePS.GetName());
 	settings.BlurPS = Crimson::ToString(myShaders.BlurPS.GetName());
@@ -1212,7 +1223,7 @@ bool GraphicsEngine::CreateLUTTexture()
 	}
 	RHI::ClearRenderTarget(&myTextures.BrdfLUTTexture);
 
-	std::wstring path = AssetManager::GetShaderPathW();
+	std::wstring path = Settings::GetShaderPath(myAssetPath);
 
 	if (!RHI::LoadShader(&myShaders.QuadVS, path + L"ScreenQuad_VS.cso"))
 	{
@@ -1315,6 +1326,13 @@ void GraphicsEngine::LoadDefaultTextures(const Settings& someSettings)
 	}
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultNormalTextureSlot, &myTextures.DefaultNormalTexture);
 
+	// Albedo
+	if (!RHI::LoadTexture(&myTextures.DefaultAlbedoTexture, Crimson::ToWString(someSettings.DefaultAlbedoTexture)))
+	{
+		GELogger.Err("Failed to load default normal texture!");
+	}
+	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.DefaultAlbedoTextureSlot, &myTextures.DefaultAlbedoTexture);
+
 	// Missing
 	if (!RHI::LoadTexture(&myTextures.MissingTexture, Crimson::ToWString(someSettings.DefaultMissingTexture)))
 	{
@@ -1332,6 +1350,20 @@ void GraphicsEngine::LoadDefaultTextures(const Settings& someSettings)
 
 bool GraphicsEngine::LoadShaders(const Settings& someSettings)
 {
+	// Default VS
+	if (!RHI::LoadShader(&myShaders.DefaultVS, Crimson::ToWString(someSettings.DefaultVSShader)))
+	{
+		GELogger.Err("Failed to load Default vertex Shader!");
+		return false;
+	}
+
+	// Default PS
+	if (!RHI::LoadShader(&myShaders.DefaultPS, Crimson::ToWString(someSettings.DefaultPSShader)))
+	{
+		GELogger.Err("Failed to load Default pixel Shader!");
+		return false;
+	}
+
 	// Luminance
 	if (!RHI::LoadShader(&myShaders.LuminancePS, Crimson::ToWString(someSettings.LuminancePS)))
 	{
@@ -1395,6 +1427,26 @@ bool GraphicsEngine::LoadShaders(const Settings& someSettings)
 		return false;
 	}
 	return true;
+}
+
+void GraphicsEngine::LoadMaterial(const Settings& someSettings)
+{
+	myDefaultMaterial.SetVertexShader(&myShaders.DefaultVS);
+	myDefaultMaterial.SetPixelShader(&myShaders.DefaultPS);
+
+	myDefaultMaterial.SetAlbedoTexture(&myTextures.DefaultAlbedoTexture);
+	myDefaultMaterial.SetNormalTexture(&myTextures.DefaultAlbedoTexture);
+	myDefaultMaterial.SetMaterialTexture(&myTextures.DefaultMaterialTexture);
+	myDefaultMaterial.SetFXTexture(&myTextures.DefaultFXTexture);
+
+
+	myDefaultMaterial.SetShininess(someSettings.DefaultMaterial.Shininess);
+	myDefaultMaterial.SetMetalness(someSettings.DefaultMaterial.Metalness);
+	myDefaultMaterial.SetNormalStrength(someSettings.DefaultMaterial.NormalStrength);
+	myDefaultMaterial.SetUVTiling(someSettings.DefaultMaterial.UVTiling);
+	myDefaultMaterial.SetAlbedoColor(someSettings.DefaultMaterial.AlbedoColor);
+	myDefaultMaterial.SetEmissionColor(someSettings.DefaultMaterial.EmissionColor);
+	myDefaultMaterial.SetEmissionIntensity(someSettings.DefaultMaterial.EmissionIntensity);
 }
 
 Settings GraphicsEngine::LoadSettings()
