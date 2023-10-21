@@ -477,7 +477,7 @@ void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 void MeshComponent::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 {
 	ImGui::PushID(aSlot);
-	if (ImGui::BeginCombo("", Crimson::ToString(aTexture->GetName()).c_str(), ImGuiComboFlags_HeightLarge))
+	if (ImGui::BeginCombo("", Crimson::ToString(aTexture ? aTexture->GetName() : L"").c_str(), ImGuiComboFlags_HeightLarge))
 	{
 		for (auto& path : AssetManager::GetAvailableTextures())
 		{

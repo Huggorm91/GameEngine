@@ -141,7 +141,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 #ifndef _RETAIL
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
-	myImguiManager.SetActiveObjects(&myScene.GameObjects);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
@@ -149,7 +150,6 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
 
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::Pause);
 
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
@@ -239,13 +239,24 @@ void ModelViewer::SetPlayMode(bool aState)
 	if (myIsInPlayMode)
 	{
 		myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
+		std::unordered_map<unsigned, unsigned> childlist;
 		for (auto& [id, object] : myScene.GameObjects)
 		{
+			if (object->HasParent())
+			{
+				childlist.emplace(id, object->GetParent()->GetID());
+			}
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
-			myPlayScene.GameObjects.emplace(id, copy);
+			myPlayScene.GameObjects.emplace(id, std::move(copy));
 			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
 		}
+
+		for (auto& [childID, parentID] : childlist)
+		{
+			myPlayScene.GameObjects.at(parentID).AddChild(&myPlayScene.GameObjects.at(childID));
+		}
+
 		myImguiManager.SetActiveObjects(&myPlayScenePointers);
 	}
 	else
@@ -253,6 +264,8 @@ void ModelViewer::SetPlayMode(bool aState)
 		myImguiManager.SetActiveObjects(&myScene.GameObjects);
 		myPlayScenePointers.clear();
 		myPlayScene = Scene();
+		myPlayModeRedoCommands.clear();
+		myPlayModeUndoCommands.clear();
 	}
 }
 
@@ -529,56 +542,93 @@ void ModelViewer::UpdateScene()
 #ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
-	if (myIsInPlayMode)
+	if (!myIsInPlayMode)
 	{
-		return;
-	}
-
-	// Potential future problem with using infinite Undo-stack
-	if (myRedoCommands.size() > 0)
+		// Potential future problem with using infinite Undo-stack
+		if (myRedoCommands.size() > 0)
+		{
+			myRedoCommands.clear();
+		}
+		aCommand->Execute();
+		if (myUndoCommands.empty() || !myUndoCommands.back()->Merge(aCommand.get()))
+		{
+			myUndoCommands.emplace_back(aCommand);
+		}
+		mySceneIsEdited = true;
+	}	
+	else
 	{
-		myRedoCommands.clear();
+		if (myPlayModeRedoCommands.size() > 0)
+		{
+			myPlayModeRedoCommands.clear();
+		}
+		aCommand->Execute();
+		if (myPlayModeUndoCommands.empty() || !myPlayModeUndoCommands.back()->Merge(aCommand.get()))
+		{
+			myPlayModeUndoCommands.emplace_back(aCommand);
+		}
 	}
-	aCommand->Execute();
-	if (myUndoCommands.empty() || !myUndoCommands.back()->Merge(aCommand.get()))
-	{
-		myUndoCommands.emplace_back(aCommand);
-	}
-	mySceneIsEdited = true;
+	
 }
 
 void ModelViewer::UndoCommand()
 {
-	if (myUndoCommands.size() > 0)
+	if (!myIsInPlayMode)
 	{
-		myUndoCommands.back()->Undo();
-		myRedoCommands.emplace_back(myUndoCommands.back());
-		myUndoCommands.pop_back();
-		mySceneIsEdited = true;
+		if (myUndoCommands.size() > 0)
+		{
+			myUndoCommands.back()->Undo();
+			myRedoCommands.emplace_back(myUndoCommands.back());
+			myUndoCommands.pop_back();
+			mySceneIsEdited = true;
+		}
+	}
+	else
+	{
+		if (myPlayModeUndoCommands.size() > 0)
+		{
+			myPlayModeUndoCommands.back()->Undo();
+			myPlayModeRedoCommands.emplace_back(myPlayModeUndoCommands.back());
+			myPlayModeUndoCommands.pop_back();
+			mySceneIsEdited = true;
+		}
 	}
 }
 
 void ModelViewer::RedoCommand()
 {
-	if (myRedoCommands.size() > 0)
+	if (!myIsInPlayMode)
 	{
-		myRedoCommands.back()->Execute();
-		myUndoCommands.emplace_back(myRedoCommands.back());
-		myRedoCommands.pop_back();
-		mySceneIsEdited = true;
+		if (myRedoCommands.size() > 0)
+		{
+			myRedoCommands.back()->Execute();
+			myUndoCommands.emplace_back(myRedoCommands.back());
+			myRedoCommands.pop_back();
+			mySceneIsEdited = true;
+		}
 	}
+	else
+	{
+		if (myPlayModeRedoCommands.size() > 0)
+		{
+			myPlayModeRedoCommands.back()->Execute();
+			myPlayModeUndoCommands.emplace_back(myPlayModeRedoCommands.back());
+			myPlayModeRedoCommands.pop_back();
+			mySceneIsEdited = true;
+		}
+	}	
 }
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 {
-	if (aKey == Crimson::eKey::Pause)
-	{
-		SetPlayMode(!myIsInPlayMode);
-	}
-
 	auto& engine = GraphicsEngine::Get();
 	switch (aKey)
 	{
+	case Crimson::eKey::F1:
+	{
+		SetPlayMode(!myIsInPlayMode);
+		break;
+	}
 	case Crimson::eKey::F4:
 	{
 		engine.NextToneMap();
@@ -613,10 +663,6 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
 
 void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 {
-	if (myIsInPlayMode)
-	{
-		return;
-	}
 	if (aValue < 1.5f)
 	{
 		return;

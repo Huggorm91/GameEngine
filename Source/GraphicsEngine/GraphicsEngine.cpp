@@ -908,7 +908,7 @@ void GraphicsEngine::RenderFrame()
 
 	// PostProcessing
 #ifndef _RETAIL
-	if (myDebugMode == DebugMode::Default)
+	if (myDebugMode == DebugMode::Default && myLightMode != LightMode::IgnoreLight)
 #endif // !_RETAIL
 	{
 		RHI::SetRenderTarget(nullptr, nullptr);

@@ -93,6 +93,9 @@ private:
 
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
+
+	std::vector<std::shared_ptr<EditCommand>> myPlayModeRedoCommands;
+	std::vector<std::shared_ptr<EditCommand>> myPlayModeUndoCommands;
 #endif // _RETAIL
 	HINSTANCE myModuleHandle{ nullptr };
 	HWND myMainWindowHandle{ nullptr };

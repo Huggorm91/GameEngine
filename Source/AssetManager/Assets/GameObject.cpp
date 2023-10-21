@@ -42,7 +42,7 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 }
 
 GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName),
-myImguiText(myName), myParent(aGameObject.myParent), myChildren(aGameObject.myChildren)
+myImguiText(myName), myParent(), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL

@@ -4,6 +4,7 @@
 #include "resource.h"
 #include "Core/Modelviewer.h"
 #include "Input/InputHandler.h"
+#include "Time/Timer.h"
 
 Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
@@ -88,17 +89,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
-    if (uMsg == WM_DESTROY || uMsg == WM_CLOSE)
+    switch (uMsg)
+    {
+    case WM_DESTROY:
+    case WM_CLOSE:
     {
         PostQuitMessage(0);
+        return 0;
+    }
+    case WM_EXITSIZEMOVE:
+    {
+        Crimson::Timer::ResetDeltaTime();
+        break;
     }
 #ifndef _RETAIL
-    if (uMsg == WM_DROPFILES)
+    case WM_DROPFILES:
     {
         ModelViewer::Get().SetDropFile((HDROP)wParam);
         return 0;
     }
 #endif // !_RETAIL
+    default:
+        break;
+    }    
+
     if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
     {
         return true;
