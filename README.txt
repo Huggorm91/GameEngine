@@ -6,7 +6,8 @@ Shift ökar hastigheten
 Q & E roterar kameran runt y-axeln
 Musen roterar kameran runt x- & y-axlarna
 
-F4 ändrar ToneMap
+F1 startar PlayMode
+
 F5 ändrar debug-läge
 F6 ändrar ljus-läge
 F7 ändrar render-läge
@@ -15,6 +16,6 @@ F8 återställer allt till standardläge
 Ctrl + Z ångra senaste redigeringen
 Ctrl + Y gör om senaste ångrade redigeringen
 
-Del raderar de valda objekten
+Del raderar det valda objektet
 
 Håll in Ctrl för att markera flera objekt i scen-listan
