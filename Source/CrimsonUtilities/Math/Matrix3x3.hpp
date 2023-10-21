@@ -34,6 +34,9 @@ namespace Crimson
 		inline Matrix3x3<T>& operator=(const Matrix3x3<T>& aMatrix) = default;
 		inline Matrix3x3<T>& operator=(Matrix3x3<T>&& aMatrix) = default;
 
+		const T& operator()(const unsigned int aRow, const unsigned int aColumn) const;
+		T& operator()(const unsigned int aRow, const unsigned int aColumn);
+
 		static Matrix3x3<T> CreateRotationAroundX(const T& anAngleInRadians);
 		static Matrix3x3<T> CreateRotationAroundY(const T& anAngleInRadians);
 		static Matrix3x3<T> CreateRotationAroundZ(const T& anAngleInRadians);
@@ -52,6 +55,8 @@ namespace Crimson
 		inline void SetForward(const Vector3<T>& aVector);
 		inline void SetUp(const Vector3<T>& aVector);
 		inline void SetRight(const Vector3<T>& aVector);
+
+		Vector3<T> GetEulerAngles() const;
 
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
@@ -140,6 +145,18 @@ namespace Crimson
 	}
 
 	template<typename T>
+	inline const T& Matrix3x3<T>::operator()(const unsigned int aRow, const unsigned int aColumn) const
+	{
+		return *((&m11) + ((aRow - 1) * 3) + (aColumn - 1));
+	}
+
+	template<typename T>
+	inline T& Matrix3x3<T>::operator()(const unsigned int aRow, const unsigned int aColumn)
+	{
+		return *((&m11) + ((aRow - 1) * 3) + (aColumn - 1));
+	}
+
+	template<typename T>
 	inline Matrix3x3<T> Matrix3x3<T>::CreateRotationAroundX(const T& anAngleInRadians)
 	{
 		return Matrix3x3<T>{
@@ -180,6 +197,20 @@ namespace Crimson
 	inline Matrix3x3<T> Matrix3x3<T>::CreateRotationMatrix(const Vector3<T>& aRotation)
 	{
 		return CreateRotationAroundX(aRotation.x) * CreateRotationAroundY(aRotation.y) * CreateRotationAroundZ(aRotation.z);
+	}
+
+	template<typename T>
+	inline Matrix3x3<T> Matrix3x3<T>::GetInverse2D() const
+	{
+		Matrix3x3<T> result{
+			m11, m21, m13,
+			m12, m22, m23,
+			T(), T(), T(1) };
+		Vector3<T> translate(-m31, -m32, T(1));
+		translate = translate * result;
+		result.m31 = translate.x;
+		result.m32 = translate.y;
+		return result;
 	}
 
 	template<typename T>
@@ -234,6 +265,42 @@ namespace Crimson
 		m31 = aVector.z;
 	}
 
+	template <class T>
+	inline Vector3<T> Matrix3x3<T>::GetEulerAngles() const
+	{
+		if (CloseEnough(static_cast<float>((*this)(1, 3)), -1.0f)) {
+			float x = 0;
+			float y = Pi / 2;
+			float z = x + atan2((*this)(2, 1), (*this)(3, 1));
+			return { y, x, z };
+		}
+		else if (CloseEnough(static_cast<float>((*this)(1, 3)), 1.0f)) {
+			float x = 0;
+			float y = -Pi / 2;
+			float z = -x + atan2(-(*this)(2, 1), -(*this)(3, 1));
+			return { y, x, z };
+		}
+		else
+		{
+			float x1 = -asin((*this)(1, 3));
+			float y1 = atan2((*this)(2, 3) / cos(x1), (*this)(3, 3) / cos(x1));
+			float z1 = atan2((*this)(1, 2) / cos(x1), (*this)(1, 1) / cos(x1));
+
+			float x2 = Pi - x1;
+			float y2 = atan2((*this)(2, 3) / cos(x2), (*this)(3, 3) / cos(x2));
+			float z2 = atan2((*this)(1, 2) / cos(x2), (*this)(1, 1) / cos(x2));
+
+			if ((std::abs(x1) + std::abs(y1) + std::abs(z1)) <= (std::abs(x2) + std::abs(y2) + std::abs(z2)))
+			{
+				return { y1, x1, z1 };
+			}
+			else
+			{
+				return { y2, x2, z2 };
+			}
+		}
+	}
+
 	template<typename T>
 	inline void Matrix3x3<T>::Serialize(std::ostream& aStream) const
 	{
@@ -244,20 +311,6 @@ namespace Crimson
 	inline void Matrix3x3<T>::Deserialize(std::istream& aStream)
 	{
 		aStream.read(reinterpret_cast<char*>(&m11), sizeof(m11) * 9);
-	}
-
-	template<typename T>
-	inline Matrix3x3<T> Matrix3x3<T>::GetInverse2D() const
-	{
-		Matrix3x3<T> result{
-			m11, m21, m13,
-			m12, m22, m23,
-			T(), T(), T(1) };
-		Vector3<T> translate(-m31, -m32, T(1));
-		translate = translate * result;
-		result.m31 = translate.x;
-		result.m32 = translate.y;
-		return result;
 	}
 
 	template<typename T>
@@ -351,23 +404,23 @@ namespace Crimson
 	template<typename T>
 	inline Matrix3x3<T>& Matrix3x3<T>::operator*=(const Matrix3x3<T>& aMatrix)
 	{
-		m11 = m11 * aMatrix.m11 + m12 * aMatrix.m21 + m13 * aMatrix.m31;
-		m12 = m11 * aMatrix.m12 + m12 * aMatrix.m22 + m13 * aMatrix.m32;
-		m13 = m11 * aMatrix.m13 + m12 * aMatrix.m23 + m13 * aMatrix.m33;
-		m21 = m21 * aMatrix.m11 + m22 * aMatrix.m21 + m23 * aMatrix.m31;
-		m22 = m21 * aMatrix.m12 + m22 * aMatrix.m22 + m23 * aMatrix.m32;
-		m23 = m21 * aMatrix.m13 + m22 * aMatrix.m23 + m23 * aMatrix.m33;
-		m31 = m31 * aMatrix.m11 + m32 * aMatrix.m21 + m33 * aMatrix.m31;
-		m32 = m31 * aMatrix.m12 + m32 * aMatrix.m22 + m33 * aMatrix.m32;
-		m33 = m31 * aMatrix.m13 + m32 * aMatrix.m23 + m33 * aMatrix.m33;
+		*this = (*this) * aMatrix;
 		return *this;
 	}
 
 	template<typename T>
 	inline Matrix3x3<T> Matrix3x3<T>::operator*(const Matrix3x3<T>& aMatrix) const
 	{
-		Matrix3x3<T> result = *this;
-		return result *= aMatrix;
+		return Matrix3x3<T>(
+			m11 * aMatrix.m11 + m12 * aMatrix.m21 + m13 * aMatrix.m31,
+			m11 * aMatrix.m12 + m12 * aMatrix.m22 + m13 * aMatrix.m32,
+			m11 * aMatrix.m13 + m12 * aMatrix.m23 + m13 * aMatrix.m33,
+			m21 * aMatrix.m11 + m22 * aMatrix.m21 + m23 * aMatrix.m31,
+			m21 * aMatrix.m12 + m22 * aMatrix.m22 + m23 * aMatrix.m32,
+			m21 * aMatrix.m13 + m22 * aMatrix.m23 + m23 * aMatrix.m33,
+			m31 * aMatrix.m11 + m32 * aMatrix.m21 + m33 * aMatrix.m31,
+			m31 * aMatrix.m12 + m32 * aMatrix.m22 + m33 * aMatrix.m32,
+			m31 * aMatrix.m13 + m32 * aMatrix.m23 + m33 * aMatrix.m33);
 	}
 
 	template<typename T>

@@ -549,6 +549,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 	data.IsActive = myIsActive;
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
 	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
+	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);
 
 	for (auto [compType, index] : myIndexList)
@@ -562,7 +563,8 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 	GameObjectData data;
 	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
 	const_cast<unsigned&>(myID) = data.ID;
-
+	myIsActive = data.IsActive;
+	std::getline(aStream, myName, '\0');
 	myTransform.Deserialize(aStream);
 
 	for (unsigned i = 0; i < data.ComponentCount; i++)

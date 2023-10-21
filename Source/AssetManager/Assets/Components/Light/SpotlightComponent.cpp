@@ -276,5 +276,14 @@ void SpotlightComponent::Deserialize(std::istream& aStream)
 	Component::Deserialize(aStream);
 	size_t size = sizeof(myPosition) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myRange) + sizeof(myIntensity) + sizeof(myInnerAngle) + sizeof(myOuterAngle) + sizeof(myCastShadows);
 	aStream.read(reinterpret_cast<char*>(&myPosition), size);
+
+#ifndef _RETAIL
+	myEditDirection = myLightDirection;
+#endif // !_RETAIL
+
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
 }
 

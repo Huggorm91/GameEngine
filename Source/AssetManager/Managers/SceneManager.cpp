@@ -266,7 +266,6 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const Scene& aScene
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(json, &fileStream);
 		fileStream.flush();
-		AMLogger.Log("Successfully saved scene to: " + aPath);
 	}
 	else
 	{
@@ -313,7 +312,6 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const EditorScene& 
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(json, &fileStream);
 		fileStream.flush();
-		AMLogger.Log("Successfully saved scene to: " + aPath);
 	}
 	else
 	{
@@ -396,6 +394,11 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 		unsigned parentID = 0;
 		for (unsigned i = 0; i < gameobjectCount; i++)
 		{
+			aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
+			if (type != Binary::GameObject)
+			{
+				throw std::runtime_error("SceneManager::LoadBinaryScene: Invalid Binary::Type when loading GameObject.");
+			}
 			GameObject object;
 			parentID = object.Deserialize(aStream);
 			if (parentID != 0)
@@ -450,6 +453,12 @@ std::istream& operator>>(std::istream& aStream, EditorScene& aScene)
 		unsigned parentID = 0;
 		for (unsigned i = 0; i < gameobjectCount; i++)
 		{
+			aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
+			if (type != Binary::GameObject)
+			{
+				throw std::runtime_error("SceneManager::LoadBinaryScene: Invalid Binary::Type when loading GameObject.");
+			}
+
 			std::shared_ptr<GameObject> object = std::make_shared<GameObject>();
 			parentID = object->Deserialize(aStream);
 			if (parentID != 0)

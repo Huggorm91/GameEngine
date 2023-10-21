@@ -153,6 +153,15 @@ void DirectionallightComponent::Deserialize(std::istream& aStream)
 	Component::Deserialize(aStream);
 	size_t size = sizeof(myInvertedLightDirection) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myIntensity) + sizeof(myCastShadows);
 	aStream.read(reinterpret_cast<char*>(&myInvertedLightDirection), size);
+
+#ifndef _RETAIL
+	myEditDirection = myLightDirection;
+#endif // !_RETAIL
+
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
 }
 
 void DirectionallightComponent::CreateImGuiComponents(const std::string& aWindowName)
@@ -161,10 +170,13 @@ void DirectionallightComponent::CreateImGuiComponents(const std::string& aWindow
 	ImGui::Checkbox("Cast Shadow", &myCastShadows);
 	ImGui::DragFloat("Intensity", &myIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::ColorEdit3("Color", &myColor.x);
-	if (ImGui::DragFloat3("Light Direction", &myLightDirection.x, .001f))
+#ifndef _RETAIL
+	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x, .001f))
 	{
-		myInvertedLightDirection = -myLightDirection.GetNormalizedNoAssert();
+		myLightDirection = myEditDirection.GetNormalizedNoAssert();
+		myInvertedLightDirection = -myLightDirection;
 	}
+#endif // _RETAIL
 }
 
 Json::Value DirectionallightComponent::ToJson() const

@@ -269,6 +269,7 @@ void Transform::Deserialize(std::istream& aStream)
 	myPosition.Deserialize(aStream);
 	myRotation.Deserialize(aStream);
 	myScale.Deserialize(aStream);
+	UpdateTransform();
 }
 
 void Transform::UpdateTransform()

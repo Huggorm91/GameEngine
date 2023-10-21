@@ -32,6 +32,7 @@ namespace Crimson
 		Vector2(const T& aX, const T& aY);
 		Vector2(const POINT& aPoint);
 		Vector2(const POINTS& aPoints);
+		Vector2(const std::array<T, 2>& anArray);
 		Vector2(const Vector2<T>& aVector) = default;
 		Vector2(Vector2<T>&& aVector) = default;
 		Vector2<T>& operator=(const Vector2<T>& aVector) = default;
@@ -140,6 +141,11 @@ namespace Crimson
 
 	template <typename T>
 	inline Vector2<T>::Vector2(const POINTS& aPoints) : x(static_cast<T>(aPoints.x)), y(static_cast<T>(aPoints.y))
+	{
+	}
+
+	template<typename T>
+	inline Vector2<T>::Vector2(const std::array<T, 2>& anArray) : x(anArray[0]), y(anArray[1])
 	{
 	}
 

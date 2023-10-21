@@ -294,6 +294,11 @@ namespace Crimson
 		return fs::relative(aFullPath, fs::current_path()).string();
 	}
 
+	std::string MakeRelativeTo(const std::string& aPathToMakeRelative, const std::string& anOriginFolder)
+	{
+		return fs::relative(aPathToMakeRelative, GetAbsolutePath(anOriginFolder)).string();
+	}
+
 	std::string GetAbsolutePath(const std::string& aRelativePath)
 	{
 		return fs::absolute(fs::current_path().string() + "\\" + aRelativePath).string();

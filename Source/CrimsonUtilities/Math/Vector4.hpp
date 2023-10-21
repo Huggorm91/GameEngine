@@ -29,6 +29,7 @@ namespace Crimson
 		Vector4(const Vector2<T>& aVector2, const T& aZ = T(), const T& aW = T());
 		Vector4(const Vector2<T>& aVector2XY, const Vector2<T>& aVector2ZW);
 		Vector4(const Vector3<T>& aVector3, const T& aW = T());
+		Vector4(const std::array<T, 4>& anArray);
 		Vector4(const Vector4<T>& aVector) = default;
 		Vector4(Vector4<T>&& aVector) = default;
 		Vector4<T>& operator=(const Vector4<T>& aVector) = default;
@@ -112,6 +113,29 @@ namespace Crimson
 		return aVector / aScalar;
 	}
 
+	template <typename T>
+	Vector4<float> DegreeToRadian(const Vector4<T>& aDegree)
+	{
+		return static_cast<Vector4<float>>(aDegree) * static_cast<float>(globalDegreeToRadianMultiplier);
+	}
+	template <typename T>
+	Vector4<double> DegreeToRadianPrecise(const Vector4<T>& aDegree)
+	{
+		return static_cast<Vector4<double>>(aDegree) * globalDegreeToRadianMultiplier;
+	}
+	template <typename T>
+	Vector4<float> RadianToDegree(const Vector4<T>& aRadian)
+	{
+		return static_cast<Vector4<float>>(aRadian) * static_cast<float>(globalRadianToDegreeMultiplier);
+	}
+	template <typename T>
+	Vector4<double> RadianToDegreePrecise(const Vector4<T>& aRadian)
+	{
+		return static_cast<Vector4<double>>(aRadian) * globalRadianToDegreeMultiplier;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	inline Vector4<T>::Vector4() : x(), y(), z(), w()
 	{
@@ -139,6 +163,11 @@ namespace Crimson
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const Vector3<T>& aVector3, const T& aW) : x(aVector3.x), y(aVector3.y), z(aVector3.z), w(aW)
+	{
+	}
+
+	template<typename T>
+	inline Vector4<T>::Vector4(const std::array<T, 4>& anArray) : x(anArray[0]), y(anArray[1]), z(anArray[2]), w(anArray[3])
 	{
 	}
 

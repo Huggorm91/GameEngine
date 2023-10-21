@@ -199,7 +199,14 @@ std::vector<MeshElement> ModelManager::GetMeshElements(const std::string& aPath,
 {
 	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
 	{
-		return model->GetComponent<MeshComponent>().GetElements();
+		if (model->HasComponent<MeshComponent>())
+		{
+			return model->GetComponent<MeshComponent>().GetElements();
+		}
+		else
+		{
+			return model->GetComponent<AnimatedMeshComponent>().GetElements();
+		}
 	}
 
 	if (aShouldLogErrors)

@@ -430,8 +430,10 @@ void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 {
 	myScene.Name = Crimson::GetFileNameWithoutExtension(aPath);
 	myScene.Path = aPath;
+	myScene.GameObjectIDCount = GameObject::GetIDCount();
 	AssetManager::SaveAsset(myScene, aPath, aAsBinary);
 	mySceneIsEdited = false;
+	myLogger.Succ("Saved scene as: " + Crimson::MakeRelativeTo(aPath, "../"));
 }
 
 void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
@@ -463,6 +465,8 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		myScene = AssetManager::GetAsset<Scene>(aPath);
 	}
 #endif // !_RETAIL
+	SetGameObjectIDCount(myScene.GameObjectIDCount);
+	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
 }
 
 void ModelViewer::Init()

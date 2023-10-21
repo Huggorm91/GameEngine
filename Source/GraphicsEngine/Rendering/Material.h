@@ -73,6 +73,9 @@ public:
 
 	Json::Value ToJson() const;
 
+	void Serialize(std::ostream& aStream) const;
+	void Deserialize(std::istream& aStream);
+
 private:
 	friend class GfxCmd_RenderMesh;
 	friend class MeshComponent;
@@ -83,6 +86,7 @@ private:
 		unsigned stage {};
 		Texture* texture = nullptr;
 
+		TextureBinding() = default;
 		TextureBinding(Texture* aTexture, unsigned aStage, unsigned aSlot): texture(aTexture), stage(aStage), slot(aSlot) {}
 	};
 

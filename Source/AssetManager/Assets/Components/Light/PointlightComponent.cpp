@@ -160,6 +160,11 @@ void PointlightComponent::Deserialize(std::istream& aStream)
 	Component::Deserialize(aStream);
 	size_t size = sizeof(myPosition) + sizeof(myColor) + sizeof(myRadius) + sizeof(myIntensity) + sizeof(myCastShadows);
 	aStream.read(reinterpret_cast<char*>(&myPosition), size);
+
+	if (myCastShadows)
+	{
+		CreateShadowMap();
+	}
 }
 
 void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)

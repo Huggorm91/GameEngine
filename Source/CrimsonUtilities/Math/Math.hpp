@@ -105,4 +105,9 @@ namespace Crimson
 	{
 		return !(aFirst < aSecond) && !(aSecond < aFirst);
 	}
+
+	inline bool CloseEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon()) 
+	{
+		return (epsilon > Abs(a - b));
+	}
 }

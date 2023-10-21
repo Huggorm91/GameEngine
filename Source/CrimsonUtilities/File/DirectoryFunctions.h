@@ -22,6 +22,7 @@ namespace Crimson
 	bool HasValidExtension(const std::string& aPath, const std::vector<std::string>& anExtensionList);
 
 	std::string GetRelativePath(const std::string& aFullPath);
+	std::string MakeRelativeTo(const std::string& aPathToMakeRelative, const std::string& anOriginFolder);
 	std::string GetAbsolutePath(const std::string& aRelativePath);
 
 	std::string GetContainingFolder(const std::string& aFilePath);

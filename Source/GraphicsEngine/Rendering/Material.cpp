@@ -293,6 +293,81 @@ Json::Value Material::ToJson() const
 	return result;
 }
 
+void Material::Serialize(std::ostream& aStream) const
+{
+	aStream.write(myName.c_str(), myName.size() + 1);
+
+	size_t pathSize = myVertexShader ? Crimson::GetFileName(Crimson::ToString(myVertexShader->GetName())).size() + 1 : 1;
+	aStream.write(myVertexShader ? Crimson::GetFileName(Crimson::ToString(myVertexShader->GetName())).c_str() : "\0", pathSize);
+
+	pathSize = myPixelShader ? Crimson::GetFileName(Crimson::ToString(myPixelShader->GetName())).size() + 1 : 1;
+	aStream.write(myPixelShader ? Crimson::GetFileName(Crimson::ToString(myPixelShader->GetName())).c_str() : "\0", pathSize);
+
+	pathSize = myAlbedoTexture ? Crimson::ToString(myAlbedoTexture->GetName()).size() + 1 : 1;
+	aStream.write(myAlbedoTexture ? Crimson::ToString(myAlbedoTexture->GetName()).c_str() : "\0", pathSize);
+
+	pathSize = myNormalTexture ? Crimson::ToString(myNormalTexture->GetName()).size() + 1 : 1;
+	aStream.write(myNormalTexture ? Crimson::ToString(myNormalTexture->GetName()).c_str() : "\0", pathSize);
+
+	pathSize = myMaterialTexture ? Crimson::ToString(myMaterialTexture->GetName()).size() + 1 : 1;
+	aStream.write(myMaterialTexture ? Crimson::ToString(myMaterialTexture->GetName()).c_str() : "\0", pathSize);
+
+	pathSize = myFXTexture ? Crimson::ToString(myFXTexture->GetName()).size() + 1 : 1;
+	aStream.write(myFXTexture ? Crimson::ToString(myFXTexture->GetName()).c_str() : "\0", pathSize);
+
+	aStream.write(reinterpret_cast<const char*>(&myBuffer.Data), sizeof(myBuffer.Data));
+
+	size_t textureCount = myTextures.size();
+	aStream.write(reinterpret_cast<const char*>(&textureCount), sizeof(textureCount));
+
+	for (auto& binding : myTextures)
+	{
+		pathSize = binding.texture ? Crimson::ToString(binding.texture->GetName()).size() + 1 : 1;
+		aStream.write(binding.texture ? Crimson::ToString(binding.texture->GetName()).c_str() : "\0", pathSize);
+		aStream.write(reinterpret_cast<const char*>(&binding.slot), sizeof(binding.slot));
+		aStream.write(reinterpret_cast<const char*>(&binding.stage), sizeof(binding.stage));
+	}
+}
+
+void Material::Deserialize(std::istream& aStream)
+{
+	std::getline(aStream, myName, '\0');
+
+	std::string path;
+	std::getline(aStream, path, '\0');
+	myVertexShader = path.empty() ? nullptr : AssetManager::GetAsset<Shader*>(path);
+
+	std::getline(aStream, path, '\0');
+	myPixelShader = path.empty() ? nullptr : AssetManager::GetAsset<Shader*>(path);
+
+	std::getline(aStream, path, '\0');
+	myAlbedoTexture = path.empty() ? nullptr : AssetManager::GetAsset<Texture*>(path);
+
+	std::getline(aStream, path, '\0');
+	myNormalTexture = path.empty() ? nullptr : AssetManager::GetAsset<Texture*>(path);
+
+	std::getline(aStream, path, '\0');
+	myMaterialTexture = path.empty() ? nullptr : AssetManager::GetAsset<Texture*>(path);
+
+	std::getline(aStream, path, '\0');
+	myFXTexture = path.empty() ? nullptr : AssetManager::GetAsset<Texture*>(path);
+
+	aStream.read(reinterpret_cast<char*>(&myBuffer.Data), sizeof(myBuffer.Data));
+
+	size_t textureCount = 0;
+	aStream.read(reinterpret_cast<char*>(&textureCount), sizeof(textureCount));
+
+	for (size_t i = 0; i < textureCount; i++)
+	{
+		auto& binding = myTextures.emplace_back();
+		std::getline(aStream, path, '\0');
+		binding.texture = path.empty() ? nullptr : AssetManager::GetAsset<Texture*>(path);
+		aStream.read(reinterpret_cast<char*>(&binding.slot), sizeof(binding.slot));
+		aStream.read(reinterpret_cast<char*>(&binding.stage), sizeof(binding.stage));
+	}
+	myBuffer.Initialize(L"MaterialBuffer");
+}
+
 void Material::AddTexture(Texture* aTexture, unsigned aPipelineStage, unsigned aSlot)
 {
 	myTextures.emplace_back(aTexture, aPipelineStage, aSlot);

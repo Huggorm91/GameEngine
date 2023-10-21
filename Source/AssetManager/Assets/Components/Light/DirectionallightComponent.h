@@ -42,6 +42,9 @@ public:
 	const DirectionallightComponent* GetTypePointer() const override;
 
 private:
+#ifndef _RETAIL
+	Crimson::Vector3f myEditDirection;
+#endif // !_RETAIL
 	std::shared_ptr<Texture> myShadowMap;
 	Crimson::Vector3f myInvertedLightDirection;
 	Crimson::Vector3f myLightDirection;

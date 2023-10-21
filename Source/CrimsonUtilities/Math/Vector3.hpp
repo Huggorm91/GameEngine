@@ -25,6 +25,7 @@ namespace Crimson
 		explicit Vector3(const T& aScalar);
 		Vector3(const T& aX, const T& aY, const T& aZ);
 		Vector3(const Vector2<T>& aVector2, const T& aZ = T());
+		Vector3(const std::array<T, 3>& anArray);
 		Vector3(const Vector3<T>& aVector) = default;
 		Vector3(Vector3<T>&& aVector) = default;
 		Vector3<T>& operator=(const Vector3<T>& aVector) = default;
@@ -149,6 +150,11 @@ namespace Crimson
 
 	template<typename T>
 	inline Vector3<T>::Vector3(const Vector2<T>& aVector2, const T& aZ) : x(aVector2.x), y(aVector2.y), z(aZ)
+	{
+	}
+
+	template<typename T>
+	inline Vector3<T>::Vector3(const std::array<T, 3>& anArray) : x(anArray[0]), y(anArray[1]), z(anArray[2])
 	{
 	}
 

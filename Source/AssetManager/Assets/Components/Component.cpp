@@ -140,19 +140,10 @@ const Component* Component::GetTypePointer() const
 void Component::Serialize(std::ostream& aStream) const
 {
 	Binary::eType type = Binary::Component;
-
-	struct ComponentData
-	{
-		ComponentType Type;
-		unsigned ID;
-		bool IsActive;
-	}data;
-
-	data.Type = myType;
-	data.ID = myID;
-	data.IsActive = myIsActive;
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
-	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
+	aStream.write(reinterpret_cast<const char*>(&myType), sizeof(myType));
+	aStream.write(reinterpret_cast<const char*>(&myID), sizeof(myID));
+	aStream.write(reinterpret_cast<const char*>(&myIsActive), sizeof(myIsActive));
 }
 
 void Component::Deserialize(std::istream& aStream)

@@ -313,19 +313,27 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 void MeshComponent::Serialize(std::ostream& aStream) const
 {
 	Component::Serialize(aStream);
-	size_t size = sizeof(myIsDeferred) + sizeof(myRenderShadow) + sizeof(myColor) + sizeof(myBoxSphereBounds);
-	aStream.write(reinterpret_cast<const char*>(&myIsDeferred), size);
+	aStream.write(reinterpret_cast<const char*>(&myIsDeferred), sizeof(myIsDeferred));
+	aStream.write(reinterpret_cast<const char*>(&myRenderShadow), sizeof(myRenderShadow));
+	aStream.write(reinterpret_cast<const char*>(&myColor), sizeof(myColor));
+	aStream.write(reinterpret_cast<const char*>(&myBoxSphereBounds), sizeof(myBoxSphereBounds));
 	size_t pathSize = myPath ? myPath->size() + 1 : 1;
 	aStream.write(myPath ? myPath->c_str() : "\0", pathSize);
 	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);
+	for (auto& element : myElements)
+	{
+		element.myMaterial.Serialize(aStream);
+	}
 }
 
 void MeshComponent::Deserialize(std::istream& aStream)
 {
 	Component::Deserialize(aStream);
-	size_t size = sizeof(myIsDeferred) + sizeof(myRenderShadow) + sizeof(myColor) + sizeof(myBoxSphereBounds);
-	aStream.read(reinterpret_cast<char*>(&myIsDeferred), size);
+	aStream.read(reinterpret_cast<char*>(&myIsDeferred), sizeof(myIsDeferred));
+	aStream.read(reinterpret_cast<char*>(&myRenderShadow), sizeof(myRenderShadow));
+	aStream.read(reinterpret_cast<char*>(&myColor), sizeof(myColor));
+	aStream.read(reinterpret_cast<char*>(&myBoxSphereBounds), sizeof(myBoxSphereBounds));
 	std::string path;
 	std::getline(aStream, path, '\0');
 	std::getline(aStream, myName, '\0');
@@ -333,6 +341,11 @@ void MeshComponent::Deserialize(std::istream& aStream)
 
 	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(path);
 	myPath = AssetManager::GetAsset <std::string*>(path);
+
+	for (auto& element : myElements)
+	{
+		element.myMaterial.Deserialize(aStream);
+	}
 }
 
 Json::Value MeshComponent::ToJson() const

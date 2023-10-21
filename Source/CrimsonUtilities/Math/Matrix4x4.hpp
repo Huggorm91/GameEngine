@@ -37,6 +37,9 @@ namespace Crimson
 		inline Matrix4x4<T>& operator=(const Matrix4x4<T>& aMatrix) = default;
 		inline Matrix4x4<T>& operator=(Matrix4x4<T>&& aMatrix) = default;
 
+		const T& operator()(const unsigned int aRow, const unsigned int aColumn) const;
+		T& operator()(const unsigned int aRow, const unsigned int aColumn);
+
 		static Matrix4x4<T> CreateRotationAroundX(const T& anAngleInRadians);
 		static Matrix4x4<T> CreateRotationAroundY(const T& anAngleInRadians);
 		static Matrix4x4<T> CreateRotationAroundZ(const T& anAngleInRadians);
@@ -61,6 +64,8 @@ namespace Crimson
 		inline void SetForward(const Vector3<T>& aVector);
 		inline void SetUp(const Vector3<T>& aVector);
 		inline void SetRight(const Vector3<T>& aVector);
+
+		Vector3<T> GetEulerAngles() const;
 
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
@@ -131,6 +136,18 @@ namespace Crimson
 		m31(aThirdRow.x), m32(aThirdRow.y), m33(aThirdRow.z), m34(aThirdRow.w),
 		m41(aFourthRow.x), m42(aFourthRow.y), m43(aFourthRow.z), m44(aFourthRow.w)
 	{
+	}
+
+	template<typename T>
+	inline const T& Matrix4x4<T>::operator()(const unsigned int aRow, const unsigned int aColumn) const
+	{
+		return *((&m11) + ((aRow - 1) * 4) + (aColumn - 1));
+	}
+
+	template<typename T>
+	inline T& Matrix4x4<T>::operator()(const unsigned int aRow, const unsigned int aColumn)
+	{
+		return *((&m11) + ((aRow - 1) * 4) + (aColumn - 1));
 	}
 
 	template<typename T>
@@ -261,6 +278,22 @@ namespace Crimson
 	}
 
 	template<typename T>
+	inline Matrix4x4<T> Matrix4x4<T>::GetInverse() const
+	{
+		Matrix4x4<T> result{
+			m11, m21, m31, m14,
+			m12, m22, m32, m24,
+			m13, m23, m33, m34,
+			T(), T(), T(), T(1) };
+		Vector4<T> translate(-m41, -m42, -m43, m44);
+		translate = translate * result;
+		result.m41 = translate.x;
+		result.m42 = translate.y;
+		result.m43 = translate.z;
+		return result;
+	}
+
+	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::GetTranspose() const
 	{
 		return {
@@ -325,20 +358,40 @@ namespace Crimson
 		aStream.read(reinterpret_cast<char*>(&m11), sizeof(m11) * 16);
 	}
 
-	template<typename T>
-	inline Matrix4x4<T> Matrix4x4<T>::GetInverse() const
+	template <class T>
+	inline Vector3<T> Matrix4x4<T>::GetEulerAngles() const
 	{
-		Matrix4x4<T> result{
-			m11, m21, m31, m14,
-			m12, m22, m32, m24,
-			m13, m23, m33, m34,
-			T(), T(), T(), T(1) };
-		Vector4<T> translate(-m41, -m42, -m43, T(1));
-		translate = translate * result;
-		result.m41 = translate.x;
-		result.m42 = translate.y;
-		result.m43 = translate.z;
-		return result;
+		if (CloseEnough(static_cast<float>((*this)(1, 3)), -1.0f)) {
+			float x = 0;
+			float y = Pi / 2;
+			float z = x + atan2((*this)(2, 1), (*this)(3, 1));
+			return { y, x, z };
+		}
+		else if (CloseEnough(static_cast<float>((*this)(1, 3)), 1.0f)) {
+			float x = 0;
+			float y = -Pi / 2;
+			float z = -x + atan2(-(*this)(2, 1), -(*this)(3, 1));
+			return { y, x, z };
+		}
+		else
+		{
+			float x1 = -asin((*this)(1, 3));
+			float y1 = atan2((*this)(2, 3) / cos(x1), (*this)(3, 3) / cos(x1));
+			float z1 = atan2((*this)(1, 2) / cos(x1), (*this)(1, 1) / cos(x1));
+
+			float x2 = Pi - x1;
+			float y2 = atan2((*this)(2, 3) / cos(x2), (*this)(3, 3) / cos(x2));
+			float z2 = atan2((*this)(1, 2) / cos(x2), (*this)(1, 1) / cos(x2));
+
+			if ((std::abs(x1) + std::abs(y1) + std::abs(z1)) <= (std::abs(x2) + std::abs(y2) + std::abs(z2)))
+			{
+				return { y1, x1, z1 };
+			}
+			else
+			{
+				return { y2, x2, z2 };
+			}
+		}
 	}
 
 	template<typename T>
@@ -460,30 +513,30 @@ namespace Crimson
 	template<typename T>
 	inline Matrix4x4<T>& Matrix4x4<T>::operator*=(const Matrix4x4<T>& aMatrix)
 	{
-		m11 = m11 * aMatrix.m11 + m12 * aMatrix.m21 + m13 * aMatrix.m31 + m14 * aMatrix.m41;
-		m12 = m11 * aMatrix.m12 + m12 * aMatrix.m22 + m13 * aMatrix.m32 + m14 * aMatrix.m42;
-		m13 = m11 * aMatrix.m13 + m12 * aMatrix.m23 + m13 * aMatrix.m33 + m14 * aMatrix.m43;
-		m14 = m11 * aMatrix.m14 + m12 * aMatrix.m24 + m13 * aMatrix.m34 + m14 * aMatrix.m44;
-		m21 = m21 * aMatrix.m11 + m22 * aMatrix.m21 + m23 * aMatrix.m31 + m24 * aMatrix.m41;
-		m22 = m21 * aMatrix.m12 + m22 * aMatrix.m22 + m23 * aMatrix.m32 + m24 * aMatrix.m42;
-		m23 = m21 * aMatrix.m13 + m22 * aMatrix.m23 + m23 * aMatrix.m33 + m24 * aMatrix.m43;
-		m24 = m21 * aMatrix.m14 + m22 * aMatrix.m24 + m23 * aMatrix.m34 + m24 * aMatrix.m44;
-		m31 = m31 * aMatrix.m11 + m32 * aMatrix.m21 + m33 * aMatrix.m31 + m34 * aMatrix.m41;
-		m32 = m31 * aMatrix.m12 + m32 * aMatrix.m22 + m33 * aMatrix.m32 + m34 * aMatrix.m42;
-		m33 = m31 * aMatrix.m13 + m32 * aMatrix.m23 + m33 * aMatrix.m33 + m34 * aMatrix.m43;
-		m34 = m31 * aMatrix.m14 + m32 * aMatrix.m24 + m33 * aMatrix.m34 + m34 * aMatrix.m44;
-		m41 = m41 * aMatrix.m11 + m42 * aMatrix.m21 + m43 * aMatrix.m31 + m44 * aMatrix.m41;
-		m42 = m41 * aMatrix.m12 + m42 * aMatrix.m22 + m43 * aMatrix.m32 + m44 * aMatrix.m42;
-		m43 = m41 * aMatrix.m13 + m42 * aMatrix.m23 + m43 * aMatrix.m33 + m44 * aMatrix.m43;
-		m44 = m41 * aMatrix.m14 + m42 * aMatrix.m24 + m43 * aMatrix.m34 + m44 * aMatrix.m44;
+		*this = (*this) * aMatrix;
 		return *this;
 	}
 
 	template<typename T>
 	inline Matrix4x4<T> Matrix4x4<T>::operator*(const Matrix4x4<T>& aMatrix) const
 	{
-		Matrix4x4<T> result = *this;
-		return result *= aMatrix;
+		return Matrix4x4<T>(
+			m11 * aMatrix.m11 + m12 * aMatrix.m21 + m13 * aMatrix.m31 + m14 * aMatrix.m41,
+			m11 * aMatrix.m12 + m12 * aMatrix.m22 + m13 * aMatrix.m32 + m14 * aMatrix.m42,
+			m11 * aMatrix.m13 + m12 * aMatrix.m23 + m13 * aMatrix.m33 + m14 * aMatrix.m43,
+			m11 * aMatrix.m14 + m12 * aMatrix.m24 + m13 * aMatrix.m34 + m14 * aMatrix.m44,
+			m21 * aMatrix.m11 + m22 * aMatrix.m21 + m23 * aMatrix.m31 + m24 * aMatrix.m41,
+			m21 * aMatrix.m12 + m22 * aMatrix.m22 + m23 * aMatrix.m32 + m24 * aMatrix.m42,
+			m21 * aMatrix.m13 + m22 * aMatrix.m23 + m23 * aMatrix.m33 + m24 * aMatrix.m43,
+			m21 * aMatrix.m14 + m22 * aMatrix.m24 + m23 * aMatrix.m34 + m24 * aMatrix.m44,
+			m31 * aMatrix.m11 + m32 * aMatrix.m21 + m33 * aMatrix.m31 + m34 * aMatrix.m41,
+			m31 * aMatrix.m12 + m32 * aMatrix.m22 + m33 * aMatrix.m32 + m34 * aMatrix.m42,
+			m31 * aMatrix.m13 + m32 * aMatrix.m23 + m33 * aMatrix.m33 + m34 * aMatrix.m43,
+			m31 * aMatrix.m14 + m32 * aMatrix.m24 + m33 * aMatrix.m34 + m34 * aMatrix.m44,
+			m41 * aMatrix.m11 + m42 * aMatrix.m21 + m43 * aMatrix.m31 + m44 * aMatrix.m41,
+			m41 * aMatrix.m12 + m42 * aMatrix.m22 + m43 * aMatrix.m32 + m44 * aMatrix.m42,
+			m41 * aMatrix.m13 + m42 * aMatrix.m23 + m43 * aMatrix.m33 + m44 * aMatrix.m43,
+			m41 * aMatrix.m14 + m42 * aMatrix.m24 + m43 * aMatrix.m34 + m44 * aMatrix.m44);
 	}
 
 	template<typename T>
