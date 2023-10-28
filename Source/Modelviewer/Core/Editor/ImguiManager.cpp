@@ -821,6 +821,11 @@ void ImguiManager::CreatePreferenceWindow()
 		{
 			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(applicationState.ShadowBias));
 		}
+		float timeScale = Crimson::Timer::GetTimeScale();
+		if (ImGui::DragFloat("Time Scale", &timeScale, 0.1f))
+		{
+			Crimson::Timer::SetTimeScale(timeScale);
+		}
 
 		ImGui::SeparatorText("");
 		if (ImGui::Button("Save Preferences"))

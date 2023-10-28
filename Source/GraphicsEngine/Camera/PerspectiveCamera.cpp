@@ -111,7 +111,7 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey
 
 		myHasChanged = true;
 		float multiplier = Crimson::InputMapper::GetInstance()->GetKeyHeld(Crimson::eKey::Shift) ? 2.f : Crimson::InputMapper::GetInstance()->GetKeyHeld(Crimson::eKey::Shift) ? 2.f : 1.f;
-		float timeDelta = Crimson::Timer::GetDeltaTime();
+		float timeDelta = Crimson::Timer::GetUnscaledDeltaTime();
 		switch (aKey)
 		{
 		case Crimson::eKey::Q:
