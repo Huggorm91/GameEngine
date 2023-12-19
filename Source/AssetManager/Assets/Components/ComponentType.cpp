@@ -4,12 +4,12 @@
 #include "../ComponentInclude.h"
 #include "AssetManager/AssetManager.h"
 
-void AddComponent(const Component* aComponent, GameObject& aParent)
+Component* AddComponent(const Component* aComponent, GameObject& aParent)
 {
 	if (aComponent == nullptr)
 	{
 		AMLogger.Err("AddComponent: aComponent was nullptr! GameObject ID : " + std::to_string(aParent.GetID()));
-		return;
+		return nullptr;
 	}
 
 	switch (aComponent->GetType())
@@ -17,107 +17,93 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 	case ComponentType::Mesh:
 	{
 		const MeshComponent& component = *dynamic_cast<const MeshComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::AnimatedMesh:
 	{
 		const AnimatedMeshComponent& component = *dynamic_cast<const AnimatedMeshComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::Directionallight:
 	{
 		const DirectionallightComponent& component = *dynamic_cast<const DirectionallightComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::Pointlight:
 	{
 		const PointlightComponent& component = *dynamic_cast<const PointlightComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::Spotlight:
 	{
 		const SpotlightComponent& component = *dynamic_cast<const SpotlightComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::DebugDraw:
 	{
 		const DebugDrawComponent& component = *dynamic_cast<const DebugDrawComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::PerspectiveCamera:
 	{
 		const PerspectiveCameraComponent& component = *dynamic_cast<const PerspectiveCameraComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	case ComponentType::ParticleEmitter:
 	{
 		const ParticleEmitterComponent& component = *dynamic_cast<const ParticleEmitterComponent*>(aComponent);
-		aParent.AddComponent(component);
-		break;
+		return &aParent.AddComponent(component);
 	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
 	}
 	}
+	return nullptr;
 }
 
-void AddComponent(const ComponentType aType, GameObject& aParent)
+Component* AddComponent(const ComponentType aType, GameObject& aParent)
 {
 	switch (aType)
 	{
 	case ComponentType::Mesh:
 	{
-		aParent.AddComponent<MeshComponent>();
-		break;
+		return &aParent.AddComponent<MeshComponent>();
 	}
 	case ComponentType::AnimatedMesh:
 	{
-		aParent.AddComponent<AnimatedMeshComponent>();
-		break;
+		return &aParent.AddComponent<AnimatedMeshComponent>();
 	}
 	case ComponentType::Directionallight:
 	{
-		aParent.AddComponent<DirectionallightComponent>();
-		break;
+		return &aParent.AddComponent<DirectionallightComponent>();
 	}
 	case ComponentType::Pointlight:
 	{
-		aParent.AddComponent<PointlightComponent>();
-		break;
+		return &aParent.AddComponent<PointlightComponent>();
 	}
 	case ComponentType::Spotlight:
 	{
-		aParent.AddComponent<SpotlightComponent>();
-		break;
+		return &aParent.AddComponent<SpotlightComponent>();
 	}
 	case ComponentType::DebugDraw:
 	{
-		aParent.AddComponent<DebugDrawComponent>();
-		break;
+		return &aParent.AddComponent<DebugDrawComponent>();
 	}
 	case ComponentType::PerspectiveCamera:
 	{
-		aParent.AddComponent<PerspectiveCameraComponent>();
-		break;
+		return &aParent.AddComponent<PerspectiveCameraComponent>();
 	}
 	case ComponentType::ParticleEmitter:
 	{
-		aParent.AddComponent<ParticleEmitterComponent>();
-		break;
+		return &aParent.AddComponent<ParticleEmitterComponent>();
 	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
 	}
 	}
+	return nullptr;
 }
 
 void LoadComponent(const Json::Value& aJson, GameObject& aParent)
@@ -158,6 +144,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	case ComponentType::PerspectiveCamera:
 	{
+		aParent.AddComponent(PerspectiveCameraComponent(aJson));
 		break;
 	}
 	case ComponentType::ParticleEmitter:

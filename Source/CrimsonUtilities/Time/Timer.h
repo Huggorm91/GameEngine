@@ -30,11 +30,11 @@ namespace Crimson
 	private:
 		static std::chrono::high_resolution_clock::time_point myOldTime;
 		static std::chrono::high_resolution_clock::time_point myCurrentTime;
-		static std::chrono::duration<float> myDeltatime;
 		static std::chrono::duration<double> myTotalTime;
-		static float myTimeScale;
-		static float myScaledDeltaTime;
+		static std::chrono::duration<float> myDeltatime;
 		static double myScaledTotalTime;
+		static float myScaledDeltaTime;
+		static float myTimeScale;
 
 		Timer() = default;
 	};

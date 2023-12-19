@@ -799,18 +799,8 @@ void ImguiManager::CreatePreferenceWindow()
 		ImGui::InputText("Window Title", &applicationState.WindowTitle);
 
 		ImGui::SeparatorText("Camera Settings");
-		if (ImGui::DragFloat("Movement Speed", &applicationState.CameraSpeed))
-		{
-			myModelViewer->myCamera.SetMovementSpeed(applicationState.CameraSpeed);
-		}
-		if (ImGui::DragFloat("Rotation Speed", &applicationState.CameraRotationSpeed))
-		{
-			myModelViewer->myCamera.SetRotationSpeed(applicationState.CameraRotationSpeed);
-		}
-		if (ImGui::DragFloat("Mouse Sensitivity", &applicationState.CameraMouseSensitivity))
-		{
-			myModelViewer->myCamera.SetMouseSensitivity(applicationState.CameraMouseSensitivity);
-		}
+		ImGui::DragFloat("Movement Speed", &myModelViewer->myApplicationState.CameraSpeed);
+		ImGui::DragFloat("Mouse Sensitivity", &myModelViewer->myApplicationState.CameraMouseSensitivity, 0.1f);
 
 		ImGui::SeparatorText("Scene Settings");
 		if (ImGui::DragFloat("Ambientlight Intensity", &applicationState.AmbientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
