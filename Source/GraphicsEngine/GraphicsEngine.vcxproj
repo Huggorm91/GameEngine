@@ -295,7 +295,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Camera\PerspectiveCamera.h" />
     <ClInclude Include="Commands\CommandContainer.h" />
     <ClInclude Include="Commands\GfxCmd_SetTextureResource.h" />
     <ClInclude Include="Commands\GfxCmd_ClearDepthStencil.h" />
@@ -303,7 +302,10 @@
     <ClInclude Include="Commands\GfxCmd_ClearRenderTarget.h" />
     <ClInclude Include="Commands\GfxCmd_RenderMeshShadow.h" />
     <ClInclude Include="Commands\GfxCmd_UpdateWorldBounds.h" />
+    <ClInclude Include="Drawer\EmitterData.h" />
     <ClInclude Include="Drawer\LineHandle.h" />
+    <ClInclude Include="Drawer\ParticleDrawer.h" />
+    <ClInclude Include="Rendering\ParticleVertex.h" />
     <ClInclude Include="Rendering\GBuffer.h" />
     <ClInclude Include="InterOp\ShaderInfo.h" />
     <ClInclude Include="Drawer\LineDrawer.h" />
@@ -337,8 +339,8 @@
     <ClInclude Include="Rendering\TextureContainer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera\PerspectiveCamera.cpp" />
     <ClCompile Include="Commands\GfxCmd_SetTextureResource.cpp" />
+    <ClCompile Include="Drawer\EmitterData.cpp" />
     <ClCompile Include="Drawer\LineDrawer.cpp" />
     <ClCompile Include="Commands\Light\LightCommand.cpp" />
     <ClCompile Include="Commands\Light\LitCmd_AddPointlight.cpp" />
@@ -353,6 +355,8 @@
     <ClCompile Include="Commands\GfxCmd_UpdateWorldBounds.cpp" />
     <ClCompile Include="Commands\Light\LitCmd_SetShadowBias.cpp" />
     <ClCompile Include="Drawer\LineHandle.cpp" />
+    <ClCompile Include="Drawer\ParticleDrawer.cpp" />
+    <ClCompile Include="Rendering\ParticleVertex.cpp" />
     <ClCompile Include="Rendering\GBuffer.cpp" />
     <ClCompile Include="Rendering\LineVertex.cpp" />
     <ClCompile Include="Rendering\Material.cpp" />

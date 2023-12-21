@@ -7,6 +7,7 @@
 #include "Rendering/GBuffer.h"
 #include "Commands/CommandContainer.h"
 #include "Drawer/LineDrawer.h"
+#include "Drawer/ParticleDrawer.h"
 
 #include <wrl.h>
 using namespace Microsoft::WRL;
@@ -131,6 +132,9 @@ public:
 	inline LineDrawer& GetLineDrawer() {
 		return myLineDrawer;
 	}
+	inline ParticleDrawer& GetParticleDrawer() {
+		return myParticleDrawer;
+	}
 
 	inline const Crimson::Vector3f& GetWorldBoundsMax() const {
 		return myWorldMax;
@@ -205,6 +209,7 @@ private:
 	MaterialBuffer myMaterialBuffer;
 
 	LineDrawer myLineDrawer;
+	ParticleDrawer myParticleDrawer;
 
 	std::vector<LightCommand*> myPointLights;
 	std::vector<LightCommand*> mySpotLights;

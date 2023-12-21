@@ -753,6 +753,26 @@ bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 		return false;
 	}
 
+	std::wstring name;
+	auto slashIndex = aFileName.find_last_of('\\');
+	if (slashIndex == std::wstring::npos)
+	{
+		slashIndex = aFileName.find_last_of('/');
+		if (slashIndex == std::wstring::npos)
+		{
+			name = aFileName;
+		}
+		else
+		{
+			name = aFileName.substr(slashIndex);
+		}
+	}
+	else
+	{
+		name = aFileName.substr(slashIndex);
+	}
+	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * name.length()), name.data());
+
 	return true;
 }
 

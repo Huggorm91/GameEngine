@@ -1,6 +1,6 @@
 #pragma once
-#include "../Rendering/LineVertex.h"
-#include "../Rendering/Shader.h"
+#include "Rendering/LineVertex.h"
+#include "Rendering/Shader.h"
 #include "LineHandle.h"
 #include <unordered_set>
 

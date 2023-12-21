@@ -1,12 +1,26 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitter.h"
+#include "GraphicsEngine/GraphicsEngine.h"
 
-ParticleEmitter::ParticleEmitter(unsigned anID): myID(anID), myTransform()
+ParticleEmitter::ParticleEmitter(): myID(GraphicsEngine::Get().GetParticleDrawer().GetNewEmitterID()), myData(nullptr), myTransform()
 {
 }
 
-void ParticleEmitter::Init(const EmitterData*)
+ParticleEmitter::ParticleEmitter(const Json::Value& aJson): myID(aJson["ID"].asUInt()), myData(nullptr), myTransform(aJson["Transform"])
 {
+}
+
+ParticleEmitter::ParticleEmitter(const ParticleEmitter& anEmitter): myID(GraphicsEngine::Get().GetParticleDrawer().GetNewEmitterID()), myData(anEmitter.myData), myTransform(anEmitter.myTransform)
+{
+}
+
+ParticleEmitter::ParticleEmitter(ParticleEmitter&& anEmitter) : myID(anEmitter.myID), myData(anEmitter.myData), myTransform(anEmitter.myTransform)
+{
+}
+
+void ParticleEmitter::Init(const EmitterData* someData)
+{
+	myData = someData;
 }
 
 Json::Value ParticleEmitter::ToJson() const

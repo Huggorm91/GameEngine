@@ -66,9 +66,6 @@
     <ClInclude Include="Managers\TextureManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Components\ComponentParts\BoundingBox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Assets\Components\ComponentParts\BoxSphereBounds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -112,9 +109,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Components\Particles\ParticleEmitter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Assets\Components\Particles\EmitterData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Binary.h">
@@ -176,9 +170,6 @@
     <ClCompile Include="Assets\Components\ComponentParts\MeshElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Components\ComponentParts\BoundingBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Assets\Components\ComponentParts\BoxSphereBounds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -216,9 +207,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Particles\ParticleEmitter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Assets\Components\Particles\EmitterData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Managers\SceneManager.cpp">

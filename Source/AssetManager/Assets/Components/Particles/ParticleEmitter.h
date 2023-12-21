@@ -1,23 +1,32 @@
 #pragma once
 #include "../Transform.h"
-#include "EmitterData.h"
+#include "GraphicsEngine/Drawer/EmitterData.h"
 
 class ParticleEmitter
 {
 public:
 	enum class EmitterType
 	{
-		Unknown
+		Unknown,
+		Burst,
+		Stream
 	};
-	ParticleEmitter(unsigned anID);
+
+	ParticleEmitter();
 	ParticleEmitter(const Json::Value& aJson);
-	~ParticleEmitter() = default;
+	ParticleEmitter(const ParticleEmitter& anEmitter);
+	ParticleEmitter(ParticleEmitter&& anEmitter);
+	virtual ~ParticleEmitter() = default;
 
-	void Init(const EmitterData* someData);
+	virtual void Init(const EmitterData* someData);
 
-	Json::Value ToJson() const;
+	virtual void Start() = 0;
+	virtual void Stop() = 0;
 
-private:
+	virtual Json::Value ToJson() const;
+
+protected:
 	unsigned myID;
+	const EmitterData* myData;
 	Transform myTransform;	
 };
