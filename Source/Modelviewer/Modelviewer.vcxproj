@@ -182,11 +182,11 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\ImGui;$(SolutionDir)ThirdParty\ImGuiNodeEditor;$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -209,10 +209,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_RELEASE;_WINDOWS;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\ImGui;$(SolutionDir)ThirdParty\ImGuiNodeEditor;$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -238,8 +238,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\ImGui;$(SolutionDir)ThirdParty\ImGuiNodeEditor;$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -261,6 +261,7 @@
     <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Editor\AssetTypes.h" />
+    <ClInclude Include="Core\GraphEditorBase.h" />
     <ClInclude Include="Core\Modelviewer.h" />
     <ClInclude Include="Core\ApplicationState.h" />
     <ClInclude Include="Core\Commands\EditCommand.h" />
@@ -274,6 +275,14 @@
     <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObjects.h" />
     <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\Event_Icon.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\Function_Icon.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\GetGradient.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\Graph_Hazard.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\RegisterExternalNodes.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\RegisterExternalTypes.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphEditor.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphNodeGradient.h" />
     <ClInclude Include="ModelViewer.pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
@@ -291,6 +300,9 @@
     <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObjects.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp" />
+    <ClCompile Include="Core\GraphEditorBase.cpp" />
+    <ClCompile Include="Core\ScriptGraphEditor\RegisterExternalNodes.cpp" />
+    <ClCompile Include="Core\ScriptGraphEditor\ScriptGraphEditor.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="ModelViewer.pch.cpp">
@@ -326,6 +338,12 @@
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\DearImGui\DearImGui.vcxproj">
       <Project>{2401f8e1-66a8-4a33-a8fa-2df968e7c84f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\ImGuiNodeEditor\ImGuiNodeEditor.vcxproj">
+      <Project>{9beadd2a-f564-4068-9c3e-68f0d243ab29}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\MuninGraph\MuninGraph.vcxproj">
+      <Project>{1b302653-82cc-40db-920e-c979d3cfc23d}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,33 +22,9 @@ public:
 	// Uninitializes the Importer in order to free resources
 	static void ReleaseImporter();
 
-	template<class T> static T GetAsset(const std::string& anIdentifier);
+	template<class T> static T GetAsset(const std::string& anIdentifier) = delete;
 
 	inline static GameObject GetAsset(Primitives anIdentifier) { return *myModelManager.GetModel(anIdentifier); }
-	template<> static GameObject GetAsset(const std::string& anIdentifier);
-
-	template<> static MeshComponent GetAsset(const std::string& anIdentifier);
-	template<> static AnimatedMeshComponent GetAsset(const std::string& anIdentifier);
-	template<> static std::vector<MeshElement> GetAsset(const std::string& anIdentifier);
-	template<> static const std::string* GetAsset(const std::string& anIdentifier);
-
-	template<> static Animation GetAsset(const std::string& anIdentifier);
-
-	template<> static Skeleton& GetAsset(const std::string& anIdentifier);
-	template<> static Skeleton* GetAsset(const std::string& anIdentifier);
-
-	// template<Texture> will not cache the loaded resource!
-	template<> static Texture GetAsset(const std::string& anIdentifier);
-	template<> static Texture& GetAsset(const std::string& anIdentifier);
-	template<> static Texture* GetAsset(const std::string& anIdentifier);
-
-	template<> static Shader& GetAsset(const std::string& anIdentifier);
-	template<> static Shader* GetAsset(const std::string& anIdentifier);
-
-	template<> static Scene GetAsset(const std::string& anIdentifier);
-	template<> static EditorScene GetAsset(const std::string& anIdentifier);
-
-	template<> static Material GetAsset(const std::string& anIdentifier);
 
 	inline static void CreateAsset(const GameObject& anAsset, const std::string& anIdentifier){	myPrefabManager.CreatePrefab(anIdentifier, anAsset); }
 	inline static void CreateAsset(const GameObject* anAsset, const std::string& anIdentifier){	myPrefabManager.CreatePrefab(anIdentifier, *anAsset); }
@@ -132,12 +108,6 @@ private:
 };
 
 /*******************************************************************************************************************************************************/
-
-template<class T>
-inline T AssetManager::GetAsset(const std::string&)
-{
-	return nullptr;
-}
 
 template<>
 inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)

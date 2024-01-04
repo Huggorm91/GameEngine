@@ -78,6 +78,33 @@
     <ClInclude Include="ModelViewer.pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\Event_Icon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\Function_Icon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\GetGradient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\Graph_Hazard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\RegisterExternalNodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\RegisterExternalTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphNodeGradient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GraphEditorBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Modelviewer.cpp">
@@ -123,6 +150,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModelViewer.pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ScriptGraphEditor\RegisterExternalNodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ScriptGraphEditor\ScriptGraphEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GraphEditorBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

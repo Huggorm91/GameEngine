@@ -340,7 +340,7 @@ void MeshComponent::Deserialize(std::istream& aStream)
 	myTransform.Deserialize(aStream);
 
 	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(path);
-	myPath = AssetManager::GetAsset <std::string*>(path);
+	myPath = AssetManager::GetAsset<const std::string*>(path);
 
 	for (auto& element : myElements)
 	{
