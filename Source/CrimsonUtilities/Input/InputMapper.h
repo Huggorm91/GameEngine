@@ -20,14 +20,15 @@ namespace Crimson
 		void Init(HWND aHandle, bool aUsingXboxInput = false);
 
 		void Attach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey = eKey::None);
-		void Attach(InputObserver* anObserver, eInputAction anEvent);
+		void Attach(InputObserver* anObserver, eInputAction anEvent, eKeyAction aKeyAction = eKeyAction::All);
 
 		void BindAction(eInputAction anEvent, KeyBind aKeybind);
 		void BindAction(eInputAction anEvent, const std::vector<KeyBind>& aKeybindList);
 		void UnbindAction(eInputAction anEvent);
 
 		void Detach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey = eKey::None);
-		void Detach(InputObserver* anObserver, eInputAction anEvent);
+		void Detach(InputObserver* anObserver, eInputAction anEvent, eKeyAction aKeyAction = eKeyAction::All);
+		void DetachAll(InputObserver* anObserver);
 
 		void Notify();
 		void Update();
@@ -73,21 +74,33 @@ namespace Crimson
 		bool GetDoubleMouseClick(const eKey aKeyCode) const;
 
 	private:
-		struct KeyObserver
+		struct EventObserver
 		{
 			eKey myKey;
 			InputObserver* myObserver;
 
-			bool operator==(const KeyObserver& aComparison) { return myKey == aComparison.myKey && myObserver == aComparison.myObserver; }
+			bool operator==(const EventObserver& aComparison) {
+				return myKey == aComparison.myKey && myObserver == aComparison.myObserver;
+			}
 		};
 
-		std::unordered_multimap<eInputEvent, KeyObserver> myEventObservers;
+		struct ActionObserver
+		{
+			eKeyAction myKeyAction;
+			InputObserver* myObserver;
+
+			bool operator==(const ActionObserver& aComparison) {
+				return myKeyAction == aComparison.myKeyAction && myObserver == aComparison.myObserver;
+			}
+		};
+
+		std::unordered_multimap<eInputEvent, EventObserver> myEventObservers;
 		std::unordered_multimap<eInputEvent, eKey> myEvents;
 
-		std::unordered_multimap<eInputAction, InputObserver*> myActionObservers;
+		std::unordered_multimap<eInputAction, ActionObserver> myActionObservers;
 		std::unordered_map<eInputAction, std::vector<KeyBind>> myKeybinds;
 
-		std::unordered_multimap<eInputAction, float> myTriggeredActions;
+		std::unordered_multimap<eInputAction, std::pair<float, bool>> myTriggeredActions;
 		std::unordered_set<eKey> myObservedKeys;
 		std::unordered_set<eKey> myTriggeredKeys;
 
@@ -138,7 +151,7 @@ namespace Crimson
 		void AddMouseActions();
 		void AddKeyEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold);
 		void AddXboxEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold);
-		void AddAction(eKey aKey, float aValue);
+		void AddAction(eKey aKey, float aValue, bool aIsKeyAction);
 
 		void UpdatePreviousStates();
 		void ResetEvents();
@@ -147,7 +160,7 @@ namespace Crimson
 		void SendEventNotifications() const;
 		void SendActionNotifications() const;
 		std::vector<InputObserver*> FindObservers(eInputEvent anEvent, eKey aKey) const;
-		std::vector<InputObserver*> FindObservers(eInputAction anEvent) const;
+		std::vector<ActionObserver> FindObservers(eInputAction anEvent) const;
 
 		eKey GetValidKey(eInputEvent anEvent, eKey aKey) const;
 		eKey GetXboxKey(const WORD& aWord) const;
