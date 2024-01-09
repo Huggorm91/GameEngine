@@ -30,30 +30,30 @@ namespace ImNodeEd = ax::NodeEditor;
 
 #pragma region ImGui Operators
 
-inline ImVec2 operator+(const ImVec2& A, const ImVec2& B)
-{
-	return { A.x + B.x, A.y + B.y };
-}
-
-inline ImVec2 operator-(const ImVec2& A, const ImVec2& B)
-{
-	return { A.x - B.x, A.y - B.y };
-}
-
-inline ImVec2 operator*(const ImVec2& A, const ImVec2& B)
-{
-	return { A.x * B.x, A.y * B.y };
-}
-
-inline ImVec2 operator*(const ImVec2& A, const float S)
-{
-	return { A.x * S, A.y * S };
-}
-
-inline ImVec4 operator/(const ImVec4& A, const float S)
-{
-	return { A.x / S, A.y / S, A.z / S, A.w / S };
-}
+//inline ImVec2 operator+(const ImVec2& A, const ImVec2& B)
+//{
+//	return { A.x + B.x, A.y + B.y };
+//}
+//
+//inline ImVec2 operator-(const ImVec2& A, const ImVec2& B)
+//{
+//	return { A.x - B.x, A.y - B.y };
+//}
+//
+//inline ImVec2 operator*(const ImVec2& A, const ImVec2& B)
+//{
+//	return { A.x * B.x, A.y * B.y };
+//}
+//
+//inline ImVec2 operator*(const ImVec2& A, const float S)
+//{
+//	return { A.x * S, A.y * S };
+//}
+//
+//inline ImVec4 operator/(const ImVec4& A, const float S)
+//{
+//	return { A.x / S, A.y / S, A.z / S, A.w / S };
+//}
 
 #pragma endregion
 

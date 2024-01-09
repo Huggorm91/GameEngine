@@ -5,9 +5,9 @@
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
-#include "imgui.h"
+#include "ThirdParty\DearImGui\ImGui\imgui.h"
 
-#include "MuninScriptGraph.h"
+#include "ThirdParty\MuninGraph\MuninScriptGraph.h"
 
 class Texture;
 

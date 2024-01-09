@@ -142,6 +142,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init();
 
+	myScriptGraphEditor.Init();
+
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
@@ -498,6 +500,7 @@ void ModelViewer::Update()
 
 #ifndef _RETAIL
 	myImguiManager.Update();
+	myScriptGraphEditor.Update(Crimson::Timer::GetDeltaTime());
 #endif // _RETAIL
 
 	myCamera.Update();
@@ -507,6 +510,7 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
+	myScriptGraphEditor.Render();
 	myImguiManager.Render();
 #endif // _RETAIL
 

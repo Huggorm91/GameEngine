@@ -5,6 +5,7 @@
 #include "GraphicsEngine/Camera/PerspectiveCamera.h"
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
+#include "ScriptGraphEditor/ScriptGraphEditor.h"
 
 // TODO: 
 // Make all saved filepaths relative to the assettypes folder
@@ -112,6 +113,8 @@ private:
 	EditorScene myScene;
 	Scene myPlayScene;
 	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayScenePointers;
+
+	ScriptGraphEditor myScriptGraphEditor;
 #else
 	Scene myScene;
 #endif // _RETAIL
