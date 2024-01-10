@@ -28,8 +28,10 @@ public:
 	template<typename Type>
 	static ScriptGraphDataObject Create(const Type& aValue)
 	{
-		ScriptGraphDataObject result; /*= Create<Type>();
-		result.SetData(aValue);*/
+		ScriptGraphDataObject result; /*= Create<Type>(); */
+		CreateInternal(result, typeid(Type));
+		::new (result.Ptr) Type();
+		/* result.SetData(aValue); */
 		return result;
 	}
 
@@ -38,10 +40,14 @@ public:
 	{
 		if(aDataObject.Ptr)
 		{
-			Type* tPtr = (Type*)aDataObject.Ptr;
-			delete tPtr;
+			if(typeid(Type)!=typeid(std::string))
+			{
+				Type* tPtr = (Type*)aDataObject.Ptr;
+				delete tPtr;
+				//tPtr->~Type();	
+			}
+
 			aDataObject.Ptr = nullptr;
-			//tPtr->~Type();			
 		}
 	}
 

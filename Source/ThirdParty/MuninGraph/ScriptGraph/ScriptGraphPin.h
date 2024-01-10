@@ -104,8 +104,8 @@ public:
 	template<typename DataType>
 	void SetData(DataType data)
 	{
-#if _DEBUG
 		const std::type_index& RequestedType = typeid(DataType);
+#if _DEBUG		
 		assert(RequestedType == myData.TypeData->GetType() && "Cannot SetData of another type than the one that is stored!");
 #endif
 

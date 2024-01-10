@@ -4,4 +4,5 @@
 #include "ScriptGraph/ScriptGraphNode.h"
 #include "ScriptGraph/ScriptGraph.h"
 #include "ScriptGraph/ScriptGraphSchema.h"
-#include "ScriptGraph/Types/RegisterScriptGraphTypes.h"
+
+#pragma comment(linker, "/include:__MSG_Module")

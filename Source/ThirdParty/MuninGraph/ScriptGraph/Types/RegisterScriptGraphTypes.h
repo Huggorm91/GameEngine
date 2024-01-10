@@ -9,7 +9,7 @@
 #ifdef WITH_EDITOR
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "imgui_stdlib.h"
+#include "misc/cpp/imgui_stdlib.h"
 #endif
 
 #include "ScriptGraph/ScriptGraphTypes.h"
@@ -89,6 +89,7 @@ void DeserializeData(const std::vector<uint8_t>& inData, const ScriptGraphType& 
 		const std::string dataString = std::string(inData.begin(), inData.end());
 		*aString = dataString;
 	}
+	int a = 1;
 }
 EndDataTypeHandler
 

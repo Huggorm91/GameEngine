@@ -90,7 +90,13 @@
     <ClInclude Include="Graph\GraphColor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MuninBehaviorGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Graph\GraphTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptGraph\Nodes\RegisterScriptGraphNodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -159,6 +165,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Graph\GraphColor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MuninGraph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MuninScriptGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

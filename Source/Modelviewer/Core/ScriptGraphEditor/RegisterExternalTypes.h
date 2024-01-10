@@ -56,5 +56,4 @@ std::string ToString(const void* aDataPtr, const ScriptGraphType& aTypeInfo) con
 	return result;
 }
 EndDataTypeHandler
-
 #pragma warning( pop )

@@ -2,8 +2,6 @@
 #include <string>
 #include <typeinfo>
 #include <regex>
-#pragma warning( push )
-#pragma warning( disable : 4100)
 
 namespace Munin
 {
@@ -19,7 +17,7 @@ namespace Munin
 		{  }
 
 		// copies get their own UID.
-		UID(const UID& other)
+		UID(const UID&)
 			: myUID(nextBaseUID++)
 		{ }
 
@@ -153,5 +151,3 @@ struct std::hash<Munin::UID>
 		return std::hash<size_t>{}(aUID.GetUID());
 	}
 };
-
-#pragma warning( pop )
