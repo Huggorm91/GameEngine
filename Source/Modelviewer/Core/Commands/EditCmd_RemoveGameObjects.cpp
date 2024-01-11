@@ -29,7 +29,7 @@ void EditCmd_RemoveGameObjects::Execute()
 	{
 		if (!RemoveGameObject(object->GetID()))
 		{
-			LogError("EditCmd_RemoveGameObjects: Failed to remove GameObject with ID: " + std::to_string(object->GetID()));
+			LogError("EditCmd_RemoveGameObjects: Failed to remove GameObject with ID: " + object->GetIDString());
 		}
 	}
 }

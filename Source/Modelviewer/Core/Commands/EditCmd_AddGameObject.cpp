@@ -15,7 +15,7 @@ void EditCmd_AddGameObject::Undo()
 {
 	if (!RemoveGameObject(myID))
 	{
-		LogError("EditCmd_AddGameObject::Undo: Failed to remove GameObject " + std::to_string(myID));
+		LogError("EditCmd_AddGameObject::Undo: Failed to remove GameObject " + std::to_string(static_cast<int>(myID)));
 	}	
 }
 

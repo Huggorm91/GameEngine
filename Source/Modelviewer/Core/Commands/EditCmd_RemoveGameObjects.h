@@ -13,5 +13,5 @@ public:
 
 protected:
 	std::unordered_set<std::shared_ptr<GameObject>> myObjects;
-	std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>> myChildList;
+	std::unordered_map<GameObjectID, std::unordered_set<std::shared_ptr<GameObject>>> myChildList;
 };

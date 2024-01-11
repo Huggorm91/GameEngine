@@ -4,6 +4,7 @@
 #include "ComponentType.h"
 
 class Transform;
+enum class GameObjectID;
 // A template to build new components can be found in ComponentTemplate.h
 
 class Component
@@ -28,7 +29,7 @@ public:
 	GameObject& GetParent();
 
 	ComponentType GetType() const;
-	unsigned GetParentID() const;
+	GameObjectID GetParentID() const;
 	unsigned GetComponentID() const;
 
 	virtual void SetActive(bool aIsActive);

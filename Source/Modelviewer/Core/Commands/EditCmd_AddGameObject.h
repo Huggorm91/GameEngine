@@ -13,6 +13,6 @@ public:
 	void Execute() override;
 
 protected:
-	unsigned myID;
+	GameObjectID myID;
 	std::shared_ptr<GameObject> myObject;
 };

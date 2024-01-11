@@ -16,6 +16,6 @@ void EditCmd_RemoveGameObject::Execute()
 {
 	if (!RemoveGameObject(myID))
 	{
-		LogError("EditCmd_RemoveGameObject::Execute: Failed to remove GameObject " + std::to_string(myID));
+		LogError("EditCmd_RemoveGameObject::Execute: Failed to remove GameObject " + std::to_string(static_cast<int>(myID)));
 	}
 }

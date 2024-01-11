@@ -3,6 +3,12 @@
 #include "Components/Transform.h"
 
 class Prefab;
+
+enum class GameObjectID
+{
+	Invalid = 0
+};
+
 void SetGameObjectIDCount(unsigned aValue);
 
 class GameObject
@@ -85,37 +91,38 @@ public:
 	const std::string& GetName() const;
 
 	unsigned GetComponentCount() const;
-	unsigned GetID() const;
+	GameObjectID GetID() const;
+	std::string GetIDString() const;
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
 
 	void Serialize(std::ostream& aStream) const;
 	// Returns parent ID. Has no parent if 0.
-	unsigned Deserialize(std::istream& aStream);
+	GameObjectID Deserialize(std::istream& aStream);
 
 	// Only call before creating another GameObject!
 	void MarkAsPrefab();
 	// Only call before creating another GameObject!
-	void MarkAsPrefab(unsigned anID);
+	void MarkAsPrefab(GameObjectID anID);
 
 	// Excpects GameObjects to already be copies of eachother.
 	void CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount = false);
 
-	static unsigned GetParentID(const Json::Value& aJson);
+	static GameObjectID GetParentID(const Json::Value& aJson);
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
 #ifndef _RETAIL
 	friend class PrefabManager;
-	GameObject(unsigned anID);
+	GameObject(GameObjectID anID);
 #endif // !_RETAIL
 	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
 	static unsigned localIDCount;
 
 	bool myIsActive;
-	const unsigned myID;
+	const GameObjectID myID;
 	unsigned myCount;
 
 	GameObject* myParent;

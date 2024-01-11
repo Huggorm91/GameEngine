@@ -8,7 +8,7 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 {
 	if (aComponent == nullptr)
 	{
-		AMLogger.Err("AddComponent: aComponent was nullptr! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("AddComponent: aComponent was nullptr! GameObject ID : " + aParent.GetIDString());
 		return;
 	}
 
@@ -64,7 +64,7 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 	}
 	default:
 	{
-		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 	}
 	}
 }
@@ -115,7 +115,7 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 	}
 	default:
 	{
-		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 	}
 	}
 }
@@ -167,7 +167,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	default:
 	{
-		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 	}
 	}
 }
@@ -230,7 +230,7 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 	case ComponentType::Count:
 		break;
 	default:
-		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 		break;
 	}
 }

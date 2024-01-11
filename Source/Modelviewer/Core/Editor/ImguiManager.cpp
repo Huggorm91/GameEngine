@@ -306,7 +306,7 @@ void ImguiManager::RefreshAvailableFiles()
 	}
 }
 
-void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr<GameObject>>* aList)
+void ImguiManager::SetActiveObjects(std::unordered_map<GameObjectID, std::shared_ptr<GameObject>>* aList)
 {
 	myActiveObjects = aList;
 
@@ -965,8 +965,8 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 
 	if (ImGui::BeginDragDropSource())
 	{
-		const unsigned id = anObject->GetID();
-		ImGui::SetDragDropPayload("Dragged_SceneObject", &id, sizeof(unsigned));
+		const GameObjectID id = anObject->GetID();
+		ImGui::SetDragDropPayload("Dragged_SceneObject", &id, sizeof(GameObjectID));
 		if (!IsSelected(anObject))
 		{
 			mySelectedObjects.clear();
@@ -989,8 +989,8 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 {
 	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_SceneObject"))
 	{
-		//IM_ASSERT(payload->DataSize == sizeof(unsigned));
-		//unsigned id = *static_cast<unsigned*>(payload->Data);
+		//IM_ASSERT(payload->DataSize == sizeof(GameObjectID));
+		//GameObjectID id = *static_cast<GameObjectID*>(payload->Data);
 		if (aParent)
 		{
 			auto parent = myModelViewer->GetGameObject(aParent->GetID());

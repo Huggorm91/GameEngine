@@ -76,7 +76,7 @@ ComponentType Component::GetType() const
 	return myType;
 }
 
-unsigned Component::GetParentID() const
+GameObjectID Component::GetParentID() const
 {
 	return myParent->myID;
 }
@@ -116,7 +116,7 @@ void Component::CreateImGuiComponents(const std::string&)
 
 inline std::string Component::ToString() const
 {
-	return "Unimplemented ToString() in ComponentID: " + std::to_string(myID) + " | GameObjectID: " + std::to_string(myParent->GetID());
+	return "Unimplemented ToString() in ComponentID: " + std::to_string(myID) + " | GameObjectID: " + myParent->GetIDString();
 }
 
 Json::Value Component::ToJson() const

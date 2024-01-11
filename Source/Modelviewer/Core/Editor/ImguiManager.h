@@ -35,7 +35,7 @@ public:
 
 	void RefreshAvailableFiles();
 
-	void SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr<GameObject>>* aList);
+	void SetActiveObjects(std::unordered_map<GameObjectID, std::shared_ptr<GameObject>>* aList);
 
 private:
 	friend class EditCommand;
@@ -64,7 +64,7 @@ private:
 	HDROP myDropfile;
 	ModelViewer* myModelViewer;
 	const std::string* mySelectedPrefabName;
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>>* myActiveObjects;
+	std::unordered_map<GameObjectID, std::shared_ptr<GameObject>>* myActiveObjects;
 
 	Crimson::Vector2i myDropLocation;
 	Crimson::Vector2f myViewportSize;
@@ -93,7 +93,7 @@ private:
 	std::unordered_map<std::string, Assets::eAssetType> myAvailableFiles;
 	std::unordered_map<Assets::eAssetType, Texture> myAssetIcons;
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
-	std::unordered_map<unsigned, std::string> myImguiNameIndex;
+	std::unordered_map<GameObjectID, std::string> myImguiNameIndex;
 
 	std::string GetDropFilePath(unsigned anIndex);
 	// Returns true if another file exists

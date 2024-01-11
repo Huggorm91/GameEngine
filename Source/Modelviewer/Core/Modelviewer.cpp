@@ -241,7 +241,7 @@ void ModelViewer::SetPlayMode(bool aState)
 	if (myIsInPlayMode)
 	{
 		myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
-		std::unordered_map<unsigned, unsigned> childlist;
+		std::unordered_map<GameObjectID, GameObjectID> childlist;
 		for (auto& [id, object] : myScene.GameObjects)
 		{
 			if (object->HasParent())
@@ -304,7 +304,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
 {
-	unsigned id = anObject.GetID();
+	GameObjectID id = anObject.GetID();
 	if (aAddToUndo)
 	{
 		AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
@@ -317,9 +317,9 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 	return myScene.GameObjects.at(id);
 }
 
-std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
+std::shared_ptr<GameObject> ModelViewer::GetGameObject(GameObjectID anID)
 {
-	assert(anID != 0 && "Incorrect ID!");
+	assert(anID != GameObjectID::Invalid && "Incorrect ID!");
 
 	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
@@ -328,9 +328,9 @@ std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
 	return nullptr;
 }
 
-bool ModelViewer::RemoveGameObject(unsigned anID)
+bool ModelViewer::RemoveGameObject(GameObjectID anID)
 {
-	assert(anID != 0 && "Incorrect ID!");
+	assert(anID != GameObjectID::Invalid && "Incorrect ID!");
 
 	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
@@ -358,7 +358,7 @@ GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
 	return myScene.GameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
 }
 
-GameObject* ModelViewer::GetGameObject(unsigned anID)
+GameObject* ModelViewer::GetGameObject(GameObjectID anID)
 {
 	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{
@@ -367,7 +367,7 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 	return nullptr;
 }
 
-bool ModelViewer::RemoveGameObject(unsigned anID)
+bool ModelViewer::RemoveGameObject(GameObjectID anID)
 {
 	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
 	{

@@ -12,7 +12,7 @@ void EditCmd_AddGameObjects::Undo()
 	{
 		if (!RemoveGameObject(object->GetID()))
 		{
-			LogError("EditCmd_AddGameObjects: Failed to remove GameObject with ID: " + std::to_string(object->GetID()));
+			LogError("EditCmd_AddGameObjects: Failed to remove GameObject with ID: " + object->GetIDString());
 		}
 	}
 }

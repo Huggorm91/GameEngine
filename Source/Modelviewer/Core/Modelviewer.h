@@ -54,18 +54,18 @@ public:
 	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo = true);
 	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
 
-	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
+	std::shared_ptr<GameObject> GetGameObject(GameObjectID anID);
 	std::shared_ptr<GameObject> GetGameObject(const Crimson::Vector2f& aScreenPosition);
 #else
 	GameObject& AddGameObject();
 	GameObject& AddGameObject(const GameObject& anObject);
 	GameObject& AddGameObject(GameObject&& anObject);
 
-	GameObject* GetGameObject(unsigned anID);
+	GameObject* GetGameObject(GameObjectID anID);
 	GameObject* GetGameObject(const Crimson::Vector2f& aScreenPosition);
 #endif // _RETAIL
 
-	bool RemoveGameObject(unsigned anID);
+	bool RemoveGameObject(GameObjectID anID);
 
 	void SaveState() const;
 
@@ -112,7 +112,7 @@ private:
 #ifndef _RETAIL
 	EditorScene myScene;
 	Scene myPlayScene;
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayScenePointers;
+	std::unordered_map<GameObjectID, std::shared_ptr<GameObject>> myPlayScenePointers;
 
 	ScriptGraphEditor myScriptGraphEditor;
 #else

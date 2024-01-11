@@ -11,7 +11,7 @@
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName), myParent(nullptr), myChildren()
+GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(static_cast<GameObjectID>(++localIDCount)), myName("GameObject"), myImguiText(myName), myParent(nullptr), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
@@ -19,7 +19,7 @@ GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTran
 }
 
 #ifndef _RETAIL
-GameObject::GameObject(unsigned anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName), myDebugPointers(), myParent(nullptr), myChildren()
+GameObject::GameObject(GameObjectID anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName), myDebugPointers(), myParent(nullptr), myChildren()
 {
 }
 #endif // !_RETAIL
@@ -37,11 +37,11 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 	}
 	else
 	{
-		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+		AMLogger.Err("GameObject " + std::to_string(static_cast<int>(myID)) + ": Trying to copy from invalid prefab");
 	}
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName),
+GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(static_cast<GameObjectID>(++localIDCount)), myName(aGameObject.myName),
 myImguiText(myName), myParent(), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
@@ -70,7 +70,7 @@ myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName), myParen
 	}
 }
 
-GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName), myParent(nullptr), myChildren()
+GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(static_cast<GameObjectID>(aJson["ID"].asInt())), myName(aJson["Name"].asString()), myImguiText(myName), myParent(nullptr), myChildren()
 #ifndef _RETAIL
 , myDebugPointers()
 #endif // !_RETAIL
@@ -110,7 +110,7 @@ GameObject& GameObject::operator=(const Prefab& aPrefab)
 	}
 	else
 	{
-		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+		AMLogger.Err("GameObject " + std::to_string(static_cast<int>(myID)) + ": Trying to copy from invalid prefab");
 	}
 	return *this;
 }
@@ -151,7 +151,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
 	myImguiText = myName;
-	const_cast<unsigned&>(myID) = aGameObject.myID;
+	const_cast<GameObjectID&>(myID) = aGameObject.myID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 
@@ -460,16 +460,21 @@ unsigned int GameObject::GetComponentCount() const
 	return myCount;
 }
 
-unsigned int GameObject::GetID() const
+GameObjectID GameObject::GetID() const
 {
 	return myID;
+}
+
+std::string GameObject::GetIDString() const
+{
+	return std::to_string(static_cast<int>(myID));
 }
 
 void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 {
 	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		std::string id = "ID: " + std::to_string(myID);
+		std::string id = "ID: " + std::to_string(static_cast<int>(myID));
 		ImGui::Text(id.c_str());
 		ImGui::Checkbox("Active", &myIsActive);
 		if (ImGui::InputText("Name", &myImguiText, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
@@ -504,13 +509,13 @@ Json::Value GameObject::ToJson() const
 {
 	Json::Value result;
 	result["IsActive"] = myIsActive;
-	result["ID"] = myID;
+	result["ID"] = static_cast<int>(myID);
 	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();
 
 	if (myParent)
 	{
-		result["ParentID"] = myParent->myID;
+		result["ParentID"] = static_cast<int>(myParent->myID);
 	}
 	else
 	{
@@ -533,8 +538,8 @@ Json::Value GameObject::ToJson() const
 
 struct GameObjectData
 {
-	unsigned ID;
-	unsigned ParentID;
+	GameObjectID ID;
+	GameObjectID ParentID;
 	unsigned ComponentCount;
 	bool IsActive;
 };
@@ -544,7 +549,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 	Binary::eType type = Binary::GameObject;
 	GameObjectData data;
 	data.ID = myID;
-	data.ParentID = myParent ? myParent->myID : 0u;
+	data.ParentID = myParent ? myParent->myID : GameObjectID::Invalid;
 	data.ComponentCount = myCount;
 	data.IsActive = myIsActive;
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
@@ -558,11 +563,11 @@ void GameObject::Serialize(std::ostream& aStream) const
 	}
 }
 
-unsigned GameObject::Deserialize(std::istream& aStream)
+GameObjectID GameObject::Deserialize(std::istream& aStream)
 {
 	GameObjectData data;
 	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
-	const_cast<unsigned&>(myID) = data.ID;
+	const_cast<GameObjectID&>(myID) = data.ID;
 	myIsActive = data.IsActive;
 	std::getline(aStream, myName, '\0');
 	myTransform.Deserialize(aStream);
@@ -573,7 +578,7 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
 		if (type != Binary::Component)
 		{
-			throw std::runtime_error("GameObject::Deserialize: Invalid Binary::Type when loading components. ID: " + std::to_string(myID));
+			throw std::runtime_error("GameObject::Deserialize: Invalid Binary::Type when loading components. ID: " + std::to_string(static_cast<int>(myID)));
 		}
 		LoadComponent(aStream, *this);
 	}
@@ -582,9 +587,9 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 
 void GameObject::MarkAsPrefab()
 {
-	if (myID != 0)
+	if (myID != GameObjectID::Invalid)
 	{
-		const_cast<unsigned&>(myID) = 0;
+		const_cast<GameObjectID&>(myID) = GameObjectID::Invalid;
 		localIDCount--;
 	}
 	for (auto [type, index] : myIndexList)
@@ -593,11 +598,11 @@ void GameObject::MarkAsPrefab()
 	}
 }
 
-void GameObject::MarkAsPrefab(unsigned anID)
+void GameObject::MarkAsPrefab(GameObjectID anID)
 {
-	if (myID != anID)
+	if (myID != GameObjectID::Invalid)
 	{
-		const_cast<unsigned&>(myID) = anID;
+		const_cast<GameObjectID&>(myID) = anID;
 		localIDCount--;
 	}
 }
@@ -608,7 +613,7 @@ void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
 	{
 		localIDCount--;
 	}
-	const_cast<unsigned&>(myID) = anObject.myID;
+	const_cast<GameObjectID&>(myID) = anObject.myID;
 
 	for (auto [type, index] : myIndexList)
 	{
@@ -616,9 +621,9 @@ void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
 	}
 }
 
-unsigned GameObject::GetParentID(const Json::Value& aJson)
+GameObjectID GameObject::GetParentID(const Json::Value& aJson)
 {
-	return aJson["ParentID"].asUInt();
+	return static_cast<GameObjectID>(aJson["ParentID"].asInt());
 }
 
 void SetGameObjectIDCount(unsigned aValue)

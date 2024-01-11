@@ -257,7 +257,7 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const Scene& aScene
 		for (auto& [id, object] : aScene.GameObjects)
 		{
 			json["GameObjects"][i] = object.ToJson();
-			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(id), Json::commentBefore);
+			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(static_cast<int>(id)), Json::commentBefore);
 			i++;
 		}
 
@@ -303,7 +303,7 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const EditorScene& 
 		for (auto& [id, object] : aScene.GameObjects)
 		{
 			json["GameObjects"][i] = object->ToJson();
-			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(id), Json::commentBefore);
+			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(static_cast<int>(id)), Json::commentBefore);
 			i++;
 		}
 
@@ -336,12 +336,12 @@ void SceneManager::SaveSceneToBinary(const std::string& aPath, const EditorScene
 
 inline Scene::Scene(const Json::Value& aJson) : GameObjectIDCount(aJson["GameObjectIDCount"].asUInt()), Name(aJson["SceneName"].asString()), GameObjects()
 {
-	std::unordered_map<unsigned, unsigned> childlist;
+	std::unordered_map<GameObjectID, GameObjectID> childlist;
 	for (auto& json : aJson["GameObjects"])
 	{
 		GameObject object = json;
-		unsigned parentID = GameObject::GetParentID(json);
-		if (parentID != 0)
+		GameObjectID parentID = GameObject::GetParentID(json);
+		if (parentID != GameObjectID::Invalid)
 		{
 			childlist.emplace(object.GetID(), parentID);
 		}
@@ -356,12 +356,12 @@ inline Scene::Scene(const Json::Value& aJson) : GameObjectIDCount(aJson["GameObj
 
 inline EditorScene::EditorScene(const Json::Value& aJson): GameObjectIDCount(aJson["GameObjectIDCount"].asUInt()), Name(aJson["SceneName"].asString()), Path(), GameObjects()
 {
-	std::unordered_map<unsigned, unsigned> childlist;
+	std::unordered_map<GameObjectID, GameObjectID> childlist;
 	for (auto& json : aJson["GameObjects"])
 	{
 		std::shared_ptr<GameObject> object = std::make_shared<GameObject>(json);
-		unsigned parentID = GameObject::GetParentID(json);
-		if (parentID != 0)
+		GameObjectID parentID = GameObject::GetParentID(json);
+		if (parentID != GameObjectID::Invalid)
 		{
 			childlist.emplace(object->GetID(), parentID);
 		}
@@ -389,9 +389,9 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 	unsigned gameobjectCount = 0;
 	aStream.read(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
 
-	std::unordered_map<unsigned, unsigned> childlist;
+	std::unordered_map<GameObjectID, GameObjectID> childlist;
 	{
-		unsigned parentID = 0;
+		GameObjectID parentID = GameObjectID::Invalid;
 		for (unsigned i = 0; i < gameobjectCount; i++)
 		{
 			aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
@@ -401,7 +401,7 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 			}
 			GameObject object;
 			parentID = object.Deserialize(aStream);
-			if (parentID != 0)
+			if (parentID != GameObjectID::Invalid)
 			{
 				childlist.emplace(object.GetID(), parentID);
 			}
@@ -448,9 +448,9 @@ std::istream& operator>>(std::istream& aStream, EditorScene& aScene)
 	unsigned gameobjectCount = 0;
 	aStream.read(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
 
-	std::unordered_map<unsigned, unsigned> childlist;
+	std::unordered_map<GameObjectID, GameObjectID> childlist;
 	{
-		unsigned parentID = 0;
+		GameObjectID parentID = GameObjectID::Invalid;
 		for (unsigned i = 0; i < gameobjectCount; i++)
 		{
 			aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
@@ -461,7 +461,7 @@ std::istream& operator>>(std::istream& aStream, EditorScene& aScene)
 
 			std::shared_ptr<GameObject> object = std::make_shared<GameObject>();
 			parentID = object->Deserialize(aStream);
-			if (parentID != 0)
+			if (parentID != GameObjectID::Invalid)
 			{
 				childlist.emplace(object->GetID(), parentID);
 			}

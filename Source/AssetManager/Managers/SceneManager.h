@@ -6,7 +6,7 @@ struct Scene
 {
 	unsigned GameObjectIDCount = 0;
 	std::string Name = "NewScene";
-	std::unordered_map<unsigned, GameObject> GameObjects;
+	std::unordered_map<GameObjectID, GameObject> GameObjects;
 
 	Scene() = default;
 	Scene(const Json::Value& aJson);
@@ -25,7 +25,7 @@ struct EditorScene
 	unsigned GameObjectIDCount = 0;
 	std::string Name = "NewScene";
 	std::string Path{};
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> GameObjects;
+	std::unordered_map<GameObjectID, std::shared_ptr<GameObject>> GameObjects;
 
 	EditorScene() = default;
 	EditorScene(const Json::Value& aJson);
