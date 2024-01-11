@@ -9,7 +9,7 @@
 #ifdef WITH_EDITOR
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_stdlib.h"
 #endif
 
 #include "ScriptGraph/ScriptGraphTypes.h"

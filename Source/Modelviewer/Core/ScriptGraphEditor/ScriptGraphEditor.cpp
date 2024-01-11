@@ -953,15 +953,6 @@ void ScriptGraphEditor::Init()
 
 	mySchema = myGraph->GetGraphSchema();
 	
-	mySchema->AddVariable<float>("En Float", 42);
-	mySchema->AddVariable<std::string>("Bloppa");
-	mySchema->AddVariable<bool>("Setting");
-
-	mySchema->AddNode<SGNode_MathAdd>();
-	mySchema->AddNode<SGNode_MathAdd>();
-
-	mySchema->AddGetVariableNode("En Float");
-	mySchema->AddSetVariableNode("En Float");
 	//~ End temp
 
 	UpdateVariableContextMenu();

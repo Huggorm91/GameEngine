@@ -7,7 +7,7 @@
 #include "ScriptGraphNode.h"
 #include "ScriptGraphTypes.h"
 
-#include "../../CrimsonUtilities/Json/nlohmannJson/json.hpp"
+#include "Json/nlohmannJson/json.hpp"
 #include "ScriptGraphVariable.h"
 #include "Nodes/SGNode_Variable.h"
 #include "Nodes/Events/SGNode_EventBeginPlay.h"
