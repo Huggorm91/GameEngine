@@ -109,7 +109,7 @@ struct Config
     float                   SmoothZoomPower;
 
     Config()
-        : SettingsFile("NodeEditor.json")
+        : SettingsFile("Settings\\ne_settings.json")
         , BeginSaveSession(nullptr)
         , EndSaveSession(nullptr)
         , SaveSettings(nullptr)
