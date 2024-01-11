@@ -102,4 +102,7 @@ public:
 	void Init();
 	void Update(float aDeltaTime);
 	void Render();
+
+	static inline const wchar_t* GetExtensionW(){ return L".blp"; }
+	static inline const char* GetPath(){ return "..\\Content\\Blueprints\\"; }
 };

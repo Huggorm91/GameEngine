@@ -24,6 +24,8 @@
 #include "GraphicsEngine/Rendering/Texture.h"
 #include "ScriptGraph/Nodes/Events/SGNode_EventBase.h"
 
+#include "File\FileSelectors.h"
+
 #pragma warning( push )
 #pragma warning( disable : 4100)
 
@@ -1006,44 +1008,51 @@ void ScriptGraphEditor::Render()
 		ImGui::SameLine();
 		if(ImGui::Button("Save"))
 		{
-			std::string outGraph;
-
-			ScriptGraphSchema::SerializeScriptGraph(myGraph, outGraph);
-			std::ofstream file("file.txt");
-			file << outGraph;
-			file.close();
+			std::string path = "";
+			if (Crimson::ShowSaveFileSelector(path, L"Blueprint", GetExtensionW(), {L"Blueprints", L"*.blp;"}, Crimson::ToWString(Crimson::GetAbsolutePath(GetPath()))))
+			{
+				std::string outGraph;
+				ScriptGraphSchema::SerializeScriptGraph(myGraph, outGraph);
+				std::ofstream file(path);
+				file << outGraph;
+				file.close();
+			}			
 		}
 		ImGui::SameLine();
 		if(ImGui::Button("Load"))
 		{
-			std::ifstream file("file.txt");
-			const std::string inGraph = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-			file.close();
-
-			if(!inGraph.empty())
+			std::string path = "";
+			if (Crimson::ShowOpenFileSelector(path, { L"Blueprints", L"*.blp;" }, Crimson::ToWString(Crimson::GetAbsolutePath(GetPath()))))
 			{
-				myGraph->UnbindErrorHandler();
-				myGraph = nullptr;
+				std::ifstream file(path);
+				const std::string inGraph = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+				file.close();
 
-				ScriptGraphSchema::DeserializeScriptGraph(myGraph, inGraph);
-				// Need to loop through and set the ImNodeEd pins xP
-				for (auto& [nodeUID, node] : myGraph->GetNodes())
+				if (!inGraph.empty())
 				{
-					float x, y, z;
-					mySchema->GetNodePositionCache(node, x, y, z);
-					ImNodeEd::SetNodePosition(nodeUID, { x, y });
-					ImNodeEd::SetNodeZPosition(nodeUID, z);
-				}
+					myGraph->UnbindErrorHandler();
+					myGraph = nullptr;
 
-				myGraph->BindErrorHandler([this](const ScriptGraph& aGraph, size_t aNodeUID, const std::string& aMessage)
+					ScriptGraphSchema::DeserializeScriptGraph(myGraph, inGraph);
+					// Need to loop through and set the ImNodeEd pins xP
+					for (auto& [nodeUID, node] : myGraph->GetNodes())
+					{
+						float x, y, z;
+						mySchema->GetNodePositionCache(node, x, y, z);
+						ImNodeEd::SetNodePosition(nodeUID, { x, y });
+						ImNodeEd::SetNodeZPosition(nodeUID, z);
+					}
+
+					myGraph->BindErrorHandler([this](const ScriptGraph& aGraph, size_t aNodeUID, const std::string& aMessage)
 					{
 						HandleScriptGraphError(aGraph, aNodeUID, aMessage);
 					});
 
-				mySchema = nullptr;
-				mySchema = myGraph->GetGraphSchema();
-				UpdateVariableContextMenu();
-				myState.initNavToContent = true;
+					mySchema = nullptr;
+					mySchema = myGraph->GetGraphSchema();
+					UpdateVariableContextMenu();
+					myState.initNavToContent = true;
+				}
 			}
 		}
 		
