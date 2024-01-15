@@ -116,7 +116,13 @@ inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)
 	{
 		return *object;
 	}
-	return *myPrefabManager.GetTemplate(anIdentifier, myIsLoggingErrors);
+	else if (object = myPrefabManager.GetTemplate(anIdentifier, myIsLoggingErrors); object != nullptr)
+	{
+		return *object;
+	}
+	GameObject errorObject;
+	errorObject.MarkAsPrefab();
+	return errorObject;
 }
 
 template<>

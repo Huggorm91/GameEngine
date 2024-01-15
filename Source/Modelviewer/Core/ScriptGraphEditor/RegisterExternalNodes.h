@@ -9,48 +9,30 @@
 
 // NOTE THE INCLUDE!
 
-BeginScriptGraphNode(MVNode_TestNode)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Model Viewer Test Node"; }
-	size_t DoOperation() override;
-};
-
-BeginScriptGraphNode(MVNode_TestExecless)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Test Execless Node"; }
-	size_t DoOperation() override;
-};
-
-BeginScriptGraphNode(MVNode_TestMultiInput)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Test Multi Input"; }
-	size_t DoOperation() override;
-	bool IsSimpleNode() const override;
-};
-
-BeginScriptGraphNode(MVNode_MakeVector)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Make Vector"; }
-	size_t DoOperation() override;
-	bool IsSimpleNode() const override { return false; }
-};
-
-BeginScriptGraphNode(MVNode_BreakVector)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Break Vector"; }
-	size_t DoOperation() override;
-	bool IsSimpleNode() const override { return false; }
-};
+//BeginScriptGraphNode(MVNode_TestNode)
+//{
+//public:
+//	void Init() override;
+//	std::string GetNodeTitle() const override { return "Model Viewer Test Node"; }
+//	size_t DoOperation() override;
+//};
+//
+//BeginScriptGraphNode(MVNode_TestExecless)
+//{
+//public:
+//	void Init() override;
+//	std::string GetNodeTitle() const override { return "Test Execless Node"; }
+//	size_t DoOperation() override;
+//};
+//
+//BeginScriptGraphNode(MVNode_TestMultiInput)
+//{
+//public:
+//	void Init() override;
+//	std::string GetNodeTitle() const override { return "Test Multi Input"; }
+//	size_t DoOperation() override;
+//	bool IsSimpleNode() const override;
+//};
 
 BeginScriptGraphNode(MVNode_Branch)
 {

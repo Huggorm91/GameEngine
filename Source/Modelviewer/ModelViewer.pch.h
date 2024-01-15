@@ -32,6 +32,8 @@ using namespace Microsoft::WRL;
 #include "ThirdParty/DearImGui/ImGui/imgui.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
 #include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+
+#include "MuninGraph.h"
 #endif // !_RETAIL
 
 #endif //MODELVIEWER_PCH_H

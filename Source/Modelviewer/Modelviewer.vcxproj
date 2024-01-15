@@ -283,6 +283,7 @@
     <ClInclude Include="Core\ScriptGraphEditor\RegisterExternalTypes.h" />
     <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphEditor.h" />
     <ClInclude Include="Core\ScriptGraphEditor\ScriptGraphNodeGradient.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\Nodes\GameObjectNodes.h" />
     <ClInclude Include="ModelViewer.pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Windows\SplashWindow.h" />
@@ -303,6 +304,7 @@
     <ClCompile Include="Core\GraphEditorBase.cpp" />
     <ClCompile Include="Core\ScriptGraphEditor\RegisterExternalNodes.cpp" />
     <ClCompile Include="Core\ScriptGraphEditor\ScriptGraphEditor.cpp" />
+    <ClCompile Include="Core\ScriptGraphEditor\Nodes\GameObjectNodes.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="ModelViewer.pch.cpp">

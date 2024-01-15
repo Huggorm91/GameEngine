@@ -4,6 +4,7 @@
 
 #include "ScriptGraph/ScriptGraphTypes.h"
 #include "Math/Vector3.hpp"
+#include "Assets\GameObject.h"
 #include <format>
 
 /********************************************************************************************************************************
@@ -53,6 +54,16 @@ std::string ToString(const void* aDataPtr, const ScriptGraphType& aTypeInfo) con
 {
 	const Crimson::Vector3f vector = *static_cast<const Crimson::Vector3f*>(aDataPtr);
 	std::string result = std::format("X: {}, Y: {}, Z: {}", vector.x, vector.y, vector.z);
+	return result;
+}
+EndDataTypeHandler
+
+BeginDataTypeHandler(GameObjectID, GameObjectID, GraphColor(255, 20, 20, 255), false)
+
+std::string ToString(const void* aDataPtr, const ScriptGraphType& aTypeInfo) const override
+{
+	const GameObjectID id = *static_cast<const GameObjectID*>(aDataPtr);
+	std::string result = std::format("GameObject: {}", static_cast<int>(id));
 	return result;
 }
 EndDataTypeHandler

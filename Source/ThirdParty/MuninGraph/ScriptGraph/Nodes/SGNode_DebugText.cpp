@@ -13,7 +13,7 @@ void SGNode_DebugText::Init()
 
 	CreateDataPin<std::string>("Text", PinDirection::Input);
 
-	SetPinData<std::string>("Text", "123456789012345678901234567890");
+	SetPinData<std::string>("Text", "Test");
 }
 
 size_t SGNode_DebugText::DoOperation()
