@@ -16,6 +16,7 @@ public:
 	void ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey) override;
 	void ReceiveEvent(Crimson::eInputAction anEvent, float aValue) override;
 
+	const Crimson::Vector3f& GetPosition() const;
 	void SetPosition(const Crimson::Vector3f& aPosition);
 	void SetRotation(const Crimson::Vector3f& aRotation);
 

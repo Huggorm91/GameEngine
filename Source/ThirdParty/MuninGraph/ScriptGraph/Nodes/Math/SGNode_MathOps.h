@@ -69,7 +69,7 @@ BeginScriptGraphNode(SGNode_MathAbs)
 {
 public:
 	void Init() override;
-	std::string GetNodeTitle() const override { return "Absolute"; }
+	std::string GetNodeTitle() const override { return "Abs"; }
 	std::string GetDescription() const override { return "Returns the positive value of the input."; }
 	std::string GetNodeCategory() const override { return "Math"; }
 	size_t DoOperation() override;

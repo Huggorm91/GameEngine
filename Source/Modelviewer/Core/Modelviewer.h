@@ -19,7 +19,7 @@ class GameObject;
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
-class ModelViewer: public Crimson::InputObserver
+class ModelViewer : public Crimson::InputObserver
 {
 #else
 class ModelViewer
@@ -27,23 +27,37 @@ class ModelViewer
 #endif // _RETAIL
 public:
 	// Singleton Getter.
-	static ModelViewer& Get() {
+	static ModelViewer& Get()
+	{
 		static ModelViewer myInstance; return myInstance;
 	}
 
 	// Acceleration Getters for components.
-	FORCEINLINE static ApplicationState& GetApplicationState() {
+	FORCEINLINE static ApplicationState& GetApplicationState()
+	{
 		return Get().myApplicationState;
 	}
-	FORCEINLINE static Logger& GetLogger() {
+	FORCEINLINE static Logger& GetLogger()
+	{
 		return Get().myLogger;
+	}
+	FORCEINLINE static PerspectiveCamera& GetCamera()
+	{
+		return Get().myCamera;
+	}
+	FORCEINLINE static std::vector<GameObjectID>& GetCreatedObjects()
+	{
+		return Get().myObjectsCreatedByScript;
 	}
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
 #ifndef _RETAIL
-	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
+	FORCEINLINE static ImguiManager& GetImguiManager()
+	{
+		return Get().myImguiManager;
+	}
 	void SetDropFile(HDROP aHandle);
 
 	void SetPlayMode(bool aState);
@@ -103,11 +117,13 @@ private:
 
 	SplashWindow* mySplashWindow{ nullptr };
 
-	const std::string mySettingsPath{"Settings/mw_settings.json"};
+	const std::string mySettingsPath{ "Settings/mw_settings.json" };
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
 	PerspectiveCamera myCamera;
+
+	std::vector<GameObjectID> myObjectsCreatedByScript;
 
 #ifndef _RETAIL
 	EditorScene myScene;

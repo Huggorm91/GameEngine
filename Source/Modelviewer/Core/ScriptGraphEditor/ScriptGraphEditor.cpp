@@ -954,7 +954,9 @@ void ScriptGraphEditor::Init()
 		});
 
 	mySchema = myGraph->GetGraphSchema();
-	
+	//mySchema->AddVariable<std::vector<int>>("Created Objects", std::vector<int>());
+	//mySchema->AddGetVariableNode("Created Objects");
+	//mySchema->AddSetVariableNode("Created Objects");
 	//~ End temp
 
 	UpdateVariableContextMenu();

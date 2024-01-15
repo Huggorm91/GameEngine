@@ -66,3 +66,58 @@ public:
 	size_t DoOperation() override;
 	bool IsSimpleNode() const override { return false; }
 };
+
+BeginScriptGraphNode(SGNode_MathAbsVec)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Abs"; }
+	std::string GetDescription() const override { return "Converts a Vectors values to absolutes."; }
+	std::string GetNodeCategory() const override { return "Vector"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathClampVec)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Clamp"; }
+	std::string GetDescription() const override { return "Clamps a Vector."; }
+	std::string GetNodeCategory() const override { return "Vector"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathClampMagnitudeVec)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Clamp Magnitude"; }
+	std::string GetDescription() const override { return "Clamps a Vectors length."; }
+	std::string GetNodeCategory() const override { return "Vector"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathLerpVec)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Lerp"; }
+	std::string GetDescription() const override { return "Lerps a Vector."; }
+	std::string GetNodeCategory() const override { return "Vector"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathDistanceVec)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Distance"; }
+	std::string GetDescription() const override { return "Calculates the distance between two Vectors."; }
+	std::string GetNodeCategory() const override { return "Vector"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};

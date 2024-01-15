@@ -155,9 +155,6 @@ size_t SGNode_MathSin::DoOperation()
 
 void SGNode_MathAbs::Init()
 {
-	CreateExecPin("In", PinDirection::Input, true);
-	CreateExecPin("Out", PinDirection::Output, true);
-
 	CreateDataPin<float>("Value", PinDirection::Input);
 
 	CreateDataPin<float>("Result", PinDirection::Output);
@@ -171,7 +168,7 @@ size_t SGNode_MathAbs::DoOperation()
 	{
 		const float result = std::abs(inA);
 		SetPinData("Result", result);
-		return ExitViaPin("Out");
+		return Exit();
 	}
 
 	return 0;

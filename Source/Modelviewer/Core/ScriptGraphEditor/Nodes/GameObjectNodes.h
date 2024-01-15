@@ -44,3 +44,47 @@ public:
 	size_t DoOperation() override;
 	bool IsSimpleNode() const override { return false; }
 };
+
+BeginScriptGraphNode(SGNode_GameObjectGetRot)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Get Rotation"; }
+	std::string GetDescription() const override { return "Gets an existing Gameobjects rotation."; }
+	std::string GetNodeCategory() const override { return "GameObject"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_GameObjectSetRot)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Set Rotation"; }
+	std::string GetDescription() const override { return "Sets an existing Gameobjects rotation."; }
+	std::string GetNodeCategory() const override { return "GameObject"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_GameObjectGetScale)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Get Scale"; }
+	std::string GetDescription() const override { return "Gets an existing Gameobjects scale."; }
+	std::string GetNodeCategory() const override { return "GameObject"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_GameObjectSetScale)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Set Scale"; }
+	std::string GetDescription() const override { return "Sets an existing Gameobjects scale."; }
+	std::string GetNodeCategory() const override { return "GameObject"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};

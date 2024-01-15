@@ -25,6 +25,7 @@ size_t SGNode_GameObjectCreate::DoOperation()
 		{
 			AssetManager::SetLogErrors(true);
 			result = ModelViewer::Get().AddGameObject(std::move(object))->GetID();
+			ModelViewer::GetCreatedObjects().emplace_back(result);
 			SetPinData("Object ID", result);
 			return ExitViaPin("Out");
 		}
@@ -55,6 +56,7 @@ size_t SGNode_GameObjectCreate::DoOperation()
 
 		if (result != GameObjectID::Invalid)
 		{
+			ModelViewer::GetCreatedObjects().emplace_back(result);
 			SetPinData("Object ID", result);
 			return ExitViaPin("Out");
 		}		
@@ -131,6 +133,108 @@ size_t SGNode_GameObjectSetPos::DoOperation()
 		if (object)
 		{
 			object->SetPosition(position);
+			return ExitViaPin("Out");
+		}
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void SGNode_GameObjectGetRot::Init()
+{
+	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Output);
+}
+
+size_t SGNode_GameObjectGetRot::DoOperation()
+{
+	GameObjectID id = GameObjectID::Invalid;
+
+	if (GetPinData("ID", id))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			Crimson::Vector3f result = object->GetTransform().GetRotation();
+			SetPinData("Rotation", result);
+			return Exit();
+		}
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void SGNode_GameObjectSetRot::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Input);
+}
+
+size_t SGNode_GameObjectSetRot::DoOperation()
+{
+	GameObjectID id = GameObjectID::Invalid;
+	Crimson::Vector3f rotation = Crimson::Vector3f::Null;
+
+	if (GetPinData("ID", id) && GetPinData("Rotation", rotation))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			object->SetRotation(rotation);
+			return ExitViaPin("Out");
+		}
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void SGNode_GameObjectGetScale::Init()
+{
+	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Output);
+}
+
+size_t SGNode_GameObjectGetScale::DoOperation()
+{
+	GameObjectID id = GameObjectID::Invalid;
+
+	if (GetPinData("ID", id))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			Crimson::Vector3f result = object->GetTransform().GetScale();
+			SetPinData("Scale", result);
+			return Exit();
+		}
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void SGNode_GameObjectSetScale::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Input);
+}
+
+size_t SGNode_GameObjectSetScale::DoOperation()
+{
+	GameObjectID id = GameObjectID::Invalid;
+	Crimson::Vector3f scale = Crimson::Vector3f::Null;
+
+	if (GetPinData("ID", id) && GetPinData("Scale", scale))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			object->SetScale(scale);
 			return ExitViaPin("Out");
 		}
 	}

@@ -148,3 +148,134 @@ size_t SGNode_MathDivVec::DoOperation()
 
 	return 0;
 }
+
+void SGNode_MathAbsVec::Init()
+{
+	CreateDataPin<Crimson::Vector3f>("Vector", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathAbsVec::DoOperation()
+{
+	Crimson::Vector3f vec = Crimson::Vector3f::Null;
+
+	if (GetPinData("Vector", vec))
+	{
+		const Crimson::Vector3f result = vec.Abs();
+		SetPinData("Result", result);
+		return Exit();
+	}
+
+	return 0;
+}
+
+void SGNode_MathClampVec::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<Crimson::Vector3f>("Value", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Min", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Max", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathClampVec::DoOperation()
+{
+	Crimson::Vector3f min = Crimson::Vector3f::Null;
+	Crimson::Vector3f max = Crimson::Vector3f::Null;
+	Crimson::Vector3f value = Crimson::Vector3f::Null;
+
+	if (GetPinData("Min", min) && GetPinData("Max", max) && GetPinData("Value", value))
+	{
+		const Crimson::Vector3f result = value.Clamp(min, max);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathClampMagnitudeVec::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<Crimson::Vector3f>("Value", PinDirection::Input);
+	CreateDataPin<float>("Max length", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathClampMagnitudeVec::DoOperation()
+{
+	float max = 0.f;
+	Crimson::Vector3f value = Crimson::Vector3f::Null;
+
+	if (GetPinData("Max length", max) && GetPinData("Value", value))
+	{
+		const Crimson::Vector3f result = value.ClampMagnitude(max);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathLerpVec::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<Crimson::Vector3f>("Value", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("From", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("To", PinDirection::Input);
+	CreateDataPin<float>("Percentage", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathLerpVec::DoOperation()
+{
+	Crimson::Vector3f value = Crimson::Vector3f::Null;
+	Crimson::Vector3f from = Crimson::Vector3f::Null;
+	Crimson::Vector3f to = Crimson::Vector3f::Null;
+	float percentage = 0.f;
+
+	if (GetPinData("Value", value) && GetPinData("From", from) && GetPinData("To", to) && GetPinData("Percentage", percentage))
+	{
+		const Crimson::Vector3f result = value.Lerp(from, to, percentage);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathDistanceVec::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<Crimson::Vector3f>("Vector A", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Vector B", PinDirection::Input);
+
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathDistanceVec::DoOperation()
+{
+	Crimson::Vector3f inA = Crimson::Vector3f::Null;
+	Crimson::Vector3f inB = Crimson::Vector3f::Null;
+
+	if (GetPinData("Vector A", inA) && GetPinData("Vector B", inB))
+	{
+		const float result = (inA - inB).Length();
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}

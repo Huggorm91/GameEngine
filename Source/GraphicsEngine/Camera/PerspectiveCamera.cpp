@@ -186,6 +186,11 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputAction, float)
 {
 }
 
+const Crimson::Vector3f& PerspectiveCamera::GetPosition() const
+{
+	return myPosition;
+}
+
 void PerspectiveCamera::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myPosition = aPosition;
