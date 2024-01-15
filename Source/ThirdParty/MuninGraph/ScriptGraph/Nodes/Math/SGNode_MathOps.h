@@ -44,3 +44,44 @@ public:
 	size_t DoOperation() override;
 	bool IsSimpleNode() const override { return false; }
 };
+
+BeginScriptGraphNode(SGNode_MathCos)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Cos"; }
+	std::string GetNodeCategory() const override { return "Math"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathSin)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Sin"; }
+	std::string GetNodeCategory() const override { return "Math"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathAbs)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Absolute"; }
+	std::string GetDescription() const override { return "Returns the positive value of the input."; }
+	std::string GetNodeCategory() const override { return "Math"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(SGNode_MathATan2)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "ATan2"; }
+	std::string GetNodeCategory() const override { return "Math"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return false; }
+};

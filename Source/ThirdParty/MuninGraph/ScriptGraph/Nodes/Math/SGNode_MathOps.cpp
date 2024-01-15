@@ -104,3 +104,101 @@ size_t SGNode_MathDiv::DoOperation()
 
 	return 0;
 }
+
+void SGNode_MathCos::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<float>("Value", PinDirection::Input);
+
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathCos::DoOperation()
+{
+	float inA = 0;
+
+	if (GetPinData("Value", inA))
+	{
+		const float result = cosf(inA);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathSin::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<float>("Value", PinDirection::Input);
+
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathSin::DoOperation()
+{
+	float inA = 0;
+
+	if (GetPinData("Value", inA))
+	{
+		const float result = sinf(inA);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathAbs::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<float>("Value", PinDirection::Input);
+
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathAbs::DoOperation()
+{
+	float inA = 0;
+
+	if (GetPinData("Value", inA))
+	{
+		const float result = std::abs(inA);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}
+
+void SGNode_MathATan2::Init()
+{
+	CreateExecPin("In", PinDirection::Input, true);
+	CreateExecPin("Out", PinDirection::Output, true);
+
+	CreateDataPin<float>("X", PinDirection::Input);
+	CreateDataPin<float>("Y", PinDirection::Input);
+
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+size_t SGNode_MathATan2::DoOperation()
+{
+	float x = 0;
+	float y = 0;
+
+	if (GetPinData("X", x) && GetPinData("Y", y))
+	{
+		const float result = atan2f(y, x);
+		SetPinData("Result", result);
+		return ExitViaPin("Out");
+	}
+
+	return 0;
+}

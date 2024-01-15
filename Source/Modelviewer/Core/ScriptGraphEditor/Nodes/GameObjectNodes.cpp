@@ -20,12 +20,16 @@ size_t SGNode_GameObjectCreate::DoOperation()
 	if (GetPinData("Type", type))
 	{
 		GameObjectID result = GameObjectID::Invalid;
+		AssetManager::SetLogErrors(false);
 		if (auto object = AssetManager::GetAsset<GameObject>(type); object.GetID() != GameObjectID::Invalid)
 		{
+			AssetManager::SetLogErrors(true);
 			result = ModelViewer::Get().AddGameObject(std::move(object))->GetID();
 			SetPinData("Object ID", result);
 			return ExitViaPin("Out");
 		}
+
+		AssetManager::SetLogErrors(true);
 
 		type = Crimson::ToLower(type);
 		if (type == "empty")

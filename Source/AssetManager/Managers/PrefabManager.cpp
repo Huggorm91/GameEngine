@@ -41,13 +41,14 @@ GameObject* PrefabManager::GetTemplate(const std::string& aPath, bool aShouldLog
 		{
 			return LoadPrefab(aPath, aShouldLogErrors);
 		}
-		else
+		/*else
 		{
 			myValidPaths.emplace(aPath);
-			myPrefabs.emplace(aPath, GameObject(0));
+			myPrefabs.emplace(aPath, GameObject(GameObjectID::Invalid));
 			return &myPrefabs.at(aPath);
-		}
+		}*/
 	}
+	return nullptr;
 }
 
 const std::unordered_set<std::string>& PrefabManager::GetPrefablist() const
