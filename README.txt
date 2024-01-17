@@ -1,21 +1,23 @@
-HÃ¥ll in hÃ¶ger musknapp fÃ¶r att aktivera kamerafÃ¶rflyttning.
+Håll in höger musknapp för att aktivera kameraförflyttning.
 
-WASD fÃ¶r att flytta lÃ¤ngs x- & z-axlarna
-Ctrl och Spacebar fÃ¶r att flytta lÃ¤ngs y-axeln
-Shift Ã¶kar hastigheten
+WASD för att flytta längs x- & z-axlarna
+Ctrl och Spacebar för att flytta längs y-axeln
+Shift ökar hastigheten
 Q & E roterar kameran runt y-axeln
 Musen roterar kameran runt x- & y-axlarna
 
 F1 startar PlayMode
 
-F5 Ã¤ndrar debug-lÃ¤ge
-F6 Ã¤ndrar ljus-lÃ¤ge
-F7 Ã¤ndrar render-lÃ¤ge
-F8 Ã¥terstÃ¤ller allt till standardlÃ¤ge
+F5 ändrar debug-läge
+F6 ändrar ljus-läge
+F7 ändrar render-läge
+F8 återställer allt till standardläge
 
-Ctrl + Z Ã¥ngra senaste redigeringen
-Ctrl + Y gÃ¶r om senaste Ã¥ngrade redigeringen
+Ctrl + Z ångra senaste redigeringen
+Ctrl + Y gör om senaste ångrade redigeringen
+
+Ctrl + D duplicerar de valda noderna i nod-editorn
 
 Del raderar det valda objektet
 
-HÃ¥ll in Ctrl fÃ¶r att markera flera objekt i scen-listan
+Håll in Ctrl för att markera flera objekt i scen-listan

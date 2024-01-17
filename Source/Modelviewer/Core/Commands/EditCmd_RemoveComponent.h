@@ -18,31 +18,30 @@ public:
 
 protected:
 	std::shared_ptr<CompType> myComponent;
-	unsigned myGameObjectID;
+	GameObjectID myGameObjectID;
 	unsigned myComponentIndex; // Make function to get Index of component in gameobject (To recreate the old memory adress)
 };
 
 template<class CompType>
-inline EditCmd_RemoveComponent<CompType>::EditCmd_RemoveComponent(const CompType& aComponent) : myComponent(std::make_shared<CompType>(aComponent)), myGameObjectID(aComponent.GetParent().GetID()), myComponentID(aComponent.GetID())
-{
-}
+inline EditCmd_RemoveComponent<CompType>::EditCmd_RemoveComponent(const CompType& aComponent) : myComponent(std::make_shared<CompType>(aComponent)), myGameObjectID(aComponent.GetParent().GetID()), myComponentIndex(aComponent.GetComponentID())
+{}
 
 template<class CompType>
 inline void EditCmd_RemoveComponent<CompType>::Undo()
 {
-	GameObject* object = GetGameObject(myGameObjectID);
+	auto object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
 	CompType& component = object->AddComponent<CompType>(*myComponent);
-	component.MarkAsPrefabComponent(myComponentID);
+	component.MarkAsPrefabComponent(myComponentIndex);
 }
 
 template<class CompType>
 inline void EditCmd_RemoveComponent<CompType>::Execute()
 {
-	GameObject* object = GetGameObject(myGameObjectID);
+	auto object = GetGameObject(myGameObjectID);
 	assert(object && "Could not find GameObject!");
 
-	const bool success = object->RemoveComponent<CompType>(myComponentID);
+	const bool success = object->RemoveComponent<CompType>(myComponentIndex);
 	assert(success && "Failed removing Component!");
 }
