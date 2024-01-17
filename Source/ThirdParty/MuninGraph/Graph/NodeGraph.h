@@ -201,9 +201,10 @@ const GraphPinType& NodeGraphInternal<GraphNodeType, GraphPinType, GraphEdgeType
 	size_t aPinUID, bool& outErrored) const
 {
 	const GraphPinType& pin = GetPinFromUID(aPinUID);
+#ifdef _DEBUG
 	const PinDirection pinDir = pin.GetPinDirection();
-
 	assert(pinDir == PinDirection::Input && "Pin Data can only be fetched from Input pins!");
+#endif // _DEBUG
 
 	outErrored = false;
 

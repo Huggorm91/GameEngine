@@ -38,7 +38,7 @@ class ScriptGraphPin : public NodeGraphPin<ScriptGraphNode, ScriptGraphSchema>
 
 	ScriptGraphPin(const std::shared_ptr<ScriptGraphNode>& anOwner, const std::string& aLabel, PinDirection aDirection, PinIcon anIcon, ScriptGraphPinType aType)
 		: NodeGraphPin(anOwner, aLabel, aDirection), myType(aType), myIcon(anIcon)
-	{  }
+	{}
 
 protected:
 
@@ -95,7 +95,7 @@ public:
 		return false;
 	}
 
-	size_t GetDataSize() const { return myData.TypeData->GetTypeSize(); }
+	inline size_t GetDataSize() const { return myData.TypeData->GetTypeSize(); }
 
 	// USE AT YOUR OWN RISK!
 	bool GetRawData(void* outData, size_t outDataSize) const;
@@ -111,7 +111,7 @@ public:
 		assert(RequestedType == myData.TypeData->GetType() && "Cannot SetData of another type than the one that is stored!");
 #endif
 
-		if(RequestedType == typeid(std::string))
+		if (RequestedType == typeid(std::string))
 		{
 			std::string* localStrPtr = static_cast<std::string*>(myData.Ptr);
 			std::string* dataStrPtr = reinterpret_cast<std::string*>(&data);
@@ -125,7 +125,7 @@ public:
 			// TODO: really the RegisterScriptGraphTypes.h file should contain operators
 			// for this that the user can override. Something to be done when there's time.
 			memset(myData.Ptr, 0, myData.TypeData->GetTypeSize());
-			memcpy_s(myData.Ptr, myData.TypeData->GetTypeSize(), &data, sizeof(DataType));			
+			memcpy_s(myData.Ptr, myData.TypeData->GetTypeSize(), &data, sizeof(DataType));
 		}
 	}
 

@@ -1,6 +1,5 @@
 #include "AssetManager.pch.h"
 #include "SceneManager.h"
-#include "File/DirectoryFunctions.h"
 
 void SceneManager::Init()
 {
