@@ -38,6 +38,7 @@ namespace Crimson
 		DodgeRoll,
 		PauseGame, 
 		Undo,
-		Redo
+		Redo,
+		Duplicate
 	};
 }

@@ -6,7 +6,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 #include "ThirdParty\DearImGui\ImGui\imgui.h"
-
 #include "ThirdParty\MuninGraph\MuninScriptGraph.h"
 
 class Texture;
@@ -102,6 +101,8 @@ public:
 	void Init();
 	void Update(float aDeltaTime);
 	void Render();
+
+	void DuplicateSelection();
 
 	static inline const wchar_t* GetExtensionW(){ return L".blp"; }
 	static inline const char* GetPath(){ return "..\\Content\\Blueprints\\"; }

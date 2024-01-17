@@ -1144,4 +1144,95 @@ void ScriptGraphEditor::Render()
 	ImGui::End();
 	ImNodeEd::SetCurrentEditor(nullptr);
 }
+
+void ScriptGraphEditor::DuplicateSelection()
+{
+	ImNodeEd::SetCurrentEditor(nodeEditorContext);
+
+	// Get selected nodes	
+	std::vector<ImNodeEd::NodeId> selectedNodes;
+	selectedNodes.resize(ImNodeEd::GetSelectedObjectCount());
+	int nodeCount = ImNodeEd::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+	selectedNodes.resize(nodeCount); // This was part of the official demo so im keeping it just in case
+
+	ImNodeEd::ClearSelection();
+
+	// Handle nodes
+	std::vector<std::shared_ptr<ScriptGraphNode>> newNodes;
+	std::unordered_map<size_t, size_t> newPinIDs;
+	newNodes.reserve(nodeCount);
+	for (auto& [nodeUID, node] : myGraph->GetNodes())
+	{
+		ImNodeEd::NodeId nodeId = nodeUID;
+		if (std::find(selectedNodes.begin(), selectedNodes.end(), nodeId) == selectedNodes.end() || node->IsEntryNode())
+		{
+			continue;
+		}
+		
+		// Create new node
+		auto newNode = mySchema->AddNode(node->GetClass().TypeName);
+		const auto uidAwareBase = AsGUIDAwareSharedPtr(newNode);
+		const size_t newNodeUID = uidAwareBase->GetUID();
+		const ImNodeEd::NodeId newNodeId = newNodeUID;
+
+		// Offset new nodes slightly from original
+		float x = 0.f, y = 0.f, z = 0.f;
+		node->GetNodePositionCache(x, y, z);
+		x += 10.f;
+		y += 10.f;
+		newNode->UpdateNodePositionCache(x, y, z);
+		ImNodeEd::SetNodePosition(newNodeUID, { x, y });
+		ImNodeEd::SetNodeZPosition(newNodeUID, z);
+
+		// Copy pin data
+		int index = 0;
+		for (auto& [pinId, pin] : node->GetPins())
+		{
+			if (pin.IsPinConnected())
+			{
+				// Used to connect the new edges
+				newPinIDs.emplace(pinId, newNode->GetPin(pin.GetLabel()).GetUID());
+				continue;
+			}
+			if (pin.GetType() != ScriptGraphPinType::Data)
+			{
+				continue;
+			}
+
+			auto& newPin = const_cast<ScriptGraphPin&>(newNode->GetPin(pin.GetLabel()));
+			if (pin.GetDataType() == typeid(std::string))
+			{
+				std::string string;
+				pin.GetData(string);
+				newPin.SetData(string);
+			}
+			else
+			{
+				size_t dataSize = pin.GetDataSize();
+				void* dataPtr = new char[dataSize];
+				if (pin.GetRawData(dataPtr, dataSize))
+				{
+					newPin.SetRawData(dataPtr, dataSize);
+				}
+				delete[] dataPtr;
+			}
+			++index;
+		}
+
+		// Select the new node
+		ImNodeEd::SelectNode(newNodeId, true);		
+	}
+
+	// Copy links between copied nodes
+	for (auto& [edgeUID, edge] : myGraph->GetEdges())
+	{
+		if (newPinIDs.find(edge.FromUID) == newPinIDs.end() ||
+			newPinIDs.find(edge.ToUID) == newPinIDs.end())
+		{
+			continue;
+		}
+		mySchema->CreateEdge(newPinIDs.find(edge.FromUID)->second, newPinIDs.find(edge.ToUID)->second);
+	}
+	ImNodeEd::SetCurrentEditor(nullptr);
+}
 #pragma warning( pop )

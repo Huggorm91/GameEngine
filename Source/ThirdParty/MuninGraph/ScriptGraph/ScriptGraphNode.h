@@ -127,13 +127,15 @@ public:
 template<typename N>
 struct RegisterScriptNode
 {
-	static inline bool IsRegistered = ScriptGraphSchema::RegisterNodeType<N>();
+	static inline bool IsRegisteredSchema = ScriptGraphSchema::RegisterNodeType<N>();
+	static inline bool IsRegisteredGraph = ScriptGraph::RegisterNodeType<N>();
 };
 
 template<typename N, typename B>
 struct RegisterScriptNodeWithBase
 {
-	static inline bool IsRegistered = ScriptGraphSchema::RegisterNodeTypeWithBase<N, B>();
+	static inline bool IsRegisteredSchema = ScriptGraphSchema::RegisterNodeTypeWithBase<N, B>();
+	static inline bool IsRegisteredGraph = ScriptGraph::RegisterNodeTypeWithBase<N, B>();
 };
 
 // Declare a run of the mill Script Graph Node

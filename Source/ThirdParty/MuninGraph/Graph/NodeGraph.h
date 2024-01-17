@@ -53,6 +53,27 @@ private:
 
 public:
 
+	template<typename N>
+	static bool RegisterNodeType(unsigned aNodeFlagList = 0, unsigned aUserFlagList = 0)
+	{
+		auto tempNodePtr = std::make_shared<N>();
+		const auto uuidObj = AsGUIDAwareSharedPtr(tempNodePtr);
+
+		SupportedNodeClass nodeClass(typeid(N));
+		nodeClass.TypeId = typeid(N);
+		nodeClass.TypeName = uuidObj->GetTypeName();
+		nodeClass.NodeTitle = tempNodePtr->GetNodeTitle();
+		nodeClass.NodeCategory = tempNodePtr->GetNodeCategory();
+		nodeClass.NodeFlags = aNodeFlagList;
+		nodeClass.NodeUserflags = aUserFlagList;
+		nodeClass.New = []() { auto ptr = std::make_shared<N>(); ptr->Init(); return ptr; };
+
+		MySupportedNodeTypeIdToName().insert({ nodeClass.TypeId, nodeClass.TypeName });
+		MySupportedNodeTypes().insert({ nodeClass.TypeName, std::move(nodeClass) });
+
+		return true;
+	}
+
 	template<typename N, typename B>
 	static bool RegisterNodeTypeWithBase(unsigned aNodeFlagList = 0, unsigned aUserFlagList = 0)
 	{
@@ -172,6 +193,7 @@ NodeGraphInternal<GraphNodeType, GraphPinType, GraphEdgeType, GraphSchemaType>::
 	}
 
 	assert(false && "No such node class !");
+	return MySupportedNodeTypes().end()->second;
 }
 
 template <typename GraphNodeType, typename GraphPinType, typename GraphEdgeType, typename GraphSchemaType>

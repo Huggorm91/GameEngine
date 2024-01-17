@@ -75,7 +75,7 @@ protected:
 
 public:
 
-	static const typename GraphType::SupportedNodeClass& GetClass();
+	const typename GraphType::SupportedNodeClass& GetClass();
 
 	virtual void Init() = 0;
 

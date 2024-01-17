@@ -95,6 +95,8 @@ public:
 		return false;
 	}
 
+	size_t GetDataSize() const { return myData.TypeData->GetTypeSize(); }
+
 	// USE AT YOUR OWN RISK!
 	bool GetRawData(void* outData, size_t outDataSize) const;
 

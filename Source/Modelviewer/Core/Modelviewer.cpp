@@ -155,8 +155,10 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Duplicate, Crimson::KeyBind{ Crimson::eKey::D, Crimson::eKey::Ctrl });
 	input.Attach(this, Crimson::eInputAction::Undo);
 	input.Attach(this, Crimson::eInputAction::Redo);
+	input.Attach(this, Crimson::eInputAction::Duplicate);
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
@@ -672,13 +674,25 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 		return;
 	}
 
-	if (anAction == Crimson::eInputAction::Undo)
+	switch (anAction)
+	{
+	case Crimson::eInputAction::Undo:
 	{
 		UndoCommand();
+		break;
 	}
-	else if (anAction == Crimson::eInputAction::Redo)
+	case Crimson::eInputAction::Redo:
 	{
 		RedoCommand();
+		break;
+	}
+	case Crimson::eInputAction::Duplicate:
+	{
+		myScriptGraphEditor.DuplicateSelection();
+		break;
+	}
+	default:
+		break;
 	}
 }
 #endif // _RETAIL
