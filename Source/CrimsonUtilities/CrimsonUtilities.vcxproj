@@ -21,8 +21,6 @@
   <ItemGroup>
     <ClInclude Include="File\FileSelectors.h" />
     <ClInclude Include="File\DirectoryFunctions.h" />
-    <ClInclude Include="NewCollision - WIP\CollisionObject.hpp" />
-    <ClInclude Include="NewCollision - WIP\CollisionObject2D.hpp" />
     <ClInclude Include="Input\InputObserver.hpp" />
     <ClInclude Include="PostMaster\Observer.hpp" />
     <ClInclude Include="Math\AStar.hpp" />
@@ -51,7 +49,6 @@
     <ClInclude Include="String\StringFunctions.h" />
     <ClInclude Include="Math\Conversions.hpp" />
     <ClInclude Include="Math\Dijkstra.hpp" />
-    <ClInclude Include="NewCollision - WIP\EnumCollisions.h" />
     <ClInclude Include="Input\EnumInputAction.h" />
     <ClInclude Include="Input\EnumInputEvents.h" />
     <ClInclude Include="Input\EnumKeys.h" />
@@ -78,25 +75,10 @@
     <ClInclude Include="Math\Matrix3x3.hpp" />
     <ClInclude Include="Math\Matrix4x4.hpp" />
     <ClInclude Include="PostMaster\Message.h" />
-    <ClInclude Include="NewCollision - WIP\2DColliders.hpp" />
-    <ClInclude Include="NewCollision - WIP\3DColliders.hpp" />
-    <ClInclude Include="NewCollision - WIP\AABB2D.hpp" />
-    <ClInclude Include="NewCollision - WIP\AABB3D.hpp" />
-    <ClInclude Include="NewCollision - WIP\Circle.hpp" />
-    <ClInclude Include="NewCollision - WIP\CollisionManager.hpp" />
-    <ClInclude Include="NewCollision - WIP\CollisionManager2D.hpp" />
-    <ClInclude Include="NewCollision - WIP\Intersection.hpp" />
-    <ClInclude Include="NewCollision - WIP\Intersection2D.hpp" />
-    <ClInclude Include="NewCollision - WIP\Line.hpp" />
-    <ClInclude Include="NewCollision - WIP\LineVolume.hpp" />
-    <ClInclude Include="NewCollision - WIP\Plane.hpp" />
-    <ClInclude Include="NewCollision - WIP\PlaneVolume.hpp" />
-    <ClInclude Include="NewCollision - WIP\Ray.hpp" />
-    <ClInclude Include="NewCollision - WIP\Ray2D.hpp" />
-    <ClInclude Include="NewCollision - WIP\Sphere.hpp" />
     <ClInclude Include="PostMaster\PostMaster.h" />
     <ClInclude Include="Math\Random.h" />
     <ClInclude Include="Math\Sort.hpp" />
+    <ClInclude Include="Threadpool\ThreadPool.h" />
     <ClInclude Include="Time\Timer.h" />
     <ClInclude Include="Math\Math.hpp" />
     <ClInclude Include="Math\Vector2.hpp" />
@@ -148,6 +130,7 @@
     <ClCompile Include="PostMaster\PostMaster.cpp" />
     <ClCompile Include="Math\Random.cpp" />
     <ClCompile Include="String\StringFunctions.cpp" />
+    <ClCompile Include="Threadpool\ThreadPool.cpp" />
     <ClCompile Include="Time\Timer.cpp" />
     <ClCompile Include="Input\XBoxController.cpp" />
   </ItemGroup>
