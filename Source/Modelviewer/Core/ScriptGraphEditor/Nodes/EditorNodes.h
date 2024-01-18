@@ -1,7 +1,7 @@
 #pragma once
 #include "ScriptGraph/ScriptGraphNode.h"
 
-BeginScriptGraphNode(SGNode_EditorGetCameraPos)
+BeginScriptGraphNode(MVNode_EditorGetCameraPos)
 {
 public:
 	void Init() override;
@@ -12,7 +12,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_EditorGetCreatedObject)
+BeginScriptGraphNode(MVNode_EditorGetCreatedObject)
 {
 public:
 	void Init() override;
@@ -21,4 +21,15 @@ public:
 	std::string GetNodeCategory() const override { return "Editor"; }
 	size_t DoOperation() override;
 	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(MVNode_BuildString)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "Build String"; }
+	std::string GetDescription() const override { return "Merges 2 strings into 1."; }
+	std::string GetNodeCategory() const override { return "Casts"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return true; }
 };

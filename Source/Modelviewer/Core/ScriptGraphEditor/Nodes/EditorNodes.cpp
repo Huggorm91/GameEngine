@@ -2,12 +2,12 @@
 #include "EditorNodes.h"
 #include "Core/Modelviewer.h"
 
-void SGNode_EditorGetCameraPos::Init()
+void MVNode_EditorGetCameraPos::Init()
 {
 	CreateDataPin<Crimson::Vector3f>("Position", PinDirection::Output);
 }
 
-size_t SGNode_EditorGetCameraPos::DoOperation()
+size_t MVNode_EditorGetCameraPos::DoOperation()
 {
 	const Crimson::Vector3f pos = ModelViewer::GetCamera().GetPosition();
 	SetPinData("Position", pos);
@@ -15,13 +15,13 @@ size_t SGNode_EditorGetCameraPos::DoOperation()
 	return Exit();
 }
 
-void SGNode_EditorGetCreatedObject::Init()
+void MVNode_EditorGetCreatedObject::Init()
 {
 	CreateDataPin<int>("Index", PinDirection::Input);
 	CreateDataPin<GameObjectID>("ID", PinDirection::Output);
 }
 
-size_t SGNode_EditorGetCreatedObject::DoOperation()
+size_t MVNode_EditorGetCreatedObject::DoOperation()
 {
 	int index = 0;
 	if (GetPinData("Index", index))
@@ -38,6 +38,26 @@ size_t SGNode_EditorGetCreatedObject::DoOperation()
 			return ExitWithError("Object does not exist!");
 		}
 		return ExitWithError("Index out of range!");
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void MVNode_BuildString::Init()
+{
+	CreateDataPin<std::string>("Text1", PinDirection::Input, true);
+	CreateDataPin<std::string>("Text2", PinDirection::Input, true);
+
+	CreateDataPin<std::string>("Result", PinDirection::Output);
+}
+
+size_t MVNode_BuildString::DoOperation()
+{
+	std::string text1, text2;
+	if (GetPinData("Text1", text1) && GetPinData("Text2", text2))
+	{
+		SetPinData("Text", text1 + text2);
+		return Exit();
 	}
 
 	return ExitWithError("Invalid input!");

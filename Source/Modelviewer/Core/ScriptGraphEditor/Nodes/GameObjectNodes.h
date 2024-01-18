@@ -1,7 +1,7 @@
 #pragma once
 #include "ScriptGraph/ScriptGraphNode.h"
 
-BeginScriptGraphNode(SGNode_GameObjectCreate)
+BeginScriptGraphNode(MVNode_GameObjectCreate)
 {
 public:
 	void Init() override;
@@ -12,7 +12,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectGet)
+BeginScriptGraphNode(MVNode_GameObjectGet)
 {
 public:
 	void Init() override;
@@ -23,7 +23,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectGetPos)
+BeginScriptGraphNode(MVNode_GameObjectGetPos)
 {
 public:
 	void Init() override;
@@ -34,7 +34,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectSetPos)
+BeginScriptGraphNode(MVNode_GameObjectSetPos)
 {
 public:
 	void Init() override;
@@ -45,7 +45,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectGetRot)
+BeginScriptGraphNode(MVNode_GameObjectGetRot)
 {
 public:
 	void Init() override;
@@ -56,7 +56,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectSetRot)
+BeginScriptGraphNode(MVNode_GameObjectSetRot)
 {
 public:
 	void Init() override;
@@ -67,7 +67,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectGetScale)
+BeginScriptGraphNode(MVNode_GameObjectGetScale)
 {
 public:
 	void Init() override;
@@ -78,7 +78,7 @@ public:
 	bool IsSimpleNode() const override { return false; }
 };
 
-BeginScriptGraphNode(SGNode_GameObjectSetScale)
+BeginScriptGraphNode(MVNode_GameObjectSetScale)
 {
 public:
 	void Init() override;
@@ -87,4 +87,15 @@ public:
 	std::string GetNodeCategory() const override { return "GameObject"; }
 	size_t DoOperation() override;
 	bool IsSimpleNode() const override { return false; }
+};
+
+BeginScriptGraphNode(MVNode_GameObjectIDToString)
+{
+public:
+	void Init() override;
+	std::string GetNodeTitle() const override { return "ID to string"; }
+	std::string GetDescription() const override { return "Converts a Game Object ID to a text string."; }
+	std::string GetNodeCategory() const override { return "Casts"; }
+	size_t DoOperation() override;
+	bool IsSimpleNode() const override { return true; }
 };

@@ -2,7 +2,7 @@
 #include "GameObjectNodes.h"
 #include "Core/Modelviewer.h"
 
-void SGNode_GameObjectCreate::Init()
+void MVNode_GameObjectCreate::Init()
 {
 	CreateExecPin("In", PinDirection::Input, true);
 	CreateExecPin("Out", PinDirection::Output, true);
@@ -13,7 +13,7 @@ void SGNode_GameObjectCreate::Init()
 	CreateDataPin<GameObjectID>("Object ID", PinDirection::Output);
 }
 
-size_t SGNode_GameObjectCreate::DoOperation()
+size_t MVNode_GameObjectCreate::DoOperation()
 {
 	std::string type = "";
 
@@ -65,14 +65,14 @@ size_t SGNode_GameObjectCreate::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectGet::Init()
+void MVNode_GameObjectGet::Init()
 {
 	CreateDataPin<int>("ID", PinDirection::Input);
 
 	CreateDataPin<GameObjectID>("Object ID", PinDirection::Output);
 }
 
-size_t SGNode_GameObjectGet::DoOperation()
+size_t MVNode_GameObjectGet::DoOperation()
 {
 	int id = 0;
 
@@ -89,14 +89,14 @@ size_t SGNode_GameObjectGet::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectGetPos::Init()
+void MVNode_GameObjectGetPos::Init()
 {
 	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
 
 	CreateDataPin<Crimson::Vector3f>("Position", PinDirection::Output);
 }
 
-size_t SGNode_GameObjectGetPos::DoOperation()
+size_t MVNode_GameObjectGetPos::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 
@@ -114,7 +114,7 @@ size_t SGNode_GameObjectGetPos::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectSetPos::Init()
+void MVNode_GameObjectSetPos::Init()
 {
 	CreateExecPin("In", PinDirection::Input, true);
 	CreateExecPin("Out", PinDirection::Output, true);
@@ -122,7 +122,7 @@ void SGNode_GameObjectSetPos::Init()
 	CreateDataPin<Crimson::Vector3f>("Position", PinDirection::Input);
 }
 
-size_t SGNode_GameObjectSetPos::DoOperation()
+size_t MVNode_GameObjectSetPos::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 	Crimson::Vector3f position = Crimson::Vector3f::Null;
@@ -140,14 +140,14 @@ size_t SGNode_GameObjectSetPos::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectGetRot::Init()
+void MVNode_GameObjectGetRot::Init()
 {
 	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
 
 	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Output);
 }
 
-size_t SGNode_GameObjectGetRot::DoOperation()
+size_t MVNode_GameObjectGetRot::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 
@@ -165,7 +165,7 @@ size_t SGNode_GameObjectGetRot::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectSetRot::Init()
+void MVNode_GameObjectSetRot::Init()
 {
 	CreateExecPin("In", PinDirection::Input, true);
 	CreateExecPin("Out", PinDirection::Output, true);
@@ -173,7 +173,7 @@ void SGNode_GameObjectSetRot::Init()
 	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Input);
 }
 
-size_t SGNode_GameObjectSetRot::DoOperation()
+size_t MVNode_GameObjectSetRot::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 	Crimson::Vector3f rotation = Crimson::Vector3f::Null;
@@ -191,14 +191,14 @@ size_t SGNode_GameObjectSetRot::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectGetScale::Init()
+void MVNode_GameObjectGetScale::Init()
 {
 	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
 
 	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Output);
 }
 
-size_t SGNode_GameObjectGetScale::DoOperation()
+size_t MVNode_GameObjectGetScale::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 
@@ -216,7 +216,7 @@ size_t SGNode_GameObjectGetScale::DoOperation()
 	return ExitWithError("Invalid input!");
 }
 
-void SGNode_GameObjectSetScale::Init()
+void MVNode_GameObjectSetScale::Init()
 {
 	CreateExecPin("In", PinDirection::Input, true);
 	CreateExecPin("Out", PinDirection::Output, true);
@@ -224,7 +224,7 @@ void SGNode_GameObjectSetScale::Init()
 	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Input);
 }
 
-size_t SGNode_GameObjectSetScale::DoOperation()
+size_t MVNode_GameObjectSetScale::DoOperation()
 {
 	GameObjectID id = GameObjectID::Invalid;
 	Crimson::Vector3f scale = Crimson::Vector3f::Null;
@@ -237,6 +237,25 @@ size_t SGNode_GameObjectSetScale::DoOperation()
 			object->SetScale(scale);
 			return ExitViaPin("Out");
 		}
+	}
+
+	return ExitWithError("Invalid input!");
+}
+
+void MVNode_GameObjectIDToString::Init()
+{
+	CreateDataPin<GameObjectID>("ID", PinDirection::Input);
+	CreateDataPin<std::string>("Text", PinDirection::Output);
+}
+
+size_t MVNode_GameObjectIDToString::DoOperation()
+{
+	GameObjectID id = GameObjectID::Invalid;
+
+	if (GetPinData("ID", id))
+	{
+		SetPinData("Text", "GameObject: " + std::to_string(static_cast<int>(id)));
+		return Exit();
 	}
 
 	return ExitWithError("Invalid input!");

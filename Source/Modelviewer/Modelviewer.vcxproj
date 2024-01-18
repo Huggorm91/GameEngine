@@ -258,6 +258,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\ScriptGraphEditor\Nodes\CollisionNodes.h" />
     <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h" />
     <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h" />
     <ClInclude Include="Core\Editor\AssetTypes.h" />
@@ -291,6 +292,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core\ScriptGraphEditor\Nodes\CollisionNodes.cpp" />
     <ClCompile Include="Core\ApplicationState.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp" />
     <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp" />
@@ -333,6 +335,9 @@
     </ProjectReference>
     <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
       <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Engine.vcxproj">
+      <Project>{a8e83177-2923-4c98-a57c-19cd65b64d69}</Project>
     </ProjectReference>
     <ProjectReference Include="..\GraphicsEngine\GraphicsEngine.vcxproj">
       <Project>{4a14b5d4-9d37-4a37-9d3b-d7b2bac7b312}</Project>

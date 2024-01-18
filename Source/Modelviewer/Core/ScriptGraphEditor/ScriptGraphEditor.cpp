@@ -160,9 +160,15 @@ void ScriptGraphEditor::BackgroundContextMenu()
 								{
 									newNode = mySchema->AddNode(type);
 								}
-								const auto uuidAwareNewNode = AsGUIDAwareSharedPtr(newNode);
-								const ImVec2 mousePos = ImNodeEd::ScreenToCanvas(ImGui::GetMousePos());								
-								ImNodeEd::SetNodePosition(uuidAwareNewNode->GetUID(), mousePos);
+
+								// Only handle if a new node was created
+								if (newNode)
+								{
+									const auto uuidAwareNewNode = AsGUIDAwareSharedPtr(newNode);
+									const ImVec2 mousePos = ImNodeEd::ScreenToCanvas(ImGui::GetMousePos());
+									ImNodeEd::SetNodePosition(uuidAwareNewNode->GetUID(), mousePos);
+								}
+								
 								ImGui::CloseCurrentPopup();
 							}
 							ImGui::TreePop();

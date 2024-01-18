@@ -7,7 +7,7 @@ public:
 
 	void Init() override;
 	std::string GetNodeTitle() const override { return "Float to String"; }
-	std::string GetDescription() const override { return "Prints a provided text string to stdout."; }
+	std::string GetDescription() const override { return "Converts a float value to a text string."; }
 	std::string GetNodeCategory() const override { return "Casts"; }
 	size_t DoOperation() override;
 	FORCEINLINE bool IsSimpleNode() const override { return true; }
