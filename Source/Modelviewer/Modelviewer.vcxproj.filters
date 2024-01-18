@@ -114,6 +114,9 @@
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\CollisionNodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\Nodes\FlowControlNodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Modelviewer.cpp">
@@ -177,6 +180,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\ScriptGraphEditor\Nodes\CollisionNodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ScriptGraphEditor\Nodes\FlowControlNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

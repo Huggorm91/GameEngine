@@ -8,19 +8,3 @@
 // in an EXE project then it'll work as intended on its own.
 
 // NOTE THE INCLUDE!
-
-BeginScriptGraphNode(MVNode_Branch)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "Branch"; }
-	size_t DoOperation() override;
-};
-
-BeginScriptGraphNode(MVNode_ForLoop)
-{
-public:
-	void Init() override;
-	std::string GetNodeTitle() const override { return "For"; }
-	size_t DoOperation() override;
-};
