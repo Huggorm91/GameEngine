@@ -6,6 +6,8 @@
 #include "../Commands/EditCmd_RemoveGameobjects.h"
 #include "../Commands/EditCmd_ChangeMultipleGameObjects.h"
 
+#include "Engine\Engine.h"
+
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
@@ -61,7 +63,7 @@ void ImguiManager::Init()
 
 	// Setup keybinds
 	{
-		auto& input = *InputMapper::GetInstance();
+		auto& input = Engine::GetInputMapper();
 		input.Attach(this, eInputEvent::KeyDown, eKey::Del);
 	}
 
@@ -956,7 +958,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	}
 	else if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 	{
-		if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+		if (!Engine::GetInputMapper().GetKeyDownOrHeld(eKey::Ctrl))
 		{
 			mySelectedObjects.clear();
 		}

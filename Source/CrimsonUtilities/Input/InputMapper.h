@@ -15,6 +15,7 @@ namespace Crimson
 	class InputMapper
 	{
 	public:
+		InputMapper();
 		~InputMapper();
 
 		void Init(HWND aHandle, bool aUsingXboxInput = false);
@@ -35,8 +36,7 @@ namespace Crimson
 		void ResetAll();
 		void ResetInput();
 
-		static InputMapper* GetInstance();
-		XBoxController* GetXboxController();
+		XBoxController& GetXboxController();
 
 		void LockMouse();
 		void UnlockMouse();
@@ -119,7 +119,6 @@ namespace Crimson
 
 		HWND myWindowHandle;
 		XBoxController* myXboxController;
-		static InputMapper* myInstance;
 
 		std::bitset<VK_XBUTTON2> myDoubleClicks;
 		std::bitset<4> myTriggeredEvents;
@@ -132,8 +131,6 @@ namespace Crimson
 			Count
 		};
 		std::bitset<eFlag::Count> myFlags;
-
-		InputMapper();
 
 		friend class InputHandler;
 		void UpdateKeyEvent(int aKey, bool aState);

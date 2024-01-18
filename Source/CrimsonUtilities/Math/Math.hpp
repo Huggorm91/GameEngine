@@ -1,5 +1,6 @@
 #pragma once
 #include <assert.h>
+#include <limits>
 #include "Conversions.hpp" // Adds conversion with a single include
 
 namespace Crimson

@@ -1,5 +1,6 @@
 #include "AssetManager.pch.h"
 #include "ColliderComponent.h"
+#include "Engine\Engine.h"
 #include "Managers\CollisionManager.h"
 #include "ImGui\imgui.h"
 
@@ -24,7 +25,7 @@ ColliderComponent::ColliderComponent(const Json::Value& aJson) :
 
 ColliderComponent::~ColliderComponent()
 {
-	CollisionManager::Get().RemoveCollider(this);
+	Engine::GetCollisionManager().RemoveCollider(this);
 }
 
 void ColliderComponent::Update()
@@ -35,7 +36,7 @@ void ColliderComponent::Update()
 	}
 	if (IsValid())
 	{
-		CollisionManager::Get().AddCollider(this);
+		Engine::GetCollisionManager().AddCollider(this);
 	}
 }
 

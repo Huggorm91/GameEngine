@@ -4,6 +4,8 @@
 #include "Commands/EditCmd_AddGameobject.h"
 #include "Commands/EditCmd_RemoveGameobject.h"
 
+#include "Engine/Engine.h"
+
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
@@ -23,8 +25,7 @@ ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
 , myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
 #endif // _RETAIL
-{
-}
+{}
 
 void ModelViewer::HandleCrash(const std::exception& anException)
 {
@@ -128,8 +129,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	ShowSplashScreen();
 
 	// TODO: Load all settings from json
-	auto& input = *Crimson::InputMapper::GetInstance();
-	input.Init(myMainWindowHandle);
+	Engine::Init(myMainWindowHandle);
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
@@ -145,6 +145,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	myScriptGraphEditor.Init();
 
+	auto& input = Engine::GetInputMapper();
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
@@ -254,7 +255,7 @@ void ModelViewer::SetPlayMode(bool aState)
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
 			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*) {}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
@@ -496,10 +497,8 @@ void ModelViewer::Init()
 
 void ModelViewer::Update()
 {
-	GraphicsEngine& engine = GraphicsEngine::Get();
-	engine.BeginFrame();
-	Crimson::Timer::Update();
-	Crimson::InputMapper::GetInstance()->Notify();
+	GraphicsEngine::Get().BeginFrame();
+	Engine::BeginFrame();
 
 #ifndef _RETAIL
 	myImguiManager.Update();
@@ -509,18 +508,15 @@ void ModelViewer::Update()
 	myCamera.Update();
 	UpdateScene();
 
-	Crimson::InputMapper::GetInstance()->Update();
-	CollisionManager::Get().CheckCollisions();
-	CollisionManager::Get().EndFrame();
-
-	engine.RenderFrame();
+	Engine::EndFrame();
+	GraphicsEngine::Get().RenderFrame();
 
 #ifndef _RETAIL
 	myScriptGraphEditor.Render();
 	myImguiManager.Render();
 #endif // _RETAIL
 
-	engine.EndFrame();
+	GraphicsEngine::Get().EndFrame();
 }
 
 void ModelViewer::UpdateScene()
@@ -544,10 +540,10 @@ void ModelViewer::UpdateScene()
 	for (auto& [id, object] : myScene.GameObjects)
 	{
 		object.Update();
-	}
+		}
 #endif // !_RETAIL
 
-}
+	}
 
 #ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
@@ -565,7 +561,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 			myUndoCommands.emplace_back(aCommand);
 		}
 		mySceneIsEdited = true;
-	}	
+	}
 	else
 	{
 		if (myPlayModeRedoCommands.size() > 0)
@@ -578,7 +574,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 			myPlayModeUndoCommands.emplace_back(aCommand);
 		}
 	}
-	
+
 }
 
 void ModelViewer::UndoCommand()
@@ -626,7 +622,7 @@ void ModelViewer::RedoCommand()
 			myPlayModeRedoCommands.pop_back();
 			mySceneIsEdited = true;
 		}
-	}	
+	}
 }
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)

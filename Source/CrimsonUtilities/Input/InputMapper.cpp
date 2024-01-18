@@ -1,8 +1,6 @@
 #include "InputMapper.h"
 #include "InputHandler.h"
 
-Crimson::InputMapper* Crimson::InputMapper::myInstance = nullptr;
-
 Crimson::InputMapper::InputMapper() :
 	myXboxController(nullptr),
 	myClientRect{ 0, 0, 0, 0 },
@@ -205,18 +203,9 @@ void Crimson::InputMapper::ResetInput()
 	myDoubleClicks.reset();
 }
 
-Crimson::InputMapper* Crimson::InputMapper::GetInstance()
+Crimson::XBoxController& Crimson::InputMapper::GetXboxController()
 {
-	if (myInstance == nullptr)
-	{
-		myInstance = new Crimson::InputMapper;
-	}
-	return myInstance;
-}
-
-Crimson::XBoxController* Crimson::InputMapper::GetXboxController()
-{
-	return myXboxController;
+	return *myXboxController;
 }
 
 void Crimson::InputMapper::LockMouse()

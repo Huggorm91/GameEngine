@@ -9,8 +9,6 @@ public:
 	CollisionManager() = default;
 	~CollisionManager() = default;
 
-	static CollisionManager& Get() { static CollisionManager instance; return instance; }
-
 	void AddCollider(ColliderComponent* aCollider);
 	void RemoveCollider(ColliderComponent* aCollider);
 
@@ -28,6 +26,4 @@ private:
 	void CollisionEnter(ColliderComponent* aFirst, ColliderComponent* aSecond) const;
 	void CollisionStay(ColliderComponent* aFirst, ColliderComponent* aSecond) const;
 	void CollisionExit(ColliderComponent* aFirst, ColliderComponent* aSecond) const;
-
-
 };

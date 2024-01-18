@@ -2,6 +2,7 @@
 #include "PerspectiveCamera.h"
 #include "Math/Conversions.hpp"
 #include "Time/Timer.h"
+#include "Engine\Engine.h"
 #include "Input/InputMapper.h"
 #include "../GraphicsEngine.h"
 #include "../Commands/GfxCmd_SetFrameBuffer.h"
@@ -41,7 +42,7 @@ void PerspectiveCamera::Init(const Crimson::Vector2f& aScreenSize, float aSpeed,
 
 	UpdateTransform();
 
-	auto& inputHandler = *Crimson::InputMapper::GetInstance();
+	auto& inputHandler = Engine::GetInputMapper();
 	inputHandler.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Q);
 	inputHandler.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::E);
 	inputHandler.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
@@ -73,7 +74,7 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey
 	{
 		myHasChanged = true;
 		float multiplier = myMouseSensitivity * .01f;
-		Crimson::Vector2f distance = Crimson::InputMapper::GetInstance()->GetMouseMovement();
+		Crimson::Vector2f distance = Engine::GetInputMapper().GetMouseMovement();
 		myRotation.x += distance.y * multiplier;
 		myRotation.y += distance.x * multiplier;
 		break;
@@ -82,7 +83,7 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
+			auto& inputHandler = Engine::GetInputMapper();
 			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.CaptureMouse(true);
 			inputHandler.HideMouse();
@@ -94,7 +95,7 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
+			auto& inputHandler = Engine::GetInputMapper();
 			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.ReleaseMouse();
 			inputHandler.ShowMouse();
@@ -110,7 +111,7 @@ void PerspectiveCamera::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey
 		}
 
 		myHasChanged = true;
-		float multiplier = Crimson::InputMapper::GetInstance()->GetKeyHeld(Crimson::eKey::Shift) ? 2.f : Crimson::InputMapper::GetInstance()->GetKeyHeld(Crimson::eKey::Shift) ? 2.f : 1.f;
+		float multiplier = Engine::GetInputMapper().GetKeyHeld(Crimson::eKey::Shift) ? 2.f : Engine::GetInputMapper().GetKeyHeld(Crimson::eKey::Shift) ? 2.f : 1.f;
 		float timeDelta = Crimson::Timer::GetDeltaTime();
 		switch (aKey)
 		{

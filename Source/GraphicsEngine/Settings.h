@@ -1,5 +1,7 @@
 #pragma once
 #include "String/StringFunctions.h"
+#include "Math/Vector4.hpp"
+
 namespace Json{
 	class Value;
 }

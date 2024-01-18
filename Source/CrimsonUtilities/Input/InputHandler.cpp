@@ -4,7 +4,7 @@
 
 namespace Crimson
 {
-	InputHandler::InputHandler() : myInputMapper(*InputMapper::GetInstance())
+	InputHandler::InputHandler(InputMapper& anInputMapper) : myInputMapper(anInputMapper)
 	{
 	}
 
