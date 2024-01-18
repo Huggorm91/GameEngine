@@ -14,6 +14,10 @@ enum class ComponentType
 	DebugDraw,
 	PerspectiveCamera,
 	ParticleEmitter,
+	BoxCollider,
+	SphereCollider,
+	RayCollider,
+	CapsuleCollider,
 	Count
 };
 

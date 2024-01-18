@@ -5,6 +5,8 @@
 
 class Transform;
 enum class GameObjectID;
+class ColliderComponent;
+enum eCollisionLayer : unsigned;
 // A template to build new components can be found in ComponentTemplate.h
 
 class Component
@@ -24,6 +26,14 @@ public:
 	virtual void Init(GameObject* aParent);
 	virtual void Update();
 	virtual void Render();
+
+	virtual void OnCollisionEnter(eCollisionLayer, ColliderComponent*) {}
+	virtual void OnCollisionStay(eCollisionLayer, ColliderComponent*) {}
+	virtual void OnCollisionExit(eCollisionLayer, ColliderComponent*) {}
+
+	virtual void OnTriggerEnter(eCollisionLayer, ColliderComponent*) {}
+	virtual void OnTriggerStay(eCollisionLayer, ColliderComponent*) {}
+	virtual void OnTriggerExit(eCollisionLayer, ColliderComponent*) {}
 
 	const GameObject& GetParent() const;
 	GameObject& GetParent();

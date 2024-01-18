@@ -10,6 +10,7 @@
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
+#include "AssetManager/Managers/CollisionManager.h"
 #include "File/DirectoryFunctions.h"
 
 #include "Time/Timer.h"
@@ -509,6 +510,9 @@ void ModelViewer::Update()
 	UpdateScene();
 
 	Crimson::InputMapper::GetInstance()->Update();
+	CollisionManager::Get().CheckCollisions();
+	CollisionManager::Get().EndFrame();
+
 	engine.RenderFrame();
 
 #ifndef _RETAIL

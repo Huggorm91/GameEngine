@@ -221,6 +221,54 @@ Component* GameObject::GetComponentPointer(unsigned anID)
 	return nullptr;
 }
 
+void GameObject::OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnCollisionEnter(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnCollisionStay(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnCollisionExit(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnTriggerEnter(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnTriggerEnter(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnTriggerStay(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnTriggerStay(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnTriggerExit(eCollisionLayer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->OnTriggerExit(aLayer, aCollider);
+	}
+}
+
 void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);

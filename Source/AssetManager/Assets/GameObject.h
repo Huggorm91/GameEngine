@@ -61,6 +61,14 @@ public:
 	template<class T>
 	bool HasComponent() const;
 
+	void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider);
+	void OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider);
+	void OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider);
+
+	void OnTriggerEnter(eCollisionLayer aLayer, ColliderComponent* aTrigger);
+	void OnTriggerStay(eCollisionLayer aLayer, ColliderComponent* aTrigger);
+	void OnTriggerExit(eCollisionLayer aLayer, ColliderComponent* aCollider);
+
 	void SetPosition(const Crimson::Vector3f& aPosition);
 	void SetRotation(const Crimson::Vector3f& aRotation);
 	void SetScale(const Crimson::Vector3f& aScale);
@@ -85,7 +93,6 @@ public:
 
 	const std::vector<GameObject*>& GetChildren() const;
 	std::vector<GameObject*>& GetChildren();
-
 
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;

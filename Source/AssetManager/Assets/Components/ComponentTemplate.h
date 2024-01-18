@@ -24,6 +24,15 @@ public:
 	// void Init(const Json::Value& aJson) override;
 	// void Init(GameObject* aParent) override;
 	// void Update() override;
+	// void Render() override;
+
+	// void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+
+	// void OnTriggerEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnTriggerStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnTriggerExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
 
 	// void SetActive(bool aIsActive) override;
 	// void ToogleActive() override;
