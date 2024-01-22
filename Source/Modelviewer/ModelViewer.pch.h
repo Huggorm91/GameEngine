@@ -25,6 +25,8 @@ using namespace Microsoft::WRL;
 #include "AssetManager/AssetManager.h"
 #include "File/DirectoryFunctions.h"
 
+#include "Engine/Engine.h"
+
 #ifndef _RETAIL
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS

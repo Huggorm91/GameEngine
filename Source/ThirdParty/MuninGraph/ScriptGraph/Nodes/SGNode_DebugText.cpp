@@ -18,7 +18,7 @@ void SGNode_DebugText::Init()
 
 size_t SGNode_DebugText::DoOperation()
 {
-#ifdef _DEBUG
+#ifndef _RETAIL
 	std::string msg;
 	if(GetPinData("Text", msg))
 	{

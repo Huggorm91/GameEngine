@@ -4,6 +4,8 @@ namespace Crimson
 {
 	enum class eMessageType : int
 	{
-		NodeTimerStopped
+		NodeTimerEnded,
+		NodeTimerStopped,
+		NodeTimerStopAll,
 	};
 }

@@ -35,7 +35,7 @@ void MVNode_ForLoop::Init()
 
 size_t MVNode_ForLoop::DoOperation()
 {
-	int start = 0, end = 0, index = 0;
+	int start = 0, end = 0;
 	if (GetPinData("Start", start) && GetPinData("End", end))
 	{
 		for (int index = start; index < end; index++)
@@ -66,7 +66,7 @@ size_t MVNode_Sequence::DoOperation()
 	ExitViaPin("3");
 	ExitViaPin("4");
 	ExitViaPin("5");
-	ExitViaPin("6");
+	return ExitViaPin("6");
 }
 
 void MVNode_Gate::Init()
