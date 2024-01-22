@@ -19,7 +19,10 @@ namespace Crimson
 		~ThreadPool();
 
 		template<class F, class... Args>
-		auto Enqueue(F&& aFunction, Args&&... someArgs) -> std::future<typename std::invoke_result<F, Args...>::type>;
+		void EnqueueNoReturn(F&& aFunction, Args&&... someArgs);
+
+		template<class F, class... Args>
+		auto EnqueueFutureReturn(F&& aFunction, Args&&... someArgs) -> std::future<typename std::invoke_result<F, Args...>::type>;
 
 	private:
 		std::vector<std::thread> myThreads;
@@ -31,7 +34,30 @@ namespace Crimson
 	};
 
 	template<class F, class... Args>
-	auto ThreadPool::Enqueue(F&& aFunction, Args&&... someArgs)
+	void ThreadPool::EnqueueNoReturn(F&& aFunction, Args&&... someArgs)
+	{
+		auto task = std::make_shared<std::packaged_task<void()>>(
+			std::bind(std::forward<F>(aFunction), std::forward<Args>(someArgs)...)
+		);
+
+		{
+			std::unique_lock<std::mutex> lock(myTaskMutex);
+
+			if (!myIsRunning)
+			{
+				throw std::runtime_error("Calling Enqueue on stopped ThreadPool");
+			}
+
+			myTasks.emplace([task]()
+			{
+				(*task)();
+			});
+		}
+		myCondition.notify_one();
+	}
+
+	template<class F, class... Args>
+	auto ThreadPool::EnqueueFutureReturn(F&& aFunction, Args&&... someArgs)
 		-> std::future<typename std::invoke_result<F, Args...>::type>
 	{
 		using return_type = typename std::invoke_result<F, Args...>::type;
