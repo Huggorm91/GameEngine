@@ -1,22 +1,11 @@
 #include "PostMaster.h"
 
-Crimson::PostMaster* Crimson::PostMaster::myInstance = nullptr;
-
-Crimson::PostMaster::PostMaster() : myObservers(), myMessages()
-{
-}
-
-Crimson::PostMaster::~PostMaster()
-{
-	delete myInstance;
-}
-
 void Crimson::PostMaster::Subscribe(Observer* anObserver, const eMessageType aType)
 {
 	myObservers.emplace(aType, anObserver);
 }
 
-void Crimson::PostMaster::UnsubscribeAll()
+void Crimson::PostMaster::ClearSubscribers()
 {
 	myObservers.clear();
 }
@@ -67,15 +56,6 @@ void Crimson::PostMaster::SendSavedMessages()
 		SendMessageToSubscribers(message);
 	}
 	myMessages.clear();
-}
-
-Crimson::PostMaster* Crimson::PostMaster::GetInstance()
-{
-	if (myInstance == nullptr)
-	{
-		myInstance = new PostMaster();
-	}
-	return myInstance;
 }
 
 void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) const

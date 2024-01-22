@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Input\InputObserver.hpp">
+    <ClInclude Include="Input\InputObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PostMaster\Observer.hpp">
+    <ClInclude Include="PostMaster\Observer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Collision\2DColliders.hpp">
@@ -267,6 +267,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Threadpool\ThreadPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputObserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostMaster\Observer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,6 +4,7 @@
 #include "CrimsonUtilities\Threadpool\ThreadPool.h"
 #include "CrimsonUtilities\Input\InputMapper.h"
 #include "CrimsonUtilities\Input\InputHandler.h"
+#include "CrimsonUtilities\PostMaster\PostMaster.h"
 #include "AssetManager\Managers\CollisionManager.h"
 
 enum
@@ -14,9 +15,11 @@ enum
 };
 
 Engine::Engine() :
+	myWindowHandle(NULL),
 	myThreadPool(nullptr),
 	myInputMapper(nullptr),
 	myInputHandler(nullptr),
+	myPostMaster(nullptr),
 	myCollisionManager(nullptr),
 	myIsInitialized(false)
 {}
@@ -25,9 +28,11 @@ Engine::~Engine()
 {
 	if (myIsInitialized)
 	{
+		myIsInitialized = false;
 		delete myThreadPool;
 		delete myInputMapper;
 		delete myInputHandler;
+		delete myPostMaster;
 		delete myCollisionManager;
 	}
 }
@@ -43,10 +48,12 @@ void Engine::Init(HWND aHandle)
 	auto& instance = Get();
 	if (!instance.myIsInitialized)
 	{
+		instance.myWindowHandle = aHandle;
 		instance.myThreadPool = new Crimson::ThreadPool(Crimson::Min(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
 		instance.myInputMapper = new Crimson::InputMapper();
 		instance.myInputMapper->Init(aHandle);
 		instance.myInputHandler = new Crimson::InputHandler(*instance.myInputMapper);
+		instance.myPostMaster = new Crimson::PostMaster();
 		instance.myCollisionManager = new CollisionManager();
 
 		instance.myIsInitialized = true;
@@ -62,9 +69,15 @@ void Engine::BeginFrame()
 void Engine::EndFrame()
 {
 	auto& instance = Get();
-	instance.myInputMapper->Update();
+	instance.myPostMaster->SendSavedMessages();
 	instance.myCollisionManager->CheckCollisions();
 	instance.myCollisionManager->EndFrame();
+	instance.myInputMapper->Update();
+}
+
+bool Engine::IsValid()
+{
+	return Get().myIsInitialized;
 }
 
 Crimson::ThreadPool& Engine::GetThreadPool()
@@ -77,9 +90,19 @@ Crimson::InputMapper& Engine::GetInputMapper()
 	return *Get().myInputMapper;
 }
 
+Crimson::PostMaster& Engine::GetPostMaster()
+{
+	return *Get().myPostMaster;
+}
+
 CollisionManager& Engine::GetCollisionManager()
 {
 	return *Get().myCollisionManager;
+}
+
+HWND Engine::GetWindowHandle()
+{
+	return Get().myWindowHandle;
 }
 
 bool Engine::HandleInput(UINT message, WPARAM wParam, LPARAM lParam)

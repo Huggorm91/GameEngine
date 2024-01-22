@@ -3,7 +3,7 @@
 
 namespace Crimson
 {
-	const unsigned int WM_SHOWMOUSE = RegisterWindowMessage(L"ShowMouse");
+	static const unsigned int WM_SHOWMOUSE = RegisterWindowMessage(L"ShowMouse");
 
 	class InputMapper;
 

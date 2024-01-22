@@ -8,7 +8,7 @@ namespace Crimson
 	class InputObserver
 	{
 	public:
-		virtual ~InputObserver() = default;
+		virtual ~InputObserver();
 
 		virtual void ReceiveEvent(eInputEvent, eKey){}
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "InputObserver.hpp"
+#include "InputObserver.h"
 #include "KeyBind.h"
 #include "XBoxController.h"
 #include "EnumKeys.h"

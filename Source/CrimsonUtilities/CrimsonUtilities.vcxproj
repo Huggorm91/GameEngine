@@ -21,8 +21,8 @@
   <ItemGroup>
     <ClInclude Include="File\FileSelectors.h" />
     <ClInclude Include="File\DirectoryFunctions.h" />
-    <ClInclude Include="Input\InputObserver.hpp" />
-    <ClInclude Include="PostMaster\Observer.hpp" />
+    <ClInclude Include="Input\InputObserver.h" />
+    <ClInclude Include="PostMaster\Observer.h" />
     <ClInclude Include="Math\AStar.hpp" />
     <ClInclude Include="Collision\2DColliders.hpp" />
     <ClInclude Include="Collision\3DColliders.hpp" />
@@ -105,6 +105,7 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="Input\InputObserver.cpp" />
     <ClCompile Include="Json\jsonCpp\jsoncpp.cpp">
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
@@ -127,6 +128,7 @@
     <ClCompile Include="Json\Json.cpp" />
     <ClCompile Include="Input\KeyBind.cpp" />
     <ClCompile Include="PostMaster\Message.cpp" />
+    <ClCompile Include="PostMaster\Observer.cpp" />
     <ClCompile Include="PostMaster\PostMaster.cpp" />
     <ClCompile Include="Math\Random.cpp" />
     <ClCompile Include="String\StringFunctions.cpp" />

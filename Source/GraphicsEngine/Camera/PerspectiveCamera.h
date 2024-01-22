@@ -1,5 +1,5 @@
 #pragma once
-#include "Input/InputObserver.hpp"
+#include "Input/InputObserver.h"
 #include "../Drawer/LineHandle.h"
 
 class LineHandle;
