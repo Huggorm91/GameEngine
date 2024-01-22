@@ -3,6 +3,7 @@
 #include "Message.h"
 #include <vector>
 #include <unordered_map>
+#include <shared_mutex>
 
 namespace Crimson
 {
@@ -20,9 +21,11 @@ namespace Crimson
 
 		void AddMessage(const Message& aMessage);
 		void SendInstantMessage(const Message& aMessage);
+
 		void SendSavedMessages();
 
 	private:
+		std::shared_mutex myMutex;
 		std::vector<Message> myMessages;
 		std::unordered_multimap<eMessageType, Observer*> myObservers;
 
