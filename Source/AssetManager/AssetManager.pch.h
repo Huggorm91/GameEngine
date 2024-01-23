@@ -30,6 +30,8 @@ using namespace Microsoft::WRL;
 #include "Json/JsonVector.hpp"
 #include "File/DirectoryFunctions.h"
 
+#include "Engine/Engine.h"
+
 #include "Logging/Logging.h"
 inline Logger AMLogger;
 #endif //ASSETMANAGER_PCH_H

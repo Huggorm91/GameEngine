@@ -278,6 +278,7 @@
     <ClInclude Include="Assets\Components\ComponentType.h" />
     <ClInclude Include="Assets\Components\Particles\EmitterData.h" />
     <ClInclude Include="Assets\Binary.h" />
+    <ClInclude Include="Assets\Components\Gameplay\HealthComponent.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -320,6 +321,7 @@
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
     <ClCompile Include="Assets\Components\ComponentType.cpp" />
     <ClCompile Include="Assets\Components\Particles\EmitterData.cpp" />
+    <ClCompile Include="Assets\Components\Gameplay\HealthComponent.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">
