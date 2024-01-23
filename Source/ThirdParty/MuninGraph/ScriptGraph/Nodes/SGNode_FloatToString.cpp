@@ -16,3 +16,17 @@ size_t SGNode_FloatToString::DoOperation()
 	SetPinData("Text", std::to_string(val));
 	return Exit();
 }
+
+void SGNode_IntToString::Init()
+{
+	CreateDataPin<int>("Value", PinDirection::Input);
+	CreateDataPin<std::string>("Text", PinDirection::Output);
+}
+
+size_t SGNode_IntToString::DoOperation()
+{
+	int val = 0;
+	GetPinData("Value", val);
+	SetPinData("Text", std::to_string(val));
+	return Exit();
+}
