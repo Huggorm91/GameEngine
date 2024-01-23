@@ -62,6 +62,36 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 		aParent.AddComponent(component);
 		break;
 	}
+	case ComponentType::BoxCollider:
+	{
+		const BoxColliderComponent& component = *dynamic_cast<const BoxColliderComponent*>(aComponent);
+		aParent.AddComponent(component); 
+		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		const SphereColliderComponent& component = *dynamic_cast<const SphereColliderComponent*>(aComponent);
+		aParent.AddComponent(component); 
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		const RayColliderComponent& component = *dynamic_cast<const RayColliderComponent*>(aComponent);
+		aParent.AddComponent(component); 
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		const CapsuleColliderComponent& component = *dynamic_cast<const CapsuleColliderComponent*>(aComponent);
+		aParent.AddComponent(component); 
+		break;
+	}
+	case ComponentType::Health:
+	{
+		const HealthComponent& component = *dynamic_cast<const HealthComponent*>(aComponent); 
+		aParent.AddComponent(component); 
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
@@ -111,6 +141,31 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 	case ComponentType::ParticleEmitter:
 	{
 		aParent.AddComponent<ParticleEmitterComponent>();
+		break;
+	}
+	case ComponentType::BoxCollider:
+	{
+		aParent.AddComponent<BoxColliderComponent>();
+		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		aParent.AddComponent<SphereColliderComponent>();
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		aParent.AddComponent<RayColliderComponent>();
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		aParent.AddComponent<CapsuleColliderComponent>();
+		break;
+	}
+	case ComponentType::Health:
+	{
+		aParent.AddComponent<HealthComponent>();
 		break;
 	}
 	default:
@@ -163,6 +218,31 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	case ComponentType::ParticleEmitter:
 	{
 		aParent.AddComponent(ParticleEmitterComponent(aJson));
+		break;
+	}
+	case ComponentType::BoxCollider:
+	{
+		aParent.AddComponent(BoxColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		aParent.AddComponent(SphereColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		aParent.AddComponent(RayColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		aParent.AddComponent(CapsuleColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::Health:
+	{
+		aParent.AddComponent(HealthComponent(aJson));
 		break;
 	}
 	default:
@@ -227,8 +307,36 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		emitter.Deserialize(aStream);
 		break;
 	}
-	case ComponentType::Count:
+	case ComponentType::BoxCollider:
+	{
+		auto& box = aParent.AddComponent<BoxColliderComponent>();
+		box.Deserialize(aStream);
 		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		auto& sphere = aParent.AddComponent<SphereColliderComponent>();
+		sphere.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		auto& ray = aParent.AddComponent<RayColliderComponent>();
+		ray.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		auto& capsule = aParent.AddComponent<CapsuleColliderComponent>();
+		capsule.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Health:
+	{
+		auto& health = aParent.AddComponent<HealthComponent>();
+		health.Deserialize(aStream);
+		break;
+	}
 	default:
 		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 		break;
@@ -270,6 +378,26 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::ParticleEmitter:
 	{
 		return "ParticleEmitter";
+	}
+	case ComponentType::BoxCollider:
+	{
+		return "BoxCollider";
+	}
+	case ComponentType::SphereCollider:
+	{
+		return "SphereCollider";
+	}
+	case ComponentType::RayCollider:
+	{
+		return "RayCollider";
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		return "CapsuleCollider";
+	}
+	case ComponentType::Health:
+	{
+		return "Health";
 	}
 	default:
 	{

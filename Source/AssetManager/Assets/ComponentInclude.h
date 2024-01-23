@@ -7,3 +7,8 @@
 #include "Components/Light/SpotlightComponent.h"
 #include "Components/Debugging/DebugDrawComponent.h"
 #include "Components/Camera/PerspectiveCameraComponent.h"
+#include "Components/Collision/BoxColliderComponent.h"
+#include "Components/Collision/SphereColliderComponent.h"
+#include "Components/Collision/RayColliderComponent.h"
+#include "Components/Collision/CapsuleColliderComponent.h"
+#include "Components/Gameplay/HealthComponent.h"
