@@ -103,3 +103,22 @@ void ColliderComponent::TransformHasChanged() const
 {
 	const_cast<ColliderComponent&>(*this).UpdateWorldPosition();
 }
+
+void ColliderComponent::Serialize(std::ostream& aStream) const
+{
+	Component::Serialize(aStream);
+	unsigned long layers = myLayersToCollideWith.to_ulong();
+	aStream.write(reinterpret_cast<const char*>(&myIsTrigger), sizeof(myIsTrigger));
+	aStream.write(reinterpret_cast<const char*>(&layers), sizeof(layers));
+	aStream.write(reinterpret_cast<const char*>(&myLayer), sizeof(myLayer));
+}
+
+void ColliderComponent::Deserialize(std::istream& aStream)
+{
+	Component::Deserialize(aStream);
+	unsigned long layers = 0u;
+	aStream.read(reinterpret_cast<char*>(&myIsTrigger), sizeof(myIsTrigger));
+	aStream.read(reinterpret_cast<char*>(&layers), sizeof(layers));
+	aStream.read(reinterpret_cast<char*>(&myLayer), sizeof(myLayer));
+	myLayersToCollideWith = layers;
+}

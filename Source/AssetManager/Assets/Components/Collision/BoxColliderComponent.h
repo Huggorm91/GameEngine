@@ -45,6 +45,8 @@ public:
 
 	bool IsValid() const override;
 
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
 	Json::Value ToJson() const override;
 	inline std::string ToString() const override;
 	inline const BoxColliderComponent* GetTypePointer() const override;

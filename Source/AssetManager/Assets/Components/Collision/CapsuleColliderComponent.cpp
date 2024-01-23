@@ -84,6 +84,23 @@ bool CapsuleColliderComponent::IsValid() const
 	return myIsActive && myRadius > 0.f;
 }
 
+void CapsuleColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	myCenter.Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myRadius), sizeof(myRadius));
+	aStream.write(reinterpret_cast<const char*>(&myHeight), sizeof(myHeight));
+}
+
+void CapsuleColliderComponent::Deserialize(std::istream & aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	myCenter.Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myRadius), sizeof(myRadius));
+	aStream.read(reinterpret_cast<char*>(&myHeight), sizeof(myHeight));
+	myHasChanged = true;
+}
+
 Json::Value CapsuleColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();

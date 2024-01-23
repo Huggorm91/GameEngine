@@ -118,6 +118,23 @@ bool RayColliderComponent::IsValid() const
 	return myIsActive && myLength != 0.f;
 }
 
+void RayColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	myDirection.Serialize(aStream);
+	myOrigin.Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myLength), sizeof(myLength));
+}
+
+void RayColliderComponent::Deserialize(std::istream & aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	myDirection.Deserialize(aStream);
+	myOrigin.Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myLength), sizeof(myLength));
+	myHasChanged = true;
+}
+
 Json::Value RayColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();

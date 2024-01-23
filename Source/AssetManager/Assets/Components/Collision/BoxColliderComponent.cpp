@@ -80,6 +80,21 @@ bool BoxColliderComponent::IsValid() const
 	return myIsActive && myHalfSize != Crimson::Vector3f::Null;
 }
 
+void BoxColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	myCenter.Serialize(aStream);
+	myHalfSize.Serialize(aStream);
+}
+
+void BoxColliderComponent::Deserialize(std::istream& aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	myCenter.Deserialize(aStream);
+	myHalfSize.Deserialize(aStream);
+	myHasChanged = true;
+}
+
 Json::Value BoxColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();

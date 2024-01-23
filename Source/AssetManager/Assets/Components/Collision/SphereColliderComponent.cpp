@@ -119,6 +119,21 @@ bool SphereColliderComponent::IsValid() const
 	return myIsActive && myRadius > 0.f;
 }
 
+void SphereColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	myCenter.Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myRadius), sizeof(myRadius));
+}
+
+void SphereColliderComponent::Deserialize(std::istream & aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	myCenter.Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myRadius), sizeof(myRadius));
+	myHasChanged = true;
+}
+
 Json::Value SphereColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();
