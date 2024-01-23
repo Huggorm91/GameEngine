@@ -1,7 +1,7 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#include "Windows.h"
+#include "Math/Vector2.hpp"
 
 namespace Crimson
 {
@@ -17,7 +17,7 @@ class Engine
 public:
 	~Engine();
 
-	static void Init(HWND aHandle);
+	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize);
 
 	static void BeginFrame();
 	static void EndFrame();
@@ -29,6 +29,7 @@ public:
 	static Crimson::PostMaster& GetPostMaster();
 	static CollisionManager& GetCollisionManager();
 
+	static const Crimson::Vector2i& GetWindowSize();
 	static HWND GetWindowHandle();
 
 	static bool HandleInput(UINT message, WPARAM wParam, LPARAM lParam);
@@ -36,6 +37,7 @@ private:
 	Engine();
 	static Engine& Get();
 
+	Crimson::Vector2i myWindowSize;
 	HWND myWindowHandle;
 
 	Crimson::ThreadPool* myThreadPool;

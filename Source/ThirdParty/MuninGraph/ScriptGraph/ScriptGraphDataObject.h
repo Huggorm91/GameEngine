@@ -31,16 +31,16 @@ public:
 		ScriptGraphDataObject result; /*= Create<Type>(); */
 		CreateInternal(result, typeid(Type));
 		::new (result.Ptr) Type();
-		/* result.SetData(aValue); */
+		result.SetData(aValue);
 		return result;
 	}
 
 	template<typename Type>
 	static void Destruct(ScriptGraphDataObject& aDataObject)
 	{
-		if(aDataObject.Ptr)
+		if (aDataObject.Ptr)
 		{
-			if(typeid(Type)!=typeid(std::string))
+			if (typeid(Type) != typeid(std::string))
 			{
 				Type* tPtr = (Type*)aDataObject.Ptr;
 				delete tPtr;

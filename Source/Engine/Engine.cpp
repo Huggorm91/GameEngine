@@ -43,17 +43,27 @@ Engine& Engine::Get()
 	return instance;
 }
 
-void Engine::Init(HWND aHandle)
+void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 {
 	auto& instance = Get();
 	if (!instance.myIsInitialized)
 	{
+		// Window
+		instance.myWindowSize = aWindowSize;
 		instance.myWindowHandle = aHandle;
-		instance.myThreadPool = new Crimson::ThreadPool(Crimson::Min(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
+
+		// Threads
+		instance.myThreadPool = new Crimson::ThreadPool(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
+
+		// Input
 		instance.myInputMapper = new Crimson::InputMapper();
 		instance.myInputMapper->Init(aHandle);
 		instance.myInputHandler = new Crimson::InputHandler(*instance.myInputMapper);
+
+		// Events
 		instance.myPostMaster = new Crimson::PostMaster();
+
+		// Collision
 		instance.myCollisionManager = new CollisionManager();
 
 		instance.myIsInitialized = true;
@@ -98,6 +108,11 @@ Crimson::PostMaster& Engine::GetPostMaster()
 CollisionManager& Engine::GetCollisionManager()
 {
 	return *Get().myCollisionManager;
+}
+
+const Crimson::Vector2i& Engine::GetWindowSize()
+{
+	return Get().myWindowSize;
 }
 
 HWND Engine::GetWindowHandle()

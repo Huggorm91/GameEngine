@@ -13,19 +13,51 @@
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
 #include "AssetManager/Managers/CollisionManager.h"
-#include "File/DirectoryFunctions.h"
+#include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 
+#include "File/DirectoryFunctions.h"
 #include "Time/Timer.h"
 #include "Input/InputMapper.h"
+#include "PostMaster/PostMaster.h"
 #include "Json\jsonCpp\json.h"
 
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
+ModelViewer::ModelViewer() : myIsAcceptingInput(false), myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
 , myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
 #endif // _RETAIL
 {}
+
+void ModelViewer::SetKeyBinds()
+{
+	auto& input = Engine::GetInputMapper();
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
+
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Q);
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::E);
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
+	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
+	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
+
+	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Duplicate, Crimson::KeyBind{ Crimson::eKey::D, Crimson::eKey::Ctrl });
+
+	input.Attach(this, Crimson::eInputAction::Undo);
+	input.Attach(this, Crimson::eInputAction::Redo);
+	input.Attach(this, Crimson::eInputAction::Duplicate);
+}
 
 void ModelViewer::HandleCrash(const std::exception& anException)
 {
@@ -129,13 +161,13 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	ShowSplashScreen();
 
 	// TODO: Load all settings from json
-	Engine::Init(myMainWindowHandle);
+	Engine::Init(myMainWindowHandle, myApplicationState.WindowSize);
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, true);
 #endif // _RETAIL
-	myCamera.Init(myApplicationState.WindowSize, myApplicationState.CameraSpeed, myApplicationState.CameraRotationSpeed, myApplicationState.CameraMouseSensitivity);
+
 	AssetManager::Init();
 	AssetManager::GeneratePrimitives();
 
@@ -145,25 +177,14 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	myScriptGraphEditor.Init();
 
-	auto& input = Engine::GetInputMapper();
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
-
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
-
-
-	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
-	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
-	input.BindAction(Crimson::eInputAction::Duplicate, Crimson::KeyBind{ Crimson::eKey::D, Crimson::eKey::Ctrl });
-	input.Attach(this, Crimson::eInputAction::Undo);
-	input.Attach(this, Crimson::eInputAction::Redo);
-	input.Attach(this, Crimson::eInputAction::Duplicate);
+	SetKeyBinds();
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
+
+	myCamera.AddComponent(PerspectiveCameraComponent(90.f, 1.f, 10000.f));
+	myCamera.MarkAsPrefab();
+	myCamera.SetPosition({ 0.f, 200.f, 0.f });
 
 	HideSplashScreen();
 
@@ -255,7 +276,7 @@ void ModelViewer::SetPlayMode(bool aState)
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
 			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*) {}));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
@@ -540,10 +561,10 @@ void ModelViewer::UpdateScene()
 	for (auto& [id, object] : myScene.GameObjects)
 	{
 		object.Update();
-		}
+	}
 #endif // !_RETAIL
 
-	}
+}
 
 #ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
@@ -625,41 +646,146 @@ void ModelViewer::RedoCommand()
 	}
 }
 
-void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)
+void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
-	auto& engine = GraphicsEngine::Get();
-	switch (aKey)
+	switch (anEvent)
 	{
-	case Crimson::eKey::F1:
+	case Crimson::eInputEvent::MouseMove:
 	{
-		SetPlayMode(!myIsInPlayMode);
+		const float multiplier = myApplicationState.CameraMouseSensitivity * .5f;
+		const Crimson::Vector2f distance = Engine::GetInputMapper().GetMouseMovement();
+		Crimson::Vector3f rotation = myCamera.GetComponent<PerspectiveCameraComponent>().GetRotationDegree();
+		rotation.x += distance.y * multiplier;
+		rotation.y += distance.x * multiplier;
+		myCamera.GetComponent<PerspectiveCameraComponent>().SetRotation(rotation);
 		break;
 	}
-	case Crimson::eKey::F4:
+	case Crimson::eInputEvent::KeyDown:
 	{
-		engine.NextToneMap();
+		switch (aKey)
+		{
+		case Crimson::eKey::MouseRightButton:
+		{
+			auto& inputHandler = Engine::GetInputMapper();
+			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
+			inputHandler.CaptureMouse(true);
+			inputHandler.HideMouse();
+			myIsAcceptingInput = true;
+			break;
+		}
+		case Crimson::eKey::F1:
+		{
+			SetPlayMode(!myIsInPlayMode);
+			break;
+		}
+		case Crimson::eKey::F4:
+		{
+			GraphicsEngine::Get().NextToneMap();
+			break;
+		}
+		case Crimson::eKey::F5:
+		{
+			myDebugMode = GraphicsEngine::Get().NextDebugMode();
+			break;
+		}
+		case Crimson::eKey::F6:
+		{
+			myLightMode = GraphicsEngine::Get().NextLightMode();
+			break;
+		}
+		case Crimson::eKey::F7:
+		{
+			myRenderMode = GraphicsEngine::Get().NextRenderMode();
+			break;
+		}
+		case Crimson::eKey::F8:
+		{
+			myDebugMode = GraphicsEngine::Get().SetDebugMode(GraphicsEngine::DebugMode::Default);
+			myLightMode = GraphicsEngine::Get().SetLightMode(GraphicsEngine::LightMode::Default);
+			myRenderMode = GraphicsEngine::Get().SetRenderMode(GraphicsEngine::RenderMode::Mesh);
+			break;
+		}
+		default:
+			break;
+		}
 		break;
 	}
-	case Crimson::eKey::F5:
+	case Crimson::eInputEvent::KeyUp:
 	{
-		myDebugMode = engine.NextDebugMode();
+		if (aKey == Crimson::eKey::MouseRightButton)
+		{
+			auto& inputHandler = Engine::GetInputMapper();
+			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
+			inputHandler.ReleaseMouse();
+			inputHandler.ShowMouse();
+			myIsAcceptingInput = false;
+		}
 		break;
 	}
-	case Crimson::eKey::F6:
+	case Crimson::eInputEvent::KeyHeld:
 	{
-		myLightMode = engine.NextLightMode();
-		break;
-	}
-	case Crimson::eKey::F7:
-	{
-		myRenderMode = engine.NextRenderMode();
-		break;
-	}
-	case Crimson::eKey::F8:
-	{
-		myDebugMode = engine.SetDebugMode(GraphicsEngine::DebugMode::Default);
-		myLightMode = engine.SetLightMode(GraphicsEngine::LightMode::Default);
-		myRenderMode = engine.SetRenderMode(GraphicsEngine::RenderMode::Mesh);
+		if (myIsAcceptingInput == false)
+		{
+			return;
+		}
+
+		float multiplier = Engine::GetInputMapper().GetKeyHeld(Crimson::eKey::Shift) ? 2.f : Engine::GetInputMapper().GetKeyHeld(Crimson::eKey::Shift) ? 2.f : 1.f;
+		float timeDelta = Crimson::Timer::GetDeltaTime();
+		const auto& rotation = myCamera.GetComponent<PerspectiveCameraComponent>().GetRotationRadian();
+
+		switch (aKey)
+		{
+		case Crimson::eKey::Q:
+		{
+			Crimson::Vector4f movement = {};
+			movement.y = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() - movement);
+			break;
+		}
+		case Crimson::eKey::E:
+		{
+			Crimson::Vector4f movement = {};
+			movement.y = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() + movement);
+			break;
+		}
+		case Crimson::eKey::W:
+		{
+			Crimson::Vector4f movement = {};
+			movement.z = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() + movement);
+			break;
+		}
+		case Crimson::eKey::S:
+		{
+			Crimson::Vector4f movement = {};
+			movement.z = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() - movement);
+			break;
+		}
+		case Crimson::eKey::A:
+		{
+			Crimson::Vector4f movement = {};
+			movement.x = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() - movement);
+			break;
+		}
+		case Crimson::eKey::D:
+		{
+			Crimson::Vector4f movement = {};
+			movement.x = myApplicationState.CameraSpeed * timeDelta * multiplier;
+			movement *= Crimson::Matrix4x4f::CreateRotationAroundX(rotation.x) * Crimson::Matrix4x4f::CreateRotationAroundY(rotation.y);
+			myCamera.SetPosition(myCamera.GetWorldPosition() + movement);
+			break;
+		}
+		default:
+			break;
+		}
 		break;
 	}
 	default:
@@ -696,3 +822,63 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 	}
 }
 #endif // _RETAIL
+
+void ModelViewer::RecieveMessage(const Crimson::Message& aMessage)
+{
+	if (const Crimson::Vector2i* ids = aMessage.GetDataAsVector2i(); ids != nullptr)
+	{
+		ScriptGraphNodePayload payload;
+		switch (aMessage.GetMessageType())
+		{
+		case Crimson::eMessageType::Collision_OnTriggerEnter:
+			payload.SetVariable("Trigger ID", ids->x);
+			payload.SetVariable("Collider ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Trigger Enter", payload);
+			break;
+		case Crimson::eMessageType::Collision_OnTriggerExit:
+			payload.SetVariable("Trigger ID", ids->x);
+			payload.SetVariable("Collider ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Trigger Exit", payload);
+			break;
+		case Crimson::eMessageType::Collision_OnTriggerStay:
+			payload.SetVariable("Trigger ID", ids->x);
+			payload.SetVariable("Collider ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Trigger Stay", payload);
+			break;
+		case Crimson::eMessageType::Collision_OnCollisionEnter:
+			payload.SetVariable("Collider1 ID", ids->x);
+			payload.SetVariable("Collider2 ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Collision Enter", payload);
+			break;
+		case Crimson::eMessageType::Collision_OnCollisionExit:
+			payload.SetVariable("Collider1 ID", ids->x);
+			payload.SetVariable("Collider2 ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Collision Exit", payload);
+			break;
+		case Crimson::eMessageType::Collision_OnCollisionStay:
+			payload.SetVariable("Collider1 ID", ids->x);
+			payload.SetVariable("Collider2 ID", ids->y);
+			myScriptGraphEditor.TriggerEntryPoint("On Collision Stay", payload);
+			break;
+		default:
+			break;
+		}
+	}
+	else if (const int* id = aMessage.GetDataAsInt(); id != nullptr)
+	{
+		ScriptGraphNodePayload payload;
+		payload.SetVariable("Object ID", id);
+
+		switch (aMessage.GetMessageType())
+		{
+		case Crimson::eMessageType::GameObject_TakeDamage:
+			myScriptGraphEditor.TriggerEntryPoint("Damage Taken", payload);
+			break;
+		case Crimson::eMessageType::GameObject_Died:
+			myScriptGraphEditor.TriggerEntryPoint("Object Died", payload);
+			break;
+		default:
+			break;
+		}
+	}
+}

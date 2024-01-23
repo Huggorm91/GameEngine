@@ -2,10 +2,10 @@
 #include <memory>
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "GraphicsEngine/Camera/PerspectiveCamera.h"
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 #include "ScriptGraphEditor/ScriptGraphEditor.h"
+#include "PostMaster/Observer.h"
 
 // TODO: 
 // Make all saved filepaths relative to the assettypes folder
@@ -19,7 +19,7 @@ class GameObject;
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
-class ModelViewer : public Crimson::InputObserver
+class ModelViewer : public Crimson::InputObserver, public Crimson::Observer
 {
 #else
 class ModelViewer
@@ -41,7 +41,7 @@ public:
 	{
 		return Get().myLogger;
 	}
-	FORCEINLINE static PerspectiveCamera& GetCamera()
+	FORCEINLINE static GameObject& GetCamera()
 	{
 		return Get().myCamera;
 	}
@@ -91,7 +91,11 @@ public:
 	void ReceiveEvent(Crimson::eInputAction, float) override;
 #endif // _RETAIL
 
+	void RecieveMessage(const Crimson::Message& aMessage) override;
+
 private:
+	bool myIsAcceptingInput;
+
 #ifndef _RETAIL
 	friend class ImguiManager;
 	friend class EditCommand;
@@ -121,7 +125,7 @@ private:
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
-	PerspectiveCamera myCamera;
+	GameObject myCamera;
 
 	std::vector<GameObjectID> myObjectsCreatedByScript;
 
@@ -136,6 +140,8 @@ private:
 #endif // _RETAIL
 
 	ModelViewer();
+
+	void SetKeyBinds();
 
 	void HandleCrash(const std::exception& anException);
 

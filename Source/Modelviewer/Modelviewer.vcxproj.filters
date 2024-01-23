@@ -120,6 +120,9 @@
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\TimeNodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\ScriptGraphEditor\Nodes\GamePlayNodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Modelviewer.cpp">
@@ -189,6 +192,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\ScriptGraphEditor\Nodes\TimeNodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ScriptGraphEditor\Nodes\GamePlayNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

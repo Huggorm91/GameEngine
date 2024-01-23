@@ -7,7 +7,6 @@ struct ApplicationState
 	float ShadowBias{};
 	float AmbientIntensity{};
 	float CameraSpeed{};
-	float CameraRotationSpeed{};
 	float CameraMouseSensitivity{};
 	Crimson::Vector2i WindowSize{};
 	std::string WindowTitle {};

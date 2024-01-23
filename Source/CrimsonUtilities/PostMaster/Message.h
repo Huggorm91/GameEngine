@@ -15,8 +15,9 @@ namespace Crimson
 		Message(eMessageType aType, int aValue);
 		Message(eMessageType aType, float aValue);
 		Message(eMessageType aType, const std::string& aValue);
-		Message(eMessageType aType, const Vector2<float>& aValue);
-		Message(eMessageType aType, const Vector3<float>& aValue);
+		Message(eMessageType aType, const Vector2i& aValue);
+		Message(eMessageType aType, const Vector2f& aValue);
+		Message(eMessageType aType, const Vector3f& aValue);
 
 		eMessageType GetMessageType() const;
 
@@ -37,14 +38,17 @@ namespace Crimson
 		const std::string* GetDataAsString() const;
 
 		// Returns nullptr if incorrect type
-		const Vector2<float>* GetDataAsVector2() const;
+		const Vector2i* GetDataAsVector2i() const;
 
 		// Returns nullptr if incorrect type
-		const Vector3<float>* GetDataAsVector3() const;
+		const Vector2f* GetDataAsVector2() const;
+
+		// Returns nullptr if incorrect type
+		const Vector3f* GetDataAsVector3() const;
 
 	private:
 		eMessageType myMessageType;
-		std::variant<bool, int, float, std::string, Vector2<float>, Vector3<float>> myData;
+		std::variant<bool, int, float, std::string, Vector2i, Vector2f, Vector3f> myData;
 	};
 
 	template<typename T>

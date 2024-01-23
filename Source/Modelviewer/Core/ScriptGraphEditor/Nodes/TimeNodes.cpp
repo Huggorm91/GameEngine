@@ -12,7 +12,7 @@ void NodeWait(float aDuration, int anID)
 	{
 		std::this_thread::yield();
 	} while (std::chrono::high_resolution_clock::now() < end);
-	Engine::GetPostMaster().AddMessage(Crimson::Message(Crimson::eMessageType::NodeTimerEnded, anID));
+	Engine::GetPostMaster().AddMessage(Crimson::Message(Crimson::eMessageType::Node_TimerEnded, anID));
 }
 
 void MVNode_Timer::Init()
@@ -26,9 +26,9 @@ void MVNode_Timer::Init()
 	SetPinData("Timer ID", myID);
 	CreateExecPin("Timer End", PinDirection::Output);
 
-	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::NodeTimerEnded);
-	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::NodeTimerStopped);
-	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::NodeTimerStopAll);
+	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::Node_TimerEnded);
+	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::Node_TimerStopped);
+	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::Node_TimerStopAll);
 }
 
 size_t MVNode_Timer::DoOperation()
@@ -54,11 +54,11 @@ void MVNode_Timer::RecieveMessage(const Crimson::Message& aMessage)
 	const int* messageID = aMessage.GetDataAsInt();
 	if (messageID && *messageID == myID)
 	{
-		if (aMessage.GetMessageType() == Crimson::eMessageType::NodeTimerStopped)
+		if (aMessage.GetMessageType() == Crimson::eMessageType::Node_TimerStopped)
 		{
 			++myStopCount;
 		}
-		else if (aMessage.GetMessageType() == Crimson::eMessageType::NodeTimerStopAll)
+		else if (aMessage.GetMessageType() == Crimson::eMessageType::Node_TimerStopAll)
 		{
 			myStopCount = myTriggerCount;
 		}
@@ -94,11 +94,11 @@ size_t MVNode_TimerStop::DoOperation()
 	{
 		if (stopAll)
 		{
-			Engine::GetPostMaster().SendInstantMessage(Crimson::Message(Crimson::eMessageType::NodeTimerStopAll, id));
+			Engine::GetPostMaster().SendInstantMessage(Crimson::Message(Crimson::eMessageType::Node_TimerStopAll, id));
 		}
 		else
 		{
-			Engine::GetPostMaster().SendInstantMessage(Crimson::Message(Crimson::eMessageType::NodeTimerStopped, id));
+			Engine::GetPostMaster().SendInstantMessage(Crimson::Message(Crimson::eMessageType::Node_TimerStopped, id));
 		}
 		
 		return ExitViaPin("Out");

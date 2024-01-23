@@ -9,7 +9,7 @@ void MVNode_EditorGetCameraPos::Init()
 
 size_t MVNode_EditorGetCameraPos::DoOperation()
 {
-	const Crimson::Vector3f pos = ModelViewer::GetCamera().GetPosition();
+	const Crimson::Vector3f pos = ModelViewer::GetCamera().GetWorldPosition();
 	SetPinData("Position", pos);
 
 	return Exit();
@@ -56,7 +56,7 @@ size_t MVNode_BuildString::DoOperation()
 	std::string text1, text2;
 	if (GetPinData("Text1", text1) && GetPinData("Text2", text2))
 	{
-		SetPinData("Text", text1 + text2);
+		SetPinData("Result", text1 + text2);
 		return Exit();
 	}
 

@@ -287,6 +287,7 @@
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\GameObjectNodes.h" />
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\EditorNodes.h" />
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\FlowControlNodes.h" />
+    <ClInclude Include="Core\ScriptGraphEditor\Nodes\GamePlayNodes.h" />
     <ClInclude Include="ModelViewer.pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Core\ScriptGraphEditor\Nodes\TimeNodes.h" />
@@ -312,6 +313,7 @@
     <ClCompile Include="Core\ScriptGraphEditor\Nodes\GameObjectNodes.cpp" />
     <ClCompile Include="Core\ScriptGraphEditor\Nodes\EditorNodes.cpp" />
     <ClCompile Include="Core\ScriptGraphEditor\Nodes\FlowControlNodes.cpp" />
+    <ClCompile Include="Core\ScriptGraphEditor\Nodes\GamePlayNodes.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Core\Modelviewer.cpp" />
     <ClCompile Include="ModelViewer.pch.cpp">
