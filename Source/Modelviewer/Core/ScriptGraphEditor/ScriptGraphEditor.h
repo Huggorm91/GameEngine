@@ -104,6 +104,8 @@ public:
 
 	void DuplicateSelection();
 
+	void TriggerEntryPoint(const std::string& anEntryNode, const ScriptGraphNodePayload& aPayload);
+
 	static inline const wchar_t* GetExtensionW(){ return L".blp"; }
 	static inline const char* GetPath(){ return "..\\Content\\Blueprints\\"; }
 };
