@@ -5,6 +5,9 @@
 HealthComponent::HealthComponent() : Component(ComponentType::Health), myMaxHealth(0), myCurrentHealth(0)
 {}
 
+HealthComponent::HealthComponent(int aMaxHealth) : Component(ComponentType::Health), myMaxHealth(aMaxHealth), myCurrentHealth(aMaxHealth)
+{}
+
 HealthComponent::HealthComponent(const Json::Value& aJson) : Component(aJson), myMaxHealth(aJson["MaxHealth"].asInt()), myCurrentHealth(myMaxHealth)
 {}
 
@@ -60,6 +63,10 @@ void HealthComponent::CreateImGuiComponents(const std::string& aWindowName)
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Text(("Current Health: " + std::to_string(myCurrentHealth)).c_str());
 	ImGui::InputInt("Max Health", &myMaxHealth);
+	if (ImGui::Button("Restore Health"))
+	{
+		HealAll();
+	}
 }
 
 Json::Value HealthComponent::ToJson() const

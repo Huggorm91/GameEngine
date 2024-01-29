@@ -5,6 +5,7 @@ class HealthComponent : public Component
 {
 public:
 	HealthComponent();
+	HealthComponent(int aMaxHealth);
 	HealthComponent(const HealthComponent& aComponent) = default;
 	HealthComponent(HealthComponent&& aComponent) noexcept = default;
 	HealthComponent(const Json::Value& aJson);
