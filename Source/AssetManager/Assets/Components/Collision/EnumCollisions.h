@@ -8,8 +8,6 @@ enum eCollisionLayer : unsigned
 	eCollisionLayer_Enemy,
 	eCollisionLayer_PlayerProjectile,
 	eCollisionLayer_EnemyProjectile,
-	eCollisionLayer_ExplodingBarrel,
-	eCollisionLayer_HealingZone,
 	eCollisionLayer_Count
 };
 
@@ -20,6 +18,4 @@ inline static std::vector<std::string> globalLayerNames{
 	"Enemy",
 	"PlayerProjectile",
 	"EnemyProjectile",
-	"ExplodingBarrel",
-	"HealingZone"
 };

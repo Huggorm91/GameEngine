@@ -118,6 +118,24 @@ bool RayColliderComponent::IsValid() const
 	return myIsActive && myLength != 0.f;
 }
 
+void RayColliderComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ColliderComponent::CreateImGuiComponents(aWindowName);
+
+	if (ImGui::DragFloat3("Offset", &myOrigin.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	Crimson::Vector3f direction = myDirection;
+	if (ImGui::DragFloat3("Direction", &direction.x))
+	{
+		SetDirection(direction);
+	}
+
+	ImGui::DragFloat("Length", &myLength);
+}
+
 void RayColliderComponent::Serialize(std::ostream& aStream) const
 {
 	ColliderComponent::Serialize(aStream);

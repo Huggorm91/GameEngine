@@ -18,7 +18,7 @@ SphereColliderComponent::SphereColliderComponent(const BoxSphereBounds& aBound) 
 	myHasChanged = true;
 }
 
-SphereColliderComponent::SphereColliderComponent(const Crimson::Vector3f& aCenter, float aRadius) :
+SphereColliderComponent::SphereColliderComponent(float aRadius, const Crimson::Vector3f& aCenter) :
 	ColliderComponent(ComponentType::SphereCollider),
 	myCenter(aCenter),
 	myRadius(aRadius)
@@ -33,7 +33,7 @@ SphereColliderComponent::SphereColliderComponent(const Json::Value& aJson) :
 {
 }
 
-void SphereColliderComponent::InitWithCenterRadius(const Crimson::Vector3f& aCenter, float aRadius)
+void SphereColliderComponent::InitWithRadiusCenter(float aRadius, const Crimson::Vector3f& aCenter)
 {
 	myCenter = aCenter;
 	myRadius = aRadius;
@@ -117,6 +117,18 @@ bool SphereColliderComponent::IsInside(const Crimson::Vector3f& aPoint) const
 bool SphereColliderComponent::IsValid() const
 {
 	return myIsActive && myRadius > 0.f;
+}
+
+void SphereColliderComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ColliderComponent::CreateImGuiComponents(aWindowName);
+
+	if (ImGui::DragFloat3("Offset", &myCenter.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	ImGui::DragFloat("Radius", &myRadius);
 }
 
 void SphereColliderComponent::Serialize(std::ostream& aStream) const

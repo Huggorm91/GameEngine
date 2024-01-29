@@ -8,13 +8,13 @@ class SphereColliderComponent : public ColliderComponent
 public:
 	SphereColliderComponent();
 	SphereColliderComponent(const BoxSphereBounds& aBound);
-	SphereColliderComponent(const Crimson::Vector3f& aCenter, float aRadius);
+	SphereColliderComponent(float aRadius, const Crimson::Vector3f& aCenter = Crimson::Vector3f::Null);
 	SphereColliderComponent(const SphereColliderComponent& aComponent) = default;
 	SphereColliderComponent(SphereColliderComponent&& aComponent) noexcept = default;
 	SphereColliderComponent(const Json::Value& aJson);
 	~SphereColliderComponent() = default;
 
-	void InitWithCenterRadius(const Crimson::Vector3f& aCenter, float aRadius);
+	void InitWithRadiusCenter(float aRadius, const Crimson::Vector3f& aCenter = Crimson::Vector3f::Null);
 
 	void SetOffset(const Crimson::Vector3f& anOffset);
 	const Crimson::Vector3f& GetOffset() const;
@@ -38,6 +38,8 @@ public:
 	bool IsInside(const Crimson::Vector3f& aPoint) const;
 
 	bool IsValid() const override;
+
+	void CreateImGuiComponents(const std::string& aWindowName) override;
 
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;

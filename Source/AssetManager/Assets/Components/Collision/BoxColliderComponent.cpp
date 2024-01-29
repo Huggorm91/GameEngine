@@ -80,6 +80,23 @@ bool BoxColliderComponent::IsValid() const
 	return myIsActive && myHalfSize != Crimson::Vector3f::Null;
 }
 
+void BoxColliderComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ColliderComponent::CreateImGuiComponents(aWindowName);
+
+	if (ImGui::DragFloat3("Offset", &myCenter.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	Crimson::Vector3f size = GetSize();
+	if (ImGui::DragFloat3("Size", &size.x))
+	{
+		SetSize(size);
+		UpdateWorldPosition();
+	}
+}
+
 void BoxColliderComponent::Serialize(std::ostream& aStream) const
 {
 	ColliderComponent::Serialize(aStream);

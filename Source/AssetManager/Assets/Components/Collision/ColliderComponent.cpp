@@ -104,6 +104,49 @@ void ColliderComponent::TransformHasChanged() const
 	const_cast<ColliderComponent&>(*this).UpdateWorldPosition();
 }
 
+void ColliderComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	Component::CreateImGuiComponents(aWindowName);
+
+	ImGui::Checkbox("Trigger", &myIsTrigger);
+
+	if (ImGui::BeginCombo("Layer", globalLayerNames[myLayer].c_str(), ImGuiComboFlags_HeightLarge))
+	{
+		for (unsigned index = 0; index < globalLayerNames.size(); index++)
+		{
+			const bool isSelected = index == myLayer;
+			if (ImGui::Selectable(globalLayerNames[index].c_str(), isSelected))
+			{
+				myLayer = static_cast<eCollisionLayer>(index);
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::BeginCombo("Layers To Collide With", nullptr, ImGuiComboFlags_HeightLarge))
+	{
+		for (unsigned index = 0; index < globalLayerNames.size(); index++)
+		{
+			const bool isSelected = myLayersToCollideWith[index];
+			if (ImGui::Selectable(globalLayerNames[index].c_str(), isSelected))
+			{
+				myLayersToCollideWith[index] = !myLayersToCollideWith[index];
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
 void ColliderComponent::Serialize(std::ostream& aStream) const
 {
 	Component::Serialize(aStream);

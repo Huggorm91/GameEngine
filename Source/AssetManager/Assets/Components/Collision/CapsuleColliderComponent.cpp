@@ -84,6 +84,19 @@ bool CapsuleColliderComponent::IsValid() const
 	return myIsActive && myRadius > 0.f;
 }
 
+void CapsuleColliderComponent::CreateImGuiComponents(const std::string& aWindowName)
+{
+	ColliderComponent::CreateImGuiComponents(aWindowName);
+
+	if (ImGui::DragFloat3("Offset", &myCenter.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	ImGui::DragFloat("Radius", &myRadius);
+	ImGui::DragFloat("Height", &myHeight);
+}
+
 void CapsuleColliderComponent::Serialize(std::ostream& aStream) const
 {
 	ColliderComponent::Serialize(aStream);
