@@ -26,7 +26,9 @@ namespace Crimson
 
 	private:
 		std::shared_mutex myMutex;
+		std::mutex mySecondaryMutex;
 		std::vector<Message> myMessages;
+		std::vector<Message> mySecondaryMessages;
 		std::unordered_multimap<eMessageType, Observer*> myObservers;
 
 		void SendMessageToSubscribers(const Message& aMessage) const;

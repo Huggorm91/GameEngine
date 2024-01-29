@@ -45,8 +45,16 @@ void  Crimson::PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& 
 
 void Crimson::PostMaster::AddMessage(const Message& aMessage)
 {
-	std::unique_lock lock(myMutex);
-	myMessages.emplace_back(aMessage);
+	if (myMutex.try_lock())
+	{
+		myMessages.emplace_back(aMessage);
+		myMutex.unlock();
+	}
+	else
+	{
+		std::unique_lock lock(mySecondaryMutex);
+		mySecondaryMessages.emplace_back(aMessage);
+	}
 }
 
 void Crimson::PostMaster::SendInstantMessage(const Message& aMessage)
@@ -63,6 +71,12 @@ void Crimson::PostMaster::SendSavedMessages()
 		SendMessageToSubscribers(message);
 	}
 	myMessages.clear();
+
+	if (!mySecondaryMessages.empty())
+	{
+		std::unique_lock lock2(mySecondaryMutex);
+		myMessages.swap(mySecondaryMessages);
+	}
 }
 
 void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) const
