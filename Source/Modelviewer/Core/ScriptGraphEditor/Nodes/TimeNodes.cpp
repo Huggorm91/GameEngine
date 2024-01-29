@@ -42,7 +42,7 @@ size_t MVNode_Timer::DoOperation()
 			++myTriggerCount;
 			Engine::GetThreadPool().EnqueueNoReturn(NodeWait, duration, myID);
 		}
-		
+
 		return ExitViaPin("Passthrough");
 	}
 
@@ -56,7 +56,10 @@ void MVNode_Timer::RecieveMessage(const Crimson::Message& aMessage)
 	{
 		if (aMessage.GetMessageType() == Crimson::eMessageType::Node_TimerStopped)
 		{
-			++myStopCount;
+			if (myStopCount < myTriggerCount)
+			{
+				++myStopCount;
+			}
 		}
 		else if (aMessage.GetMessageType() == Crimson::eMessageType::Node_TimerStopAll)
 		{
@@ -100,7 +103,7 @@ size_t MVNode_TimerStop::DoOperation()
 		{
 			Engine::GetPostMaster().SendInstantMessage(Crimson::Message(Crimson::eMessageType::Node_TimerStopped, id));
 		}
-		
+
 		return ExitViaPin("Out");
 	}
 

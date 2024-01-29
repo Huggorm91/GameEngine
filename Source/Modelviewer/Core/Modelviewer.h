@@ -142,6 +142,7 @@ private:
 	ModelViewer();
 
 	void SetKeyBinds();
+	void BindToEvents();
 
 	void HandleCrash(const std::exception& anException);
 

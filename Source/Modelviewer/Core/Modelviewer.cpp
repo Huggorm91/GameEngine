@@ -59,6 +59,21 @@ void ModelViewer::SetKeyBinds()
 	input.Attach(this, Crimson::eInputAction::Duplicate);
 }
 
+void ModelViewer::BindToEvents()
+{
+	auto& postMaster = Engine::GetPostMaster();
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnTriggerEnter);
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnTriggerExit);
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnTriggerStay);
+
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnCollisionEnter);
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnCollisionExit);
+	postMaster.Subscribe(this, Crimson::eMessageType::Collision_OnCollisionStay);
+
+	postMaster.Subscribe(this, Crimson::eMessageType::GameObject_TakeDamage);
+	postMaster.Subscribe(this, Crimson::eMessageType::GameObject_Died);
+}
+
 void ModelViewer::HandleCrash(const std::exception& anException)
 {
 	// Center console and bring it to the front
@@ -178,13 +193,15 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myScriptGraphEditor.Init();
 
 	SetKeyBinds();
+	BindToEvents();
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
 	myCamera.AddComponent(PerspectiveCameraComponent(90.f, 1.f, 10000.f));
-	myCamera.MarkAsPrefab();
+	myCamera.MarkAsPrefab(static_cast<GameObjectID>(-1));
 	myCamera.SetPosition({ 0.f, 200.f, 0.f });
+	myCamera.SetName("EditorCamera");
 
 	HideSplashScreen();
 
@@ -276,7 +293,8 @@ void ModelViewer::SetPlayMode(bool aState)
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
 			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*)
+			{}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
@@ -508,12 +526,37 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	SetGameObjectIDCount(myScene.GameObjectIDCount);
 	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
 }
-
+#include "AssetManager\Assets\Components\Gameplay\HealthComponent.h"
+#include "AssetManager\Assets\Components\Collision\BoxColliderComponent.h"
+#include "AssetManager\Assets\Components\Collision\SphereColliderComponent.h"
 void ModelViewer::Init()
 {
+	myCamera.AddComponent(SphereColliderComponent(100.f));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
 	LoadScene("Default");
+
+	GameObject object = AssetManager::GetAsset<GameObject>("cube");
+	object.GetComponent<MeshComponent>().SetColor(ColorManager::GetColor("Red"));
+
+	object.AddComponent(HealthComponent(3));
+
+	auto& collider = object.AddComponent<BoxColliderComponent>();
+	collider.InitwithSizeOffset({ 100.f, 100.f, 100.f });
+	collider.SetCollidingLayer(eCollisionLayer_Default, true);
+	collider.SetIsTrigger(true);
+
+	object.SetPosition({ 200.f, 0.f, 200.f });
+	AddGameObject(std::make_shared<GameObject>(object));
+
+	object.SetPosition({ -200.f, 0.f, 200.f });
+	AddGameObject(std::make_shared<GameObject>(object));
+
+	object.SetPosition({ 200.f, 0.f, 400.f });
+	AddGameObject(std::make_shared<GameObject>(object));
+
+	object.SetPosition({ -200.f, 0.f, 400.f });
+	AddGameObject(std::make_shared<GameObject>(object));
 }
 
 void ModelViewer::Update()
@@ -554,7 +597,7 @@ void ModelViewer::UpdateScene()
 	{
 		for (auto& [id, object] : myScene.GameObjects)
 		{
-			object->Render();
+			object->Update();
 		}
 	}
 #else
@@ -867,7 +910,7 @@ void ModelViewer::RecieveMessage(const Crimson::Message& aMessage)
 	else if (const int* id = aMessage.GetDataAsInt(); id != nullptr)
 	{
 		ScriptGraphNodePayload payload;
-		payload.SetVariable("Object ID", id);
+		payload.SetVariable("Object ID", *id);
 
 		switch (aMessage.GetMessageType())
 		{
