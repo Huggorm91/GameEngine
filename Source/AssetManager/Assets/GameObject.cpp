@@ -293,6 +293,7 @@ const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
+		const_cast<GameObject&>(*this).myTransform.Update();
 		for (auto [type, index] : myIndexList)
 		{
 			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
@@ -305,6 +306,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{
+		const_cast<GameObject&>(*this).myTransform.Update();
 		for (auto [type, index] : myIndexList)
 		{
 			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
