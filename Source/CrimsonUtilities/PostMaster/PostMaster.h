@@ -17,7 +17,7 @@ namespace Crimson
 
 		void ClearSubscribers();
 		void UnsubscribeFromAllMessages(Observer* anObserver);
-		void UnsubscribeFromMessage(const eMessageType& aMsgType, Observer* anObserver);
+		void UnsubscribeFromMessage(const eMessageType& aMessageType, Observer* anObserver);
 
 		void AddMessage(const Message& aMessage);
 		void SendInstantMessage(const Message& aMessage);
@@ -29,8 +29,11 @@ namespace Crimson
 		std::mutex mySecondaryMutex;
 		std::vector<Message> myMessages;
 		std::vector<Message> mySecondaryMessages;
+		std::vector<std::pair<eMessageType, Observer*>> myAddList;
+		std::vector<std::pair<eMessageType, Observer*>> myDeleteList;
 		std::unordered_multimap<eMessageType, Observer*> myObservers;
 
 		void SendMessageToSubscribers(const Message& aMessage) const;
+		void RemoveSubscriber(const eMessageType& aMessageType, Observer* anObserver);
 	};
 }

@@ -2,44 +2,61 @@
 
 void Crimson::PostMaster::Subscribe(Observer* anObserver, const eMessageType aType)
 {
-	std::unique_lock lock(myMutex);
-	myObservers.emplace(aType, anObserver);
+	if (myMutex.try_lock())
+	{
+		myObservers.emplace(aType, anObserver);
+		myMutex.unlock();
+	}
+	else
+	{
+		std::unique_lock lock(mySecondaryMutex);
+		myAddList.emplace_back(std::pair(eMessageType::Count, anObserver));
+	}
 }
 
 void Crimson::PostMaster::ClearSubscribers()
 {
-	std::unique_lock lock(myMutex);
-	myObservers.clear();
-}
-
-void Crimson::PostMaster::UnsubscribeFromAllMessages(Observer* anObserver)
-{
-	std::unique_lock lock(myMutex);
-	auto iterator = myObservers.begin();
-	while (iterator != myObservers.end())
+	if (myMutex.try_lock())
 	{
-		if (iterator->second == anObserver)
+		myObservers.clear();
+		myMutex.unlock();
+	}
+	else
+	{
+		std::shared_lock lock(myMutex);
+		std::unique_lock lock2(mySecondaryMutex);
+		for (auto& [type, observer] : myObservers)
 		{
-			iterator = myObservers.erase(iterator);
-		}
-		else
-		{
-			iterator++;
+			myDeleteList.emplace_back(std::pair(type, observer));
 		}
 	}
 }
 
-void  Crimson::PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& aMsgType, Observer* anObserver)
+void Crimson::PostMaster::UnsubscribeFromAllMessages(Observer* anObserver)
 {
-	std::unique_lock lock(myMutex);
-	auto range = myObservers.equal_range(aMsgType);
-	for (auto iterator = range.first; iterator != range.second; ++iterator)
+	if (myMutex.try_lock())
 	{
-		if (iterator->second == anObserver)
-		{
-			myObservers.erase(iterator);
-			return;
-		}
+		RemoveSubscriber(eMessageType::Count, anObserver);
+		myMutex.unlock();
+	}
+	else
+	{
+		std::unique_lock lock(mySecondaryMutex);
+		myDeleteList.emplace_back(std::pair(eMessageType::Count, anObserver));
+	}
+}
+
+void  Crimson::PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& aMessageType, Observer* anObserver)
+{
+	if (myMutex.try_lock())
+	{
+		RemoveSubscriber(aMessageType, anObserver);
+		myMutex.unlock();
+	}
+	else
+	{
+		std::unique_lock lock(mySecondaryMutex);
+		myDeleteList.emplace_back(std::pair(aMessageType, anObserver));
 	}
 }
 
@@ -72,10 +89,32 @@ void Crimson::PostMaster::SendSavedMessages()
 	}
 	myMessages.clear();
 
-	if (!mySecondaryMessages.empty())
+	if (!mySecondaryMessages.empty() || !myDeleteList.empty() || !myAddList.empty())
 	{
 		std::unique_lock lock2(mySecondaryMutex);
-		myMessages.swap(mySecondaryMessages);
+
+		if (!mySecondaryMessages.empty())
+		{
+			myMessages.swap(mySecondaryMessages);
+		}
+		
+		if (!myDeleteList.empty())
+		{
+			for (auto& [type, observer] : myDeleteList)
+			{
+				RemoveSubscriber(type, observer);
+			}
+			myDeleteList.clear();
+		}
+
+		if (!myAddList.empty())
+		{
+			for (auto& [type, observer] : myAddList)
+			{
+				myObservers.emplace(type, observer);
+			}
+			myAddList.clear();
+		}
 	}
 }
 
@@ -85,5 +124,37 @@ void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) cons
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
 		iter->second->RecieveMessage(aMessage);
+	}
+}
+
+void Crimson::PostMaster::RemoveSubscriber(const eMessageType& aMessageType, Observer* anObserver)
+{
+	if (aMessageType == eMessageType::Count) 
+	{
+		// Remove from all types
+		auto iterator = myObservers.begin();
+		while (iterator != myObservers.end())
+		{
+			if (iterator->second == anObserver)
+			{
+				iterator = myObservers.erase(iterator);
+			}
+			else
+			{
+				iterator++;
+			}
+		}
+	}
+	else
+	{
+		auto range = myObservers.equal_range(aMessageType);
+		for (auto iterator = range.first; iterator != range.second; ++iterator)
+		{
+			if (iterator->second == anObserver)
+			{
+				myObservers.erase(iterator);
+				return;
+			}
+		}
 	}
 }
