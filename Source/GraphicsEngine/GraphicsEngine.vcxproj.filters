@@ -271,6 +271,8 @@
     <None Include="Shaders\Default\QuadData.hlsli" />
     <None Include="Shaders\Default\PostProcessingData.hlsli" />
     <None Include="Shaders\Default\Tonemaps.hlsli" />
+    <None Include="Shaders\Default\ParticleData.hlsli" />
+    <None Include="Shaders\Default\Registers.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShaders\Default_VS.hlsl" />
@@ -290,5 +292,10 @@
     <FxCompile Include="Shaders\PostProcessing\Gaussian_Blur_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Bloom_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Gamma_PS.hlsl" />
+    <FxCompile Include="Shaders\VertexShaders\Default_Sprite_VS.hlsl" />
+    <FxCompile Include="Shaders\VertexShaders\Default_UI_Sprite_VS.hlsl" />
+    <FxCompile Include="Shaders\GeometryShaders\Default_Sprite_GS.hlsl" />
+    <FxCompile Include="Shaders\GeometryShaders\Default_UI_Sprite_GS.hlsl" />
+    <FxCompile Include="Shaders\PixelShaders\Default_Sprite_PS.hlsl" />
   </ItemGroup>
 </Project>
