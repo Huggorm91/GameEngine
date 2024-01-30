@@ -329,6 +329,7 @@
     <ClInclude Include="ScriptGraph\Types\RegisterScriptGraphTypes.h" />
     <ClInclude Include="ScriptGraph\Nodes\Events\SGNode_EventBase.h" />
     <ClInclude Include="ScriptGraph\Nodes\Math\SGNode_VectorOps.h" />
+    <ClInclude Include="ScriptGraph\Nodes\Math\SGNode_ComparisonOps.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Graph\GraphColor.cpp" />
@@ -365,6 +366,7 @@
     <ClCompile Include="ScriptGraph\Nodes\SGNode_Variable.cpp" />
     <ClCompile Include="ScriptGraph\Nodes\Events\SGNode_EventBase.cpp" />
     <ClCompile Include="ScriptGraph\Nodes\Math\SGNode_VectorOps.cpp" />
+    <ClCompile Include="ScriptGraph\Nodes\Math\SGNode_ComparisonOps.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

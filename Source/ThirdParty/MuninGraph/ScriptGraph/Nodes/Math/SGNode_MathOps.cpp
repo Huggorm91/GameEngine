@@ -24,7 +24,7 @@ size_t SGNode_MathAdd::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathSub::Init()
@@ -50,7 +50,7 @@ size_t SGNode_MathSub::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathMul::Init()
@@ -76,7 +76,7 @@ size_t SGNode_MathMul::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathDiv::Init()
@@ -102,7 +102,7 @@ size_t SGNode_MathDiv::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathCos::Init()
@@ -126,7 +126,7 @@ size_t SGNode_MathCos::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathSin::Init()
@@ -150,7 +150,7 @@ size_t SGNode_MathSin::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathAbs::Init()
@@ -171,7 +171,7 @@ size_t SGNode_MathAbs::DoOperation()
 		return Exit();
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathATan2::Init()
@@ -197,5 +197,5 @@ size_t SGNode_MathATan2::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }

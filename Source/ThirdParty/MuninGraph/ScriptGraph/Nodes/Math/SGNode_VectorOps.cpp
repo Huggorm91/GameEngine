@@ -20,7 +20,7 @@ size_t MVNode_MakeVector::DoOperation()
 		return Exit();
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void MVNode_BreakVector::Init()
@@ -42,7 +42,7 @@ size_t MVNode_BreakVector::DoOperation()
 		return Exit();
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathAddVec::Init()
@@ -68,7 +68,7 @@ size_t SGNode_MathAddVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathSubVec::Init()
@@ -94,7 +94,7 @@ size_t SGNode_MathSubVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathMulVec::Init()
@@ -120,7 +120,7 @@ size_t SGNode_MathMulVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathDivVec::Init()
@@ -146,7 +146,7 @@ size_t SGNode_MathDivVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathAbsVec::Init()
@@ -167,7 +167,7 @@ size_t SGNode_MathAbsVec::DoOperation()
 		return Exit();
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathClampVec::Init()
@@ -195,7 +195,7 @@ size_t SGNode_MathClampVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathClampMagnitudeVec::Init()
@@ -221,7 +221,7 @@ size_t SGNode_MathClampMagnitudeVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathLerpVec::Init()
@@ -251,7 +251,7 @@ size_t SGNode_MathLerpVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
 
 void SGNode_MathDistanceVec::Init()
@@ -277,5 +277,5 @@ size_t SGNode_MathDistanceVec::DoOperation()
 		return ExitViaPin("Out");
 	}
 
-	return 0;
+	return ExitWithError("Invalid input!");
 }
