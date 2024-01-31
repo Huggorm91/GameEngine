@@ -86,6 +86,7 @@ void HealthComponent::Deserialize(std::istream& aStream)
 {
 	Component::Deserialize(aStream);
 	aStream.read(reinterpret_cast<char*>(&myMaxHealth), sizeof(myMaxHealth));
+	myCurrentHealth = myMaxHealth;
 }
 
 inline std::string HealthComponent::ToString() const
