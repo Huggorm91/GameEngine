@@ -660,6 +660,7 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 			inputHandler.CaptureMouse(true);
 			inputHandler.HideMouse();
 			myIsMovingCamera = true;
+			break;
 		}
 		case Crimson::eKey::F1:
 		{

@@ -18,6 +18,14 @@ ParticleEmitter::ParticleEmitter(ParticleEmitter&& anEmitter) : myID(anEmitter.m
 {
 }
 
+ParticleEmitter& ParticleEmitter::operator=(const ParticleEmitter& anEmitter)
+{
+	myID=GraphicsEngine::Get().GetParticleDrawer().GetNewEmitterID();
+	myData=anEmitter.myData;
+	myTransform=anEmitter.myTransform;
+	return *this;
+}
+
 void ParticleEmitter::Init(const EmitterData* someData)
 {
 	myData = someData;

@@ -17,11 +17,12 @@ public:
 	ParticleEmitter(const ParticleEmitter& anEmitter);
 	ParticleEmitter(ParticleEmitter&& anEmitter);
 	virtual ~ParticleEmitter() = default;
+	ParticleEmitter& operator=(const ParticleEmitter& anEmitter);
 
 	virtual void Init(const EmitterData* someData);
 
-	virtual void Start() = 0;
-	virtual void Stop() = 0;
+	//virtual void Start() = 0;
+	//virtual void Stop() = 0;
 
 	virtual Json::Value ToJson() const;
 
