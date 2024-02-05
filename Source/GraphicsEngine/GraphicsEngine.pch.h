@@ -24,6 +24,7 @@ using namespace Microsoft::WRL;
 
 #include "InterOp/RHI.h"
 #include "Math/Matrix4x4.hpp"
+#include "File/DirectoryFunctions.h"
 #include "Logging/Logging.h"
 
 inline Logger GELogger;

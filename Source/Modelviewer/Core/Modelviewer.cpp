@@ -521,7 +521,9 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
+	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
+	RHI::EndEvent();
 #endif // _RETAIL
 
 	engine.EndFrame();
