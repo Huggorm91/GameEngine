@@ -44,22 +44,25 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 
 		// Textures
 		{
-			myTextureSlots.MissingTextureSlot = 99u;
-			myTextureSlots.DefaultAlbedoTextureSlot = 98u;
-			myTextureSlots.DefaultNormalTextureSlot = 97u;
-			myTextureSlots.DefaultMaterialTextureSlot = 96u;
-			myTextureSlots.DefaultFXTextureSlot = 95u;
-			myTextureSlots.BrdfLUTTextureSlot = 94u;
-			myTextureSlots.DefaultCubeMapSlot = 100u;
-
+			// 2D-texture slots
 			myTextureSlots.GBufferSlot = 10u;
 
 			myTextureSlots.IntermediateASlot = 20u;
 			myTextureSlots.IntermediateBSlot = 21u;
 
-			myTextureSlots.DirectionalShadowMapSlot = 93u;
-			myTextureSlots.PointShadowMapSlot = 120u;
 			myTextureSlots.SpotShadowMapSlot = 85u;
+			myTextureSlots.DirectionalShadowMapSlot = 93u;
+
+			myTextureSlots.BrdfLUTTextureSlot = 94u;
+			myTextureSlots.DefaultFXTextureSlot = 95u;
+			myTextureSlots.DefaultMaterialTextureSlot = 96u;
+			myTextureSlots.DefaultNormalTextureSlot = 97u;
+			myTextureSlots.DefaultAlbedoTextureSlot = 98u;
+			myTextureSlots.MissingTextureSlot = 99u;
+
+			// Cubemap slots
+			myTextureSlots.DefaultCubeMapSlot = 100u;
+			myTextureSlots.PointShadowMapSlot = 120u;
 
 			if (!CreateLUTTexture())
 			{
@@ -968,6 +971,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 #ifndef _RETAIL
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr);
 			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
 #else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
@@ -986,6 +990,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 			RHI::Draw(4);
 
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr);
 			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateA);
 #else
