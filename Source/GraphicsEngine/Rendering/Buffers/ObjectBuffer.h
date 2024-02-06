@@ -6,6 +6,7 @@ struct ObjectBufferData
 {
 	Crimson::Matrix4x4f BoneTransforms[128]{};
 	Crimson::Matrix4x4f Transform{};
+	Crimson::Matrix4x4f TransformInverse{};
 	Crimson::Vector4f Color{};
 	unsigned ObjectID{};
 	alignas(4) bool HasBones = false;

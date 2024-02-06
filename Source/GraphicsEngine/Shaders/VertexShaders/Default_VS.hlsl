@@ -38,12 +38,10 @@ DefaultVertexToPixel main(DefaultVertexInput input)
         result.TangentOS = normalize(mul(skin3x3, result.TangentOS));
         result.BinormalOS = normalize(mul(skin3x3, result.BinormalOS));
     }
-	
-    const float3x3 transform3x3 = (float3x3) OB_Transform;
 
-    result.NormalWS = normalize(mul(transform3x3, result.NormalOS));
-    result.TangentWS = normalize(mul(transform3x3, result.TangentOS));
-    result.BinormalWS = normalize(mul(transform3x3, result.BinormalOS));
+    result.NormalWS = normalize(mul((float3x3) OB_TransformInverse, result.NormalOS));
+    result.TangentWS = normalize(mul((float3x3) OB_Transform, result.TangentOS));
+    result.BinormalWS = normalize(cross(result.NormalWS, result.TangentWS));
 	
 	result.WorldPosition = mul(OB_Transform, result.Position);
     result.Position = mul(FB_View, result.WorldPosition);
