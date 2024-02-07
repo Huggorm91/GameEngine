@@ -6,11 +6,6 @@
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 
-// TODO: 
-// Make all saved filepaths relative to the assettypes folder
-// Serialize components
-// Deserialize components
-//
 class SplashWindow;
 class GameObject;
 

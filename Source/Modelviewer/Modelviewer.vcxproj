@@ -324,6 +324,9 @@
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{b4a6c56f-a9ee-4b80-a31d-3db075f0854b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\NetworkClient\NetworkClient.vcxproj">
+      <Project>{4b26d795-abf5-482d-9152-f50a003284a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ThirdParty\DearImGui\DearImGui.vcxproj">
       <Project>{2401f8e1-66a8-4a33-a8fa-2df968e7c84f}</Project>
     </ProjectReference>
