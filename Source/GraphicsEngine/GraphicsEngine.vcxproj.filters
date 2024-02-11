@@ -273,6 +273,7 @@
     <None Include="Shaders\Default\Tonemaps.hlsli" />
     <None Include="Shaders\Default\ParticleData.hlsli" />
     <None Include="Shaders\Default\Registers.hlsli" />
+    <None Include="Shaders\ConstantBuffers\ParticleBuffer.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShaders\Default_VS.hlsl" />

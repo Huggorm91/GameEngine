@@ -402,6 +402,7 @@
     <None Include="Shaders\ConstantBuffers\LightBuffer.hlsli" />
     <None Include="Shaders\ConstantBuffers\MaterialBuffer.hlsli" />
     <None Include="Shaders\ConstantBuffers\ObjectBuffer.hlsli" />
+    <None Include="Shaders\ConstantBuffers\ParticleBuffer.hlsli" />
     <None Include="Shaders\Default\BrdfData.hlsli" />
     <None Include="Shaders\Default\LineData.hlsli" />
     <None Include="Shaders\Default\MaterialData.hlsli" />

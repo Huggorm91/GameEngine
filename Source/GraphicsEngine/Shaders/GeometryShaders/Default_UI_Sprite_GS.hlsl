@@ -27,6 +27,7 @@ void main(
     result.Color = inputData.Color;
     result.Velocity = inputData.Velocity;
     result.LifeTime = inputData.LifeTime;
+    result.LerpValue = inputData.LerpValue;
     
     for (uint i = 0; i < 4; i++)
     {

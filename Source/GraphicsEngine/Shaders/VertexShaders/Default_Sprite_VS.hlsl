@@ -10,5 +10,6 @@ SpriteVertexToGeometry main(SpriteVertexInput input)
     result.Scale = input.Scale;
     result.Velocity = input.Velocity;
     result.LifeTime = input.LifeTime;
+    result.LerpValue = input.LifeTime / PB_MaxLifeTime;
     return result;
 }

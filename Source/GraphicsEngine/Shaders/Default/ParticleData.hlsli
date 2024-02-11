@@ -1,6 +1,7 @@
 #ifndef DEFAULTPARTICLEDATA_HLSLI
 #define DEFAULTPARTICLEDATA_HLSLI
 #include "../ConstantBuffers/FrameBuffer.hlsli"
+#include "../ConstantBuffers/ParticleBuffer.hlsli"
 #include "Registers.hlsli"
 
 struct SpriteVertexInput
@@ -19,6 +20,7 @@ struct SpriteVertexToGeometry
     float3 Velocity : VELOCITY;
     float3 Scale : SCALE;
     float LifeTime : LIFETIME;
+    float LerpValue : LERPVALUE;
 };
 
 struct SpriteGeometryToPixel
@@ -28,6 +30,7 @@ struct SpriteGeometryToPixel
     float3 Velocity : VELOCITY;
     float2 UV : UV;
     float LifeTime : LIFETIME;
+    float LerpValue : LERPVALUE;
 };
 
 struct SpritePixelOutput

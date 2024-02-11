@@ -4,8 +4,6 @@
 
 class ParticleEmitterComponent : public Component
 {
-	// TODO:
-	// 4. Add 'case ComponentType::Example: { break; }' to switch in LoadComponent() in ComponentType.cpp, and implement Constructor(Json::Value) and/or Init(Json::Value)
 public:
 	ParticleEmitterComponent();
 	ParticleEmitterComponent(const ParticleEmitterComponent& aComponent) = default;
@@ -30,5 +28,5 @@ public:
 
 private:
 	Transform myTransform;
-	std::vector<ParticleEmitter> myEmitters;
+	std::shared_ptr<ParticleEmitter> myEmitter;
 };

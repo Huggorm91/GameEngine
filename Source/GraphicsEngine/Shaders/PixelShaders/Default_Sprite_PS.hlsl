@@ -11,6 +11,8 @@ SpritePixelOutput main(SpriteGeometryToPixel input)
         return result;
     }
     
+    const float4 lerpColor = lerp(PB_StartColor, PB_EndColor, float4(input.LerpValue));
     result.Color = textureColor * input.Color;
+    result.Color *= lerpColor;
     return result;
 }
