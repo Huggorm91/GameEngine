@@ -1,10 +1,13 @@
 #pragma once
-#include "../Transform.h"
-#include "GraphicsEngine/Drawer/EmitterData.h"
-#include "GraphicsEngine/Rendering/ParticleVertex.h"
+#include "../Rendering/Buffers/ParticleBuffer.h"
+#include "../Rendering/ParticleVertex.h"
+#include "Math/Transform.h"
+#include "EmitterData.h"
 
 class Texture;
 class Shader;
+
+const float globalParticleGravity = 981.f;
 
 class ParticleEmitter
 {
@@ -20,7 +23,7 @@ public:
 	ParticleEmitter(const Json::Value& aJson);
 	ParticleEmitter(const ParticleEmitter& anEmitter);
 	ParticleEmitter(ParticleEmitter&& anEmitter) noexcept;
-	virtual ~ParticleEmitter() = default;
+	virtual ~ParticleEmitter();
 	ParticleEmitter& operator=(const ParticleEmitter& anEmitter);
 	ParticleEmitter& operator=(ParticleEmitter&& anEmitter) noexcept;
 
@@ -30,10 +33,11 @@ public:
 	void SetAsResource() const;
 	void Render() const;
 
+	void SetParentTransform(Transform& aParentTransform);
+
 	virtual Json::Value ToJson() const;
 
 private:
-	const unsigned myID;
 	EmitterType myType;
 
 	UINT myVertexCount;
@@ -46,9 +50,19 @@ private:
 	Shader* myGeometryShader;
 	Shader* myPixelShader;
 
+	void CreateParticles();
+
 protected:
+	ParticleBuffer myBuffer;
+	Transform myTransform;
 	EmitterData myData;
 	std::vector<ParticleVertex> myParticles;
 
+	void Update();
+
 	virtual void InitParticle(ParticleVertex& aParticle);
+
+	virtual void InitBuffer();
+	virtual void UpdateBuffer();
 };
+

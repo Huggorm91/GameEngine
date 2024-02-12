@@ -6,6 +6,7 @@
 #ifndef _RETAIL
 #include "ModelViewer/Core/ModelViewer.h"
 #include "Modelviewer/Core/Commands/EditCmd_ChangeGameObjectName.h"
+#include "ImguiTransform.h"
 #endif // !_RETAIL
 
 
@@ -480,7 +481,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			myName = myImguiText;
 #endif // !_RETAIL
 		}
-		myTransform.CreateImGuiComponents(aWindowName);
+		::CreateImGuiComponents(myTransform);
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Component* component = nullptr;

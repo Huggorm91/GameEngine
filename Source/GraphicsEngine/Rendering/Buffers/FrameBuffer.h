@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/Matrix4x4.hpp"
-#include "Rendering/Buffers/ConstantBuffer.h"
+#include "ConstantBuffer.h"
 
 struct FrameBufferData
 {

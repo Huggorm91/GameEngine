@@ -7,6 +7,7 @@ cbuffer FrameBuffer : register(b4)
     float3 PB_EndSize;
     float4 PB_StartColor;
     float4 PB_EndColor;
+    float4x4 PB_Transform;
 
     float paddingpb;
 }

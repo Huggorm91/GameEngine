@@ -305,6 +305,8 @@
     <ClInclude Include="Drawer\EmitterData.h" />
     <ClInclude Include="Drawer\LineHandle.h" />
     <ClInclude Include="Drawer\ParticleDrawer.h" />
+    <ClInclude Include="Drawer\ParticleEmitter.h" />
+    <ClInclude Include="Rendering\Buffers\ParticleBuffer.h" />
     <ClInclude Include="Rendering\ParticleVertex.h" />
     <ClInclude Include="Rendering\GBuffer.h" />
     <ClInclude Include="InterOp\ShaderInfo.h" />
@@ -356,6 +358,7 @@
     <ClCompile Include="Commands\Light\LitCmd_SetShadowBias.cpp" />
     <ClCompile Include="Drawer\LineHandle.cpp" />
     <ClCompile Include="Drawer\ParticleDrawer.cpp" />
+    <ClCompile Include="Drawer\ParticleEmitter.cpp" />
     <ClCompile Include="Rendering\ParticleVertex.cpp" />
     <ClCompile Include="Rendering\GBuffer.cpp" />
     <ClCompile Include="Rendering\LineVertex.cpp" />
@@ -534,7 +537,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Shaders\VertexShaders\Default_Sprite_VS.hlsl">
+    <FxCompile Include="Shaders\VertexShaders\Default_Particle_VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">Vertex</ShaderType>

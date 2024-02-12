@@ -10,6 +10,7 @@
 #include "AssetManager.h"
 #include "ModelViewer/Core/ModelViewer.h"
 #include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
+#include "../../ImguiTransform.h"
 #endif // !_RETAIL
 
 MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myIsDeferred(true)
@@ -307,7 +308,7 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 		ImGui::PopID();
 	}
 
-	myTransform.CreateImGuiComponents(aWindowName);
+	::CreateImGuiComponents(myTransform);
 }
 
 void MeshComponent::Serialize(std::ostream& aStream) const

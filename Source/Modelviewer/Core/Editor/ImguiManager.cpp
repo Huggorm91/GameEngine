@@ -19,6 +19,8 @@
 #include "Input/InputMapper.h"
 #include "Time/Timer.h"
 
+#include "AssetManager/Assets/ImguiTransform.h"
+
 using namespace Crimson;
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myOverwriteAppliedToAll(false), mySelectedPath(), myNewObject(std::make_shared<GameObject>()), mySelectedPrefabName(nullptr),
@@ -898,7 +900,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 		}
 		else if (mySelectedObjects.size() > 1)
 		{
-			myMultiSelectionTransform.CreateMultipleSelectionImGuiComponents("Selected GameObject");
+			CreateMultipleSelectionImGuiComponents(myMultiSelectionTransform);
 		}
 	}
 	ImGui::End();

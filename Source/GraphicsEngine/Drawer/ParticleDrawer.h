@@ -10,22 +10,13 @@ public:
 	ParticleDrawer() = default;
 	~ParticleDrawer() = default;
 
-	bool Init();
-	void Render(float aGravitationalPull);
+	void Render();
 
-	void AddEmitter(ParticleEmitter& anEmitter);
-	bool RemoveEmitter(const ParticleEmitter& anEmitter);
+	void AddEmitter(ParticleEmitter* anEmitter);
+	void RemoveEmitter(ParticleEmitter* anEmitter);
 
 private:
-	std::unordered_map<unsigned, ParticleEmitter*> myEmitters;
-
-	Shader myVertexShader;
-	Shader myPixelShader;
-
-	ComPtr<ID3D11Buffer> myVertexBuffer;
-	ComPtr<ID3D11Buffer> myIndexBuffer;
-
-	size_t myIndexCount;
+	std::unordered_set<ParticleEmitter*> myEmitters;
 
 	friend class ParticleEmitter;
 	unsigned GetNewEmitterID() const;

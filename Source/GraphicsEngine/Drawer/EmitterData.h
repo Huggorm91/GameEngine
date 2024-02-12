@@ -13,7 +13,9 @@ struct EmitterData
 	Crimson::Vector4f StartColor;
 	Crimson::Vector4f EndColor;
 
-	EmitterData() = default;
+	EmitterData() : SpawnRate(0.f), LifeTime(0.f), GravityScale(0.f)
+	{}
+
 	EmitterData(const Json::Value& aJson) : SpawnRate(aJson["SpawnRate"].asFloat()), LifeTime(aJson["LifeTime"].asFloat()), GravityScale(aJson["GravityScale"].asFloat()), StartVelocity(aJson["StartVelocity"]), 
 		EndVelocity(aJson["EndVelocity"]), StartSize(aJson["StartSize"]), EndSize(aJson["EndSize"]), StartColor(aJson["StartColor"]), EndColor(aJson["EndColor"])
 	{}
@@ -30,5 +32,6 @@ struct EmitterData
 		result["EndSize"] = Json::Value(EndSize);
 		result["StartColor"] = Json::Value(StartColor);
 		result["EndColor"] = Json::Value(EndColor);
+		return result;
 	}
 };

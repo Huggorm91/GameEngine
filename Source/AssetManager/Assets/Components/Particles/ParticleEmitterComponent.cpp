@@ -1,33 +1,22 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitterComponent.h"
+#include "Time/Timer.h"
 
-ParticleEmitterComponent::ParticleEmitterComponent(): Component(ComponentType::ParticleEmitter), myTransform(), myEmitters()
-{
-}
+ParticleEmitterComponent::ParticleEmitterComponent() : Component(ComponentType::ParticleEmitter), myEmitter()
+{}
 
-ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value&)
+ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson): Component(aJson), myEmitter()
 {
-	assert(!"Not Implemented");
-}
-
-void ParticleEmitterComponent::Init(GameObject*)
-{
-	assert(!"Not Implemented");
 }
 
 void ParticleEmitterComponent::Update()
 {
-	assert(!"Not Implemented");
+	myEmitter->Update(Crimson::Timer::GetDeltaTime());
 }
 
-void ParticleEmitterComponent::TransformHasChanged() const
+void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter)
 {
-	assert(!"Not Implemented");
-}
-
-void ParticleEmitterComponent::AddEmitter()
-{
-	myEmitters.emplace_back(ParticleEmitter(static_cast<unsigned>(myEmitters.size())));
+	myEmitter = anEmitter;
 }
 
 void ParticleEmitterComponent::CreateImGuiComponents(const std::string&)
@@ -38,13 +27,7 @@ void ParticleEmitterComponent::CreateImGuiComponents(const std::string&)
 Json::Value ParticleEmitterComponent::ToJson() const
 {
 	Json::Value result;
-	result["Transform"] = myTransform.ToJson();
-	result["Emitters"] = Json::arrayValue;
-	int index = 0;
-	for (auto& emitter : myEmitters)
-	{
-		result["Emitters"][index] = emitter.ToJson();
-	}
+	result["Emitter"] = myEmitter->ToJson();
 	return result;
 }
 

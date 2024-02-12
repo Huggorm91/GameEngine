@@ -1,6 +1,6 @@
 #pragma once
 #include "Components/Component.h"
-#include "Components/Transform.h"
+#include "Math/Transform.h"
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);

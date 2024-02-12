@@ -1,14 +1,6 @@
-#include "AssetManager.pch.h"
 #include "Transform.h"
-#include "Math/Conversions.hpp"
+#include "Conversions.hpp"
 #include "Json/JsonVector.hpp"
-
-#ifndef _RETAIL
-#include "ModelViewer/Core/ModelViewer.h"
-#include "ImGui/imgui.h"
-#include "ModelViewer/Core/Commands/EditCmd_ChangeTransform.h"
-#include "ModelViewer/Core/Commands/EditCmd_ChangeMultipleGameObjects.h"
-#endif // !_RETAIL
 
 Transform::Transform() : myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
 {
@@ -179,73 +171,6 @@ void Transform::Update()
 	{
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
-}
-
-void Transform::CreateImGuiComponents(const std::string&)
-{
-#ifndef _RETAIL
-	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
-	if (ImGui::TreeNode("Transform"))
-	{
-		auto position = myPosition;
-		if (ImGui::DragFloat3("Position", &position.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myPosition, position, myHasChanged));
-		}
-
-		auto rotation = myRotation;
-		if (ImGui::DragFloat3("Rotation", &rotation.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myRotation, rotation, myHasChanged));
-		}
-
-		auto scale = myScale;
-		if (ImGui::DragFloat3("Scale", &scale.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(myScale, scale, myHasChanged));
-		}
-		ImGui::TreePop();
-	}
-#endif // !_RETAIL
-}
-
-bool Transform::CreateMultipleSelectionImGuiComponents(const std::string&)
-{
-#ifndef _RETAIL
-	bool hasChanged = false;
-	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
-	if (ImGui::TreeNode("Transform"))
-	{
-		auto position = myPosition;
-		if (ImGui::DragFloat3("Position", &position.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(position - myPosition, EditCmd_ChangeMultipleGameObjects::TransformType::Position, this));
-			myPosition = position;
-			myHasChanged = true;
-			hasChanged = true;
-		}
-
-		auto rotation = myRotation;
-		if (ImGui::DragFloat3("Rotation", &rotation.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(rotation - myRotation, EditCmd_ChangeMultipleGameObjects::TransformType::Rotation, this));
-			myRotation = rotation;
-			myHasChanged = true;
-			hasChanged = true;
-		}
-
-		auto scale = myScale;
-		if (ImGui::DragFloat3("Scale", &scale.x))
-		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(scale - myScale, EditCmd_ChangeMultipleGameObjects::TransformType::Scale, this));
-			myScale = scale;
-			myHasChanged = true;
-			hasChanged = true;
-		}
-		ImGui::TreePop();
-	}
-	return hasChanged;
-#endif // !_RETAIL
 }
 
 Json::Value Transform::ToJson() const

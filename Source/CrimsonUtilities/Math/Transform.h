@@ -1,5 +1,5 @@
 #pragma once
-#include "Math/Matrix4x4.hpp"
+#include "Matrix4x4.hpp"
 namespace Json{ class Value; }
 
 class Transform
@@ -19,7 +19,6 @@ public:
 	Transform& operator-=(const Transform& aTransform);
 	Transform operator+(const Transform& aTransform) const;
 	Transform operator-(const Transform& aTransform) const;
-
 
 	void SetPosition(const Crimson::Vector3f& aPosition);
 	const Crimson::Vector3f& GetPosition() const;
@@ -42,9 +41,6 @@ public:
 	void RemoveParent();
 
 	void Update();
-
-	void CreateImGuiComponents(const std::string& aWindowName);
-	bool CreateMultipleSelectionImGuiComponents(const std::string& aWindowName);
 
 	Json::Value ToJson() const;
 	void Serialize(std::ostream& aStream) const;
@@ -69,4 +65,6 @@ private:
 	Crimson::Vector3f GetTotalPosition() const;
 	Crimson::Vector3f GetTotalRotation() const;
 	Crimson::Vector3f GetTotalScale() const;
+
+	friend void CreateImGuiComponents(Transform& aTransform);
 };

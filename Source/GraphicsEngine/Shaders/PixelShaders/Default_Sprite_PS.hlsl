@@ -8,11 +8,10 @@ SpritePixelOutput main(SpriteGeometryToPixel input)
     if (textureColor.a <= 0.05f)
     {
         discard;
+        result.Color = 0;
         return result;
     }
     
-    const float4 lerpColor = lerp(PB_StartColor, PB_EndColor, float4(input.LerpValue));
     result.Color = textureColor * input.Color;
-    result.Color *= lerpColor;
     return result;
 }

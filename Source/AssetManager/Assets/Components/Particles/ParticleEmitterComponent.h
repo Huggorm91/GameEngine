@@ -1,6 +1,6 @@
 #pragma once
 #include "../Component.h"
-#include "ParticleEmitter.h"
+#include "GraphicsEngine/Drawer/ParticleEmitter.h"
 
 class ParticleEmitterComponent : public Component
 {
@@ -14,12 +14,10 @@ public:
 	ParticleEmitterComponent& operator=(const ParticleEmitterComponent& aComponent) = default;
 	ParticleEmitterComponent& operator=(ParticleEmitterComponent&& aComponent) noexcept = default;
 
-	void Init(GameObject* aParent) override;
+
 	void Update() override;
 
-	void TransformHasChanged() const override;
-
-	void AddEmitter();
+	void SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter);
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
@@ -27,6 +25,5 @@ public:
 	const ParticleEmitterComponent* GetTypePointer() const override;
 
 private:
-	Transform myTransform;
 	std::shared_ptr<ParticleEmitter> myEmitter;
 };
