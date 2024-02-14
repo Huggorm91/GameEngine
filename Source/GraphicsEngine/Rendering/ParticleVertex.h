@@ -8,9 +8,9 @@ struct ParticleVertex
 {
 	Crimson::Vector4f myPosition;
 	Crimson::Vector4f myColor;
-	Crimson::Vector3f myVelocity;
 	Crimson::Vector3f myDirection;
 	Crimson::Vector3f myScale;
+	float mySpeed{};
 	float myLifeTime{};
 
 	static const std::vector<D3D11_INPUT_ELEMENT_DESC> InputLayoutDefinition;

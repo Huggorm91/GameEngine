@@ -26,8 +26,9 @@ void main(
     
     SpriteGeometryToPixel result;
     result.Color = inputData.Color;
-    result.Velocity = inputData.Velocity;
+    result.Speed = inputData.Speed;
     result.LifeTime = inputData.LifeTime;
+    result.Direction = inputData.Direction;
     
     for (uint i = 0; i < 4; i++)
     {

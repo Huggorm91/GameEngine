@@ -8,7 +8,8 @@ SpriteVertexToGeometry main(SpriteVertexInput input)
     
     result.Color = input.Color;
     result.Scale = input.Scale; // TODO: convert this from pixel size to screenssize
-    result.Velocity = input.Velocity;
+    result.Speed = input.Speed;
     result.LifeTime = input.LifeTime;
+    result.Direction = input.Direction;
     return result;
 }

@@ -149,6 +149,11 @@ void ParticleEmitter::SetParentTransform(Transform& aParentTransform)
 	myTransform.SetParent(&aParentTransform);
 }
 
+void ParticleEmitter::CreateImGuiElements()
+{
+	assert(!"Not Implemented");
+}
+
 Json::Value ParticleEmitter::ToJson() const
 {
 	Json::Value result;
@@ -206,9 +211,10 @@ void ParticleEmitter::InitParticle(ParticleVertex& aParticle)
 {
 	aParticle.myPosition = Crimson::Vector3f::Null;
 	aParticle.myColor = myData.StartColor;
-	aParticle.myVelocity = myData.StartVelocity;
+	aParticle.mySpeed = myData.StartSpeed;
 	aParticle.myScale = myData.StartSize;
 	aParticle.myLifeTime = 0.f;
+	aParticle.myDirection = Crimson::Vector3f::Forward;
 }
 
 void ParticleEmitter::InitBuffer()

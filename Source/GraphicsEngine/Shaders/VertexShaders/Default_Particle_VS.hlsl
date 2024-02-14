@@ -6,7 +6,8 @@ SpriteVertexToGeometry main(SpriteVertexInput input)
     result.WorldPosition = mul(PB_Transform, input.Position);
     result.Color = input.Color;
     result.Scale = input.Scale;
-    result.Velocity = input.Velocity;
+    result.Speed = input.Speed;
     result.LifeTime = input.LifeTime;
+    result.Direction = input.Direction;
     return result;
 }
