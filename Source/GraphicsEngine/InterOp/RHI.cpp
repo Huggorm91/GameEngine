@@ -200,6 +200,7 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	Device->CreateRasterizerState(&rasterizerDesc, myRasterizerStates[RS_Wireframe].GetAddressOf());
 
+	// Create DepthStencil States
 	myDepthStates[DS_Default] = nullptr;
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
@@ -208,6 +209,10 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	depthStencilDesc.StencilEnable = false;
 	Device->CreateDepthStencilState(&depthStencilDesc, myDepthStates[DS_LessEqual].GetAddressOf());
+
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	Device->CreateDepthStencilState(&depthStencilDesc, myDepthStates[DS_ReadOnly].GetAddressOf());
 
 	Context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), &myAnnotationObject);
 

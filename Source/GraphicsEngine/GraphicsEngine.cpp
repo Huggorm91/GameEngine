@@ -919,6 +919,16 @@ void GraphicsEngine::RenderFrame()
 		RHI::EndEvent();
 	}
 
+	// Render particles
+	RHI::BeginEvent(L"Particle Drawer");
+	RHI::SetBlendState(myAlphaBlend);
+	RHI::SetDepthState(DS_ReadOnly);
+	myParticleDrawer.Render();
+	RHI::SetDepthState(DS_Default);
+	RHI::SetBlendState(nullptr);
+	RHI::SetGeometryShader(nullptr);
+	RHI::EndEvent();
+
 	// PostProcessing
 #ifndef _RETAIL
 	if (myDebugMode == DebugMode::Default && myLightMode != LightMode::IgnoreLight)
@@ -991,7 +1001,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
 			RHI::EndEvent();
 		}
-		else
+		else // No bloom
 		{
 #ifndef _RETAIL
 			// Copy Scenebuffer onto IntermediateA in order to be able to Gamma correct onto Scenebuffer
@@ -1015,12 +1025,14 @@ void GraphicsEngine::RenderFrame()
 		RHI::SetPixelShader(&myShaders.GammaPS);
 		RHI::Draw(4);
 		RHI::EndEvent();
-	}
+	} // End: if (LightMode::IgnoreLight)
+
 #ifndef _RETAIL
 	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
 #else
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
+
 	RHI::BeginEvent(L"Line Drawer");
 	myLineDrawer.Render();
 	RHI::EndEvent();
