@@ -16,6 +16,7 @@ public:
 
 
 	void Update() override;
+	void Render() override;
 
 	void SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter);
 

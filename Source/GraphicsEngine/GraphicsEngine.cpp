@@ -156,6 +156,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			myObjectBufferSlot = 1;
 			myLightBufferSlot = 2;
 			myMaterialBufferSlot = 3;
+			myParticleBufferSlot = 4;
 
 			myFrameBuffer.Initialize(L"FrameBuffer");
 			myObjectBuffer.Initialize(L"ObjectBuffer");
@@ -170,6 +171,12 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		if (!myLineDrawer.Init())
 		{
 			GELogger.Err("Failed to initialize LineDrawer!");
+			return false;
+		}
+
+		if (!myParticleDrawer.Init())
+		{
+			GELogger.Err("Failed to initialize ParticleDrawer!");
 			return false;
 		}
 
@@ -219,6 +226,10 @@ void GraphicsEngine::SaveSettings() const
 	settings.EnvironmentPS = Crimson::ToString(myShaders.EnvironmentPS.GetName());
 	settings.PointlightPS = Crimson::ToString(myShaders.PointlightPS.GetName());
 	settings.SpotlightPS = Crimson::ToString(myShaders.SpotlightPS.GetName());
+
+	settings.DefaultParticleVS = Crimson::ToString(myShaders.DefaultParticleVS.GetName());
+	settings.DefaultParticleGS = Crimson::ToString(myShaders.DefaultParticleGS.GetName());
+	settings.DefaultParticlePS = Crimson::ToString(myShaders.DefaultParticlePS.GetName());
 
 	settings.BackgroundColor = myBackgroundColor;
 	settings.ToneMap = static_cast<int>(myToneMap);
@@ -669,7 +680,7 @@ void GraphicsEngine::RenderFrame()
 
 			return aFirst < aSecond;
 		};
-		
+
 		// Create Directionallight shadows
 		if (myLightBuffer.Data.CastDirectionalShadows && myLightBuffer.Data.DirectionallightIntensity > 0.f)
 		{
@@ -923,6 +934,7 @@ void GraphicsEngine::RenderFrame()
 	RHI::BeginEvent(L"Particle Drawer");
 	RHI::SetBlendState(myAlphaBlend);
 	RHI::SetDepthState(DS_ReadOnly);
+	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
 	myParticleDrawer.Render();
 	RHI::SetDepthState(DS_Default);
 	RHI::SetBlendState(nullptr);
@@ -1040,7 +1052,7 @@ void GraphicsEngine::RenderFrame()
 #ifndef _RETAIL
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
-}
+	}
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
 {
@@ -1472,6 +1484,28 @@ bool GraphicsEngine::LoadShaders(const Settings& someSettings)
 		GELogger.Err("Failed to load Spotlight Shader!");
 		return false;
 	}
+
+	// DefaultParticleVS
+	if (!RHI::LoadShader(&myShaders.DefaultParticleVS, Crimson::ToWString(someSettings.DefaultParticleVS)))
+	{
+		GELogger.Err("Failed to load DefaultParticleVS Shader!");
+		return false;
+	}
+
+	// DefaultParticleGS
+	if (!RHI::LoadShader(&myShaders.DefaultParticleGS, Crimson::ToWString(someSettings.DefaultParticleGS)))
+	{
+		GELogger.Err("Failed to load DefaultParticleGS Shader!");
+		return false;
+	}
+
+	// DefaultParticlePS
+	if (!RHI::LoadShader(&myShaders.DefaultParticlePS, Crimson::ToWString(someSettings.DefaultParticlePS)))
+	{
+		GELogger.Err("Failed to load DefaultParticlePS Shader!");
+		return false;
+	}
+
 	return true;
 }
 

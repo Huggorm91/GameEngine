@@ -7,7 +7,7 @@
 ParticleEmitterComponent::ParticleEmitterComponent() : Component(ComponentType::ParticleEmitter), myEmitter()
 {}
 
-ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson): Component(aJson), myEmitter()
+ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson) : Component(aJson), myEmitter()
 {
 	// Lazy solution due to time constraints. Should be reworked
 	ParticleEmitter::EmitterType type = static_cast<ParticleEmitter::EmitterType>(aJson["Emitter"]["Type"].asInt());
@@ -30,6 +30,11 @@ ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson): Co
 
 void ParticleEmitterComponent::Update()
 {
+	Render();
+}
+
+void ParticleEmitterComponent::Render()
+{
 	if (!myIsActive)
 	{
 		return;
@@ -41,11 +46,13 @@ void ParticleEmitterComponent::Update()
 void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter)
 {
 	myEmitter = anEmitter;
+	myEmitter->SetParentTransform(*GetParentTransform());
 }
 
-void ParticleEmitterComponent::CreateImGuiComponents(const std::string&)
+void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
-	assert(!"Not Implemented");
+	Component::CreateImGuiComponents(aWindowName);
+	myEmitter->CreateImGuiElements();
 }
 
 Json::Value ParticleEmitterComponent::ToJson() const

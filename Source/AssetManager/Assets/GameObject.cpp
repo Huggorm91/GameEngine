@@ -449,6 +449,8 @@ void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
 	myImguiText = aName;
+
+	ModelViewer::GetImguiManager().ChangeIndexName(this, aName);
 }
 
 const std::string& GameObject::GetName() const

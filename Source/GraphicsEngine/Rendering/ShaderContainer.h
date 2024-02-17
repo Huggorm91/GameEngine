@@ -17,4 +17,8 @@ struct ShaderContainer
 	Shader EnvironmentPS{};
 	Shader PointlightPS{};
 	Shader SpotlightPS{};
+
+	Shader DefaultParticleVS{};
+	Shader DefaultParticleGS{};
+	Shader DefaultParticlePS{};
 };

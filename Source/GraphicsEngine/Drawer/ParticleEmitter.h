@@ -27,7 +27,7 @@ public:
 	ParticleEmitter& operator=(const ParticleEmitter& anEmitter);
 	ParticleEmitter& operator=(ParticleEmitter&& anEmitter) noexcept;
 
-	void Init(const EmitterData& someData, Texture* aTexture, Shader* aVertexShader, Shader* aGeometryShader, Shader* aPixelShader);
+	void Init(const EmitterData& someData, Texture* aTexture, Shader* aVertexShader = nullptr, Shader* aGeometryShader = nullptr, Shader* aPixelShader = nullptr);
 	virtual void Update(float aDeltaTime) = 0;
 
 	void SetAsResource() const;
@@ -46,10 +46,10 @@ private:
 	UINT myStride;
 	ComPtr<ID3D11Buffer> myVertexBuffer;
 
-	Texture* myTexture;
-	Shader* myVertexShader;
-	Shader* myGeometryShader;
-	Shader* myPixelShader;
+	const Texture* myTexture;
+	const Shader* myVertexShader;
+	const Shader* myGeometryShader;
+	const Shader* myPixelShader;
 
 	void CreateParticles();
 
@@ -63,7 +63,8 @@ protected:
 
 	virtual void InitParticle(ParticleVertex& aParticle);
 
-	virtual void InitBuffer();
 	virtual void UpdateBuffer();
+
+	float GetGravity(float aDeltaTime);
 };
 

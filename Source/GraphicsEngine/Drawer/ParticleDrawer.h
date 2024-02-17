@@ -10,14 +10,13 @@ public:
 	ParticleDrawer() = default;
 	~ParticleDrawer() = default;
 
+	bool Init();
+
 	void Render();
 
-	void AddEmitter(ParticleEmitter* anEmitter);
-	void RemoveEmitter(ParticleEmitter* anEmitter);
+	void AddEmitter(const ParticleEmitter* anEmitter);
+	void RemoveEmitter(const ParticleEmitter* anEmitter);
 
 private:
-	std::unordered_set<ParticleEmitter*> myEmitters;
-
-	friend class ParticleEmitter;
-	unsigned GetNewEmitterID() const;
+	std::unordered_set<const ParticleEmitter*> myEmitters;
 };

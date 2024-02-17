@@ -12,12 +12,15 @@ BurstEmitter::BurstEmitter() :
 
 BurstEmitter::BurstEmitter(const Json::Value& aJson) :
 	ParticleEmitter(aJson),
+	myBurstInterval(aJson["Interval"].asFloat()),
+	myTimer(0.f),
 	myIsLooping(aJson["IsLooping"].asBool()),
 	myIsActive(aJson["IsActive"].asBool())
 {}
 
 void BurstEmitter::Update(float aDeltaTime)
 {
+	ParticleEmitter::Update();
 	if (!myIsActive)
 	{
 		return;
@@ -43,7 +46,16 @@ void BurstEmitter::Update(float aDeltaTime)
 
 void BurstEmitter::CreateImGuiElements()
 {
-	assert(!"Not Implemented");
+	ImGui::Text("Burst Emitter");
+	ParticleEmitter::CreateImGuiElements();
+	
+	ImGui::DragFloat("Burst Interval", &myBurstInterval);
+	ImGui::Checkbox("Is Looping", &myIsLooping);
+
+	if (ImGui::Button("Start"))
+	{
+		myIsActive = true;
+	}
 }
 
 Json::Value BurstEmitter::ToJson() const
@@ -58,7 +70,7 @@ Json::Value BurstEmitter::ToJson() const
 void BurstEmitter::UpdateParticles(float aDeltaTime)
 {
 	const float lerpValue = myTimer / myData.LifeTime;
-	const float gravityPull = globalParticleGravity * aDeltaTime;
+	const float gravityPull = GetGravity(aDeltaTime);
 
 	const float speed = Crimson::Lerp(myData.StartSpeed, myData.EndSpeed, lerpValue) * aDeltaTime;
 	const Crimson::Vector4f color = Crimson::Vector4f::Lerp(myData.StartColor, myData.EndColor, lerpValue);

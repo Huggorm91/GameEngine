@@ -492,6 +492,8 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
 }
 
+#include "AssetManager/Assets/Components/Particles/Emitters/StreamEmitter.h"
+#include "AssetManager/Assets/Components/Particles/ParticleEmitterComponent.h"
 void ModelViewer::Init()
 {
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
@@ -501,6 +503,28 @@ void ModelViewer::Init()
 	myCamera.AddComponent(PerspectiveCameraComponent(90.f, 1.f, 10000.f));
 
 	LoadScene("Default");
+
+	{
+		auto& object = AddGameObject(false);
+		object->SetName("Particles");
+
+		EmitterData data;
+		data.LifeTime = 5.f;
+		data.SpawnRate = 2.f;
+		data.GravityScale = 1.f;
+		data.StartSpeed = 400.f;
+		data.EndSpeed = 400.f;
+		data.StartSize = Crimson::Vector3f(1.f);
+		data.EndSize = Crimson::Vector3f(1.f);
+		data.StartColor = Crimson::Vector4f(1.f);
+		data.EndColor = Crimson::Vector4f(1.f, 0.f, 0.f, 1.f);
+
+		StreamEmitter emitter;
+		emitter.Init(data, AssetManager::GetAsset<Texture*>("ParticleStar.dds"));
+
+		auto& component = object->AddComponent<ParticleEmitterComponent>();
+		component.SetEmitter(std::make_shared<StreamEmitter>(std::move(emitter)));
+	}
 }
 
 void ModelViewer::Update()

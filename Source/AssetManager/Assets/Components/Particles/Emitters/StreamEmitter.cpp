@@ -9,7 +9,7 @@ StreamEmitter::StreamEmitter(const Json::Value & aJson) : ParticleEmitter(aJson)
 
 void StreamEmitter::Update(float aDeltaTime)
 {
-	const float gravityPull = globalParticleGravity * aDeltaTime;
+	const float gravityPull = GetGravity(aDeltaTime);
 
 	for (auto& particle : myParticles)
 	{
@@ -31,4 +31,12 @@ void StreamEmitter::Update(float aDeltaTime)
 			particle.myPosition.y -= gravityPull;
 		}		
 	}
+
+	ParticleEmitter::Update();
+}
+
+void StreamEmitter::CreateImGuiElements()
+{
+	ImGui::Text("Stream Emitter");
+	ParticleEmitter::CreateImGuiElements();
 }

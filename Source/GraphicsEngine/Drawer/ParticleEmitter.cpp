@@ -3,6 +3,9 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "AssetManager/AssetManager.h"
 #include "ParticleDrawer.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_stdlib.h"
+#include "AssetManager/Assets/ImguiTransform.h"
 
 ParticleEmitter::ParticleEmitter(EmitterType aType) :
 	myType(aType),
@@ -13,7 +16,9 @@ ParticleEmitter::ParticleEmitter(EmitterType aType) :
 	myVertexShader(nullptr),
 	myGeometryShader(nullptr),
 	myPixelShader(nullptr)
-{}
+{
+	myBuffer.Initialize(L"ParticleBuffer");
+}
 
 ParticleEmitter::ParticleEmitter(const Json::Value& aJson) :
 	myType(static_cast<EmitterType>(aJson["Type"].asInt())),
@@ -28,7 +33,9 @@ ParticleEmitter::ParticleEmitter(const Json::Value& aJson) :
 	myData(aJson["Data"])
 {
 	CreateParticles();
-	InitBuffer();
+	myBuffer.Initialize(L"ParticleBuffer");
+	UpdateBuffer();
+	RHI::CreateDynamicVertexBuffer(myVertexBuffer, myParticles.size(), sizeof(ParticleVertex));
 }
 
 ParticleEmitter::ParticleEmitter(const ParticleEmitter& anEmitter) :
@@ -45,7 +52,10 @@ ParticleEmitter::ParticleEmitter(const ParticleEmitter& anEmitter) :
 	myPixelShader(anEmitter.myPixelShader),
 	myBuffer(anEmitter.myBuffer),
 	myTransform(anEmitter.myTransform)
-{}
+{
+	myBuffer.Initialize(L"ParticleBuffer");
+	RHI::UpdateConstantBufferData(myBuffer);
+}
 
 ParticleEmitter::ParticleEmitter(ParticleEmitter&& anEmitter) noexcept :
 	myType(anEmitter.myType),
@@ -61,7 +71,10 @@ ParticleEmitter::ParticleEmitter(ParticleEmitter&& anEmitter) noexcept :
 	myPixelShader(anEmitter.myPixelShader),
 	myBuffer(std::move(anEmitter.myBuffer)),
 	myTransform(anEmitter.myTransform)
-{}
+{
+	myBuffer.Initialize(L"ParticleBuffer");
+	RHI::UpdateConstantBufferData(myBuffer);
+}
 
 ParticleEmitter::~ParticleEmitter()
 {
@@ -83,6 +96,8 @@ ParticleEmitter& ParticleEmitter::operator=(const ParticleEmitter& anEmitter)
 
 	myBuffer = anEmitter.myBuffer;
 	myTransform = anEmitter.myTransform;
+
+	RHI::UpdateConstantBufferData(myBuffer);
 	return *this;
 }
 
@@ -101,6 +116,8 @@ ParticleEmitter& ParticleEmitter::operator=(ParticleEmitter&& anEmitter) noexcep
 
 	myBuffer = std::move(anEmitter.myBuffer);
 	myTransform = anEmitter.myTransform;
+
+	RHI::UpdateConstantBufferData(myBuffer);
 	return *this;
 }
 
@@ -108,27 +125,65 @@ void ParticleEmitter::Init(const EmitterData& someData, Texture* aTexture, Shade
 {
 	myData = someData;
 	myTexture = aTexture;
-	myVertexShader = aVertexShader;
-	myGeometryShader = aGeometryShader;
-	myPixelShader = aPixelShader;
+
+	// VertexShader
+	if (aVertexShader)
+	{
+		myVertexShader = aVertexShader;
+	}
+	else
+	{
+		myVertexShader = GraphicsEngine::Get().GetDefaultParticleVS();
+	}
+
+	// GeometryShader
+	if (aGeometryShader)
+	{
+		myGeometryShader = aGeometryShader;
+	}
+	else
+	{
+		myGeometryShader = GraphicsEngine::Get().GetDefaultParticleGS();
+	}
+
+	// PixelShader
+	if (aPixelShader)
+	{
+		myPixelShader = aPixelShader;
+	}
+	else
+	{
+		myPixelShader = GraphicsEngine::Get().GetDefaultParticlePS();
+	}
 
 	CreateParticles();
-	InitBuffer();
+	UpdateBuffer();
+
+	RHI::CreateDynamicVertexBuffer(myVertexBuffer, myParticles.size(), sizeof(ParticleVertex));
 }
 
 void ParticleEmitter::Update()
 {
-	GraphicsEngine::Get().GetParticleDrawer().AddEmitter(this);
+	if (myTexture)
+	{
+		if (myTransform.HasChanged())
+		{
+			myBuffer.Data.Transform = myTransform.GetTransformMatrix();
+			RHI::UpdateConstantBufferData(myBuffer);
+		}
+		GraphicsEngine::Get().GetParticleDrawer().AddEmitter(this);
+	}
 }
 
 void ParticleEmitter::SetAsResource() const
 {
 	D3D11_MAPPED_SUBRESOURCE bufferData;
 	ZeroMemory(&bufferData, sizeof(D3D11_MAPPED_SUBRESOURCE));
-	RHI::Context->Map(myVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &bufferData);
+	auto result = RHI::Context->Map(myVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &bufferData);
+	if (result == S_OK)
 	{
 		const rsize_t size = sizeof(ParticleVertex) * myParticles.size();
-		memcpy_s(bufferData.pData, size, myParticles.data(), size);
+		memcpy_s(bufferData.pData, size, &myParticles[0], size);
 	}
 	RHI::Context->Unmap(myVertexBuffer.Get(), 0);
 
@@ -137,10 +192,13 @@ void ParticleEmitter::SetAsResource() const
 	RHI::SetPixelShader(myPixelShader);
 
 	RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, TextureSlot_Albedo, myTexture);
+
+	RHI::SetConstantBuffer(PIPELINE_STAGE_VERTEX_SHADER | PIPELINE_STAGE_GEOMETERY_SHADER | PIPELINE_STAGE_PIXEL_SHADER, GraphicsEngine::Get().myParticleBufferSlot , myBuffer);
 }
 
 void ParticleEmitter::Render() const
 {
+	RHI::ConfigureInputAssembler(myPrimitiveTopology, myVertexBuffer, nullptr, myStride, ParticleVertex::InputLayout);
 	RHI::Draw(myVertexCount);
 }
 
@@ -151,7 +209,70 @@ void ParticleEmitter::SetParentTransform(Transform& aParentTransform)
 
 void ParticleEmitter::CreateImGuiElements()
 {
-	assert(!"Not Implemented");
+	constexpr float imageSize = 75.f;
+
+	::CreateImGuiComponents(myTransform);
+
+	ImGui::Image(myTexture->GetSRV().Get(), ImVec2(imageSize, imageSize));
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Texture"))
+		{
+			IM_ASSERT(payload->DataSize == sizeof(Texture*));
+			myTexture = *static_cast<Texture**>(payload->Data);
+		}
+		ImGui::EndDragDropTarget();
+	}
+	bool hasChanged = false;
+	if (ImGui::DragFloat("Spawn Rate", &myData.SpawnRate))
+	{
+		hasChanged = true;
+	}
+	
+	if (ImGui::DragFloat("Life Time", &myData.LifeTime))
+	{
+		hasChanged = true;
+	}
+	
+	if (ImGui::DragFloat("Gravity Scale", &myData.GravityScale))
+	{
+		hasChanged = true;
+	}
+
+	if (ImGui::DragFloat("Start Speed", &myData.StartSpeed))
+	{
+		hasChanged = true;
+	}
+	
+	if (ImGui::DragFloat("End Speed", &myData.EndSpeed))
+	{
+		hasChanged = true;
+	}
+
+	if (ImGui::DragFloat3("Start Scale", &myData.StartSize.x))
+	{
+		hasChanged = true;
+	}
+	
+	if (ImGui::DragFloat3("End Scale", &myData.EndSize.x))
+	{
+		hasChanged = true;
+	}
+
+	if (ImGui::ColorEdit4("Start Color", &myData.StartColor.x))
+	{
+		hasChanged = true;
+	}
+	
+	if (ImGui::ColorEdit4("End Color", &myData.EndColor.x))
+	{
+		hasChanged = true;
+	}
+
+	if (hasChanged)
+	{
+		UpdateBuffer();
+	}
 }
 
 Json::Value ParticleEmitter::ToJson() const
@@ -217,18 +338,19 @@ void ParticleEmitter::InitParticle(ParticleVertex& aParticle)
 	aParticle.myDirection = Crimson::Vector3f::Forward;
 }
 
-void ParticleEmitter::InitBuffer()
+void ParticleEmitter::UpdateBuffer()
 {
-	myBuffer.Initialize(L"ParticleBuffer");
 	myBuffer.Data.MaxLifeTime = myData.LifeTime;
 	myBuffer.Data.StartSize = myData.StartSize;
 	myBuffer.Data.EndSize = myData.EndSize;
 	myBuffer.Data.StartColor = myData.StartColor;
 	myBuffer.Data.EndColor = myData.EndColor;
 	myBuffer.Data.Transform = myTransform.GetTransformMatrix();
+
+	RHI::UpdateConstantBufferData(myBuffer);
 }
 
-void ParticleEmitter::UpdateBuffer()
+float ParticleEmitter::GetGravity(float aDeltaTime)
 {
-	myBuffer.Data.Transform = myTransform.GetTransformMatrix();
+	return globalParticleGravity * aDeltaTime * myData.GravityScale;
 }
