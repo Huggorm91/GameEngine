@@ -16,4 +16,5 @@ public:
 
 	void CreateImGuiElements() override;
 private:
+	float myTimer;
 };

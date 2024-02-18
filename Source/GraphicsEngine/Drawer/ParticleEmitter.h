@@ -7,7 +7,7 @@
 class Texture;
 class Shader;
 
-const float globalParticleGravity = 981.f;
+const float globalParticleGravity = 98.1f;
 
 class ParticleEmitter
 {
@@ -28,6 +28,7 @@ public:
 	ParticleEmitter& operator=(ParticleEmitter&& anEmitter) noexcept;
 
 	void Init(const EmitterData& someData, Texture* aTexture, Shader* aVertexShader = nullptr, Shader* aGeometryShader = nullptr, Shader* aPixelShader = nullptr);
+	void InitAfterJsonLoad();
 	virtual void Update(float aDeltaTime) = 0;
 
 	void SetAsResource() const;
@@ -51,17 +52,21 @@ private:
 	const Shader* myGeometryShader;
 	const Shader* myPixelShader;
 
-	void CreateParticles();
-
 protected:
 	ParticleBuffer myBuffer;
 	Transform myTransform;
 	EmitterData myData;
 	std::vector<ParticleVertex> myParticles;
+	std::vector<ParticleVertex*> myActiveParticles;
+	std::vector<ParticleVertex*> myInactiveParticles;
 
 	void Update();
 
+	void CreateParticles(unsigned anAmount);
+	virtual void CreateParticles();
 	virtual void InitParticle(ParticleVertex& aParticle);
+	virtual auto ActivateParticle(ParticleVertex* aParticle) -> decltype(myInactiveParticles.begin());
+	virtual auto DeactivateParticle(ParticleVertex* aParticle) -> decltype(myActiveParticles.begin());
 
 	virtual void UpdateBuffer();
 

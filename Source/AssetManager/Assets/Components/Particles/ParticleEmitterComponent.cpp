@@ -26,6 +26,17 @@ ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson) : C
 	default:
 		break;
 	}
+
+	myEmitter->InitAfterJsonLoad();
+}
+
+void ParticleEmitterComponent::Init(GameObject* aParent)
+{
+	Component::Init(aParent);
+	if (myEmitter)
+	{
+		myEmitter->SetParentTransform(*GetParentTransform());
+	}
 }
 
 void ParticleEmitterComponent::Update()
@@ -57,7 +68,7 @@ void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowN
 
 Json::Value ParticleEmitterComponent::ToJson() const
 {
-	Json::Value result;
+	Json::Value result = Component::ToJson();
 	result["Emitter"] = myEmitter->ToJson();
 	return result;
 }

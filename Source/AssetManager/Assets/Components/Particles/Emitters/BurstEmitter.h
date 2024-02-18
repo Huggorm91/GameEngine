@@ -12,7 +12,12 @@ public:
 	BurstEmitter& operator=(const BurstEmitter& anEmitter) = default;
 	BurstEmitter& operator=(BurstEmitter&& anEmitter) noexcept = default;
 
+	void Init(float aBurstInterval, const EmitterData& someData, Texture* aTexture, Shader* aVertexShader = nullptr, Shader* aGeometryShader = nullptr, Shader* aPixelShader = nullptr);
 	void Update(float aDeltaTime) override;
+
+	void SetLooping(bool aState);
+
+	void TriggerBurst();
 
 	void CreateImGuiElements() override;
 	Json::Value ToJson() const override;
@@ -23,6 +28,7 @@ private:
 	bool myIsLooping;
 	bool myIsActive;
 
+	void CreateParticles() override;
 	void UpdateParticles(float aDeltaTime);
 	void CreateBurst();
 };

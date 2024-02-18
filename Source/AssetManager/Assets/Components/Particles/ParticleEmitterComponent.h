@@ -14,6 +14,7 @@ public:
 	ParticleEmitterComponent& operator=(const ParticleEmitterComponent& aComponent) = default;
 	ParticleEmitterComponent& operator=(ParticleEmitterComponent&& aComponent) noexcept = default;
 
+	void Init(GameObject* aParent) override;
 
 	void Update() override;
 	void Render() override;

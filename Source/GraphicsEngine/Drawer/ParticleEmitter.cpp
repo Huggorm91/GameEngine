@@ -32,10 +32,7 @@ ParticleEmitter::ParticleEmitter(const Json::Value& aJson) :
 	myTransform(aJson["Transform"]),
 	myData(aJson["Data"])
 {
-	CreateParticles();
 	myBuffer.Initialize(L"ParticleBuffer");
-	UpdateBuffer();
-	RHI::CreateDynamicVertexBuffer(myVertexBuffer, myParticles.size(), sizeof(ParticleVertex));
 }
 
 ParticleEmitter::ParticleEmitter(const ParticleEmitter& anEmitter) :
@@ -158,8 +155,12 @@ void ParticleEmitter::Init(const EmitterData& someData, Texture* aTexture, Shade
 
 	CreateParticles();
 	UpdateBuffer();
+}
 
-	RHI::CreateDynamicVertexBuffer(myVertexBuffer, myParticles.size(), sizeof(ParticleVertex));
+void ParticleEmitter::InitAfterJsonLoad()
+{
+	CreateParticles();
+	UpdateBuffer();
 }
 
 void ParticleEmitter::Update()
@@ -205,6 +206,7 @@ void ParticleEmitter::Render() const
 void ParticleEmitter::SetParentTransform(Transform& aParentTransform)
 {
 	myTransform.SetParent(&aParentTransform);
+	UpdateBuffer();
 }
 
 void ParticleEmitter::CreateImGuiElements()
@@ -317,25 +319,68 @@ Json::Value ParticleEmitter::ToJson() const
 	return result;
 }
 
-void ParticleEmitter::CreateParticles()
+void ParticleEmitter::CreateParticles(unsigned anAmount)
 {
-	myVertexCount = static_cast<UINT>(std::ceil(myData.SpawnRate * myData.LifeTime));
+	myVertexCount = anAmount;
 	myParticles.resize(myVertexCount);
 
 	for (auto& particle : myParticles)
 	{
 		InitParticle(particle);
+		particle.myScale = Crimson::Vector3f::Null;
+		myInactiveParticles.emplace_back(&particle);
 	}
+
+	RHI::CreateDynamicVertexBuffer(myVertexBuffer, myParticles.size(), sizeof(ParticleVertex));
+}
+
+void ParticleEmitter::CreateParticles()
+{
+	CreateParticles(static_cast<unsigned>(std::ceil(myData.SpawnRate * myData.LifeTime)));
 }
 
 void ParticleEmitter::InitParticle(ParticleVertex& aParticle)
 {
-	aParticle.myPosition = Crimson::Vector3f::Null;
+	aParticle.myPosition = Crimson::Vector4f::NullPosition;
 	aParticle.myColor = myData.StartColor;
 	aParticle.mySpeed = myData.StartSpeed;
 	aParticle.myScale = myData.StartSize;
 	aParticle.myLifeTime = 0.f;
 	aParticle.myDirection = Crimson::Vector3f::Forward;
+}
+
+auto ParticleEmitter::ActivateParticle(ParticleVertex* aParticle) -> decltype(myInactiveParticles.begin())
+{
+	InitParticle(*aParticle);
+	myActiveParticles.emplace_back(aParticle);
+	auto iter = myInactiveParticles.begin();
+	while (iter != myInactiveParticles.end())
+	{
+		if (*iter == aParticle)
+		{
+			return myInactiveParticles.erase(iter);
+		}
+		iter++;
+	}
+
+	return myInactiveParticles.end();
+}
+
+auto ParticleEmitter::DeactivateParticle(ParticleVertex* aParticle) -> decltype(myActiveParticles.begin())
+{
+	aParticle->myScale = Crimson::Vector3f::Null;
+	myInactiveParticles.emplace_back(aParticle);
+	auto iter = myActiveParticles.begin();
+	while (iter != myActiveParticles.end())
+	{
+		if (*iter == aParticle)
+		{
+			return myActiveParticles.erase(iter);
+		}
+		iter++;
+	}
+
+	return myActiveParticles.end();
 }
 
 void ParticleEmitter::UpdateBuffer()
