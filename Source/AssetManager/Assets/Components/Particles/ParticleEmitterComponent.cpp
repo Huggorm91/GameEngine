@@ -60,6 +60,11 @@ void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmi
 	myEmitter->SetParentTransform(*GetParentTransform());
 }
 
+void ParticleEmitterComponent::TransformHasChanged() const
+{
+	myEmitter->SetParentTransform(*const_cast<Transform*>(GetParentTransform()));
+}
+
 void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
