@@ -4,6 +4,7 @@ cbuffer ObjectBuffer : register(b1)
 {
     float4x4 OB_BoneTransforms[128];
 	float4x4 OB_Transform;
+    float4x4 OB_TransformInverse;
 	float4 OB_Color;
     uint OB_ID;
     bool OB_HasBones;

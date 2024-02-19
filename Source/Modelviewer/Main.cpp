@@ -97,6 +97,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
         PostQuitMessage(0);
         return 0;
     }
+    case WM_SETFOCUS:
     case WM_EXITSIZEMOVE:
     {
         Crimson::Timer::ResetDeltaTime();

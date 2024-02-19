@@ -1,6 +1,6 @@
 #pragma once
 #include "Components/Component.h"
-#include "Components/Transform.h"
+#include "Math/Transform.h"
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
@@ -173,8 +173,8 @@ inline T& GameObject::AddComponent(const T& aComponent)
 template<class T>
 inline T& GameObject::AddComponent(T&& aComponent)
 {
-	myComponents.SetValue(myCount, std::move(aComponent));
 	myIndexList.emplace(&typeid(aComponent), myCount);
+	myComponents.SetValue(myCount, std::move(aComponent));
 	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
 #ifndef _RETAIL
 	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));

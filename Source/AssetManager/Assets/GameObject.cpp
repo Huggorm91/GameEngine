@@ -6,6 +6,7 @@
 #ifndef _RETAIL
 #include "ModelViewer/Core/ModelViewer.h"
 #include "Modelviewer/Core/Commands/EditCmd_ChangeGameObjectName.h"
+#include "ImguiTransform.h"
 #endif // !_RETAIL
 
 
@@ -448,6 +449,8 @@ void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
 	myImguiText = aName;
+
+	ModelViewer::GetImguiManager().ChangeIndexName(this, aName);
 }
 
 const std::string& GameObject::GetName() const
@@ -480,7 +483,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			myName = myImguiText;
 #endif // !_RETAIL
 		}
-		myTransform.CreateImGuiComponents(aWindowName);
+		::CreateImGuiComponents(myTransform);
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Component* component = nullptr;

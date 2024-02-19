@@ -17,8 +17,8 @@ enum class ComponentType
 	Count
 };
 
-void AddComponent(const Component* aComponent, GameObject& aParent);
-void AddComponent(const ComponentType aType, GameObject& aParent);
+Component* AddComponent(const Component* aComponent, GameObject& aParent);
+Component* AddComponent(const ComponentType aType, GameObject& aParent);
 void LoadComponent(const Json::Value& aJson, GameObject& aParent);
 void LoadComponent(std::istream& aStream, GameObject& aParent);
 

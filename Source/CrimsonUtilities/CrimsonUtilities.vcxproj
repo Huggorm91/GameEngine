@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="File\FileSelectors.h" />
     <ClInclude Include="File\DirectoryFunctions.h" />
+    <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="NewCollision - WIP\CollisionObject.hpp" />
     <ClInclude Include="NewCollision - WIP\CollisionObject2D.hpp" />
     <ClInclude Include="Input\InputObserver.hpp" />
@@ -144,6 +145,7 @@
     <ClCompile Include="Input\InputMapper.cpp" />
     <ClCompile Include="Json\Json.cpp" />
     <ClCompile Include="Input\KeyBind.cpp" />
+    <ClCompile Include="Math\Transform.cpp" />
     <ClCompile Include="PostMaster\Message.cpp" />
     <ClCompile Include="PostMaster\PostMaster.cpp" />
     <ClCompile Include="Math\Random.cpp" />

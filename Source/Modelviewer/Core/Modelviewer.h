@@ -2,7 +2,6 @@
 #include <memory>
 #include "ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "GraphicsEngine/Camera/PerspectiveCamera.h"
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 
@@ -84,6 +83,7 @@ private:
 	bool mySceneIsEdited;
 	bool myIsInPlayMode;
 	bool myIsMaximized;
+	bool myIsMovingCamera;
 
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;
@@ -106,7 +106,7 @@ private:
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
-	PerspectiveCamera myCamera;
+	GameObject myCamera;
 
 #ifndef _RETAIL
 	EditorScene myScene;

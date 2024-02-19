@@ -42,9 +42,6 @@
     <ClInclude Include="Rendering\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera\PerspectiveCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Commands\GraphicsCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,6 +138,21 @@
     <ClInclude Include="Drawer\LineHandle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Drawer\ParticleDrawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\ParticleVertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer\EmitterData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Buffers\ParticleBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer\ParticleEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsEngine.pch.cpp">
@@ -162,9 +174,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\Vertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera\PerspectiveCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Commands\GraphicsCommand.cpp">
@@ -242,6 +251,18 @@
     <ClCompile Include="Drawer\LineHandle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Drawer\ParticleDrawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\ParticleVertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawer\EmitterData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawer\ParticleEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ConstantBuffers\FrameBuffer.hlsli" />
@@ -259,6 +280,9 @@
     <None Include="Shaders\Default\QuadData.hlsli" />
     <None Include="Shaders\Default\PostProcessingData.hlsli" />
     <None Include="Shaders\Default\Tonemaps.hlsli" />
+    <None Include="Shaders\Default\ParticleData.hlsli" />
+    <None Include="Shaders\Default\Registers.hlsli" />
+    <None Include="Shaders\ConstantBuffers\ParticleBuffer.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShaders\Default_VS.hlsl" />
@@ -278,5 +302,10 @@
     <FxCompile Include="Shaders\PostProcessing\Gaussian_Blur_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Bloom_PS.hlsl" />
     <FxCompile Include="Shaders\PostProcessing\Gamma_PS.hlsl" />
+    <FxCompile Include="Shaders\VertexShaders\Default_Particle_VS.hlsl" />
+    <FxCompile Include="Shaders\VertexShaders\Default_UI_Sprite_VS.hlsl" />
+    <FxCompile Include="Shaders\GeometryShaders\Default_Sprite_GS.hlsl" />
+    <FxCompile Include="Shaders\GeometryShaders\Default_UI_Sprite_GS.hlsl" />
+    <FxCompile Include="Shaders\PixelShaders\Default_Sprite_PS.hlsl" />
   </ItemGroup>
 </Project>

@@ -14,7 +14,6 @@
 #include "Rendering/Shader.h"
 
 #include "d3d11_2.h"
-//#include "Rendering/Commands/GraphicsCommand.h"
 
 template<typename T, typename STRINGTYPE>
 inline static T string_cast(const STRINGTYPE& someString) = delete;
@@ -25,7 +24,7 @@ template<>
 inline std::string string_cast<std::string>(const std::wstring& someString)
 {
 	const int sLength = static_cast<int>(someString.length());
-	if(sLength == 0)
+	if (sLength == 0)
 		return std::string();
 	const int len = WideCharToMultiByte(CP_ACP, 0, someString.c_str(), sLength, 0, 0, 0, 0);
 	std::string result(len, L'\0');
@@ -37,7 +36,7 @@ template<>
 inline std::wstring string_cast<std::wstring>(const std::string& someString)
 {
 	const int sLength = static_cast<int>(someString.length());
-	if(sLength == 0)
+	if (sLength == 0)
 		return std::wstring();
 	const int len = MultiByteToWideChar(CP_ACP, 0, someString.c_str(), sLength, 0, 0);
 	std::wstring result(len, L'\0');
@@ -132,7 +131,7 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 
 	// Create a View for the BackBuffer Texture that allows us to draw on the texture.
 	result = RHI::Device->CreateRenderTargetView(outBackBuffer->myTexture.Get(),
-		nullptr, outBackBuffer->myRTV.GetAddressOf());
+												 nullptr, outBackBuffer->myRTV.GetAddressOf());
 	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create RTV for backbuffer!");
@@ -171,8 +170,8 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	desc.MiscFlags = 0;
 
 	// For the Scene Depth we can just use our own function to create a depth texture.
-	if(!CreateTexture(outDepthBuffer, L"GraphicsEngine_DepthBuffer", windowWidth, windowHeight,
-		DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL))
+	if (!CreateTexture(outDepthBuffer, L"GraphicsEngine_DepthBuffer", windowWidth, windowHeight,
+					   DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL))
 	{
 		ReportError(E_FAIL, L"Failed to create depth buffer!");
 		return false;
@@ -198,9 +197,10 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	Device->CreateRasterizerState(&rasterizerDesc, myRasterizerStates[RS_CullNone].GetAddressOf());
 
 	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
-	rasterizerDesc.CullMode = D3D11_CULL_NONE;	
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	Device->CreateRasterizerState(&rasterizerDesc, myRasterizerStates[RS_Wireframe].GetAddressOf());
 
+	// Create DepthStencil States
 	myDepthStates[DS_Default] = nullptr;
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
@@ -209,6 +209,10 @@ bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBac
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	depthStencilDesc.StencilEnable = false;
 	Device->CreateDepthStencilState(&depthStencilDesc, myDepthStates[DS_LessEqual].GetAddressOf());
+
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	Device->CreateDepthStencilState(&depthStencilDesc, myDepthStates[DS_ReadOnly].GetAddressOf());
 
 	Context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), &myAnnotationObject);
 
@@ -345,7 +349,7 @@ bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize, c
 {
 	// Max CBuffer size per buffer in bytes.
 	assert(aSize <= 65536);
-	if(!RHI::Device)
+	if (!RHI::Device)
 	{
 		ReportError(E_FAIL, L"Failed to create a constant buffer, no Device found! Did you for get to Initialize RHI?");
 		return false;
@@ -363,9 +367,8 @@ bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize, c
 		ReportError(result, L"Failed to create constant buffer!");
 		return false;
 	}
-	
+
 	outCBuffer->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aName.length()), aName.data());
-	
 
 	return true;
 }
@@ -389,7 +392,7 @@ void RHI::UpdateConstantBufferData(const ConstantBufferBase& aBuffer)
 bool RHI::CreateSamplerState(ComPtr<ID3D11SamplerState>& outSamplerState, const D3D11_SAMPLER_DESC& aDescription)
 {
 	const HRESULT result = Device->CreateSamplerState(&aDescription, outSamplerState.GetAddressOf());
-	if(FAILED(result))
+	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create sampler state!");
 		return false;
@@ -406,7 +409,7 @@ void RHI::SetSamplerState(const ComPtr<ID3D11SamplerState>& aSamplerState, unsig
 bool RHI::CreateBlendState(ComPtr<ID3D11BlendState>& outBlendState, const D3D11_BLEND_DESC& aDescription)
 {
 	const HRESULT result = Device->CreateBlendState(&aDescription, outBlendState.GetAddressOf());
-	if(FAILED(result))
+	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create blend state!");
 		return false;
@@ -416,7 +419,7 @@ bool RHI::CreateBlendState(ComPtr<ID3D11BlendState>& outBlendState, const D3D11_
 }
 
 void RHI::SetBlendState(const ComPtr<ID3D11BlendState>& aBlendState, const std::array<float, 4>& aBlendFactor,
-	unsigned aSamplerMask)
+						unsigned aSamplerMask)
 {
 	Context->OMSetBlendState(aBlendState.Get(), aBlendFactor.data(), aSamplerMask);
 }
@@ -432,8 +435,8 @@ bool RHI::LoadVertexShaderAndInputLayout(ComPtr<ID3D11VertexShader>& outVxShader
 }
 
 bool RHI::CreateVertexShaderAndInputLayout(ComPtr<ID3D11VertexShader>& outVxShader,
-	ComPtr<ID3D11InputLayout>& outInputLayout, const std::vector<D3D11_INPUT_ELEMENT_DESC>& anInputLayoutDesc,
-	const BYTE* someShaderData, size_t aShaderDataSize)
+										   ComPtr<ID3D11InputLayout>& outInputLayout, const std::vector<D3D11_INPUT_ELEMENT_DESC>& anInputLayoutDesc,
+										   const BYTE* someShaderData, size_t aShaderDataSize)
 {
 	HRESULT result = Device->CreateVertexShader(someShaderData, aShaderDataSize, nullptr, &outVxShader);
 	if (FAILED(result))
@@ -441,7 +444,7 @@ bool RHI::CreateVertexShaderAndInputLayout(ComPtr<ID3D11VertexShader>& outVxShad
 		ReportError(result, L"Failed to load vertex shader from the specified file!");
 	}
 
-	if(!outInputLayout)
+	if (!outInputLayout)
 	{
 		result = Device->CreateInputLayout(
 			anInputLayoutDesc.data(),
@@ -462,9 +465,9 @@ bool RHI::CreateVertexShaderAndInputLayout(ComPtr<ID3D11VertexShader>& outVxShad
 }
 
 bool RHI::CreateInputLayout(ComPtr<ID3D11InputLayout>& outInputLayout,
-	const std::vector<D3D11_INPUT_ELEMENT_DESC>& anInputLayoutDesc, const BYTE* someShaderData, size_t aShaderDataSize)
+							const std::vector<D3D11_INPUT_ELEMENT_DESC>& anInputLayoutDesc, const BYTE* someShaderData, size_t aShaderDataSize)
 {
-	if(!outInputLayout)
+	if (!outInputLayout)
 	{
 		const HRESULT result = Device->CreateInputLayout(
 			anInputLayoutDesc.data(),
@@ -485,7 +488,7 @@ bool RHI::CreateInputLayout(ComPtr<ID3D11InputLayout>& outInputLayout,
 }
 
 bool RHI::CreateVertexShader(ComPtr<ID3D11VertexShader>& outVxShader, const BYTE* someShaderData,
-                             size_t aShaderDataSize)
+							 size_t aShaderDataSize)
 {
 	const HRESULT result = Device->CreateVertexShader(someShaderData, aShaderDataSize, nullptr, &outVxShader);
 	if (FAILED(result))
@@ -510,12 +513,12 @@ bool RHI::CreatePixelShader(ComPtr<ID3D11PixelShader>& outPxShader, const BYTE* 
 }
 
 void RHI::ReflectShaderVariableMember(const std::wstring& aDomain, size_t& anOffset,
-	ID3D11ShaderReflectionType* aMemberType, const D3D11_SHADER_TYPE_DESC* aMemberTypeDesc,
-	ShaderInfo::ConstantBufferInfo& inoutBufferInfo)
+									  ID3D11ShaderReflectionType* aMemberType, const D3D11_SHADER_TYPE_DESC* aMemberTypeDesc,
+									  ShaderInfo::ConstantBufferInfo& inoutBufferInfo)
 {
-	if(aMemberTypeDesc->Members > 0)
+	if (aMemberTypeDesc->Members > 0)
 	{
-		for(unsigned m = 0; m < aMemberTypeDesc->Members; m++)
+		for (unsigned m = 0; m < aMemberTypeDesc->Members; m++)
 		{
 			ID3D11ShaderReflectionType* childMemberType = aMemberType->GetMemberTypeByIndex(m);
 
@@ -558,11 +561,11 @@ void RHI::ReflectShaderVariable(const std::wstring& aDomain, size_t& anOffset, I
 	variableType->GetDesc(&variableTypeDesc);
 
 	// Now we should know what this is.
-	if(variableTypeDesc.Members > 0)
+	if (variableTypeDesc.Members > 0)
 	{
 		// Start a Domain for this Variable
 		const std::wstring memberDomain = string_cast<std::wstring>(variableDesc.Name);
-		ReflectShaderVariableMember(memberDomain, anOffset, variableType, &variableTypeDesc, inoutBufferInfo);	
+		ReflectShaderVariableMember(memberDomain, anOffset, variableType, &variableTypeDesc, inoutBufferInfo);
 	}
 	else
 	{
@@ -581,7 +584,7 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 {
 	ComPtr<ID3D11ShaderReflection> Data;
 	const HRESULT result = D3DReflect(someShaderData, aShaderDataSize, IID_ID3D11ShaderReflection, reinterpret_cast<void**>(Data.GetAddressOf()));
-	if(FAILED(result))
+	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to reflect the provided shader!");
 		return false;
@@ -596,7 +599,7 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 	outShRefl.ConstantBuffers.reserve(shaderDesc.ConstantBuffers);
 	outShRefl.Type = static_cast<ShaderType>(D3D11_SHVER_GET_TYPE(shaderDesc.Version));
 
-	if(outShRefl.Type == ShaderType::VertexShader)
+	if (outShRefl.Type == ShaderType::VertexShader)
 	{
 		//// We need to extract the Input Layout too.
 		//std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
@@ -614,7 +617,7 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 		//}
 	}
 
-	for(unsigned c = 0; c < shaderDesc.ConstantBuffers; c++)
+	for (unsigned c = 0; c < shaderDesc.ConstantBuffers; c++)
 	{
 		ShaderInfo::ConstantBufferInfo bufferInfo;
 		ID3D11ShaderReflectionConstantBuffer* cbufferReflection = shaderReflection->GetConstantBufferByIndex(c);
@@ -626,7 +629,7 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 
 		cbufferReflection->GetDesc(&cbufferDesc);
 		shaderReflection->GetResourceBindingDescByName(cbufferDesc.Name, &cbufferBindDesc);
-		
+
 		bufferInfo.Size = cbufferDesc.Size;
 		std::string bufferName = cbufferDesc.Name;
 		bufferInfo.Name = string_cast<std::wstring>(bufferName);
@@ -635,7 +638,7 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 		bufferInfo.Variables.reserve(cbufferDesc.Variables);
 		bufferInfo.VariableNameToIndex.reserve(cbufferDesc.Variables);
 		size_t dataOffset = 0;
-		for(unsigned v = 0; v < cbufferDesc.Variables; v++)
+		for (unsigned v = 0; v < cbufferDesc.Variables; v++)
 		{
 			ID3D11ShaderReflectionVariable* varReflection = cbufferReflection->GetVariableByIndex(v);
 			ReflectShaderVariable(L"", dataOffset, varReflection, bufferInfo);
@@ -645,56 +648,56 @@ bool RHI::ReflectShader(ShaderInfo& outShRefl, const BYTE* someShaderData, size_
 		outShRefl.ConstantBuffers.emplace_back(std::move(bufferInfo));
 	}
 
-	for(unsigned r = 0; r < shaderDesc.BoundResources; r++)
+	for (unsigned r = 0; r < shaderDesc.BoundResources; r++)
 	{
 		D3D11_SHADER_INPUT_BIND_DESC resourceBindDesc;
 		ZeroMemory(&resourceBindDesc, sizeof(D3D11_SHADER_INPUT_BIND_DESC));
 		shaderReflection->GetResourceBindingDesc(r, &resourceBindDesc);
-		switch(resourceBindDesc.Type)
+		switch (resourceBindDesc.Type)
 		{
 		case D3D_SIT_TEXTURE:
+		{
+			ShaderInfo::TextureInfo textureInfo;
+			textureInfo.Name = string_cast<std::wstring>(resourceBindDesc.Name);
+			textureInfo.Slot = resourceBindDesc.BindPoint;
+			switch (resourceBindDesc.Dimension)
 			{
-				ShaderInfo::TextureInfo textureInfo;
-				textureInfo.Name = string_cast<std::wstring>(resourceBindDesc.Name);
-				textureInfo.Slot = resourceBindDesc.BindPoint;
-				switch(resourceBindDesc.Dimension)
-				{
-				case D3D_SRV_DIMENSION_TEXTURE1D:
-					{
-						textureInfo.Type = TextureType::Texture1D;
-						break;
-					}
-				case D3D_SRV_DIMENSION_TEXTURE2D:
-					{
-						textureInfo.Type = TextureType::Texture2D;
-						break;
-					}
-				case D3D_SRV_DIMENSION_TEXTURE3D:
-					{
-						textureInfo.Type = TextureType::Texture3D;
-						break;
-					}
-				default:
-					{
-						textureInfo.Type = TextureType::Unknown;
-						break;
-					}
-				}
-
-				outShRefl.TextureNameToIndex.emplace(textureInfo.Name, outShRefl.Textures.size());
-				outShRefl.Textures.emplace_back(std::move(textureInfo));
+			case D3D_SRV_DIMENSION_TEXTURE1D:
+			{
+				textureInfo.Type = TextureType::Texture1D;
+				break;
 			}
-			break;
+			case D3D_SRV_DIMENSION_TEXTURE2D:
+			{
+				textureInfo.Type = TextureType::Texture2D;
+				break;
+			}
+			case D3D_SRV_DIMENSION_TEXTURE3D:
+			{
+				textureInfo.Type = TextureType::Texture3D;
+				break;
+			}
+			default:
+			{
+				textureInfo.Type = TextureType::Unknown;
+				break;
+			}
+			}
+
+			outShRefl.TextureNameToIndex.emplace(textureInfo.Name, outShRefl.Textures.size());
+			outShRefl.Textures.emplace_back(std::move(textureInfo));
+		}
+		break;
 		case D3D_SIT_SAMPLER:
-			{
-				ShaderInfo::SamplerInfo samplerInfo;
-				samplerInfo.Name = string_cast<std::wstring>(resourceBindDesc.Name);
-				samplerInfo.Slot = resourceBindDesc.BindPoint;
+		{
+			ShaderInfo::SamplerInfo samplerInfo;
+			samplerInfo.Name = string_cast<std::wstring>(resourceBindDesc.Name);
+			samplerInfo.Slot = resourceBindDesc.BindPoint;
 
-				outShRefl.SamplerNameToIndex.emplace(samplerInfo.Name, outShRefl.Samplers.size());
-				outShRefl.Samplers.emplace_back(std::move(samplerInfo));
-			}
-			break;
+			outShRefl.SamplerNameToIndex.emplace(samplerInfo.Name, outShRefl.Samplers.size());
+			outShRefl.Samplers.emplace_back(std::move(samplerInfo));
+		}
+		break;
 		default:
 			break;
 		}
@@ -753,6 +756,9 @@ bool RHI::LoadTexture(Texture* outTexture, const std::wstring& aFileName)
 		return false;
 	}
 
+	std::string name = Crimson::GetFileNameWithoutExtension(Crimson::ToString(aFileName));
+	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.length()), name.data());
+
 	return true;
 }
 
@@ -765,7 +771,7 @@ bool RHI::LoadShader(Shader* outShader, const std::wstring& aFileName)
 	shFile.close();
 
 	std::wstring shaderName = aFileName;
-	if(const size_t pos = shaderName.find_last_of(L'\\'); pos != std::wstring::npos)
+	if (const size_t pos = shaderName.find_last_of(L'\\'); pos != std::wstring::npos)
 	{
 		shaderName = shaderName.substr(pos + 1);
 	}
@@ -776,13 +782,13 @@ bool RHI::LoadShader(Shader* outShader, const std::wstring& aFileName)
 
 	if (success)
 	{
-		outShader->myShaderObject->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aFileName.length()), aFileName.data());
+		outShader->myShaderObject->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * shaderName.length()), shaderName.data());
 	}
 	return success;
 }
 
 bool RHI::LoadShaderFromMemory(Shader* outShader, const std::wstring& aName, const BYTE* someShaderData,
-	size_t aShaderDataSize)
+							   size_t aShaderDataSize)
 {
 	assert(outShader && "Please initialize the Shader Object before calling this function!");
 	outShader->myName = aName;
@@ -790,31 +796,31 @@ bool RHI::LoadShaderFromMemory(Shader* outShader, const std::wstring& aName, con
 	outShader->myBlobSize = aShaderDataSize;
 	memcpy_s(outShader->myBlob, outShader->myBlobSize, someShaderData, aShaderDataSize);
 
-	if(ReflectShader(outShader->myShaderInfo, outShader->myBlob, outShader->myBlobSize))
+	if (ReflectShader(outShader->myShaderInfo, outShader->myBlob, outShader->myBlobSize))
 	{
-		switch(outShader->GetShaderType())
+		switch (outShader->GetShaderType())
 		{
 		case ShaderType::VertexShader:
-			{
-				ComPtr<ID3D11VertexShader> vsShader;
-				CreateVertexShader(vsShader, outShader->myBlob, outShader->myBlobSize);
-				outShader->myShaderObject = vsShader;
-			}
-			break;
+		{
+			ComPtr<ID3D11VertexShader> vsShader;
+			CreateVertexShader(vsShader, outShader->myBlob, outShader->myBlobSize);
+			outShader->myShaderObject = vsShader;
+		}
+		break;
 		case ShaderType::PixelShader:
-			{
-				ComPtr<ID3D11PixelShader> psShader;
-				CreatePixelShader(psShader, outShader->myBlob, outShader->myBlobSize);
-				outShader->myShaderObject = psShader;
-			}
-			break;
+		{
+			ComPtr<ID3D11PixelShader> psShader;
+			CreatePixelShader(psShader, outShader->myBlob, outShader->myBlobSize);
+			outShader->myShaderObject = psShader;
+		}
+		break;
 		case ShaderType::GeometryShader:
-			{
-				ComPtr<ID3D11GeometryShader> gsShader;
-				CreateGeometryShader(gsShader, outShader->myBlob, outShader->myBlobSize);
-				outShader->myShaderObject = gsShader;
-			}
-			break;
+		{
+			ComPtr<ID3D11GeometryShader> gsShader;
+			CreateGeometryShader(gsShader, outShader->myBlob, outShader->myBlobSize);
+			outShader->myShaderObject = gsShader;
+		}
+		break;
 		}
 
 		return true;
@@ -857,14 +863,14 @@ bool RHI::LoadTextureFromMemory(Texture* outTexture, const std::wstring& aName, 
 }
 
 void RHI::ConfigureInputAssembler(unsigned aTopology, const ComPtr<ID3D11Buffer>& aVxBuffer, const ComPtr<ID3D11Buffer>& anIxBuffer,
-                                  unsigned aVertexStride, const ComPtr<ID3D11InputLayout>& anInputLayout)
+								  unsigned aVertexStride, const ComPtr<ID3D11InputLayout>& anInputLayout)
 {
 	Context->IASetInputLayout(anInputLayout.Get());
 	Context->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(aTopology));
 	constexpr unsigned vxOffset = 0;
 	Context->IASetVertexBuffers(0, 1, aVxBuffer.GetAddressOf(), &aVertexStride, &vxOffset);
 	DXGI_FORMAT indexBufferFormat = DXGI_FORMAT_R32_UINT;
-	if(anIxBuffer == nullptr)
+	if (anIxBuffer == nullptr)
 	{
 		indexBufferFormat = DXGI_FORMAT_UNKNOWN;
 	}
@@ -878,7 +884,7 @@ void RHI::SetVertexShader(const ComPtr<ID3D11VertexShader>& aVertexShader)
 
 void RHI::SetVertexShader(const Shader* aVertexShader)
 {
-	if(!aVertexShader)
+	if (!aVertexShader)
 	{
 		Context->VSSetShader(nullptr, nullptr, 0);
 		return;
@@ -896,7 +902,7 @@ void RHI::SetGeometryShader(const ComPtr<ID3D11GeometryShader>& aGeometryShader)
 
 void RHI::SetGeometryShader(const Shader* aGeometryShader)
 {
-	if(!aGeometryShader)
+	if (!aGeometryShader)
 	{
 		Context->GSSetShader(nullptr, nullptr, 0);
 		return;
@@ -914,7 +920,7 @@ void RHI::SetPixelShader(const ComPtr<ID3D11PixelShader>& aPixelShader)
 
 void RHI::SetPixelShader(const Shader* aPixelShader)
 {
-	if(!aPixelShader)
+	if (!aPixelShader)
 	{
 		Context->PSSetShader(nullptr, nullptr, 0);
 		return;
@@ -938,17 +944,17 @@ void RHI::SetDepthState(const DepthState aState)
 
 void RHI::SetConstantBuffer(UINT aPipelineStages, unsigned aSlot, const ConstantBufferBase& aBuffer)
 {
-	if(aPipelineStages & PIPELINE_STAGE_VERTEX_SHADER)
+	if (aPipelineStages & PIPELINE_STAGE_VERTEX_SHADER)
 	{
 		Context->VSSetConstantBuffers(aSlot, 1, aBuffer.myBuffer.GetAddressOf());
 	}
 
-	if(aPipelineStages & PIPELINE_STAGE_GEOMETERY_SHADER)
+	if (aPipelineStages & PIPELINE_STAGE_GEOMETERY_SHADER)
 	{
 		Context->GSSetConstantBuffers(aSlot, 1, aBuffer.myBuffer.GetAddressOf());
 	}
 
-	if(aPipelineStages & PIPELINE_STAGE_PIXEL_SHADER)
+	if (aPipelineStages & PIPELINE_STAGE_PIXEL_SHADER)
 	{
 		Context->PSSetConstantBuffers(aSlot, 1, aBuffer.myBuffer.GetAddressOf());
 	}
@@ -965,12 +971,12 @@ void RHI::Draw(unsigned aCount)
 }
 
 bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
-	size_t aWidth, size_t aHeight, UINT aFormat, D3D11_USAGE someUsageFlags,
-	UINT someBindFlags,	UINT someCpuAccessFlags)
+						size_t aWidth, size_t aHeight, UINT aFormat, D3D11_USAGE someUsageFlags,
+						UINT someBindFlags, UINT someCpuAccessFlags)
 {
 	assert(outTexture && "Please initialize the Texture Object before calling this function!");
 	outTexture->myName = aName;
-	outTexture->myBindFlags =  someBindFlags;
+	outTexture->myBindFlags = someBindFlags;
 	outTexture->myUsageFlags = someUsageFlags;
 	outTexture->myAccessFlags = someCpuAccessFlags;
 
@@ -990,13 +996,11 @@ bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
 	desc.MiscFlags = 0;
 
 	result = Device->CreateTexture2D(&desc, nullptr, reinterpret_cast<ID3D11Texture2D**>(outTexture->myTexture.GetAddressOf()));
-	if(FAILED(result))
+	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create the requested texture! Please check the DirectX Debug Output for more information. If there is none make sure you set enableDeviceDebug to True.");
 		return false;
 	}
-
-	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aName.length()), aName.data());
 
 	if (someBindFlags & D3D11_BIND_DEPTH_STENCIL)
 	{
@@ -1022,8 +1026,8 @@ bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
 		depthSRVDesc.Texture2D.MipLevels = desc.MipLevels;
 
 		result = Device->CreateShaderResourceView(outTexture->myTexture.Get(),
-			(someBindFlags & D3D11_BIND_DEPTH_STENCIL) ? &depthSRVDesc : nullptr, outTexture->mySRV.GetAddressOf());
-		if(FAILED(result))
+												  (someBindFlags & D3D11_BIND_DEPTH_STENCIL) ? &depthSRVDesc : nullptr, outTexture->mySRV.GetAddressOf());
+		if (FAILED(result))
 		{
 			ReportError(result, L"Failed to create a shader resource view! Please check the DirectX Debug Output for more information. If there is none make sure you set enableDeviceDebug to True.");
 			return false;
@@ -1040,19 +1044,18 @@ bool RHI::CreateTexture(Texture* outTexture, const std::wstring& aName,
 		}
 	}
 
-	outTexture->myViewport = D3D11_VIEWPORT({ 0.0f, 0.0f,
-		static_cast<float>(aWidth), static_cast<float>(aHeight),
-		0.0f, 1.0f });
+	outTexture->myTexture->SetPrivateData(WKPDID_D3DDebugObjectNameW, static_cast<UINT>(sizeof(wchar_t) * aName.length()), aName.data());
+	outTexture->myViewport = D3D11_VIEWPORT({ 0.0f, 0.0f, static_cast<float>(aWidth), static_cast<float>(aHeight), 0.0f, 1.0f });
 
 	return true;
 }
 
 bool RHI::CreateTextureCube(Texture* outTexture, const std::wstring& aName, size_t aWidth, size_t aHeight, UINT aFormat,
-	D3D11_USAGE someUsageFlags, UINT someBindFlags, UINT someCpuAccessFlags)
+							D3D11_USAGE someUsageFlags, UINT someBindFlags, UINT someCpuAccessFlags)
 {
 	assert(outTexture && "Please initialize the Texture Object before calling this function!");
 	outTexture->myName = aName;
-	outTexture->myBindFlags =  someBindFlags;
+	outTexture->myBindFlags = someBindFlags;
 	outTexture->myUsageFlags = someUsageFlags;
 	outTexture->myAccessFlags = someCpuAccessFlags;
 
@@ -1072,7 +1075,7 @@ bool RHI::CreateTextureCube(Texture* outTexture, const std::wstring& aName, size
 	desc.MiscFlags = D3D10_RESOURCE_MISC_TEXTURECUBE;
 
 	result = Device->CreateTexture2D(&desc, nullptr, reinterpret_cast<ID3D11Texture2D**>(outTexture->myTexture.GetAddressOf()));
-	if(FAILED(result))
+	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create the requested texture! Please check the DirectX Debug Output for more information. If there is none make sure you set enableDeviceDebug to True.");
 		return false;
@@ -1105,8 +1108,8 @@ bool RHI::CreateTextureCube(Texture* outTexture, const std::wstring& aName, size
 		depthSRVDesc.TextureCube.MostDetailedMip = 0;
 
 		result = Device->CreateShaderResourceView(outTexture->myTexture.Get(),
-			(someBindFlags & D3D11_BIND_DEPTH_STENCIL) ? &depthSRVDesc : nullptr, outTexture->mySRV.GetAddressOf());
-		if(FAILED(result))
+												  (someBindFlags & D3D11_BIND_DEPTH_STENCIL) ? &depthSRVDesc : nullptr, outTexture->mySRV.GetAddressOf());
+		if (FAILED(result))
 		{
 			ReportError(result, L"Failed to create a shader resource view! Please check the DirectX Debug Output for more information. If there is none make sure you set enableDeviceDebug to True.");
 			return false;
@@ -1133,43 +1136,43 @@ bool RHI::CreateTextureCube(Texture* outTexture, const std::wstring& aName, size
 
 void RHI::SetTextureResource(UINT aPipelineStages, unsigned aSlot, const Texture* aTexture)
 {
-	if(aTexture && (aTexture->myBindFlags & D3D11_BIND_SHADER_RESOURCE) == false)
+	if (aTexture && (aTexture->myBindFlags & D3D11_BIND_SHADER_RESOURCE) == false)
 	{
 		std::throw_with_nested(std::invalid_argument("Attempted to set a write only texture as Shader Resource!"));
 	}
 
 	if (aPipelineStages & PIPELINE_STAGE_VERTEX_SHADER)
 	{
-		if(!aTexture)
+		if (!aTexture)
 		{
 			ID3D11ShaderResourceView* dummy = nullptr;
-			Context->VSSetShaderResources(aSlot, 1, &dummy);	
+			Context->VSSetShaderResources(aSlot, 1, &dummy);
 		}
 		else
 		{
-			Context->VSSetShaderResources(aSlot, 1, aTexture->mySRV.GetAddressOf());	
-		}		
+			Context->VSSetShaderResources(aSlot, 1, aTexture->mySRV.GetAddressOf());
+		}
 	}
 
 	if (aPipelineStages & PIPELINE_STAGE_GEOMETERY_SHADER)
 	{
-		if(!aTexture)
+		if (!aTexture)
 		{
 			ID3D11ShaderResourceView* dummy = nullptr;
-			Context->GSSetShaderResources(aSlot, 1, &dummy);	
+			Context->GSSetShaderResources(aSlot, 1, &dummy);
 		}
 		else
 		{
 			Context->GSSetShaderResources(aSlot, 1, aTexture->mySRV.GetAddressOf());
-		}		
+		}
 	}
 
 	if (aPipelineStages & PIPELINE_STAGE_PIXEL_SHADER)
 	{
-		if(!aTexture)
+		if (!aTexture)
 		{
 			ID3D11ShaderResourceView* dummy = nullptr;
-			Context->PSSetShaderResources(aSlot, 1, &dummy);	
+			Context->PSSetShaderResources(aSlot, 1, &dummy);
 		}
 		else
 		{
@@ -1179,11 +1182,11 @@ void RHI::SetTextureResource(UINT aPipelineStages, unsigned aSlot, const Texture
 }
 
 void RHI::SetTextureResources(UINT aPipelineStages, unsigned aStartSlot,
-	const std::vector<std::shared_ptr<Texture>>& aTextureList)
+							  const std::vector<std::shared_ptr<Texture>>& aTextureList)
 {
 	std::vector<ID3D11ShaderResourceView*> mySRVs;
 	mySRVs.resize(aTextureList.size());
-	for(size_t i = 0; i < aTextureList.size(); i++)
+	for (size_t i = 0; i < aTextureList.size(); i++)
 	{
 		mySRVs[i] = aTextureList[i] ? aTextureList[i]->mySRV.Get() : nullptr;
 	}
@@ -1253,25 +1256,25 @@ void RHI::RemoveTextureResource(UINT aPipelineStages, unsigned aSlot)
 void RHI::SetRenderTarget(const Texture* aTarget, const Texture* aDepthStencil)
 {
 	Context->OMSetRenderTargets(aTarget ? 1 : 0, aTarget ? aTarget->myRTV.GetAddressOf() : nullptr, aDepthStencil ? aDepthStencil->myDSV.Get() : nullptr);
-	if(aTarget)
+	if (aTarget)
 	{
 		Context->RSSetViewports(1, &aTarget->myViewport);
 	}
-	else if(aDepthStencil)
+	else if (aDepthStencil)
 	{
 		Context->RSSetViewports(1, &aDepthStencil->myViewport);
 	}
 }
 
 void RHI::SetRenderTargets(const std::vector<std::shared_ptr<Texture>>& aTargetList,
-	const std::shared_ptr<Texture>& aDepthStencil)
+						   const std::shared_ptr<Texture>& aDepthStencil)
 {
 	std::vector<ID3D11RenderTargetView*> myRTVs;
 	myRTVs.reserve(aTargetList.size());
 
 	for (size_t t = 0; t < aTargetList.size(); t++)
 	{
-		if(!aTargetList[t] || (aTargetList[t]->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
+		if (!aTargetList[t] || (aTargetList[t]->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
 		{
 			std::throw_with_nested(std::invalid_argument("Attempted to set an invalid or read only texture as Render Target!"));
 		}
@@ -1281,11 +1284,11 @@ void RHI::SetRenderTargets(const std::vector<std::shared_ptr<Texture>>& aTargetL
 	const UINT numRenderTargets = static_cast<UINT>(aTargetList.size());
 
 	Context->OMSetRenderTargets(numRenderTargets, myRTVs.empty() ? nullptr : myRTVs.data(), aDepthStencil ? aDepthStencil->myDSV.Get() : nullptr);
-	if(aTargetList[0])
+	if (aTargetList[0])
 	{
 		Context->RSSetViewports(1, &aTargetList[0]->myViewport);
 	}
-	else if(aDepthStencil)
+	else if (aDepthStencil)
 	{
 		Context->RSSetViewports(1, &aDepthStencil->myViewport);
 	}
@@ -1298,7 +1301,7 @@ void RHI::SetRenderTargets(const std::vector<Texture*>& aTargetList, const Textu
 
 	for (size_t t = 0; t < aTargetList.size(); t++)
 	{
-		if(!aTargetList[t] || (aTargetList[t]->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
+		if (!aTargetList[t] || (aTargetList[t]->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
 		{
 			std::throw_with_nested(std::invalid_argument("Attempted to set an invalid or read only texture as Render Target!"));
 		}
@@ -1308,18 +1311,18 @@ void RHI::SetRenderTargets(const std::vector<Texture*>& aTargetList, const Textu
 	const UINT numRenderTargets = static_cast<UINT>(aTargetList.size());
 
 	Context->OMSetRenderTargets(numRenderTargets, myRTVs.empty() ? nullptr : myRTVs.data(), aDepthStencil ? aDepthStencil->myDSV.Get() : nullptr);
-	if(aTargetList[0])
+	if (aTargetList[0])
 	{
 		Context->RSSetViewports(1, &aTargetList[0]->myViewport);
 	}
-	else if(aDepthStencil)
+	else if (aDepthStencil)
 	{
 		Context->RSSetViewports(1, &aDepthStencil->myViewport);
 	}
 }
 
 void RHI::CopyRegion(const Texture* aSource, const Texture* aDestination, unsigned X,
-                     unsigned Y, unsigned Width, unsigned Height)
+					 unsigned Y, unsigned Width, unsigned Height)
 {
 	D3D11_BOX pickBox = {};
 	pickBox.left = X;
@@ -1332,7 +1335,7 @@ void RHI::CopyRegion(const Texture* aSource, const Texture* aDestination, unsign
 	ID3D11Resource* objIdResource = nullptr;
 	aSource->myRTV.Get()->GetResource(&objIdResource);
 	Context->CopySubresourceRegion(aDestination->myTexture.Get(),
-	                               0, 0, 0, 0, objIdResource, 0, &pickBox);
+								   0, 0, 0, 0, objIdResource, 0, &pickBox);
 }
 
 std::array<BYTE, 4> RHI::GetPixel(const Texture* aSource, unsigned X, unsigned Y)
@@ -1363,7 +1366,7 @@ void RHI::RemoveTarget()
 
 void RHI::ClearRenderTarget(const Texture* aTexture, std::array<float, 4> aClearColor)
 {
-	if((aTexture->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
+	if ((aTexture->myBindFlags & D3D11_BIND_RENDER_TARGET) == false)
 	{
 		std::throw_with_nested(std::runtime_error("Attempted to clear a read-only texture!"));
 	}
@@ -1372,7 +1375,7 @@ void RHI::ClearRenderTarget(const Texture* aTexture, std::array<float, 4> aClear
 
 void RHI::ClearDepthStencil(const Texture* aTexture)
 {
-	if((aTexture->myBindFlags & D3D11_BIND_DEPTH_STENCIL) == false)
+	if ((aTexture->myBindFlags & D3D11_BIND_DEPTH_STENCIL) == false)
 	{
 		std::throw_with_nested(std::runtime_error("Attempted to clear depth on a non-depth texture!"));
 	}

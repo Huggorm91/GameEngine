@@ -7,6 +7,7 @@
 #include "Rendering/GBuffer.h"
 #include "Commands/CommandContainer.h"
 #include "Drawer/LineDrawer.h"
+#include "Drawer/ParticleDrawer.h"
 
 #include <wrl.h>
 using namespace Microsoft::WRL;
@@ -14,7 +15,8 @@ using namespace Microsoft::WRL;
 class GraphicsEngine
 {
 public:
-	static GraphicsEngine& Get() {
+	static GraphicsEngine& Get()
+	{
 		static GraphicsEngine myInstance; return myInstance;
 	}
 
@@ -78,7 +80,7 @@ public:
 	RenderMode SetRenderMode(RenderMode aMode);
 	RenderMode NextRenderMode();
 #endif // !_RETAIL
-	
+
 /**
  * Initializes the Graphics Engine with the specified settings.
  * @param windowHandle The window that will contain this Graphics Engine.
@@ -108,50 +110,81 @@ public:
 	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMeshShadow> aCommand);
 	void AddGraphicsCommand(std::shared_ptr<GfxCmd_RenderMesh> aCommand);
 
-	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const {
+	[[nodiscard]] HWND FORCEINLINE GetWindowHandle() const
+	{
 		return myWindowHandle;
 	}
-	[[nodiscard]] SIZE FORCEINLINE GetWindowSize() const {
+	[[nodiscard]] SIZE FORCEINLINE GetWindowSize() const
+	{
 		return myWindowSize;
 	}
 
 #ifndef _RETAIL
-	inline const Texture* GetBackBufferCopy() const{
+	inline const Texture* GetBackBufferCopy() const
+	{
 		return &myTextures.Scenebuffer;
 	}
 #endif // !_RETAIL
 
-	inline const Material& GetDefaultMaterial() const {
+	inline const Material& GetDefaultMaterial() const
+	{
 		return myDefaultMaterial;
 	}
-	inline const Texture* GetDefaultCubeMap() const {
+	inline const Texture* GetDefaultCubeMap() const
+	{
 		return &myTextures.DefaultCubeMap;
 	}
 
-	inline LineDrawer& GetLineDrawer() {
+	inline LineDrawer& GetLineDrawer()
+	{
 		return myLineDrawer;
 	}
+	inline ParticleDrawer& GetParticleDrawer()
+	{
+		return myParticleDrawer;
+	}
 
-	inline const Crimson::Vector3f& GetWorldBoundsMax() const {
+	inline const Crimson::Vector3f& GetWorldBoundsMax() const
+	{
 		return myWorldMax;
 	}
-	inline const Crimson::Vector3f& GetWorldBoundsMin() const {
+	inline const Crimson::Vector3f& GetWorldBoundsMin() const
+	{
 		return myWorldMin;
 	}
-	inline const Crimson::Vector3f& GetWorldBoundsOrigin() const {
+	inline const Crimson::Vector3f& GetWorldBoundsOrigin() const
+	{
 		return myWorldCenter;
 	}
 
-	inline void SetUsingBloom(bool aState){
+	inline void SetUsingBloom(bool aState)
+	{
 		myIsUsingBloom = aState;
 	}
-	inline void ToogleUsingBloom(){
+	inline void ToogleUsingBloom()
+	{
 		myIsUsingBloom = !myIsUsingBloom;
+	}
+
+	const Shader* GetDefaultParticleVS() const
+	{
+		return &myShaders.DefaultParticleVS;
+	}
+
+	const Shader* GetDefaultParticleGS() const
+	{
+		return &myShaders.DefaultParticleGS;
+	}
+
+	const Shader* GetDefaultParticlePS() const
+	{
+		return &myShaders.DefaultParticlePS;
 	}
 
 private:
 	friend class LightCommand;
 	friend class GraphicsCommand;
+	friend class ParticleEmitter;
 
 	bool myIsUsingBloom;
 
@@ -166,6 +199,7 @@ private:
 	unsigned myObjectBufferSlot;
 	unsigned myLightBufferSlot;
 	unsigned myMaterialBufferSlot;
+	unsigned myParticleBufferSlot;
 
 	HWND myWindowHandle;
 	ComPtr<ID3D11SamplerState> myDefaultSampler;
@@ -205,6 +239,7 @@ private:
 	MaterialBuffer myMaterialBuffer;
 
 	LineDrawer myLineDrawer;
+	ParticleDrawer myParticleDrawer;
 
 	std::vector<LightCommand*> myPointLights;
 	std::vector<LightCommand*> mySpotLights;

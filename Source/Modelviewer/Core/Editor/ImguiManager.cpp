@@ -19,6 +19,8 @@
 #include "Input/InputMapper.h"
 #include "Time/Timer.h"
 
+#include "AssetManager/Assets/ImguiTransform.h"
+
 using namespace Crimson;
 
 ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindow(true), myIsShowingPrefabWindow(true), myOverwriteAppliedToAll(false), mySelectedPath(), myNewObject(std::make_shared<GameObject>()), mySelectedPrefabName(nullptr),
@@ -799,18 +801,8 @@ void ImguiManager::CreatePreferenceWindow()
 		ImGui::InputText("Window Title", &applicationState.WindowTitle);
 
 		ImGui::SeparatorText("Camera Settings");
-		if (ImGui::DragFloat("Movement Speed", &applicationState.CameraSpeed))
-		{
-			myModelViewer->myCamera.SetMovementSpeed(applicationState.CameraSpeed);
-		}
-		if (ImGui::DragFloat("Rotation Speed", &applicationState.CameraRotationSpeed))
-		{
-			myModelViewer->myCamera.SetRotationSpeed(applicationState.CameraRotationSpeed);
-		}
-		if (ImGui::DragFloat("Mouse Sensitivity", &applicationState.CameraMouseSensitivity))
-		{
-			myModelViewer->myCamera.SetMouseSensitivity(applicationState.CameraMouseSensitivity);
-		}
+		ImGui::DragFloat("Movement Speed", &myModelViewer->myApplicationState.CameraSpeed);
+		ImGui::DragFloat("Mouse Sensitivity", &myModelViewer->myApplicationState.CameraMouseSensitivity, 0.1f);
 
 		ImGui::SeparatorText("Scene Settings");
 		if (ImGui::DragFloat("Ambientlight Intensity", &applicationState.AmbientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
@@ -820,6 +812,11 @@ void ImguiManager::CreatePreferenceWindow()
 		if (ImGui::DragFloat("Shadow Bias", &applicationState.ShadowBias, 0.0001f, 0.f, 1.f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
 		{
 			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(applicationState.ShadowBias));
+		}
+		float timeScale = Crimson::Timer::GetTimeScale();
+		if (ImGui::DragFloat("Time Scale", &timeScale, 0.1f))
+		{
+			Crimson::Timer::SetTimeScale(timeScale);
 		}
 
 		ImGui::SeparatorText("");
@@ -903,7 +900,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 		}
 		else if (mySelectedObjects.size() > 1)
 		{
-			myMultiSelectionTransform.CreateMultipleSelectionImGuiComponents("Selected GameObject");
+			CreateMultipleSelectionImGuiComponents(myMultiSelectionTransform);
 		}
 	}
 	ImGui::End();

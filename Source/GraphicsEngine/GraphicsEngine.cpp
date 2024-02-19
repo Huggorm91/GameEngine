@@ -8,14 +8,13 @@
 #include "File/DirectoryFunctions.h"
 
 GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(), 
+myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(),
 myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders(), myIsUsingBloom(true),
 myAssetPath("Settings\\EngineAssets\\"), mySettingsPath("Settings\\ge_settings.json")
 #ifndef _RETAIL
 , myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
 #endif // !_RETAIL	
-{
-}
+{}
 
 bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 {
@@ -44,22 +43,25 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 
 		// Textures
 		{
-			myTextureSlots.MissingTextureSlot = 99u;
-			myTextureSlots.DefaultAlbedoTextureSlot = 98u;
-			myTextureSlots.DefaultNormalTextureSlot = 97u;
-			myTextureSlots.DefaultMaterialTextureSlot = 96u;
-			myTextureSlots.DefaultFXTextureSlot = 95u;
-			myTextureSlots.BrdfLUTTextureSlot = 94u;
-			myTextureSlots.DefaultCubeMapSlot = 100u;
-
+			// 2D-texture slots
 			myTextureSlots.GBufferSlot = 10u;
 
 			myTextureSlots.IntermediateASlot = 20u;
 			myTextureSlots.IntermediateBSlot = 21u;
 
-			myTextureSlots.DirectionalShadowMapSlot = 93u;
-			myTextureSlots.PointShadowMapSlot = 120u;
 			myTextureSlots.SpotShadowMapSlot = 85u;
+			myTextureSlots.DirectionalShadowMapSlot = 93u;
+
+			myTextureSlots.BrdfLUTTextureSlot = 94u;
+			myTextureSlots.DefaultFXTextureSlot = 95u;
+			myTextureSlots.DefaultMaterialTextureSlot = 96u;
+			myTextureSlots.DefaultNormalTextureSlot = 97u;
+			myTextureSlots.DefaultAlbedoTextureSlot = 98u;
+			myTextureSlots.MissingTextureSlot = 99u;
+
+			// Cubemap slots
+			myTextureSlots.DefaultCubeMapSlot = 100u;
+			myTextureSlots.PointShadowMapSlot = 120u;
 
 			if (!CreateLUTTexture())
 			{
@@ -154,6 +156,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			myObjectBufferSlot = 1;
 			myLightBufferSlot = 2;
 			myMaterialBufferSlot = 3;
+			myParticleBufferSlot = 4;
 
 			myFrameBuffer.Initialize(L"FrameBuffer");
 			myObjectBuffer.Initialize(L"ObjectBuffer");
@@ -168,6 +171,12 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		if (!myLineDrawer.Init())
 		{
 			GELogger.Err("Failed to initialize LineDrawer!");
+			return false;
+		}
+
+		if (!myParticleDrawer.Init())
+		{
+			GELogger.Err("Failed to initialize ParticleDrawer!");
 			return false;
 		}
 
@@ -188,7 +197,7 @@ void GraphicsEngine::SaveSettings() const
 {
 	Settings settings;
 
-	auto& material = settings.DefaultMaterial;	
+	auto& material = settings.DefaultMaterial;
 	material.Shininess = myDefaultMaterial.GetShininess();
 	material.Metalness = myDefaultMaterial.GetMetalness();
 	material.NormalStrength = myDefaultMaterial.GetNormalStrength();
@@ -217,6 +226,10 @@ void GraphicsEngine::SaveSettings() const
 	settings.EnvironmentPS = Crimson::ToString(myShaders.EnvironmentPS.GetName());
 	settings.PointlightPS = Crimson::ToString(myShaders.PointlightPS.GetName());
 	settings.SpotlightPS = Crimson::ToString(myShaders.SpotlightPS.GetName());
+
+	settings.DefaultParticleVS = Crimson::ToString(myShaders.DefaultParticleVS.GetName());
+	settings.DefaultParticleGS = Crimson::ToString(myShaders.DefaultParticleGS.GetName());
+	settings.DefaultParticlePS = Crimson::ToString(myShaders.DefaultParticlePS.GetName());
 
 	settings.BackgroundColor = myBackgroundColor;
 	settings.ToneMap = static_cast<int>(myToneMap);
@@ -490,6 +503,7 @@ GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 
 void GraphicsEngine::BeginFrame()
 {
+	RHI::BeginEvent(L"Begin Frame");
 	myTextures.ClearTextures(myBackgroundColor);
 	myGBuffer.ClearTextures();
 
@@ -502,10 +516,12 @@ void GraphicsEngine::BeginFrame()
 	myGBuffer.UnbindAsResource(PIPELINE_STAGE_PIXEL_SHADER);
 	LitCmd_ResetLightBuffer reset;
 	reset.Execute(0);
+	RHI::EndEvent();
 }
 
 void GraphicsEngine::EndFrame()
 {
+	RHI::BeginEvent(L"End Frame");
 	RHI::Present();
 	myRenderCommands->lightRenderCommands.clear();
 	myRenderCommands->lightCommands.clear();
@@ -527,6 +543,7 @@ void GraphicsEngine::EndFrame()
 		myPointShadowMap[i] = nullptr;
 		mySpotShadowMap[i] = nullptr;
 	}
+	RHI::EndEvent();
 }
 
 struct ShadowData
@@ -535,8 +552,10 @@ struct ShadowData
 	float myDistanceFromLight;
 	unsigned myIndex; // Used to check if distance has been calculated for current light
 
-	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, unsigned anIndex) : myCommand(aCommand), myIndex(anIndex), myDistanceFromLight(){}
-	bool operator<(const ShadowData& someData) {
+	ShadowData(std::shared_ptr<GfxCmd_RenderMeshShadow>& aCommand, unsigned anIndex) : myCommand(aCommand), myIndex(anIndex), myDistanceFromLight()
+	{}
+	bool operator<(const ShadowData& someData)
+	{
 		return myDistanceFromLight < someData.myDistanceFromLight;
 	}
 };
@@ -546,10 +565,12 @@ struct DeferredCommandData
 	std::shared_ptr<GfxCmd_RenderMesh> myCommand;
 	float myDistanceFromCamera;
 
-	DeferredCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
+	DeferredCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance)
+	{}
 
-	// Sorts Front to Back
-	bool operator<(const DeferredCommandData& someData) {
+// Sorts Front to Back
+	bool operator<(const DeferredCommandData& someData)
+	{
 		return myDistanceFromCamera < someData.myDistanceFromCamera;
 	}
 };
@@ -559,10 +580,12 @@ struct ForwardCommandData
 	std::shared_ptr<GfxCmd_RenderMesh> myCommand;
 	float myDistanceFromCamera;
 
-	ForwardCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance){}
+	ForwardCommandData(std::shared_ptr<GfxCmd_RenderMesh>& aCommand, float aDistance) : myCommand(aCommand), myDistanceFromCamera(aDistance)
+	{}
 
-	// Sorts Back to Front
-	bool operator<(const ForwardCommandData& someData) {
+// Sorts Back to Front
+	bool operator<(const ForwardCommandData& someData)
+	{
 		return myDistanceFromCamera > someData.myDistanceFromCamera;
 	}
 };
@@ -642,7 +665,8 @@ void GraphicsEngine::RenderFrame()
 		Crimson::Vector3f position = Crimson::Vector3f::Null;
 
 		// Update position before calling a sorting algorithm with this function, and clear updatedDistance after
-		std::function<bool(ShadowData&, ShadowData&)> compare = [&position, &updatedDistance](ShadowData& aFirst, ShadowData& aSecond) -> bool{
+		std::function<bool(ShadowData&, ShadowData&)> compare = [&position, &updatedDistance](ShadowData& aFirst, ShadowData& aSecond) -> bool
+		{
 			if (updatedDistance.find(aFirst.myIndex) == updatedDistance.end())
 			{
 				aFirst.myDistanceFromLight = (aFirst.myCommand->GetWorldPosition() - position).LengthSqr();
@@ -906,6 +930,17 @@ void GraphicsEngine::RenderFrame()
 		RHI::EndEvent();
 	}
 
+	// Render particles
+	RHI::BeginEvent(L"Particle Drawer");
+	RHI::SetBlendState(myAlphaBlend);
+	RHI::SetDepthState(DS_ReadOnly);
+	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+	myParticleDrawer.Render();
+	RHI::SetDepthState(DS_Default);
+	RHI::SetBlendState(nullptr);
+	RHI::SetGeometryShader(nullptr);
+	RHI::EndEvent();
+
 	// PostProcessing
 #ifndef _RETAIL
 	if (myDebugMode == DebugMode::Default && myLightMode != LightMode::IgnoreLight)
@@ -968,16 +1003,17 @@ void GraphicsEngine::RenderFrame()
 			RHI::Draw(4);
 
 #ifndef _RETAIL
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr);
 			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
 #else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 #endif // !_RETAIL
-			
+
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
 			RHI::EndEvent();
 		}
-		else
+		else // No bloom
 		{
 #ifndef _RETAIL
 			// Copy Scenebuffer onto IntermediateA in order to be able to Gamma correct onto Scenebuffer
@@ -986,6 +1022,7 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
 			RHI::Draw(4);
 
+			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr);
 			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateA);
 #else
@@ -995,22 +1032,27 @@ void GraphicsEngine::RenderFrame()
 		}
 
 		// Gamma correction
+		RHI::BeginEvent(L"Gamma");
 		RHI::SetBlendState(nullptr);
 		RHI::SetPixelShader(&myShaders.GammaPS);
 		RHI::Draw(4);
-	}
+		RHI::EndEvent();
+	} // End: if (LightMode::IgnoreLight)
+
 #ifndef _RETAIL
 	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
 #else
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
 
+	RHI::BeginEvent(L"Line Drawer");
 	myLineDrawer.Render();
+	RHI::EndEvent();
 
 #ifndef _RETAIL
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
 #endif // !_RETAIL
-}
+	}
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)
 {
@@ -1098,6 +1140,10 @@ bool GraphicsEngine::CreateDefaultSampler()
 	{
 		return false;
 	}
+
+	std::string name = "Default";
+	myDefaultSampler->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.length()), name.data());
+
 	return true;
 }
 
@@ -1122,6 +1168,10 @@ bool GraphicsEngine::CreateShadowSampler()
 	{
 		return false;
 	}
+
+	std::string name = "Shadow";
+	myShadowSampler->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.length()), name.data());
+
 	return true;
 }
 
@@ -1146,6 +1196,10 @@ bool GraphicsEngine::CreateBlurSampler()
 	{
 		return false;
 	}
+
+	std::string name = "Blur";
+	myBlurSampler->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.length()), name.data());
+
 	return true;
 }
 
@@ -1170,6 +1224,10 @@ bool GraphicsEngine::CreateLUTSampler()
 	{
 		return false;
 	}
+
+	std::string name = "LUT";
+	myLUTSampler->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.length()), name.data());
+
 	return true;
 }
 
@@ -1426,6 +1484,28 @@ bool GraphicsEngine::LoadShaders(const Settings& someSettings)
 		GELogger.Err("Failed to load Spotlight Shader!");
 		return false;
 	}
+
+	// DefaultParticleVS
+	if (!RHI::LoadShader(&myShaders.DefaultParticleVS, Crimson::ToWString(someSettings.DefaultParticleVS)))
+	{
+		GELogger.Err("Failed to load DefaultParticleVS Shader!");
+		return false;
+	}
+
+	// DefaultParticleGS
+	if (!RHI::LoadShader(&myShaders.DefaultParticleGS, Crimson::ToWString(someSettings.DefaultParticleGS)))
+	{
+		GELogger.Err("Failed to load DefaultParticleGS Shader!");
+		return false;
+	}
+
+	// DefaultParticlePS
+	if (!RHI::LoadShader(&myShaders.DefaultParticlePS, Crimson::ToWString(someSettings.DefaultParticlePS)))
+	{
+		GELogger.Err("Failed to load DefaultParticlePS Shader!");
+		return false;
+	}
+
 	return true;
 }
 

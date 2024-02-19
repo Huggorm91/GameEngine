@@ -161,5 +161,8 @@
 	"NormalTexture" : "Default_Normal.dds",
 	"PointlightPSShader" : "Default_Pointlight_PS", // Only use 'ShaderName.cso' and not full path
 	"SpotlightPSShader" : "Default_Spotlight_PS", // Only use 'ShaderName.cso' and not full path
-	"ToneMap" : 2
+	"ToneMap" : 2 ,
+	"DefaultParticleVS" :"Default_Particle_VS",
+	"DefaultParticleGS" :"Default_Sprite_GS",
+	"DefaultParticlePS" :"Default_Sprite_PS"
 }

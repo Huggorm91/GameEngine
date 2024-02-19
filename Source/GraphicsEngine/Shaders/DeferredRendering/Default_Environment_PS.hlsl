@@ -40,7 +40,7 @@ DefaultPixelOutput main(QuadVSToPS input)
                 data.metalness = material.b;
     
                 const float3 diffuseColor = lerp((float3) 0.f, albedo.rgb, 1 - data.metalness);
-                data.v = normalize(FB_CameraPosition - (float3) data.position);
+                data.v = normalize(FB_CameraPosition - data.position.rgb);
                 data.brdfDiffuse = diffuseColor * PI_INVERSE;
                 data.specularColor = lerp((float3) 0.04f, albedo.rgb, data.metalness);
                 data.invertedSpecular = 1 - data.specularColor;

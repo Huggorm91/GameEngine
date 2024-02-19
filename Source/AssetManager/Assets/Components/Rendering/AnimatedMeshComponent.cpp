@@ -34,7 +34,7 @@ void AnimatedMeshComponent::Update()
 		const float frameDelta = myAnimation.GetFrameDelta();
 
 		// Gives choppy animations at low FPS, skips frames
-		/*while (myAnimationTimer >= frameDelta)
+		while (myAnimationTimer >= frameDelta)
 		{
 			myAnimationTimer -= frameDelta;
 			if (myAnimation.GetNextIndex(myCurrentFrame) && myAnimationState == AnimationState::PlayOnce)
@@ -42,14 +42,14 @@ void AnimatedMeshComponent::Update()
 				StopAnimation();
 				break;
 			}
-			else if(myAnimationTimer >= frameDelta)
+			else if(myAnimationTimer < frameDelta)
 			{
 				UpdateCache();
 			}
-		}*/
+		}
 
-		// Gives slow animations at low FPS, does not skip frames
-		if (myAnimationTimer >= frameDelta)
+		// Gives slow animations at low FPS, does not skip frames (does not work well with timescale)
+		/*if (myAnimationTimer >= frameDelta)
 		{
 			if (myAnimation.GetNextIndex(myCurrentFrame) && myAnimationState == AnimationState::PlayOnce)
 			{
@@ -60,7 +60,7 @@ void AnimatedMeshComponent::Update()
 				myAnimationTimer -= frameDelta;
 				UpdateCache();
 			}
-		}
+		}*/
 	}
 
 	Render();

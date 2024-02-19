@@ -101,4 +101,15 @@ float3 SpherlcalToCartesian(float2 aSphericalCoordinate)
     return float3(sinCosTheta.y * sinCosPhi.x, sinCosTheta.x * sinCosPhi.x, sinCosPhi.y);
 }
 
+float3 GetPixelNormal(float3 aNormalMap, float3x3 aTBN, float aNormalStrength)
+{
+    float3 result = float3(aNormalMap.xy, 0);
+    result = 2 * result - 1;
+    result.z = sqrt(1 - saturate(result.x * result.x + result.y * result.y));
+    result = normalize(result);
+    result.xy *= aNormalStrength;
+    result = mul(result, aTBN);
+    return result;
+}
+
 #endif // SHADERFUNCTIONS_HLSLI
