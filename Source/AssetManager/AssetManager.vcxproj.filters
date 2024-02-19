@@ -36,7 +36,7 @@
     <ClInclude Include="Assets\Components\Rendering\MeshComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Components\ComponentParts\Bone.h">
+    <ClInclude Include="Assets\Animation\Bone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Components\ComponentParts\MeshElement.h">
@@ -45,16 +45,16 @@
     <ClInclude Include="Managers\AnimationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Animation.h">
+    <ClInclude Include="Assets\Animation\Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Components\ComponentParts\Socket.h">
+    <ClInclude Include="Assets\Animation\Socket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Components\ComponentParts\TgaImporterConversions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Components\ComponentParts\Skeleton.h">
+    <ClInclude Include="Assets\Animation\Skeleton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Components\Rendering\AnimatedMeshComponent.h">
@@ -143,22 +143,22 @@
     <ClCompile Include="Assets\Components\Rendering\MeshComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Components\ComponentParts\Bone.cpp">
+    <ClCompile Include="Assets\Animation\Bone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Managers\AnimationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Animation.cpp">
+    <ClCompile Include="Assets\Animation\Animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Components\ComponentParts\Socket.cpp">
+    <ClCompile Include="Assets\Animation\Socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\ComponentParts\TgaImporterConversions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Components\ComponentParts\Skeleton.cpp">
+    <ClCompile Include="Assets\Animation\Skeleton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp">

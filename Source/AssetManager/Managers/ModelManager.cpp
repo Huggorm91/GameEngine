@@ -103,6 +103,10 @@ GameObject* ModelManager::GetModel(const std::string& aPath, bool aShouldLogErro
 				return &iter->second;
 			}
 		}
+		else if (iter = myModels.find(path); iter != myModels.end())
+		{
+			return &iter->second;
+		}
 		else
 		{
 			return LoadModel(path, aShouldLogErrors);

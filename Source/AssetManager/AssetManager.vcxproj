@@ -263,7 +263,7 @@
     <ClInclude Include="Assets\ComponentInclude.h" />
     <ClInclude Include="Assets\Components\ComponentTemplate.h" />
     <ClInclude Include="Assets\Components\Rendering\AnimatedMeshComponent.h" />
-    <ClInclude Include="Assets\Animation.h" />
+    <ClInclude Include="Assets\Animation\Animation.h" />
     <ClInclude Include="Assets\Components\Camera\PerspectiveCameraComponent.h" />
     <ClInclude Include="Assets\Components\Light\DirectionallightComponent.h" />
     <ClInclude Include="Assets\Components\Debugging\DebugDrawComponent.h" />
@@ -276,15 +276,15 @@
     <ClInclude Include="AssetManager.pch.h" />
     <ClInclude Include="Assets\Components\ComponentParts\BoxSphereBounds.h" />
     <ClInclude Include="Assets\Components\ComponentParts\MeshElement.h" />
-    <ClInclude Include="Assets\Components\ComponentParts\Bone.h" />
-    <ClInclude Include="Assets\Components\ComponentParts\Socket.h" />
+    <ClInclude Include="Assets\Animation\Bone.h" />
+    <ClInclude Include="Assets\Animation\Socket.h" />
     <ClInclude Include="Assets\Components\Rendering\MeshComponent.h" />
     <ClInclude Include="Assets\Components\Component.h" />
     <ClInclude Include="Assets\GameObject.h" />
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Assets\Primitives.h" />
     <ClInclude Include="Assets\Components\ComponentParts\TgaImporterConversions.h" />
-    <ClInclude Include="Assets\Components\ComponentParts\Skeleton.h" />
+    <ClInclude Include="Assets\Animation\Skeleton.h" />
     <ClInclude Include="Managers\TextureManager.h" />
     <ClInclude Include="Managers\MaterialManager.h" />
     <ClInclude Include="Managers\ShaderManager.h" />
@@ -298,7 +298,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />
-    <ClCompile Include="Assets\Animation.cpp" />
+    <ClCompile Include="Assets\Animation\Animation.cpp" />
     <ClCompile Include="Assets\Components\Camera\PerspectiveCameraComponent.cpp" />
     <ClCompile Include="Assets\Components\Light\DirectionallightComponent.cpp" />
     <ClCompile Include="Assets\Components\Debugging\DebugDrawComponent.cpp" />
@@ -318,17 +318,17 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Retail|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
-    <ClCompile Include="Assets\Components\ComponentParts\Bone.cpp" />
+    <ClCompile Include="Assets\Animation\Bone.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\BoxSphereBounds.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\MeshElement.cpp" />
-    <ClCompile Include="Assets\Components\ComponentParts\Socket.cpp" />
+    <ClCompile Include="Assets\Animation\Socket.cpp" />
     <ClCompile Include="Assets\Components\Rendering\MeshComponent.cpp" />
     <ClCompile Include="Assets\Components\Component.cpp" />
     <ClCompile Include="Assets\GameObject.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Assets\Primitives.cpp" />
     <ClCompile Include="Assets\Components\ComponentParts\TgaImporterConversions.cpp" />
-    <ClCompile Include="Assets\Components\ComponentParts\Skeleton.cpp" />
+    <ClCompile Include="Assets\Animation\Skeleton.cpp" />
     <ClCompile Include="Managers\TextureManager.cpp" />
     <ClCompile Include="Managers\MaterialManager.cpp" />
     <ClCompile Include="Managers\ShaderManager.cpp" />

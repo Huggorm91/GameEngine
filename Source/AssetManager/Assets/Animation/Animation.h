@@ -1,5 +1,5 @@
 #pragma once
-#include "Components/ComponentParts/TgaImporterConversions.h"
+#include "../Components/ComponentParts/TgaImporterConversions.h"
 
 struct AnimationFrame
 {

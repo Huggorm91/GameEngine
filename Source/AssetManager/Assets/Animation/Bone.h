@@ -1,5 +1,5 @@
 #pragma once
-#include "TgaImporterConversions.h"
+#include "../Components/ComponentParts/TgaImporterConversions.h"
 
 struct Bone
 {

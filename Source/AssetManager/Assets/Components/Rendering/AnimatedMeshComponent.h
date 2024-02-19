@@ -1,7 +1,7 @@
 #pragma once
 #include "MeshComponent.h"
-#include "../../Animation.h"	
-#include "../ComponentParts/Skeleton.h"
+#include "..\..\Animation\Animation.h"	
+#include "..\..\Animation\Skeleton.h"
 
 class AnimatedMeshComponent: public MeshComponent
 {
