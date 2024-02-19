@@ -271,6 +271,7 @@
     <ClInclude Include="Assets\Binary.h" />
     <ClInclude Include="Assets\Components\Particles\Emitters\BurstEmitter.h" />
     <ClInclude Include="Assets\ImguiTransform.h" />
+    <ClInclude Include="Assets\Components\Camera\EditorCameraControllerComponent.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -305,6 +306,7 @@
     <ClCompile Include="Assets\Components\ComponentType.cpp" />
     <ClCompile Include="Assets\Components\Particles\Emitters\BurstEmitter.cpp" />
     <ClCompile Include="Assets\ImguiTransform.cpp" />
+    <ClCompile Include="Assets\Components\Camera\EditorCameraControllerComponent.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">

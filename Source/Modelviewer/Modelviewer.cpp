@@ -11,6 +11,7 @@
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
+#include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 #include "File/DirectoryFunctions.h"
 
 #include "Time/Timer.h"
@@ -167,16 +168,6 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
 
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
-
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
-	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
-
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
 	input.Attach(this, Crimson::eInputAction::Undo);
@@ -235,7 +226,7 @@ int ModelViewer::Run()
 			HandleCrash(std::invalid_argument("Caught unknown Error!"));
 		}
 #endif // _DEBUG
-		}
+	}
 
 #ifndef _RETAIL
 	myImguiManager.Release();
@@ -514,9 +505,6 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
 }
 
-#include "AssetManager/Assets/Components/Particles/Emitters/BurstEmitter.h"
-#include "AssetManager/Assets/Components/Particles/Emitters/StreamEmitter.h"
-#include "AssetManager/Assets/Components/Particles/ParticleEmitterComponent.h"
 void ModelViewer::Init()
 {
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
@@ -524,6 +512,7 @@ void ModelViewer::Init()
 
 	myCamera.SetPosition({ 0.f, 200.f, 0.f });
 	myCamera.AddComponent(PerspectiveCameraComponent(90.f, 1.f, 10000.f));
+	myCamera.AddComponent(EditorCameraControllerComponent(myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity));
 
 	LoadScene("Default");
 }
@@ -535,12 +524,12 @@ void ModelViewer::Update()
 	Crimson::Timer::Update();
 	Crimson::InputMapper::GetInstance()->Notify();
 
-#ifndef _RETAIL
-	myImguiManager.Update();
-#endif // _RETAIL
-
 	if (myIsSceneActive)
 	{
+#ifndef _RETAIL
+		myImguiManager.Update();
+#endif // _RETAIL
+
 		myCamera.Update();
 		UpdateScene();
 	}
@@ -549,9 +538,12 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
-	RHI::BeginEvent(L"ImGui Render");
-	myImguiManager.Render();
-	RHI::EndEvent();
+	if (myIsSceneActive)
+	{
+		RHI::BeginEvent(L"ImGui Render");
+		myImguiManager.Render();
+		RHI::EndEvent();
+	}
 #endif // _RETAIL
 
 	engine.EndFrame();
@@ -566,7 +558,7 @@ void ModelViewer::UpdateScene()
 		{
 			object.Update();
 		}
-}
+	}
 	else
 	{
 		for (auto& [id, object] : myScene.GameObjects)
@@ -666,32 +658,10 @@ void ModelViewer::RedoCommand()
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
 	auto& engine = GraphicsEngine::Get();
-	switch (anEvent)
-	{
-	case Crimson::eInputEvent::MouseMove:
-	{
-		float multiplier = myApplicationState.CameraMouseSensitivity * .01f;
-		auto& camera = myCamera.GetComponent<PerspectiveCameraComponent>();
-		Crimson::Vector2f distance = Crimson::InputMapper::GetInstance()->GetMouseMovement();
-		Crimson::Vector3f rotation = camera.GetRadianRotation();
-		rotation.x += distance.y * multiplier;
-		rotation.y += distance.x * multiplier;
-		camera.SetRadianRotation(rotation);
-		break;
-	}
-	case Crimson::eInputEvent::KeyDown:
+	if (anEvent == Crimson::eInputEvent::KeyDown)
 	{
 		switch (aKey)
 		{
-		case Crimson::eKey::MouseRightButton:
-		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
-			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
-			inputHandler.CaptureMouse(true);
-			inputHandler.HideMouse();
-			myIsMovingCamera = true;
-			break;
-		}
 		case Crimson::eKey::F1:
 		{
 			SetPlayMode(!myIsInPlayMode);
@@ -727,92 +697,6 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 		default:
 			break;
 		}
-		break;
-	}
-	case Crimson::eInputEvent::KeyUp:
-	{
-		if (aKey == Crimson::eKey::MouseRightButton)
-		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
-			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
-			inputHandler.ReleaseMouse();
-			inputHandler.ShowMouse();
-			myIsMovingCamera = false;
-		}
-		break;
-	}
-	case Crimson::eInputEvent::KeyHeld:
-	{
-		if (myIsMovingCamera == false)
-		{
-			break;
-		}
-
-		auto& camera = myCamera.GetComponent<PerspectiveCameraComponent>();
-		float multiplier = myApplicationState.CameraSpeed * Crimson::Timer::GetUnscaledDeltaTime();
-		if (Crimson::InputMapper::GetInstance()->GetKeyDownOrHeld(Crimson::eKey::Shift))
-		{
-			multiplier *= 2.f;
-		}
-		Crimson::Matrix4x4f rotationMatrix = Crimson::Matrix4x4f::CreateRotationAroundX(camera.GetRadianRotation().x) * Crimson::Matrix4x4f::CreateRotationAroundY(camera.GetRadianRotation().y);
-
-		switch (aKey)
-		{
-		case Crimson::eKey::W:
-		{
-			Crimson::Vector4f movement = {};
-			movement.z = multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		case Crimson::eKey::S:
-		{
-			Crimson::Vector4f movement = {};
-			movement.z = -multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		case Crimson::eKey::A:
-		{
-			Crimson::Vector4f movement = {};
-			movement.x = -multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		case Crimson::eKey::D:
-		{
-			Crimson::Vector4f movement = {};
-			movement.x = multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		case Crimson::eKey::SpaceBar:
-		{
-			Crimson::Vector4f movement = {};
-			movement.y = multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		case Crimson::eKey::Ctrl:
-		{
-			Crimson::Vector4f movement = {};
-			movement.y = -multiplier;
-			movement *= rotationMatrix;
-			camera.AddToPosition(movement);
-			break;
-		}
-		default:
-			break;
-		}
-		break;
-	}
-	default:
-		break;
 	}
 }
 
