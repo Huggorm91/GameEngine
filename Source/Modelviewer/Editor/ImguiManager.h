@@ -3,7 +3,7 @@
 #include "Windows.h"
 #include <shellapi.h>
 #include "Input/InputObserver.hpp"
-#include "AssetTypes.h"
+#include "Core/AssetTypes.h"
 #include <unordered_set>
 
 class Texture;

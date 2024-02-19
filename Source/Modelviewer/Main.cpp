@@ -2,7 +2,7 @@
 #include "Modelviewer.pch.h"
 #include "Windows.h"
 #include "resource.h"
-#include "Core/Modelviewer.h"
+#include "Modelviewer.h"
 #include "Input/InputHandler.h"
 #include "Time/Timer.h"
 
@@ -12,6 +12,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif // !_RETAIL
 
+#pragma warning(disable:6387)
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR    lpCmdLine,
@@ -86,6 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MV.Initialize(hInstance, WinProc);
     return MV.Run();
 }
+#pragma warning(default:6387)
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {

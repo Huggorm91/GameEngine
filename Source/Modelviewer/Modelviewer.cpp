@@ -18,10 +18,27 @@
 #include "Json\jsonCpp\json.h"
 
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene(), myIsMovingCamera(false)
+ModelViewer::ModelViewer() :
+	myModuleHandle(nullptr),
+	myMainWindowHandle(nullptr),
+	mySplashWindow(nullptr),
+	mySettingsPath("Settings/mw_settings.json"),
+	myApplicationState(),
+	myLogger(),
+	myCamera(),
+	myScene(),
+	myIsMovingCamera(false)
 #ifndef _RETAIL
-, myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
-, myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
+	, myDebugMode(GraphicsEngine::DebugMode::Default),
+	myLightMode(GraphicsEngine::LightMode::Default),
+	myRenderMode(GraphicsEngine::RenderMode::Mesh),
+	myImguiManager(),
+	myIsInPlayMode(false),
+	myIsMaximized(false),
+	myPlayScene(),
+	myPlayScenePointers(),
+	mySceneIsEdited(false),
+	myIsSceneActive(true)
 #endif // _RETAIL
 {}
 
@@ -218,7 +235,7 @@ int ModelViewer::Run()
 			HandleCrash(std::invalid_argument("Caught unknown Error!"));
 		}
 #endif // _DEBUG
-	}
+		}
 
 #ifndef _RETAIL
 	myImguiManager.Release();
@@ -277,6 +294,11 @@ void ModelViewer::SetPlayMode(bool aState)
 		myPlayModeRedoCommands.clear();
 		myPlayModeUndoCommands.clear();
 	}
+}
+
+void ModelViewer::SetIsSceneActive(bool aState)
+{
+	myIsSceneActive = aState;
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
@@ -517,8 +539,11 @@ void ModelViewer::Update()
 	myImguiManager.Update();
 #endif // _RETAIL
 
-	myCamera.Update();
-	UpdateScene();
+	if (myIsSceneActive)
+	{
+		myCamera.Update();
+		UpdateScene();
+	}
 
 	Crimson::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
@@ -541,7 +566,7 @@ void ModelViewer::UpdateScene()
 		{
 			object.Update();
 		}
-	}
+}
 	else
 	{
 		for (auto& [id, object] : myScene.GameObjects)

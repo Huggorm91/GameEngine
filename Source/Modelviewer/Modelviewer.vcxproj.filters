@@ -24,7 +24,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Modelviewer.h">
+    <ClInclude Include="Modelviewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Windows\SplashWindow.h">
@@ -33,54 +33,57 @@
     <ClInclude Include="Core\ApplicationState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCommand.h">
+    <ClInclude Include="Commands\EditCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeComponent.h">
+    <ClInclude Include="Commands\EditCmd_ChangeComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeTransform.h">
+    <ClInclude Include="Commands\EditCmd_ChangeTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_AddComponent.h">
+    <ClInclude Include="Commands\EditCmd_AddComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_RemoveComponent.h">
+    <ClInclude Include="Commands\EditCmd_RemoveComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeValue.h">
+    <ClInclude Include="Commands\EditCmd_ChangeValue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Editor\ImguiManager.h">
+    <ClInclude Include="Editor\ImguiManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Editor\AssetTypes.h">
+    <ClInclude Include="Core\AssetTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.h">
+    <ClInclude Include="Commands\EditCmd_ChangeMultipleGameObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_AddGameObjects.h">
+    <ClInclude Include="Commands\EditCmd_AddGameObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObjects.h">
+    <ClInclude Include="Commands\EditCmd_RemoveGameObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_ChangeGameObjectName.h">
+    <ClInclude Include="Commands\EditCmd_ChangeGameObjectName.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_AddGameObject.h">
+    <ClInclude Include="Commands\EditCmd_AddGameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Commands\EditCmd_RemoveGameObject.h">
+    <ClInclude Include="Commands\EditCmd_RemoveGameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModelViewer.pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Editor\SkeletonEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Modelviewer.cpp">
+    <ClCompile Include="Modelviewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windows\SplashWindow.cpp">
@@ -92,37 +95,40 @@
     <ClCompile Include="Core\ApplicationState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCommand.cpp">
+    <ClCompile Include="Commands\EditCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_ChangeTransform.cpp">
+    <ClCompile Include="Commands\EditCmd_ChangeTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Editor\ImguiManager.cpp">
+    <ClCompile Include="Editor\ImguiManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Editor\AssetTypes.cpp">
+    <ClCompile Include="Core\AssetTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_ChangeMultipleGameObjects.cpp">
+    <ClCompile Include="Commands\EditCmd_ChangeMultipleGameObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_AddGameObjects.cpp">
+    <ClCompile Include="Commands\EditCmd_AddGameObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObjects.cpp">
+    <ClCompile Include="Commands\EditCmd_RemoveGameObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_ChangeGameObjectName.cpp">
+    <ClCompile Include="Commands\EditCmd_ChangeGameObjectName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_AddGameObject.cpp">
+    <ClCompile Include="Commands\EditCmd_AddGameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Commands\EditCmd_RemoveGameObject.cpp">
+    <ClCompile Include="Commands\EditCmd_RemoveGameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModelViewer.pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\SkeletonEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

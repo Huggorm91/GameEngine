@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "ApplicationState.h"
+#include "Core/ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
@@ -45,6 +45,7 @@ public:
 	void SetDropFile(HDROP aHandle);
 
 	void SetPlayMode(bool aState);
+	void SetIsSceneActive(bool aState);
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
 
@@ -84,6 +85,7 @@ private:
 	bool myIsInPlayMode;
 	bool myIsMaximized;
 	bool myIsMovingCamera;
+	bool myIsSceneActive;
 
 	GraphicsEngine::DebugMode myDebugMode;
 	GraphicsEngine::LightMode myLightMode;

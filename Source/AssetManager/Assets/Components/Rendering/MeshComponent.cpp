@@ -8,8 +8,8 @@
 
 #ifndef _RETAIL
 #include "AssetManager.h"
-#include "ModelViewer/Core/ModelViewer.h"
-#include "ModelViewer/Core/Commands/EditCmd_ChangeValue.h"
+#include "ModelViewer/ModelViewer.h"
+#include "ModelViewer/Commands/EditCmd_ChangeValue.h"
 #include "../../ImguiTransform.h"
 #endif // !_RETAIL
 
@@ -475,6 +475,7 @@ void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 	}
 }
 
+#pragma warning(disable:6011)
 void MeshComponent::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 {
 	ImGui::PushID(aSlot);
@@ -502,6 +503,7 @@ void MeshComponent::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 	}
 	ImGui::PopID();
 }
+#pragma warning(default:6011)
 
 void MeshComponent::CreateTextureImage(Texture*& aTexture)
 {
