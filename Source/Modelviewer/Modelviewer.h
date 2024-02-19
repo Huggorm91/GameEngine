@@ -14,6 +14,7 @@ class SplashWindow;
 class GameObject;
 
 #ifndef _RETAIL
+#include "Editor/SkeletonEditor.h"
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
@@ -46,6 +47,9 @@ public:
 
 	void SetPlayMode(bool aState);
 	void SetIsSceneActive(bool aState);
+
+	void SetCameraSpeed(float aSpeed);
+	void SetMouseSensitivity(float aSensitivity);
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
 
@@ -92,6 +96,7 @@ private:
 	GraphicsEngine::RenderMode myRenderMode;
 
 	ImguiManager myImguiManager;
+	SkeletonEditor mySkeletonEditor;
 
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;

@@ -44,6 +44,16 @@ void EditorCameraControllerComponent::Init(GameObject* aParent)
 	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
 }
 
+void EditorCameraControllerComponent::SetSpeed(float aSpeed)
+{
+	mySpeed = aSpeed;
+}
+
+void EditorCameraControllerComponent::SetMouseSensitivity(float aSensitivity)
+{
+	myMouseSensitivity = aSensitivity;
+}
+
 inline std::string EditorCameraControllerComponent::ToString() const
 {
     return "EditorCameraController";

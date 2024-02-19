@@ -16,6 +16,9 @@ public:
 
 	void Init(GameObject* aParent) override;
 
+	void SetSpeed(float aSpeed);
+	void SetMouseSensitivity(float aSensitivity);
+
 	inline std::string ToString() const override;
 	inline const EditorCameraControllerComponent* GetTypePointer() const override;
 

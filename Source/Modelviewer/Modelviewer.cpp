@@ -173,6 +173,16 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	input.Attach(this, Crimson::eInputAction::Undo);
 	input.Attach(this, Crimson::eInputAction::Redo);
 
+	constexpr float fov = 90.f;
+	constexpr float nearPlane = 1.f;
+	constexpr float farPlane = 10000.f;
+
+	myCamera.SetPosition({ 0.f, 200.f, 0.f });
+	myCamera.AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
+	myCamera.AddComponent(EditorCameraControllerComponent(myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity));
+
+	mySkeletonEditor.Init(fov, nearPlane, farPlane, myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity);
+
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
@@ -290,6 +300,18 @@ void ModelViewer::SetPlayMode(bool aState)
 void ModelViewer::SetIsSceneActive(bool aState)
 {
 	myIsSceneActive = aState;
+}
+
+void ModelViewer::SetCameraSpeed(float aSpeed)
+{
+	myApplicationState.CameraSpeed = aSpeed;
+	mySkeletonEditor.SetCameraSpeed(aSpeed);
+}
+
+void ModelViewer::SetMouseSensitivity(float aSensitivity)
+{
+	myApplicationState.CameraMouseSensitivity = aSensitivity;
+	mySkeletonEditor.SetMouseSensitivity(aSensitivity);
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
@@ -509,10 +531,6 @@ void ModelViewer::Init()
 {
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
-
-	myCamera.SetPosition({ 0.f, 200.f, 0.f });
-	myCamera.AddComponent(PerspectiveCameraComponent(90.f, 1.f, 10000.f));
-	myCamera.AddComponent(EditorCameraControllerComponent(myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity));
 
 	LoadScene("Default");
 }
