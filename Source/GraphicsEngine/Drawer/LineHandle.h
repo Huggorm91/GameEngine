@@ -17,6 +17,7 @@ public:
 	void SetActive(bool aValue) const;
 
 	void UpdateTransform(const Crimson::Matrix4x4f& aTransform) const;
+	void UpdateColor(const Crimson::Vector4f& aColor) const;
 
 private:
 	const unsigned myID;
