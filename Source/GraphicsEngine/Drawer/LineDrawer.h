@@ -29,15 +29,17 @@ public:
 	//LineHandle AddCone(float aHeight, float anAngleInRadians, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aDirection, const Crimson::Vector4f& aColor = GetColor(eColor::White), const Crimson::Matrix4x4f& aTransform = Crimson::Matrix4x4f::Null, bool aIsUI = false, LineHandle* aHandle = nullptr);
 
 	LineHandle GetNewHandle();
-	void UpdatePrimitiveTransform(const LineHandle& aHandle, const Crimson::Matrix4x4f& aTransform);
-	void ActivateHandle(const LineHandle& aHandle);
-	void DeactivateHandle(const LineHandle& aHandle);
-	void DeleteHandle(const LineHandle& aHandle);
+	void ActivateHandle(LineHandle aHandle);
+	void DeactivateHandle(LineHandle aHandle);
+	void DeleteHandle(LineHandle aHandle);
+
+	void UpdatePrimitiveColor(LineHandle aHandle, const Crimson::Vector4f& aColor);
+	void UpdatePrimitiveTransform(LineHandle aHandle, const Crimson::Matrix4x4f& aTransform);
 
 	// True if handle exists in LineDrawer
-	bool IsValid(const LineHandle& aHandle) const;
+	bool IsValid(LineHandle aHandle) const;
 	// True if handle is actively being drawn by LineDrawer
-	bool IsActive(const LineHandle& aHandle) const;
+	bool IsActive(LineHandle aHandle) const;
 
 private:
 	struct LinePrimitive
@@ -68,7 +70,7 @@ private:
 	bool myUIIsDirty;
 
 	unsigned AddPrimitive(const LinePrimitive& aPrimitive);
-	void UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle);
+	void UpdatePrimitive(const LinePrimitive& aPrimitive, LineHandle aHandle);
 
 	void CreateCircle(LinePrimitive& outPrimitive, unsigned aVertexCount, float aRadius, const Crimson::Vector3f& aCenter, const Crimson::Vector3f& aDirection, const Crimson::Vector4f& aColor);
 
