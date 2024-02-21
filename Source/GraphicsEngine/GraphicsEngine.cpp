@@ -181,7 +181,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 
 #ifndef _RETAIL
-		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 10000000.f, true);
+		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 100000.f, true);
 	}
 	catch (const std::exception& e)
 	{
