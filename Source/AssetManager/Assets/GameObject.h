@@ -67,6 +67,9 @@ public:
 	void ToogleActive();
 	bool IsActive() const;
 
+	void SetActiveComponents(bool aIsActive);
+	void ToogleActiveComponents();
+
 	bool HasChild() const;
 	bool HasParent() const;
 

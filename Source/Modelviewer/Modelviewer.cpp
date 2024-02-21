@@ -300,6 +300,8 @@ void ModelViewer::SetPlayMode(bool aState)
 void ModelViewer::SetIsSceneActive(bool aState)
 {
 	myIsSceneActive = aState;
+	myCamera.SetActive(aState);
+	GraphicsEngine::Get().SetDrawGridLines(aState);
 }
 
 void ModelViewer::ActivateImGuiEditor()

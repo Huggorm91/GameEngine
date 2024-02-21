@@ -31,8 +31,7 @@ void Skeleton::SetPath(const std::string* aPath)
 
 bool Skeleton::HasBone(const std::string& aName) const
 {
-	auto iter = myIndexMap.find(aName);
-	return iter != myIndexMap.end();
+	return myIndexMap.find(aName) != myIndexMap.end();
 }
 
 const Bone& Skeleton::GetBone(unsigned int anIndex) const
@@ -42,12 +41,30 @@ const Bone& Skeleton::GetBone(unsigned int anIndex) const
 
 const Bone& Skeleton::GetBone(const std::string& aName) const
 {
-	auto iter = myIndexMap.find(aName);
-	assert(iter != myIndexMap.end() && "Bone does not exist in Skeleton!");
-	return myBones[iter->second];
+	return myBones[myIndexMap.at(aName)];
 }
 
 const std::vector<Bone>& Skeleton::GetBones() const
 {
 	return myBones;
+}
+
+unsigned Skeleton::GetBoneCount() const
+{
+	return static_cast<unsigned>(myBones.size());
+}
+
+unsigned Skeleton::GetSocketCount() const
+{
+	return static_cast<unsigned>(mySockets.size());
+}
+
+bool Skeleton::HasSocket(const std::string& aName) const
+{
+	return mySockets.find(aName) != mySockets.end();
+}
+
+const Socket& Skeleton::GetSocket(const std::string& aName) const
+{
+	return mySockets.at(aName);
 }

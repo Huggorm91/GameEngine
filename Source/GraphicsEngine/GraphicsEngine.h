@@ -79,6 +79,8 @@ public:
 
 	RenderMode SetRenderMode(RenderMode aMode);
 	RenderMode NextRenderMode();
+
+	void SetDrawGridLines(bool aShouldDraw);
 #endif // !_RETAIL
 
 /**

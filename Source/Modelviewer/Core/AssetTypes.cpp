@@ -221,3 +221,26 @@ std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anEx
 
 	return result;
 }
+
+Assets::eAssetType Assets::GetModelType(const std::string& aPath)
+{
+	eAssetType result = eAssetType::Unknown;
+	AssetManager::SetLogErrors(false);
+	if (AssetManager::GetAsset<Animation>(aPath).HasData())
+	{
+		result = eAssetType::Animation;
+	}
+	else
+	{
+		if (AssetManager::GetAsset<GameObject>(aPath).HasComponent<AnimatedMeshComponent>())
+		{
+			result = eAssetType::AnimatedModel;
+		}
+		else
+		{
+			result = eAssetType::Model;
+		}
+	}
+	AssetManager::SetLogErrors(true);
+	return result;
+}

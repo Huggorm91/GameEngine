@@ -31,6 +31,37 @@ void CreateImGuiComponents(Transform& aTransform)
 	}
 }
 
+bool CreateImGuiComponentsNoUndo(Transform& aTransform)
+{
+	bool hasChanged = false;
+	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
+	if (ImGui::TreeNode("Transform"))
+	{
+		auto position = aTransform.GetPosition();
+		if (ImGui::DragFloat3("Position", &position.x))
+		{
+			aTransform.SetPosition(position);
+			hasChanged = true;
+		}
+
+		auto rotation = aTransform.GetRotation();
+		if (ImGui::DragFloat3("Rotation", &rotation.x))
+		{
+			aTransform.SetRotation(rotation);
+			hasChanged = true;
+		}
+
+		auto scale = aTransform.GetScale();
+		if (ImGui::DragFloat3("Scale", &scale.x))
+		{
+			aTransform.SetScale(scale);
+			hasChanged = true;
+		}
+		ImGui::TreePop();
+	}
+	return hasChanged;
+}
+
 bool CreateMultipleSelectionImGuiComponents(Transform& aTransform)
 {
 	bool hasChanged = false;

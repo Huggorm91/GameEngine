@@ -13,7 +13,6 @@ public:
 	void Update();
 
 	void SetSkeleton(Skeleton* aSkeleton);
-	void SetActive(bool aState);
 
 	void SetCameraSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);
@@ -26,12 +25,27 @@ private:
 	Crimson::Vector2f myWindowSize;
 
 	Skeleton* mySkeleton;
+	const Bone* mySelectedBone;
+	const Bone* myHoveredBone;
+	const Bone* myRootBone;
+
+	Transform mySkeletonOffset;
 	GameObject myCamera;
 
-	std::vector<LineHandle> myLines;
+	Texture myAssetIcon;
+
+	std::unordered_map<const Bone*, LineHandle> myLines;
+	std::unordered_set<std::string> myAvailableFiles;
 
 	void CreateMenubar();
-	void CreateSkeletonHeirarchy();
 	void CreateViewport();
+
+	void CreateSkeletonHeirarchy();
+	void CreateBoneList(const Bone& aBone);
+
 	void CreateAssetBrowser();
+
+	void UpdateAvailableFiles();
+
+	void CreateBoneLines(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
 };

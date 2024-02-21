@@ -19,6 +19,12 @@ public:
 
 	const std::vector<Bone>& GetBones() const;
 
+	unsigned GetBoneCount() const;
+	unsigned GetSocketCount() const;
+
+	bool HasSocket(const std::string& aName) const;
+	const Socket& GetSocket(const std::string& aName) const;
+
 private:
 	const std::string* myPath;
 	std::string myName;

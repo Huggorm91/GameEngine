@@ -23,4 +23,5 @@ namespace Assets
 	bool IsType(eAssetType aType, std::string anAsset);
 
 	std::vector<eAssetType> GetPossibleTypes(const std::string& anExtension);
+	eAssetType GetModelType(const std::string& aPath);
 }

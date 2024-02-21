@@ -66,6 +66,11 @@ inline const EditorCameraControllerComponent* EditorCameraControllerComponent::G
 
 void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
+	if (!myIsActive || !myParent->IsActive())
+	{
+		return;
+	}
+
 	switch (anEvent)
 	{
 	case Crimson::eInputEvent::MouseMove:

@@ -264,7 +264,7 @@ void AnimatedMeshComponent::UpdateCache()
 
 void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix)
 {
-	auto& bone = mySkeleton->GetBones()[anIndex];
+	auto& bone = mySkeleton->GetBone(anIndex);
 	auto& frame = myAnimation.GetFrame(myCurrentFrame);
 	Crimson::Matrix4x4f matrix = GetLocalTransform(bone, frame) * aParentMatrix;
 	myBoneTransformCache[anIndex] = bone.myBindPoseInverse * matrix;

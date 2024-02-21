@@ -499,6 +499,11 @@ GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 {
 	return SetRenderMode(static_cast<RenderMode>(static_cast<int>(myRenderMode) + 1));
 }
+
+void GraphicsEngine::SetDrawGridLines(bool aShouldDraw)
+{
+	myGrid.SetActive(aShouldDraw);
+}
 #endif // _RETAIL
 
 void GraphicsEngine::BeginFrame()

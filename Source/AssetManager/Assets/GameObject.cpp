@@ -281,6 +281,22 @@ bool GameObject::IsActive() const
 	return myIsActive;
 }
 
+void GameObject::SetActiveComponents(bool aIsActive)
+{
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->SetActive(aIsActive);
+	}
+}
+
+void GameObject::ToogleActiveComponents()
+{
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.ChangeValueUnsafe<Component>(index)->ToogleActive();
+	}
+}
+
 void GameObject::SetParent(GameObject* anObject)
 {
 	if (anObject == this)

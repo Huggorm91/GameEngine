@@ -271,26 +271,8 @@ void ImguiManager::RefreshAvailableFiles()
 				case Assets::eAssetType::AnimatedModel:
 				case Assets::eAssetType::Animation:
 				{
-					AssetManager::SetLogErrors(false);
-					if (AssetManager::GetAsset<Animation>(file).HasData())
-					{
-						myAvailableFiles.emplace(file, Assets::eAssetType::Animation);
-						isHandled = true;
-					}
-					else
-					{
-						if (AssetManager::GetAsset<GameObject>(file).HasComponent<AnimatedMeshComponent>())
-						{
-							myAvailableFiles.emplace(file, Assets::eAssetType::AnimatedModel);
-							isHandled = true;
-						}
-						else
-						{
-							myAvailableFiles.emplace(file, Assets::eAssetType::Model);
-							isHandled = true;
-						}
-					}
-					AssetManager::SetLogErrors(true);
+					myAvailableFiles.emplace(file, Assets::GetModelType(file));
+					isHandled = true;
 					break;
 				}
 				case Assets::eAssetType::Material:
@@ -471,6 +453,7 @@ void ImguiManager::CreateMenubar()
 			if (ImGui::MenuItem("Skeleton Editor"))
 			{
 				myIsActive = false;
+				myModelViewer->SetIsSceneActive(false);
 				myModelViewer->ActivateSkeletonEditor();
 			}
 			ImGui::EndMenu();

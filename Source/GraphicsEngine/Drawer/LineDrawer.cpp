@@ -4,16 +4,16 @@
 #include "AssetManager/AssetManager.h"
 
 LineHandle::LineHandle(unsigned anID) : myID(anID)
-{
-}
+{}
 
 LineHandle::LineHandle() : myID(UINT_MAX)
-{
-}
+{}
 
 LineHandle::LineHandle(const LineHandle& aHandle) : myID(aHandle.myID)
-{
-}
+{}
+
+LineHandle::LineHandle(LineHandle&& aHandle) noexcept : myID(aHandle.myID)
+{}
 
 LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 {
@@ -21,7 +21,7 @@ LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 	return *this;
 }
 
-LineHandle& LineHandle::operator=(LineHandle&& aHandle)
+LineHandle& LineHandle::operator=(LineHandle&& aHandle) noexcept
 {
 	const_cast<unsigned&>(myID) = aHandle.myID;
 	return *this;
@@ -69,6 +69,11 @@ void LineHandle::UpdateTransform(const Crimson::Matrix4x4f& aTransform) const
 void LineHandle::UpdateColor(const Crimson::Vector4f& aColor) const
 {
 	GraphicsEngine::Get().GetLineDrawer().UpdatePrimitiveColor(*this, aColor);
+}
+
+void LineHandle::Delete() const
+{
+	GraphicsEngine::Get().GetLineDrawer().DeleteHandle(*this);
 }
 
 LineHandle LineDrawer::GetNewHandle()
@@ -281,6 +286,64 @@ LineHandle LineDrawer::AddAxisLines(const Crimson::Vector3f& aCenter, float aLin
 	primitive.myIndices.emplace_back(3);
 	primitive.myIndices.emplace_back(4);
 	primitive.myIndices.emplace_back(5);
+
+	if (aHandle)
+	{
+		UpdatePrimitive(primitive, *aHandle);
+		return aHandle->myID;
+	}
+	else
+	{
+		return LineHandle(AddPrimitive(primitive));
+	}
+}
+
+LineHandle LineDrawer::AddCube(const Crimson::Vector3f& aCenter, const Crimson::Vector3f& anExtent, const Crimson::Vector4f& aColor, const Crimson::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
+{
+	LinePrimitive primitive;
+	primitive.myIsUI = aIsUI;
+	primitive.myTransform = aTransform;
+
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, anExtent.y, -anExtent.z }, aColor);	// upRiFr 0
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, anExtent.y, anExtent.z }, aColor);	// upRiBa 1
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, anExtent.y, -anExtent.z }, aColor);	// upLeFr 2
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, anExtent.y, anExtent.z }, aColor);	// upLeBa 3
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, -anExtent.y, -anExtent.z }, aColor);	// doRiFr 4
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, -anExtent.y, anExtent.z }, aColor);	// doRiBa 5
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, -anExtent.y, -anExtent.z }, aColor);// doLeFr 6
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, -anExtent.y, anExtent.z }, aColor);	// doLeBa 7
+
+	// Lines from up right front corner
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(4);
+
+	// Lines from down left front corner
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(4);
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(7);
+
+	// Lines from up left back corner
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(7);
+
+	// Lines from down right back corner
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(4);
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(7);
 
 	if (aHandle)
 	{
