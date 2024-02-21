@@ -27,7 +27,7 @@ ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindo
 myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myHasGottenDropfiles(false),
 mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myShouldOpenOverwritePopUp(false), myOverwriteFromPaths(), myOverwriteToPaths(), myImguiNameIndex(), myViewportAwaitsFile(false),
 myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("..\\Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
-myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f)
+myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f), myIsActive(true)
 {
 	myNewObject->MarkAsPrefab();
 }
@@ -96,6 +96,12 @@ void ImguiManager::Update()
 	ImGui::NewFrame();
 
 	myRefreshTimer += Timer::GetDeltaTime();
+
+	if (!myIsActive)
+	{
+		return;
+	}
+
 	if (myRefreshTimer >= 60.f)
 	{
 		myRefreshTimer = 0.f;
@@ -138,6 +144,11 @@ void ImguiManager::Render()
 {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void ImguiManager::Activate()
+{
+	myIsActive = true;
 }
 
 void ImguiManager::AddGameObject(GameObject* anObject)
@@ -452,6 +463,15 @@ void ImguiManager::CreateMenubar()
 				{
 					myModelViewer->SaveScene(path, true);
 				}
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Skeleton Editor"))
+			{
+				myIsActive = false;
+				myModelViewer->ActivateSkeletonEditor();
 			}
 			ImGui::EndMenu();
 		}

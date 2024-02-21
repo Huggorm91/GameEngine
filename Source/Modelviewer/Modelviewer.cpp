@@ -302,6 +302,18 @@ void ModelViewer::SetIsSceneActive(bool aState)
 	myIsSceneActive = aState;
 }
 
+void ModelViewer::ActivateImGuiEditor()
+{
+	myImguiManager.Activate();
+	myIsSceneActive = true;
+}
+
+void ModelViewer::ActivateSkeletonEditor()
+{
+	mySkeletonEditor.Activate();
+	myIsSceneActive = false;
+}
+
 void ModelViewer::SetCameraSpeed(float aSpeed)
 {
 	myApplicationState.CameraSpeed = aSpeed;
@@ -542,12 +554,13 @@ void ModelViewer::Update()
 	Crimson::Timer::Update();
 	Crimson::InputMapper::GetInstance()->Notify();
 
-	if (myIsSceneActive)
-	{
 #ifndef _RETAIL
-		myImguiManager.Update();
+	myImguiManager.Update();
+	mySkeletonEditor.Update();
 #endif // _RETAIL
 
+	if (myIsSceneActive)
+	{
 		myCamera.Update();
 		UpdateScene();
 	}
@@ -556,12 +569,9 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
-	if (myIsSceneActive)
-	{
-		RHI::BeginEvent(L"ImGui Render");
-		myImguiManager.Render();
-		RHI::EndEvent();
-	}
+	RHI::BeginEvent(L"ImGui Render");
+	myImguiManager.Render();
+	RHI::EndEvent();
 #endif // _RETAIL
 
 	engine.EndFrame();

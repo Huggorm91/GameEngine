@@ -5,11 +5,6 @@
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
 
-// TODO: 
-// Make all saved filepaths relative to the assettypes folder
-// Serialize components
-// Deserialize components
-//
 class SplashWindow;
 class GameObject;
 
@@ -31,12 +26,8 @@ public:
 	}
 
 	// Acceleration Getters for components.
-	FORCEINLINE static ApplicationState& GetApplicationState() {
-		return Get().myApplicationState;
-	}
-	FORCEINLINE static Logger& GetLogger() {
-		return Get().myLogger;
-	}
+	FORCEINLINE static ApplicationState& GetApplicationState() { return Get().myApplicationState; }
+	FORCEINLINE static Logger& GetLogger() { return Get().myLogger; }
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
@@ -47,6 +38,8 @@ public:
 
 	void SetPlayMode(bool aState);
 	void SetIsSceneActive(bool aState);
+	void ActivateImGuiEditor();
+	void ActivateSkeletonEditor();
 
 	void SetCameraSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);

@@ -22,6 +22,8 @@ public:
 	void Update();
 	void Render();
 
+	void Activate();
+
 	void AddGameObject(GameObject* anObject);
 	void ChangeIndexName(GameObject* anObject, const std::string& aName);
 	const std::string& GetIndexName(GameObject* anObject) const;
@@ -40,6 +42,7 @@ public:
 private:
 	friend class EditCommand;
 
+	bool myIsActive;
 	bool myIsShowingPrefabWindow;
 	bool myIsShowingNewObjectWindow;
 

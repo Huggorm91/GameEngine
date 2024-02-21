@@ -18,11 +18,20 @@ public:
 	void SetCameraSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);
 
+	void Activate();
+
 private:
 	bool myIsActive;
+
+	Crimson::Vector2f myWindowSize;
 
 	Skeleton* mySkeleton;
 	GameObject myCamera;
 
 	std::vector<LineHandle> myLines;
+
+	void CreateMenubar();
+	void CreateSkeletonHeirarchy();
+	void CreateViewport();
+	void CreateAssetBrowser();
 };
