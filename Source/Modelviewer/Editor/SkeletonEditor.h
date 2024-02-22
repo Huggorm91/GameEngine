@@ -12,7 +12,8 @@ public:
 	void Init(float aFoVDegree, float aNearPlane, float aFarPlane, float aCameraSpeed, float aMouseSensitivity);
 	void Update();
 
-	void SetSkeleton(Skeleton* aSkeleton);
+	void SetSkeleton(Skeleton* aSkeleton, bool aHideLines = true);
+	void SetAnimation(Animation anAnimation);
 
 	void SetCameraSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);
@@ -24,6 +25,7 @@ private:
 
 	Crimson::Vector2f myWindowSize;
 
+	Animation myAnimation;
 	Skeleton* mySkeleton;
 	const Bone* mySelectedBone;
 	const Bone* myHoveredBone;
@@ -32,10 +34,12 @@ private:
 	Transform mySkeletonOffset;
 	GameObject myCamera;
 
-	Texture myAssetIcon;
+	Texture mySkeletonIcon;
+	Texture myAnimationIcon;
 
 	std::unordered_map<const Bone*, LineHandle> myLines;
-	std::unordered_set<std::string> myAvailableFiles;
+	std::unordered_set<std::string> myAvailableSkeletons;
+	std::unordered_set<std::string> myAvailableAnimations;
 
 	void CreateMenubar();
 	void CreateViewport();
@@ -44,6 +48,7 @@ private:
 	void CreateBoneList(const Bone& aBone);
 
 	void CreateAssetBrowser();
+	bool CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
 
 	void UpdateAvailableFiles();
 

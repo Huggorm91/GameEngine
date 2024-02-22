@@ -16,14 +16,15 @@ SkeletonEditor::SkeletonEditor() :
 
 void SkeletonEditor::Init(float aFoVDegree, float aNearPlane, float aFarPlane, float aCameraSpeed, float aMouseSensitivity)
 {
-	myCamera.SetPosition({ 0.f, 100.f, -200.f });
-	myCamera.AddComponent(PerspectiveCameraComponent(aFoVDegree, aNearPlane, aFarPlane));
+	auto& camera = myCamera.AddComponent(PerspectiveCameraComponent(aFoVDegree, aNearPlane, aFarPlane));
 	myCamera.AddComponent(EditorCameraControllerComponent(aCameraSpeed, aMouseSensitivity));
+	camera.SetPosition({ 0.f, 100.f, 200.f });
+	camera.SetRotation({ 0.f, 180.f, 0.f });
 
 	myWindowSize = GraphicsEngine::Get().GetWindowSize();
 
-	myAssetIcon = AssetManager::GetAsset<Texture>("Settings\\EditorAssets\\AnimatedModelIcon.dds");
-	SetSkeleton(AssetManager::GetAsset<Skeleton*>("SK_C_TGA_Bro.fbx"));
+	mySkeletonIcon = AssetManager::GetAsset<Texture>("Settings\\EditorAssets\\AnimatedModelIcon.dds");
+	myAnimationIcon = AssetManager::GetAsset<Texture>("Settings\\EditorAssets\\AnimationIcon.dds");
 }
 
 void SkeletonEditor::Update()
@@ -48,15 +49,17 @@ void SkeletonEditor::Update()
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
 
 	CreateViewport();
-	CreateSkeletonHeirarchy();
 	CreateAssetBrowser();
+	CreateSkeletonHeirarchy();
 
 	ImGui::End();
 }
 
-void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton)
+void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 {
 	mySkeleton = aSkeleton;
+	mySelectedBone = nullptr;
+	myHoveredBone = nullptr;
 
 	for (auto& [bone, line] : myLines)
 	{
@@ -77,10 +80,18 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton)
 		}
 	}
 
-	for (auto& [bone, line] : myLines)
+	if (aHideLines)
 	{
-		line.SetActive(false);
-	}
+		for (auto& [bone, line] : myLines)
+		{
+			line.SetActive(false);
+		}
+	}	
+}
+
+void SkeletonEditor::SetAnimation(Animation anAnimation)
+{
+	myAnimation = anAnimation;
 }
 
 void SkeletonEditor::SetCameraSpeed(float aSpeed)
@@ -158,6 +169,12 @@ void SkeletonEditor::CreateSkeletonHeirarchy()
 {
 	if (ImGui::Begin("Skeleton_Heirarchy"))
 	{
+		if (mySkeleton == nullptr)
+		{
+			ImGui::End();
+			return;
+		}
+
 		std::string boneCount = "Bones: " + std::to_string(mySkeleton->GetBoneCount());
 		ImGui::Text(boneCount.c_str());
 
@@ -254,23 +271,149 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 
 void SkeletonEditor::CreateAssetBrowser()
 {
+	if (ImGui::Begin("Skeletons and Animations"))
+	{
+		const float spacing = 10.f;
+		const float iconSize = 75.f;
+		const float groupsize = iconSize + spacing + (ImGui::GetStyle().ChildBorderSize * 2.f);
+		const float contentsize = ImGui::GetWindowSize().x - (ImGui::GetStyle().WindowPadding.x * 2.f);
+		unsigned count = 1;
 
+		for (auto& file : myAvailableSkeletons)
+		{
+			if (CreateFileButton(file, iconSize, false))
+			{
+				SetSkeleton(AssetManager::GetAsset<Skeleton*>(file), false);
+			}
+
+			const float next = groupsize + (groupsize * count);
+			if (next <= contentsize)
+			{
+				ImGui::SameLine(0.f, spacing);
+				++count;
+			}
+			else
+			{
+				count = 1;
+			}
+		}
+
+		for (auto& file : myAvailableAnimations)
+		{
+			if (CreateFileButton(file, iconSize, true))
+			{
+				SetAnimation(AssetManager::GetAsset<Animation>(file));
+			}
+
+			const float next = groupsize + (groupsize * count);
+			if (next <= contentsize)
+			{
+				ImGui::SameLine(0.f, spacing);
+				++count;
+			}
+			else
+			{
+				count = 1;
+			}
+		}
+	}
+	ImGui::End();
+}
+
+bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation)
+{
+	bool isSelected = false;
+
+	if (anIsAnimation)
+	{
+		if (myAnimation.HasData())
+		{
+			isSelected = myAnimation.GetPath() == aFile;
+		}		
+	}
+	else
+	{
+		if (mySkeleton)
+		{
+			isSelected = mySkeleton->GetPath() == aFile;
+		}		
+	}
+
+	if (isSelected)
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->ChannelsSplit(2);
+		draw_list->ChannelsSetCurrent(1);
+	}
+
+	ImGui::BeginGroup();
+	if (anIsAnimation)
+	{
+		ImGui::Image(myAnimationIcon.GetSRV().Get(), ImVec2(anIconSize, anIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+	}
+	else
+	{
+		ImGui::Image(mySkeletonIcon.GetSRV().Get(), ImVec2(anIconSize, anIconSize), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+	}
+	ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + anIconSize);
+	ImGui::Text(Crimson::GetFileName(aFile).c_str());
+	ImGui::PopTextWrapPos();
+	ImGui::EndGroup();
+
+	if (isSelected)
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->ChannelsSetCurrent(0);
+		ImVec2 p_min = ImGui::GetItemRectMin();
+		ImVec2 p_max = ImGui::GetItemRectMax();
+		draw_list->AddRectFilled(p_min, p_max, IM_COL32(255, 255, 255, 127));
+		draw_list->ChannelsMerge();
+	}
+
+	if (ImGui::IsItemClicked())
+	{
+		return true;
+	}
+	return false;
 }
 
 void SkeletonEditor::UpdateAvailableFiles()
 {
-	myAvailableFiles.clear();
-	auto files = Crimson::GetAllFilepathsInDirectory(AssetManager::GetModelPath(), true);
-	for (auto& file : files)
-	{
-		auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
-		for (auto& type : potentialTypes)
+	myAvailableSkeletons.clear();
+	myAvailableAnimations.clear();
+
+	{ // Sort out skeletons
+		auto files = Crimson::GetAllFilepathsInDirectory(AssetManager::GetModelPath(), true);
+		for (auto& file : files)
 		{
-			if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
+			auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
+			for (auto& type : potentialTypes)
 			{
-				if (Assets::GetModelType(file) == Assets::eAssetType::AnimatedModel)
+				if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
 				{
-					myAvailableFiles.emplace(file);
+					if (Assets::GetModelType(file) == Assets::eAssetType::AnimatedModel)
+					{
+						myAvailableSkeletons.emplace(file);
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	{ // Sort out animations
+		auto files = Crimson::GetAllFilepathsInDirectory(AssetManager::GetAnimationPath(), true);
+		for (auto& file : files)
+		{
+			auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
+			for (auto& type : potentialTypes)
+			{
+				if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
+				{
+					if (Assets::GetModelType(file) == Assets::eAssetType::Animation)
+					{
+						myAvailableAnimations.emplace(file);
+					}
 					break;
 				}
 			}
