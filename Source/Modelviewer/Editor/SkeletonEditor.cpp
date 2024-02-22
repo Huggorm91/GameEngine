@@ -8,6 +8,7 @@
 
 SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),
+	myHasMatchingBones(false),
 	mySkeleton(nullptr),
 	mySelectedBone(nullptr),
 	myHoveredBone(nullptr),
@@ -40,16 +41,18 @@ void SkeletonEditor::Update()
 	ImGui::SetNextWindowSize(ImVec2(myWindowSize.x, myWindowSize.y));
 	const auto& color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(color.x, color.y, color.z, 1.f));
-	ImGui::Begin("Skeleton_MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar);
+	ImGui::Begin("Skeleton MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar);
 	ImGui::PopStyleColor();
 
 	CreateMenubar();
 
-	ImGuiID dockspace_id = ImGui::GetID("Skeleton_MainDockSpace");
+	ImGuiID dockspace_id = ImGui::GetID("Skeleton MainDockSpace");
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
 
 	CreateViewport();
 	CreateAssetBrowser();
+
+	CreateAnimationInspector();
 	CreateSkeletonHeirarchy();
 
 	ImGui::End();
@@ -86,12 +89,15 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 		{
 			line.SetActive(false);
 		}
-	}	
+	}
+
+	CheckSkeletonAnimationMatching();
 }
 
 void SkeletonEditor::SetAnimation(Animation anAnimation)
 {
 	myAnimation = anAnimation;
+	CheckSkeletonAnimationMatching();
 }
 
 void SkeletonEditor::SetCameraSpeed(float aSpeed)
@@ -138,7 +144,7 @@ void SkeletonEditor::CreateMenubar()
 
 void SkeletonEditor::CreateViewport()
 {
-	if (ImGui::Begin("Skeleton_Viewport", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar))
+	if (ImGui::Begin("Skeleton Viewport", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar))
 	{
 		const Crimson::Vector2f aspectRatio = { myWindowSize.y / myWindowSize.x, myWindowSize.x / myWindowSize.y };
 
@@ -167,7 +173,7 @@ void SkeletonEditor::CreateViewport()
 
 void SkeletonEditor::CreateSkeletonHeirarchy()
 {
-	if (ImGui::Begin("Skeleton_Heirarchy"))
+	if (ImGui::Begin("Skeleton Heirarchy"))
 	{
 		if (mySkeleton == nullptr)
 		{
@@ -175,10 +181,10 @@ void SkeletonEditor::CreateSkeletonHeirarchy()
 			return;
 		}
 
-		std::string boneCount = "Bones: " + std::to_string(mySkeleton->GetBoneCount());
+		const std::string boneCount = "Bones: " + std::to_string(mySkeleton->GetBoneCount());
 		ImGui::Text(boneCount.c_str());
 
-		std::string socketCount = "Sockets: " + std::to_string(mySkeleton->GetSocketCount());
+		const std::string socketCount = "Sockets: " + std::to_string(mySkeleton->GetSocketCount());
 		ImGui::Text(socketCount.c_str());
 
 		auto position = mySkeletonOffset.GetPosition();
@@ -205,6 +211,7 @@ void SkeletonEditor::CreateSkeletonHeirarchy()
 
 		if (ImGui::IsItemClicked())
 		{
+			myLines.at(mySelectedBone).UpdateColor(ColorManager::GetColor("White"));
 			mySelectedBone = nullptr;
 		}
 
@@ -267,6 +274,48 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 		}
 		ImGui::TreePop();
 	}
+}
+
+void SkeletonEditor::CreateAnimationInspector()
+{
+	if (ImGui::Begin("Animation Inspector"))
+	{
+		if (!myAnimation.HasData())
+		{
+			ImGui::End();
+			return;
+		}
+
+		const auto& animationData = myAnimation.GetData();
+		ImGui::Text(animationData.myName.c_str());
+
+		ImGui::Separator();
+
+		const std::string frameCount = "Frames: " + std::to_string(animationData.myFrames.size());
+		ImGui::Text(frameCount.c_str());
+
+		const std::string eventCount = "Events: " + std::to_string(animationData.myEventNames.size());
+		ImGui::Text(eventCount.c_str());
+
+		const std::string fps = "FPS: " + std::to_string(animationData.myFramesPerSecond);
+		ImGui::Text(fps.c_str());
+
+		const std::string duration = "Length: " + std::to_string(animationData.myDuration) + " seconds";
+		ImGui::Text(duration.c_str());
+
+		ImGui::Separator();
+
+		if (myHasMatchingBones)
+		{
+
+		}
+		else
+		{
+			ImGui::Text("WARNING!");
+			ImGui::Text("Animation does not match Skeleton!");
+		}
+	}
+	ImGui::End();
 }
 
 void SkeletonEditor::CreateAssetBrowser()
@@ -437,4 +486,29 @@ void SkeletonEditor::CreateBoneLines(unsigned anIndex, const Crimson::Vector4f& 
 			CreateBoneLines(childIndex, position);
 		}
 	}	
+}
+
+void SkeletonEditor::CheckSkeletonAnimationMatching()
+{
+	myHasMatchingBones = false;
+	if (mySkeleton == nullptr || !myAnimation.HasData())
+	{
+		return;
+	}
+
+	const auto& frame = myAnimation.GetFrame(0);
+	if (mySkeleton->GetBoneCount() != frame.myLocalTransforms.size())
+	{
+		return;
+	}
+
+	for (auto& bone : mySkeleton->GetBones())
+	{
+		if (frame.myLocalTransforms.find(bone.myName) == frame.myLocalTransforms.end())
+		{
+			return;
+		}
+	}
+
+	myHasMatchingBones = true;
 }

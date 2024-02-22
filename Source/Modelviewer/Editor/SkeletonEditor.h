@@ -22,6 +22,7 @@ public:
 
 private:
 	bool myIsActive;
+	bool myHasMatchingBones;
 
 	Crimson::Vector2f myWindowSize;
 
@@ -47,10 +48,14 @@ private:
 	void CreateSkeletonHeirarchy();
 	void CreateBoneList(const Bone& aBone);
 
+	void CreateAnimationInspector();
+
 	void CreateAssetBrowser();
 	bool CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
 
 	void UpdateAvailableFiles();
 
 	void CreateBoneLines(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
+
+	void CheckSkeletonAnimationMatching();
 };

@@ -75,3 +75,8 @@ bool Animation::HasData() const
 {
 	return myData != nullptr;
 }
+
+const AnimationData& Animation::GetData() const
+{
+	return *myData;
+}

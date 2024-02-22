@@ -42,6 +42,7 @@ public:
 	bool GetNextIndex(unsigned int& outIndex) const;
 
 	bool HasData() const;
+	const AnimationData& GetData() const;
 
 private:
 	AnimationData* myData;
