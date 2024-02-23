@@ -304,6 +304,14 @@ void ModelViewer::SetIsSceneActive(bool aState)
 	GraphicsEngine::Get().SetDrawGridLines(aState);
 }
 
+void ModelViewer::RestoreDebugSettings()
+{
+	auto& engine = GraphicsEngine::Get();
+	engine.SetDebugMode(myDebugMode);
+	engine.SetLightMode(myLightMode);
+	engine.SetRenderMode(myRenderMode);
+}
+
 void ModelViewer::ActivateImGuiEditor()
 {
 	myImguiManager.Activate();

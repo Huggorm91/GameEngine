@@ -38,6 +38,9 @@ public:
 
 	void SetPlayMode(bool aState);
 	void SetIsSceneActive(bool aState);
+
+	void RestoreDebugSettings();
+
 	void ActivateImGuiEditor();
 	void ActivateSkeletonEditor();
 

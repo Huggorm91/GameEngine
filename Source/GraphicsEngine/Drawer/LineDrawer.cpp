@@ -174,6 +174,16 @@ bool LineDrawer::IsActive(LineHandle aHandle) const
 	}
 }
 
+void LineDrawer::SetUsingDepthBuffer(bool aState)
+{
+	myIsUsingDepthBuffer = aState;
+}
+
+bool LineDrawer::IsUsingDepthBuffer() const
+{
+	return myIsUsingDepthBuffer;
+}
+
 bool LineDrawer::Init()
 {
 	myVertexShader = AssetManager::GetAsset<Shader&>("Default_Line_VS.cso");

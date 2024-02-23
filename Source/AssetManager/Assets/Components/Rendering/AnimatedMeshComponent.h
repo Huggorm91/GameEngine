@@ -36,6 +36,8 @@ public:
 	void StopAnimation();
 	void PauseAnimation();
 
+	void SetFrameIndex(unsigned anIndex);
+
 	bool HasSkeleton() const;
 	void SetSkeleton(Skeleton* aSkeleton);
 	const Skeleton& GetSkeleton() const;

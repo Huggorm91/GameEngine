@@ -173,6 +173,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			GELogger.Err("Failed to initialize LineDrawer!");
 			return false;
 		}
+		myLineDrawer.SetUsingDepthBuffer(true);
 
 		if (!myParticleDrawer.Init())
 		{
@@ -1045,9 +1046,23 @@ void GraphicsEngine::RenderFrame()
 	} // End: if (LightMode::IgnoreLight)
 
 #ifndef _RETAIL
-	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+	if (myLineDrawer.IsUsingDepthBuffer())
+	{
+		RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+	}
+	else
+	{
+		RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+	}
 #else
-	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
+	if (myLineDrawer.IsUsingDepthBuffer())
+	{
+		RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
+	}
+	else
+	{
+		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+	}
 #endif // !_RETAIL
 
 	RHI::BeginEvent(L"Line Drawer");

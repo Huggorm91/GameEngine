@@ -41,6 +41,9 @@ public:
 	// True if handle is actively being drawn by LineDrawer
 	bool IsActive(LineHandle aHandle) const;
 
+	void SetUsingDepthBuffer(bool aState);
+	bool IsUsingDepthBuffer() const;
+
 private:
 	struct LinePrimitive
 	{
@@ -68,6 +71,7 @@ private:
 	unsigned myCounter;
 	bool myIsDirty;
 	bool myUIIsDirty;
+	bool myIsUsingDepthBuffer;
 
 	unsigned AddPrimitive(const LinePrimitive& aPrimitive);
 	void UpdatePrimitive(const LinePrimitive& aPrimitive, LineHandle aHandle);

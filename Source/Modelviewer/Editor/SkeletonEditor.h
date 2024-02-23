@@ -24,6 +24,7 @@ private:
 	bool myIsActive;
 	bool myHasMatchingBones;
 	bool myIsPlayingAnimation;
+	bool myShouldRenderMesh;
 
 	unsigned myFrameIndex;
 	float myAnimationTimer;
@@ -33,6 +34,10 @@ private:
 
 	Animation myAnimation;
 	Skeleton* mySkeleton;
+	Texture* myMeshTexture;
+	AnimatedMeshComponent* myMesh; // Points to myModels AnimatedMeshComponent
+	const Transform* mySkeletonOffset; // Points to myModels Transform
+
 	const Bone* mySelectedBone;
 	const Bone* myHoveredBone;
 	const Bone* myRootBone;
@@ -41,8 +46,8 @@ private:
 	Crimson::Vector4f mySelectedColor;
 	Crimson::Vector4f myHoveredColor;
 
-	Transform mySkeletonOffset;
 	GameObject myCamera;
+	GameObject myModel;
 
 	Texture mySkeletonIcon;
 	Texture myAnimationIcon;
@@ -54,8 +59,9 @@ private:
 	void CreateMenubar();
 	void CreateViewport();
 
-	void CreateSkeletonHeirarchy();
+	void CreateSkeletonInspector();
 	void CreateBoneList(const Bone& aBone);
+	void CreateTexturePicker();
 
 	void CreateAnimationInspector();
 

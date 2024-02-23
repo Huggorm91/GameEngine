@@ -154,6 +154,16 @@ void AnimatedMeshComponent::PauseAnimation()
 	myAnimationState = AnimationState::Stopped;
 }
 
+void AnimatedMeshComponent::SetFrameIndex(unsigned anIndex)
+{
+	if (myAnimation.HasData())
+	{
+		myAnimationTimer = 0.f;
+		myCurrentFrame = Crimson::Min(anIndex, myAnimation.GetLastFrameIndex());
+		UpdateCache();
+	}
+}
+
 bool AnimatedMeshComponent::HasSkeleton() const
 {
 	return mySkeleton != nullptr;
