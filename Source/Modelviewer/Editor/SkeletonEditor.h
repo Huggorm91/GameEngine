@@ -23,6 +23,11 @@ public:
 private:
 	bool myIsActive;
 	bool myHasMatchingBones;
+	bool myIsPlayingAnimation;
+
+	unsigned myFrameIndex;
+	float myAnimationTimer;
+	float myPlaybackMultiplier;
 
 	Crimson::Vector2f myWindowSize;
 
@@ -31,6 +36,10 @@ private:
 	const Bone* mySelectedBone;
 	const Bone* myHoveredBone;
 	const Bone* myRootBone;
+
+	Crimson::Vector4f myBoneColor;
+	Crimson::Vector4f mySelectedColor;
+	Crimson::Vector4f myHoveredColor;
 
 	Transform mySkeletonOffset;
 	GameObject myCamera;
@@ -55,7 +64,12 @@ private:
 
 	void UpdateAvailableFiles();
 
-	void CreateBoneLines(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
+	void DrawSkeleton();
+	void DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
+	void DrawFrame();
+	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame);
 
 	void CheckSkeletonAnimationMatching();
+
+	void ClearLines();
 };

@@ -5,10 +5,15 @@
 #include "AssetManager/Assets/ImguiTransform.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "Modelviewer.h"
+#include "Time/Timer.h"
 
 SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),
 	myHasMatchingBones(false),
+	myIsPlayingAnimation(false),
+	myFrameIndex(1u),
+	myAnimationTimer(0.f),
+	myPlaybackMultiplier(1.f),
 	mySkeleton(nullptr),
 	mySelectedBone(nullptr),
 	myHoveredBone(nullptr),
@@ -24,6 +29,10 @@ void SkeletonEditor::Init(float aFoVDegree, float aNearPlane, float aFarPlane, f
 
 	myWindowSize = GraphicsEngine::Get().GetWindowSize();
 
+	myBoneColor = ColorManager::GetColor("White");
+	mySelectedColor = ColorManager::GetColor("Red");
+	myHoveredColor = ColorManager::GetColor("Green");
+
 	mySkeletonIcon = AssetManager::GetAsset<Texture>("Settings\\EditorAssets\\AnimatedModelIcon.dds");
 	myAnimationIcon = AssetManager::GetAsset<Texture>("Settings\\EditorAssets\\AnimationIcon.dds");
 }
@@ -34,7 +43,18 @@ void SkeletonEditor::Update()
 	{
 		return;
 	}
+
 	myCamera.Update();
+	if (myIsPlayingAnimation)
+	{
+		myAnimationTimer += Crimson::Timer::GetUnscaledDeltaTime() * myPlaybackMultiplier;
+		if (myAnimationTimer >= myAnimation.GetFrameDelta())
+		{
+			myAnimationTimer -= myAnimation.GetFrameDelta();
+			myAnimation.GetNextIndex(myFrameIndex);
+			DrawFrame();
+		}
+	}
 
 	// Create Editor workarea
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -64,23 +84,12 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 	mySelectedBone = nullptr;
 	myHoveredBone = nullptr;
 
-	for (auto& [bone, line] : myLines)
-	{
-		line.Delete();
-	}
-	myLines.clear();
+	ClearLines();
 
 	if (mySkeleton)
 	{
 		myRootBone = &mySkeleton->GetBone(0);
-		Crimson::Vector4f center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
-		Crimson::Vector3f extent = Crimson::Vector3f(2.f);
-		myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, extent, ColorManager::GetColor("White"), mySkeletonOffset.GetTransformMatrix()));
-
-		for (auto& childIndex : myRootBone->myChildren)
-		{
-			CreateBoneLines(childIndex, center);
-		}
+		DrawSkeleton();
 	}
 
 	if (aHideLines)
@@ -96,6 +105,12 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 
 void SkeletonEditor::SetAnimation(Animation anAnimation)
 {
+	if (myHasMatchingBones)
+	{
+		ClearLines();
+		DrawSkeleton();
+	}
+
 	myAnimation = anAnimation;
 	CheckSkeletonAnimationMatching();
 }
@@ -211,13 +226,13 @@ void SkeletonEditor::CreateSkeletonHeirarchy()
 
 		if (ImGui::IsItemClicked())
 		{
-			myLines.at(mySelectedBone).UpdateColor(ColorManager::GetColor("White"));
+			myLines.at(mySelectedBone).UpdateColor(myBoneColor);
 			mySelectedBone = nullptr;
 		}
 
 		if (ImGui::IsItemHovered() && myHoveredBone)
 		{
-			myLines.at(myHoveredBone).UpdateColor(ColorManager::GetColor("White"));
+			myLines.at(myHoveredBone).UpdateColor(myBoneColor);
 			myHoveredBone = nullptr;
 		}
 
@@ -238,7 +253,7 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 	{
 		if (myHoveredBone)
 		{
-			myLines.at(myHoveredBone).UpdateColor(ColorManager::GetColor("White"));
+			myLines.at(myHoveredBone).UpdateColor(myBoneColor);
 		}
 
 		if (mySelectedBone == &aBone)
@@ -248,7 +263,7 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 		else
 		{
 			myHoveredBone = &aBone;
-			myLines.at(myHoveredBone).UpdateColor(ColorManager::GetColor("Green"));
+			myLines.at(myHoveredBone).UpdateColor(myHoveredColor);
 		}
 	}
 
@@ -256,14 +271,14 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 	{
 		if (mySelectedBone)
 		{
-			myLines.at(mySelectedBone).UpdateColor(ColorManager::GetColor("White"));
+			myLines.at(mySelectedBone).UpdateColor(myBoneColor);
 		}
 		if (myHoveredBone == &aBone)
 		{
 			myHoveredBone = nullptr;
 		}
 		mySelectedBone = &aBone;
-		myLines.at(mySelectedBone).UpdateColor(ColorManager::GetColor("Red"));
+		myLines.at(mySelectedBone).UpdateColor(mySelectedColor);
 	}
 
 	if (isOpen)
@@ -291,7 +306,7 @@ void SkeletonEditor::CreateAnimationInspector()
 
 		ImGui::Separator();
 
-		const std::string frameCount = "Frames: " + std::to_string(animationData.myFrames.size());
+		const std::string frameCount = "Frames: " + std::to_string(animationData.myLength);
 		ImGui::Text(frameCount.c_str());
 
 		const std::string eventCount = "Events: " + std::to_string(animationData.myEventNames.size());
@@ -307,7 +322,33 @@ void SkeletonEditor::CreateAnimationInspector()
 
 		if (myHasMatchingBones)
 		{
+			if(ImGui::Button("Start"))
+			{
+				myIsPlayingAnimation = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Stop"))
+			{
+				myIsPlayingAnimation = false;
+				myAnimationTimer = 0.f;
+				myFrameIndex = 1u;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Pause"))
+			{
+				myIsPlayingAnimation = false;
+			}
 
+			ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.05f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+
+			int index = myFrameIndex;
+			if (ImGui::SliderInt("Frame", &index, 0, myAnimation.GetLastFrameIndex(), "%d", ImGuiSliderFlags_AlwaysClamp))
+			{
+				myIsPlayingAnimation = false;
+				myAnimationTimer = 0.f;
+				myFrameIndex = index;
+				DrawFrame();
+			}
 		}
 		else
 		{
@@ -470,27 +511,100 @@ void SkeletonEditor::UpdateAvailableFiles()
 	}
 }
 
-void SkeletonEditor::CreateBoneLines(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
+void SkeletonEditor::DrawSkeleton()
+{
+	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
+	const Crimson::Vector3f& extent = Crimson::Vector3f(2.f);
+	myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, extent, myBoneColor, mySkeletonOffset.GetTransformMatrix()));
+
+	for (auto& childIndex : myRootBone->myChildren)
+	{
+		DrawSkeleton(childIndex, center);
+	}
+}
+
+void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
 {
 	const Bone& bone = mySkeleton->GetBone(anIndex);
+
 	if (bone.myChildren.empty())
 	{
-		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), ColorManager::GetColor("White"), mySkeletonOffset.GetTransformMatrix()));
+		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), myBoneColor, mySkeletonOffset.GetTransformMatrix()));
 	}
 	else
 	{
 		auto position = Crimson::Vector4f::NullPosition * bone.myBindPoseInverse.GetInverse();
-		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, ColorManager::GetColor("White"), mySkeletonOffset.GetTransformMatrix()));
+		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, myBoneColor, mySkeletonOffset.GetTransformMatrix()));
 		for (auto& childIndex : bone.myChildren)
 		{
-			CreateBoneLines(childIndex, position);
+			DrawSkeleton(childIndex, position);
 		}
 	}	
+}
+
+void SkeletonEditor::DrawFrame()
+{
+	if (!myHasMatchingBones)
+	{
+		return;
+	}
+
+	const auto& frame = myAnimation.GetFrame(myFrameIndex);
+	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame.myGlobalTransforms.at(myRootBone->myName);
+	auto* color = &myBoneColor;
+	if (mySelectedBone == myRootBone)
+	{
+		color = &mySelectedColor;
+	}
+	else if (myHoveredBone == myRootBone)
+	{
+		color = &myHoveredColor;
+	}
+	GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset.GetTransformMatrix(), false, &myLines.at(myRootBone));
+
+	for (auto& childIndex : myRootBone->myChildren)
+	{
+		DrawFrame(childIndex, center, frame);
+	}
+}
+
+void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame)
+{
+	const Bone& bone = mySkeleton->GetBone(anIndex);
+
+	auto* color = &myBoneColor;
+	if (mySelectedBone == &bone)
+	{
+		color = &mySelectedColor;
+	}
+	else if (myHoveredBone == &bone)
+	{
+		color = &myHoveredColor;
+	}
+
+	if (bone.myChildren.empty())
+	{
+		GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), *color, mySkeletonOffset.GetTransformMatrix(), false, &myLines.at(&bone));
+	}
+	else
+	{
+		const auto& position = Crimson::Vector4f::NullPosition * aFrame.myGlobalTransforms.at(bone.myName);
+		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset.GetTransformMatrix(), false, &myLines.at(&bone));
+
+		for (auto& childIndex : bone.myChildren)
+		{
+			DrawFrame(childIndex, position, aFrame);
+		}
+	}
 }
 
 void SkeletonEditor::CheckSkeletonAnimationMatching()
 {
 	myHasMatchingBones = false;
+	myIsPlayingAnimation = false;
+	myAnimationTimer = 0.f;
+	myFrameIndex = 0u;
+
 	if (mySkeleton == nullptr || !myAnimation.HasData())
 	{
 		return;
@@ -511,4 +625,13 @@ void SkeletonEditor::CheckSkeletonAnimationMatching()
 	}
 
 	myHasMatchingBones = true;
+}
+
+void SkeletonEditor::ClearLines()
+{
+	for (auto& [bone, line] : myLines)
+	{
+		line.Delete();
+	}
+	myLines.clear();
 }

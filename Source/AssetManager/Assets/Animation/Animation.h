@@ -32,12 +32,15 @@ public:
 	Animation(AnimationData& someData);
 	~Animation() = default;
 
-	float GetFPS() const;
-	float GetFrameDelta() const;
-	const AnimationFrame& GetFrame(unsigned int anIndex) const;
 	const std::string& GetName() const;
 	const std::string& GetPath() const;
 
+	float GetFPS() const;
+	float GetFrameDelta() const;
+	unsigned GetFrameCount() const;
+
+	const AnimationFrame& GetFrame(unsigned int anIndex) const;
+	unsigned GetLastFrameIndex() const;
 	// Returns true if next frame is first frame
 	bool GetNextIndex(unsigned int& outIndex) const;
 

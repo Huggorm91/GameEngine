@@ -19,7 +19,7 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : myGlo
 	}
 }
 
-AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : myFrames(), myEventNames(anAnimation.EventNames), myName(anAnimation.Name), myDuration(anAnimation.Duration), myFramesPerSecond(anAnimation.FramesPerSecond), 
+AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : myFrames(), myEventNames(anAnimation.EventNames), myName(anAnimation.Name), myDuration(anAnimation.Duration), myFramesPerSecond(anAnimation.FramesPerSecond),
 myFrameDelta(1.f / myFramesPerSecond), myLength(anAnimation.Length), myPath(nullptr)
 {
 	for (auto& frame : anAnimation.Frames)
@@ -29,11 +29,19 @@ myFrameDelta(1.f / myFramesPerSecond), myLength(anAnimation.Length), myPath(null
 }
 
 Animation::Animation() : myData(nullptr)
-{
-}
+{}
 
 Animation::Animation(AnimationData& someData) : myData(&someData)
+{}
+
+const std::string& Animation::GetName() const
 {
+	return myData->myName;
+}
+
+const std::string& Animation::GetPath() const
+{
+	return *myData->myPath;
 }
 
 float Animation::GetFPS() const
@@ -46,19 +54,19 @@ float Animation::GetFrameDelta() const
 	return myData->myFrameDelta;
 }
 
+unsigned Animation::GetFrameCount() const
+{
+	return myData->myLength;
+}
+
 const AnimationFrame& Animation::GetFrame(unsigned int anIndex) const
 {
 	return myData->myFrames[anIndex];
 }
 
-const std::string& Animation::GetName() const
+unsigned Animation::GetLastFrameIndex() const
 {
-	return myData->myName;
-}
-
-const std::string& Animation::GetPath() const
-{
-	return *myData->myPath;
+	return myData->myLength - 1;
 }
 
 bool Animation::GetNextIndex(unsigned int& outIndex) const
