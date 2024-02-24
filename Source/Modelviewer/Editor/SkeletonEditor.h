@@ -70,8 +70,13 @@ private:
 
 	void UpdateAvailableFiles();
 
+	// Creates new handles in myLines
+	void GenerateSkeletonDrawing();
+	void GenerateSkeletonDrawing(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
+
 	void DrawSkeleton();
 	void DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
+
 	void DrawFrame();
 	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame);
 

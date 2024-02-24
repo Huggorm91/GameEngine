@@ -59,8 +59,7 @@ void SkeletonEditor::Update()
 		if (myAnimationTimer >= myAnimation.GetFrameDelta())
 		{
 			myAnimationTimer -= myAnimation.GetFrameDelta();
-			myAnimation.GetNextIndex(myFrameIndex);
-			myMesh->SetFrameIndex(myFrameIndex);
+			myAnimation.GetNextIndex(myFrameIndex);			
 			DrawFrame();
 		}
 	}
@@ -105,7 +104,7 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 		*myMesh = AssetManager::GetAsset<AnimatedMeshComponent>(mySkeleton->GetPath());
 
 		myRootBone = &mySkeleton->GetBone(0);
-		DrawSkeleton();
+		GenerateSkeletonDrawing();
 	}
 
 	if (aHideLines)
@@ -130,7 +129,7 @@ void SkeletonEditor::SetAnimation(Animation anAnimation)
 	if (myHasMatchingBones)
 	{
 		ClearLines();
-		DrawSkeleton();
+		GenerateSkeletonDrawing();
 	}
 
 	myAnimation = anAnimation;
@@ -303,6 +302,11 @@ void SkeletonEditor::CreateSkeletonInspector()
 		{
 			myLines.at(mySelectedBone).UpdateColor(myBoneColor);
 			mySelectedBone = nullptr;
+
+			if (myIsPlayingAnimation)
+			{
+				DrawFrame();
+			}
 		}
 
 		if (ImGui::IsItemHovered() && myHoveredBone)
@@ -354,6 +358,13 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 		}
 		mySelectedBone = &aBone;
 		myLines.at(mySelectedBone).UpdateColor(mySelectedColor);
+
+		if (myIsPlayingAnimation)
+		{
+			myMesh->ResetBoneCache();
+			DrawSkeleton();
+			DrawFrame();
+		}
 	}
 
 	if (isOpen)
@@ -614,19 +625,18 @@ void SkeletonEditor::UpdateAvailableFiles()
 	}
 }
 
-void SkeletonEditor::DrawSkeleton()
+void SkeletonEditor::GenerateSkeletonDrawing()
 {
 	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
-	const Crimson::Vector3f& extent = Crimson::Vector3f(2.f);
-	myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, extent, myBoneColor, mySkeletonOffset->GetTransformMatrix()));
+	myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), myBoneColor, mySkeletonOffset->GetTransformMatrix()));
 
 	for (auto& childIndex : myRootBone->myChildren)
 	{
-		DrawSkeleton(childIndex, center);
+		GenerateSkeletonDrawing(childIndex, center);
 	}
 }
 
-void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
+void SkeletonEditor::GenerateSkeletonDrawing(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
 {
 	const Bone& bone = mySkeleton->GetBone(anIndex);
 
@@ -638,6 +648,54 @@ void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aPa
 	{
 		auto position = Crimson::Vector4f::NullPosition * bone.myBindPoseInverse.GetInverse();
 		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, myBoneColor, mySkeletonOffset->GetTransformMatrix()));
+		for (auto& childIndex : bone.myChildren)
+		{
+			GenerateSkeletonDrawing(childIndex, position);
+		}
+	}
+}
+
+void SkeletonEditor::DrawSkeleton()
+{
+	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
+	auto* color = &myBoneColor;
+	if (mySelectedBone == myRootBone)
+	{
+		color = &mySelectedColor;
+	}
+	else if (myHoveredBone == myRootBone)
+	{
+		color = &myHoveredColor;
+	}
+	GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(myRootBone));
+
+	for (auto& childIndex : myRootBone->myChildren)
+	{
+		DrawSkeleton(childIndex, center);
+	}
+}
+
+void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
+{
+	const Bone& bone = mySkeleton->GetBone(anIndex);
+	auto* color = &myBoneColor;
+	if (mySelectedBone == &bone)
+	{
+		color = &mySelectedColor;
+	}
+	else if (myHoveredBone == &bone)
+	{
+		color = &myHoveredColor;
+	}
+
+	if (bone.myChildren.empty())
+	{
+		GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
+	}
+	else
+	{
+		auto position = Crimson::Vector4f::NullPosition * bone.myBindPoseInverse.GetInverse();
+		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
 		for (auto& childIndex : bone.myChildren)
 		{
 			DrawSkeleton(childIndex, position);
@@ -653,22 +711,43 @@ void SkeletonEditor::DrawFrame()
 	}
 
 	const auto& frame = myAnimation.GetFrame(myFrameIndex);
-	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame.myGlobalTransforms.at(myRootBone->myName);
-	auto* color = &myBoneColor;
-	if (mySelectedBone == myRootBone)
-	{
-		color = &mySelectedColor;
-	}
-	else if (myHoveredBone == myRootBone)
-	{
-		color = &myHoveredColor;
-	}
-	GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(myRootBone));
 
-	for (auto& childIndex : myRootBone->myChildren)
+	if (mySelectedBone && mySelectedBone != myRootBone)
 	{
-		DrawFrame(childIndex, center, frame);
+		auto& parentBone = mySkeleton->GetBone(mySelectedBone->myParent);
+		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * parentBone.myBindPoseInverse.GetInverse();
+
+		for (auto& childIndex : parentBone.myChildren)
+		{
+			if (&mySkeleton->GetBone(childIndex) == mySelectedBone)
+			{
+				DrawFrame(childIndex, center, frame);
+				myMesh->SetFrameIndex(myFrameIndex, false);
+				myMesh->PlayAnimationFromBone(childIndex);
+				break;
+			}			
+		}
 	}
+	else
+	{
+		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame.myGlobalTransforms.at(myRootBone->myName);
+		auto* color = &myBoneColor;
+		if (mySelectedBone == myRootBone)
+		{
+			color = &mySelectedColor;
+		}
+		else if (myHoveredBone == myRootBone)
+		{
+			color = &myHoveredColor;
+		}
+		GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(myRootBone));
+
+		for (auto& childIndex : myRootBone->myChildren)
+		{
+			DrawFrame(childIndex, center, frame);
+		}
+		myMesh->SetFrameIndex(myFrameIndex);
+	}	
 }
 
 void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame)

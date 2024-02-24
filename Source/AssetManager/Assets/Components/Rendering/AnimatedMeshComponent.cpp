@@ -154,14 +154,27 @@ void AnimatedMeshComponent::PauseAnimation()
 	myAnimationState = AnimationState::Stopped;
 }
 
-void AnimatedMeshComponent::SetFrameIndex(unsigned anIndex)
+void AnimatedMeshComponent::SetFrameIndex(unsigned anIndex, bool aShouldUpdateCache)
 {
 	if (myAnimation.HasData())
 	{
 		myAnimationTimer = 0.f;
 		myCurrentFrame = Crimson::Min(anIndex, myAnimation.GetLastFrameIndex());
-		UpdateCache();
+		if (aShouldUpdateCache)
+		{
+			UpdateCache();
+		}		
 	}
+}
+
+void AnimatedMeshComponent::PlayAnimationFromBone(unsigned anIndex)
+{
+	UpdateHeirarchy(anIndex);
+}
+
+void AnimatedMeshComponent::ResetBoneCache()
+{
+	myBoneTransformCache.fill(Crimson::Matrix4x4f::Null);
 }
 
 bool AnimatedMeshComponent::HasSkeleton() const

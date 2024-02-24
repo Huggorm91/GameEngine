@@ -36,7 +36,9 @@ public:
 	void StopAnimation();
 	void PauseAnimation();
 
-	void SetFrameIndex(unsigned anIndex);
+	void SetFrameIndex(unsigned anIndex, bool aShouldUpdateCache = true);
+	void PlayAnimationFromBone(unsigned anIndex);
+	void ResetBoneCache();
 
 	bool HasSkeleton() const;
 	void SetSkeleton(Skeleton* aSkeleton);
