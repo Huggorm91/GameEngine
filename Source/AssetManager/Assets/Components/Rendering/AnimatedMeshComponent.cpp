@@ -269,29 +269,28 @@ void AnimatedMeshComponent::UpdateCache()
 {
 	assert(mySkeleton != nullptr && "AnimatedMeshComponent is not Initialized!");
 	assert(myAnimation.HasData() && "Animation has no data!");
-	UpdateHeirarchy(0, Crimson::Matrix4x4f::Null);
+	UpdateHeirarchy(0);
 }
 
-void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix)
+void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex)
 {
-	auto& bone = mySkeleton->GetBone(anIndex);
-	auto& frame = myAnimation.GetFrame(myCurrentFrame);
-	Crimson::Matrix4x4f matrix = GetLocalTransform(bone, frame) * aParentMatrix;
-	myBoneTransformCache[anIndex] = bone.myBindPoseInverse * matrix;
+	const auto& bone = mySkeleton->GetBone(anIndex);
+	const auto& frame = myAnimation.GetFrame(myCurrentFrame);
+	myBoneTransformCache[anIndex] = bone.myBindPoseInverse * GetBoneTransform(bone, frame);
 	for (auto& childIndex : bone.myChildren)
 	{
-		UpdateHeirarchy(childIndex, matrix);
+		UpdateHeirarchy(childIndex);
 	}
 }
 
-const Crimson::Matrix4x4f& AnimatedMeshComponent::GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const
+const Crimson::Matrix4x4f& AnimatedMeshComponent::GetBoneTransform(const Bone& aBone, const AnimationFrame& aFrame) const
 {
-	if (auto iter = aFrame.myLocalTransforms.find(aBone.myNamespaceName); iter != aFrame.myLocalTransforms.end())
+	if (auto iter = aFrame.myGlobalTransforms.find(aBone.myName); iter != aFrame.myGlobalTransforms.end())
 	{
 		return iter->second;
 	}
 	else
 	{
-		return aFrame.myLocalTransforms.at(aBone.myName);
+		return aFrame.myGlobalTransforms.at(aBone.myNamespaceName);
 	}
 }

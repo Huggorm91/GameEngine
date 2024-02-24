@@ -63,7 +63,7 @@ private:
 	bool myIsLooping;
 
 	void UpdateCache();
-	void UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix);
-	const Crimson::Matrix4x4f& GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
+	void UpdateHeirarchy(unsigned int anIndex);
+	const Crimson::Matrix4x4f& GetBoneTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
 };
 
