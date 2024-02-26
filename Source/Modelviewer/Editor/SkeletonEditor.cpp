@@ -11,8 +11,8 @@ SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),
 	myHasMatchingBones(false),
 	myIsPlayingAnimation(false),
+	myIsPlayingInReverse(false),
 	myShouldRenderMesh(true),
-	myFrameIndex(1u),
 	myAnimationTimer(0.f),
 	myPlaybackMultiplier(1.f),
 	mySkeleton(nullptr),
@@ -59,7 +59,16 @@ void SkeletonEditor::Update()
 		if (myAnimationTimer >= myAnimation.GetFrameDelta())
 		{
 			myAnimationTimer -= myAnimation.GetFrameDelta();
-			myAnimation.GetNextIndex(myFrameIndex);			
+			if (myIsPlayingInReverse)
+			{
+				myAnimation.PreviousFrame();
+			}
+			else
+			{
+				myAnimation.NextFrame();
+			}
+			
+			myMesh->SetAnimation(std::make_shared<Animation>(myAnimation));
 			DrawFrame();
 		}
 	}
@@ -118,8 +127,7 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 	CheckSkeletonAnimationMatching();
 	if (myHasMatchingBones)
 	{
-		myMesh->SetAnimation(myAnimation);
-		myMesh->SetFrameIndex(myFrameIndex);
+		myMesh->SetAnimation(std::make_shared<Animation>(myAnimation));
 		DrawFrame();
 	}
 }
@@ -137,9 +145,12 @@ void SkeletonEditor::SetAnimation(Animation anAnimation)
 	CheckSkeletonAnimationMatching();
 	if (myHasMatchingBones)
 	{
-		myMesh->SetAnimation(myAnimation);
-		myMesh->SetFrameIndex(myFrameIndex);
+		myMesh->SetAnimation(std::make_shared<Animation>(myAnimation));
 		DrawFrame();
+	}
+	else
+	{
+		myMesh->ResetBoneCache();
 	}
 }
 
@@ -408,7 +419,7 @@ void SkeletonEditor::CreateAnimationInspector()
 {
 	if (ImGui::Begin("Animation Inspector"))
 	{
-		if (!myAnimation.HasData())
+		if (!myAnimation.IsValid())
 		{
 			ImGui::End();
 			return;
@@ -444,7 +455,7 @@ void SkeletonEditor::CreateAnimationInspector()
 			{
 				myIsPlayingAnimation = false;
 				myAnimationTimer = 0.f;
-				myFrameIndex = 1u;
+				myAnimation.SetToFirstFrame();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Pause"))
@@ -452,15 +463,17 @@ void SkeletonEditor::CreateAnimationInspector()
 				myIsPlayingAnimation = false;
 			}
 
+			ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse);
+
 			ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
-			int index = myFrameIndex;
+			int index = myAnimation.GetCurrentFrameIndex();
 			if (ImGui::SliderInt("Frame", &index, 0, myAnimation.GetLastFrameIndex(), "%d", ImGuiSliderFlags_AlwaysClamp))
 			{
 				myIsPlayingAnimation = false;
 				myAnimationTimer = 0.f;
-				myFrameIndex = index;
-				myMesh->SetFrameIndex(myFrameIndex);
+				myAnimation.SetFrameIndex(index);
+				myMesh->SetAnimation(std::make_shared<Animation>(myAnimation));
 				DrawFrame();
 			}
 		}
@@ -468,6 +481,8 @@ void SkeletonEditor::CreateAnimationInspector()
 		{
 			ImGui::Text("WARNING!");
 			ImGui::Text("Animation does not match Skeleton!");
+			ImGui::Spacing();
+			ImGui::Text(myMissMatchMessage.c_str());
 		}
 	}
 	ImGui::End();
@@ -530,7 +545,7 @@ bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 
 	if (anIsAnimation)
 	{
-		if (myAnimation.HasData())
+		if (myAnimation.IsValid())
 		{
 			isSelected = myAnimation.GetPath() == aFile;
 		}
@@ -710,7 +725,7 @@ void SkeletonEditor::DrawFrame()
 		return;
 	}
 
-	const auto& frame = myAnimation.GetFrame(myFrameIndex);
+	const auto& frame = myAnimation.GetCurrentFrame();
 
 	if (mySelectedBone && mySelectedBone != myRootBone)
 	{
@@ -722,8 +737,8 @@ void SkeletonEditor::DrawFrame()
 			if (&mySkeleton->GetBone(childIndex) == mySelectedBone)
 			{
 				DrawFrame(childIndex, center, frame);
-				myMesh->SetFrameIndex(myFrameIndex, false);
-				myMesh->PlayAnimationFromBone(childIndex);
+				//myMesh->SetFrameIndex(myFrameIndex, false);
+				//myMesh->PlayAnimationFromBone(childIndex);
 				break;
 			}			
 		}
@@ -746,7 +761,7 @@ void SkeletonEditor::DrawFrame()
 		{
 			DrawFrame(childIndex, center, frame);
 		}
-		myMesh->SetFrameIndex(myFrameIndex);
+		//myMesh->SetFrameIndex(myFrameIndex);
 	}	
 }
 
@@ -782,26 +797,29 @@ void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParen
 
 void SkeletonEditor::CheckSkeletonAnimationMatching()
 {
+	myMissMatchMessage = "";
 	myHasMatchingBones = false;
 	myIsPlayingAnimation = false;
 	myAnimationTimer = 0.f;
-	myFrameIndex = 0u;
 
-	if (mySkeleton == nullptr || !myAnimation.HasData())
+	if (mySkeleton == nullptr || !myAnimation.IsValid())
 	{
+		myMissMatchMessage = "Missing Animation or Skeleton";
 		return;
 	}
 
 	const auto& frame = myAnimation.GetFrame(0);
-	if (mySkeleton->GetBoneCount() != frame.myLocalTransforms.size())
+	if (mySkeleton->GetBoneCount() != frame.myGlobalTransforms.size())
 	{
+		myMissMatchMessage = "Different Bonecounts! \nBones in Animation: " + std::to_string(frame.myGlobalTransforms.size());
 		return;
 	}
 
 	for (auto& bone : mySkeleton->GetBones())
 	{
-		if (frame.myLocalTransforms.find(bone.myName) == frame.myLocalTransforms.end())
+		if (frame.myGlobalTransforms.find(bone.myName) == frame.myGlobalTransforms.end())
 		{
+			myMissMatchMessage = "Bone not found in animation! \nBone: " + bone.myName;
 			return;
 		}
 	}

@@ -226,7 +226,7 @@ Assets::eAssetType Assets::GetModelType(const std::string& aPath)
 {
 	eAssetType result = eAssetType::Unknown;
 	AssetManager::SetLogErrors(false);
-	if (AssetManager::GetAsset<Animation>(aPath).HasData())
+	if (AssetManager::GetAsset<Animation>(aPath).IsValid())
 	{
 		result = eAssetType::Animation;
 	}

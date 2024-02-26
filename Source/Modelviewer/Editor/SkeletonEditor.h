@@ -24,9 +24,9 @@ private:
 	bool myIsActive;
 	bool myHasMatchingBones;
 	bool myIsPlayingAnimation;
+	bool myIsPlayingInReverse;
 	bool myShouldRenderMesh;
 
-	unsigned myFrameIndex;
 	float myAnimationTimer;
 	float myPlaybackMultiplier;
 
@@ -45,6 +45,8 @@ private:
 	Crimson::Vector4f myBoneColor;
 	Crimson::Vector4f mySelectedColor;
 	Crimson::Vector4f myHoveredColor;
+
+	std::string myMissMatchMessage;
 
 	GameObject myCamera;
 	GameObject myModel;

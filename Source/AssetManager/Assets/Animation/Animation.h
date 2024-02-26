@@ -1,52 +1,47 @@
 #pragma once
-#include "../Components/ComponentParts/TgaImporterConversions.h"
+#include "AnimationBase.h"
 
-struct AnimationFrame
-{
-	std::unordered_map<std::string, Crimson::Matrix4x4f> myGlobalTransforms;
-	std::unordered_map<std::string, Crimson::Matrix4x4f> myLocalTransforms;
-	std::unordered_map<std::string, Crimson::Matrix4x4f> mySocketTransforms;
-	std::unordered_map<std::string, bool> myTriggeredEvents;
-
-	AnimationFrame(const TGA::FBX::Animation::Frame& aFrame);
-};
-
-struct AnimationData
-{
-	std::vector<AnimationFrame> myFrames;
-	std::vector<std::string> myEventNames;
-	std::string myName;
-	double myDuration;
-	const std::string* myPath;
-	float myFramesPerSecond;
-	float myFrameDelta;
-	unsigned int myLength;
-
-	AnimationData(const TGA::FBX::Animation& anAnimation);
-};
-
-class Animation
+class Animation: public AnimationBase
 {
 public:
 	Animation();
 	Animation(AnimationData& someData);
 	~Animation() = default;
 
-	const std::string& GetName() const;
-	const std::string& GetPath() const;
+	bool operator==(const Animation& anAnimation) const;
+
+	const std::string& GetName() const override;
+	const std::string& GetPath() const override;
 
 	float GetFPS() const;
 	float GetFrameDelta() const;
 	unsigned GetFrameCount() const;
 
-	const AnimationFrame& GetFrame(unsigned int anIndex) const;
-	unsigned GetLastFrameIndex() const;
-	// Returns true if next frame is first frame
-	bool GetNextIndex(unsigned int& outIndex) const;
+	void SetToFirstFrame() override;
+	void SetToLastFrame() override;
+	void SetFrameIndex(unsigned anIndex);
 
-	bool HasData() const;
+	// Returns false if the new frame is the last, will loop to the first frame if called after returning false
+	bool NextFrame() override;
+	// Returns false if the new frame is the first, will loop to the last frame if called after returning false
+	bool PreviousFrame() override;
+
+	void UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const override;
+
+	const AnimationFrame& GetFrame(unsigned int anIndex) const;
+	const AnimationFrame& GetCurrentFrame() const;
+	unsigned GetLastFrameIndex() const;
+	unsigned GetCurrentFrameIndex() const;
+
+	bool IsValid() const override;
 	const AnimationData& GetData() const;
+
+	//void Serialize(std::ostream& aStream) const override;
+	//void Deserialize(std::istream& aStream) override;
 
 private:
 	AnimationData* myData;
+	unsigned myCurrentFrame;
+
+	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const;
 };

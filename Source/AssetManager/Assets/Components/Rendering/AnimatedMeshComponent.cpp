@@ -6,20 +6,17 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include "Time/Timer.h"
 
-AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped), myIsLooping(false)
-{
-}
+AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
+{}
 
 AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton) : MeshComponent(aMesh, anElementList, aPath, ComponentType::AnimatedMesh), myBoneTransformCache(),
-mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myCurrentFrame(1), myAnimationState(AnimationState::Stopped), myIsLooping(false)
-{
-}
+mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
+{}
 
 AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aComponent) : MeshComponent(aComponent), myBoneTransformCache(aComponent.myBoneTransformCache),
-mySkeleton(aComponent.mySkeleton), myAnimation(aComponent.myAnimation), myAnimationTimer(aComponent.myAnimationTimer), myCurrentFrame(aComponent.myCurrentFrame),
-myAnimationState(aComponent.myAnimationState), myIsLooping(aComponent.myIsLooping)
-{
-}
+mySkeleton(aComponent.mySkeleton), myAnimation(aComponent.myAnimation), myAnimationTimer(aComponent.myAnimationTimer),
+myAnimationState(aComponent.myAnimationState), myIsLooping(aComponent.myIsLooping), myIsPlayingInReverse(aComponent.myIsPlayingInReverse)
+{}
 
 void AnimatedMeshComponent::Update()
 {
@@ -31,36 +28,20 @@ void AnimatedMeshComponent::Update()
 	if (myAnimationState != AnimationState::Stopped)
 	{
 		myAnimationTimer += Crimson::Timer::GetDeltaTime();
-		const float frameDelta = myAnimation.GetFrameDelta();
+		const float frameDelta = myAnimation->GetFrameDelta();
 
-		// Gives choppy animations at low FPS, skips frames
 		while (myAnimationTimer >= frameDelta)
 		{
 			myAnimationTimer -= frameDelta;
-			if (myAnimation.GetNextIndex(myCurrentFrame) && myAnimationState == AnimationState::PlayOnce)
+			const bool hasMoreFrames = myIsPlayingInReverse ? myAnimation->PreviousFrame() : myAnimation->NextFrame();
+			if (!hasMoreFrames && myAnimationState == AnimationState::PlayOnce)
 			{
-				StopAnimation();
+				myAnimationTimer = 0.f;
+				PauseAnimation();
 				break;
 			}
-			else if(myAnimationTimer < frameDelta)
-			{
-				UpdateCache();
-			}
 		}
-
-		// Gives slow animations at low FPS, does not skip frames (does not work well with timescale)
-		/*if (myAnimationTimer >= frameDelta)
-		{
-			if (myAnimation.GetNextIndex(myCurrentFrame) && myAnimationState == AnimationState::PlayOnce)
-			{
-				StopAnimation();
-			}
-			else
-			{
-				myAnimationTimer -= frameDelta;
-				UpdateCache();
-			}
-		}*/
+		myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 	}
 
 	Render();
@@ -82,16 +63,17 @@ void AnimatedMeshComponent::Render()
 void AnimatedMeshComponent::Init(const Json::Value& aJson)
 {
 	MeshComponent::Init(aJson);
-	myAnimation = AssetManager::GetAsset<Animation>(aJson["Animation"].asString());
+	myAnimation = std::make_shared<Animation>(AssetManager::GetAsset<Animation>(aJson["Animation"].asString()));
 	myAnimationTimer = aJson["AnimationTimer"].asFloat();
-	myCurrentFrame = aJson["CurrentFrame"].asUInt();
+	myIsLooping = aJson["IsLooping"].asBool();
+	myIsPlayingInReverse = aJson["IsPlayingInReverse"].asBool();
 	myAnimationState = static_cast<AnimationState>(aJson["AnimationState"].asInt());
 	if (!mySkeleton || mySkeleton->GetPath() != aJson["Skeleton"].asString())
 	{
 		mySkeleton = AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString());
 	}
 
-	UpdateCache();
+	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
 void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton)
@@ -123,10 +105,11 @@ bool AnimatedMeshComponent::IsLooping() const
 	return myIsLooping;
 }
 
-void AnimatedMeshComponent::SetAnimation(const Animation& anAnimation)
+void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
+	myAnimationTimer = 0.f;
 	myAnimation = anAnimation;
-	UpdateCache();
+	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
 void AnimatedMeshComponent::StartAnimation()
@@ -144,32 +127,14 @@ void AnimatedMeshComponent::StartAnimation()
 void AnimatedMeshComponent::StopAnimation()
 {
 	myAnimationState = AnimationState::Stopped;
-	myCurrentFrame = 1;
 	myAnimationTimer = 0.f;
-	UpdateCache();
+	myAnimation->SetToFirstFrame();
+	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
 void AnimatedMeshComponent::PauseAnimation()
 {
 	myAnimationState = AnimationState::Stopped;
-}
-
-void AnimatedMeshComponent::SetFrameIndex(unsigned anIndex, bool aShouldUpdateCache)
-{
-	if (myAnimation.HasData())
-	{
-		myAnimationTimer = 0.f;
-		myCurrentFrame = Crimson::Min(anIndex, myAnimation.GetLastFrameIndex());
-		if (aShouldUpdateCache)
-		{
-			UpdateCache();
-		}		
-	}
-}
-
-void AnimatedMeshComponent::PlayAnimationFromBone(unsigned anIndex)
-{
-	UpdateHeirarchy(anIndex);
 }
 
 void AnimatedMeshComponent::ResetBoneCache()
@@ -192,7 +157,7 @@ const Skeleton& AnimatedMeshComponent::GetSkeleton() const
 	return *mySkeleton;
 }
 
-const std::array<Crimson::Matrix4x4f, 128>& AnimatedMeshComponent::GetBoneTransforms() const
+const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& AnimatedMeshComponent::GetBoneTransforms() const
 {
 	return myBoneTransformCache;
 }
@@ -200,18 +165,14 @@ const std::array<Crimson::Matrix4x4f, 128>& AnimatedMeshComponent::GetBoneTransf
 void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	MeshComponent::CreateImGuiComponents(aWindowName);
-	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation.GetName()), ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetName()), ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::Checkbox("Loop", &myIsLooping) && myAnimationState != AnimationState::Stopped)
 	{
 		StartAnimation();
 	}
+	ImGui::Checkbox("Reverse", &myIsPlayingInReverse);
 
-	ImGui::PushItemWidth(100.f);
 	ImGui::InputFloat("Timer", &myAnimationTimer, 0.f, 0.f, "%.4f", ImGuiInputTextFlags_ReadOnly);
-	ImGui::SameLine();
-	std::string frame = std::to_string(myCurrentFrame);
-	ImGui::InputText("Frame", &frame, ImGuiInputTextFlags_ReadOnly);
-	ImGui::PopItemWidth();
 
 	if (ImGui::Button("Start"))
 	{
@@ -234,10 +195,10 @@ void AnimatedMeshComponent::Serialize(std::ostream& aStream) const
 	MeshComponent::Serialize(aStream);
 	size_t skeletonSize = mySkeleton ? mySkeleton->GetPath().size() + 1 : 1;
 	aStream.write(mySkeleton ? mySkeleton->GetPath().c_str() : "\0", skeletonSize);
-	size_t animationSize = myAnimation.HasData() ? myAnimation.GetPath().size() + 1 : 1;
-	aStream.write(myAnimation.HasData() ? myAnimation.GetPath().c_str() : "\0", animationSize);
+	//size_t animationSize = myAnimation.IsValid() ? myAnimation.GetPath().size() + 1 : 1;
+	//aStream.write(myAnimation.IsValid() ? myAnimation.GetPath().c_str() : "\0", animationSize);
 
-	size_t size = sizeof(myAnimationTimer) + sizeof(myCurrentFrame) + sizeof(myAnimationState) + sizeof(myIsLooping);
+	size_t size = sizeof(myAnimationTimer) + sizeof(myAnimationState) + sizeof(myIsLooping) + sizeof(myIsPlayingInReverse);
 	aStream.write(reinterpret_cast<const char*>(&myAnimationTimer), size);
 }
 
@@ -246,23 +207,24 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 	MeshComponent::Deserialize(aStream);
 	std::string skeletonPath;
 	std::getline(aStream, skeletonPath, '\0');
-	std::string animationPath;
-	std::getline(aStream, animationPath, '\0');
+	//std::string animationPath;
+	//std::getline(aStream, animationPath, '\0');
 
-	size_t size = sizeof(myAnimationTimer) + sizeof(myCurrentFrame) + sizeof(myAnimationState) + sizeof(myIsLooping);
+	size_t size = sizeof(myAnimationTimer) + sizeof(myAnimationState) + sizeof(myIsLooping) + sizeof(myIsPlayingInReverse);
 	aStream.read(reinterpret_cast<char*>(&myAnimationTimer), size);
 
 	mySkeleton = AssetManager::GetAsset<Skeleton*>(skeletonPath);
-	myAnimation = AssetManager::GetAsset<Animation>(animationPath);
-	UpdateCache();
+	//myAnimation = AssetManager::GetAsset<Animation>(animationPath);
+	//UpdateCache();
 }
 
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation.GetPath();
+	result["Animation"] = myAnimation->GetPath();
 	result["AnimationTimer"] = myAnimationTimer;
-	result["CurrentFrame"] = myCurrentFrame;
+	result["IsLooping"] = myIsLooping;
+	result["IsPlayingInReverse"] = myIsPlayingInReverse;
 	result["AnimationState"] = static_cast<int>(myAnimationState);
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;
@@ -276,34 +238,4 @@ inline std::string AnimatedMeshComponent::ToString() const
 const AnimatedMeshComponent* AnimatedMeshComponent::GetTypePointer() const
 {
 	return this;
-}
-
-void AnimatedMeshComponent::UpdateCache()
-{
-	assert(mySkeleton != nullptr && "AnimatedMeshComponent is not Initialized!");
-	assert(myAnimation.HasData() && "Animation has no data!");
-	UpdateHeirarchy(0);
-}
-
-void AnimatedMeshComponent::UpdateHeirarchy(unsigned int anIndex)
-{
-	const auto& bone = mySkeleton->GetBone(anIndex);
-	const auto& frame = myAnimation.GetFrame(myCurrentFrame);
-	myBoneTransformCache[anIndex] = bone.myBindPoseInverse * GetBoneTransform(bone, frame);
-	for (auto& childIndex : bone.myChildren)
-	{
-		UpdateHeirarchy(childIndex);
-	}
-}
-
-const Crimson::Matrix4x4f& AnimatedMeshComponent::GetBoneTransform(const Bone& aBone, const AnimationFrame& aFrame) const
-{
-	if (auto iter = aFrame.myGlobalTransforms.find(aBone.myName); iter != aFrame.myGlobalTransforms.end())
-	{
-		return iter->second;
-	}
-	else
-	{
-		return aFrame.myGlobalTransforms.at(aBone.myNamespaceName);
-	}
 }

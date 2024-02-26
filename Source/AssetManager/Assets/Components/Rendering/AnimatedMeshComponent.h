@@ -10,7 +10,7 @@ public:
 	{
 		PlayOnce,
 		Looping,
-		Stopped
+		Stopped,
 	};
 
 	AnimatedMeshComponent();
@@ -31,19 +31,18 @@ public:
 	void ToogleLooping();
 	bool IsLooping() const;
 
-	void SetAnimation(const Animation& anAnimation);
+	void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+
 	void StartAnimation();
 	void StopAnimation();
 	void PauseAnimation();
 
-	void SetFrameIndex(unsigned anIndex, bool aShouldUpdateCache = true);
-	void PlayAnimationFromBone(unsigned anIndex);
 	void ResetBoneCache();
 
 	bool HasSkeleton() const;
 	void SetSkeleton(Skeleton* aSkeleton);
 	const Skeleton& GetSkeleton() const;
-	const std::array<Crimson::Matrix4x4f, 128>& GetBoneTransforms() const;
+	const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& GetBoneTransforms() const;
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 
@@ -55,17 +54,14 @@ public:
 	const AnimatedMeshComponent* GetTypePointer() const override;
 
 private:
-	std::array<Crimson::Matrix4x4f, 128> myBoneTransformCache;
+	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransformCache;
+
 	Skeleton* mySkeleton;
 
-	Animation myAnimation;
+	std::shared_ptr<AnimationBase> myAnimation;
 	float myAnimationTimer;
-	unsigned int myCurrentFrame;
 	AnimationState myAnimationState;
 	bool myIsLooping;
-
-	void UpdateCache();
-	void UpdateHeirarchy(unsigned int anIndex);
-	const Crimson::Matrix4x4f& GetBoneTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
+	bool myIsPlayingInReverse;
 };
 

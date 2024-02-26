@@ -306,6 +306,7 @@
     <ClInclude Include="Drawer\LineHandle.h" />
     <ClInclude Include="Drawer\ParticleDrawer.h" />
     <ClInclude Include="Drawer\ParticleEmitter.h" />
+    <ClInclude Include="GraphicsEngineDefines.h" />
     <ClInclude Include="Rendering\Buffers\ParticleBuffer.h" />
     <ClInclude Include="Rendering\ParticleVertex.h" />
     <ClInclude Include="Rendering\GBuffer.h" />
