@@ -94,6 +94,8 @@ namespace Crimson
 		inline bool operator!=(const Matrix4x4<T>& aMatrix) const;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T> const Matrix4x4<T> Matrix4x4<T>::Null{};
 
 	typedef Matrix4x4<float> Mat4;

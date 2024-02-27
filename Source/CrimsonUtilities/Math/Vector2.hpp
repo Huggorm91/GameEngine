@@ -6,7 +6,10 @@
 #include "Math.hpp"
 
 // In order to convert to and from Json you need to include "Json/JsonVector.hpp"
-namespace Json{	class Value; }
+namespace Json
+{
+	class Value;
+}
 
 // 
 // Define USE_INIT_LIST_CONVERSION to allow conversion to anything with 2 public <T> variables
@@ -98,9 +101,11 @@ namespace Crimson
 		Json::Value ToJsonColor() const;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T> const Vector2<T> Vector2<T>::Null{};
-	template<typename T> const Vector2<T> Vector2<T>::Up{T(), T(1)};
-	template<typename T> const Vector2<T> Vector2<T>::Right{T(1), T()};
+	template<typename T> const Vector2<T> Vector2<T>::Up{ T(), T(1) };
+	template<typename T> const Vector2<T> Vector2<T>::Right{ T(1), T() };
 
 	typedef Vector2<float> Vector2f;
 	typedef Vector2<unsigned int> Vector2ui;
@@ -110,57 +115,55 @@ namespace Crimson
 	inline Vector2<T> Lerp(const Vector2<T>& aFrom, const Vector2<T>& aTo, float aPercentage)
 	{
 		return Vector2<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-			Crimson::Lerp(aFrom.y, aTo.y, aPercentage));
+						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage));
 	}
 
-
-	template <typename T> Vector2<T> operator+(const T& aScalar, const Vector2<T>& aVector) {
+	template <typename T> Vector2<T> operator+(const T& aScalar, const Vector2<T>& aVector)
+	{
 		return aVector + aScalar;
 	}
-	template <typename T> Vector2<T> operator-(const T& aScalar, const Vector2<T>& aVector) {
+	template <typename T> Vector2<T> operator-(const T& aScalar, const Vector2<T>& aVector)
+	{
 		return aVector - aScalar;
 	}
-	template <typename T> Vector2<T> operator*(const T& aScalar, const Vector2<T>& aVector) {
+	template <typename T> Vector2<T> operator*(const T& aScalar, const Vector2<T>& aVector)
+	{
 		return aVector * aScalar;
 	}
-	template <typename T> Vector2<T> operator/(const T& aScalar, const Vector2<T>& aVector) {
+	template <typename T> Vector2<T> operator/(const T& aScalar, const Vector2<T>& aVector)
+	{
 		return aVector / aScalar;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	inline Vector2<T>::Vector2() : x(), y()
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector2<T>::Vector2(const T& aScalar) : x(aScalar), y(aScalar)
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector2<T>::Vector2(const T& aX, const T& aY) : x(aX), y(aY)
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector2<T>::Vector2(const POINT& aPoint) : x(static_cast<T>(aPoint.x)), y(static_cast<T>(aPoint.y))
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector2<T>::Vector2(const POINTS& aPoints) : x(static_cast<T>(aPoints.x)), y(static_cast<T>(aPoints.y))
-	{
-	}
+	{}
 
 	template<typename T>
-	inline Vector2<T>::Vector2(const SIZE& aSize): x(static_cast<T>(aSize.cx)), y(static_cast<T>(aSize.cy))
-	{
-	}
+	inline Vector2<T>::Vector2(const SIZE& aSize) : x(static_cast<T>(aSize.cx)), y(static_cast<T>(aSize.cy))
+	{}
 
 	template<typename T>
 	inline Vector2<T>::Vector2(const std::array<T, 2>& anArray) : x(anArray[0]), y(anArray[1])
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector2<T>::operator POINT() const

@@ -85,6 +85,8 @@ namespace Crimson
 		inline bool operator!=(const Matrix3x3<T>& aMatrix) const;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T> const Matrix3x3<T> Matrix3x3<T>::Null{};
 
 	typedef Matrix3x3<float> Matrix3x3f;
