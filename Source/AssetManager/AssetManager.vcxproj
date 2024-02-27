@@ -260,6 +260,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\Animation\AnimationLayer.h" />
     <ClInclude Include="Assets\Animation\AnimationBase.h" />
     <ClInclude Include="Assets\ComponentInclude.h" />
     <ClInclude Include="Assets\Components\ComponentTemplate.h" />
@@ -273,6 +274,7 @@
     <ClInclude Include="Assets\Components\Particles\Emitters\BurstEmitter.h" />
     <ClInclude Include="Assets\ImguiTransform.h" />
     <ClInclude Include="Assets\Components\Camera\EditorCameraControllerComponent.h" />
+    <ClInclude Include="Assets\Animation\BlendState.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -299,6 +301,7 @@
     <ClInclude Include="Assets\Components\Particles\Emitters\StreamEmitter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets\Animation\AnimationLayer.cpp" />
     <ClCompile Include="Assets\Animation\AnimationBase.cpp" />
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />
     <ClCompile Include="Assets\Animation\Animation.cpp" />
@@ -309,6 +312,7 @@
     <ClCompile Include="Assets\Components\Particles\Emitters\BurstEmitter.cpp" />
     <ClCompile Include="Assets\ImguiTransform.cpp" />
     <ClCompile Include="Assets\Components\Camera\EditorCameraControllerComponent.cpp" />
+    <ClCompile Include="Assets\Animation\BlendState.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">

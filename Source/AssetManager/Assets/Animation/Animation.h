@@ -13,8 +13,8 @@ public:
 	const std::string& GetName() const override;
 	const std::string& GetPath() const override;
 
-	float GetFPS() const;
-	float GetFrameDelta() const;
+	float GetFPS() const override;
+	float GetFrameDelta() const override;
 	unsigned GetFrameCount() const;
 
 	void SetToFirstFrame() override;
@@ -39,7 +39,7 @@ public:
 	//void Serialize(std::ostream& aStream) const override;
 	//void Deserialize(std::istream& aStream) override;
 
-private:
+protected:
 	AnimationData* myData;
 	unsigned myCurrentFrame;
 
