@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="File\FileSelectors.h" />
     <ClInclude Include="File\DirectoryFunctions.h" />
+    <ClInclude Include="Math\Quaternion.hpp" />
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="NewCollision - WIP\CollisionObject.hpp" />
     <ClInclude Include="NewCollision - WIP\CollisionObject2D.hpp" />
