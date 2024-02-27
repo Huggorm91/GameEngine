@@ -54,8 +54,6 @@ namespace Crimson
 		inline Vector3<T> Clamp(T aMin, T aMax);
 		inline Vector3<T> Clamp(const Vector3<T>& aMin, const Vector3<T>& aMax);
 
-		inline static Vector3<T> Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage);
-
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
 
@@ -118,6 +116,32 @@ namespace Crimson
 	Vector3<double> RadianToDegreePrecise(const Vector3<T>& aRadian)
 	{
 		return static_cast<Vector3<double>>(aRadian) * globalRadianToDegreeMultiplier;
+	}
+
+	template<typename T>
+	inline Vector3<T> Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		return Vector3<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
+			Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
+			Crimson::Lerp(aFrom.z, aTo.z, aPercentage));
+	}
+
+	// Cheaper less accurate Slerp
+	template<typename T>
+	inline Vector3<T> Nlerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		return Lerp(aFrom, aTo, aPercentage).NormalizeNoAssert();
+	}
+
+	template<typename T>
+	inline Vector3<T> Slerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		float dot = aFrom.Dot(aTo);
+		Clamp(dot, -1.0f, 1.0f);
+		float theta = acosf(dot) * aPercentage;
+		Vector3<T> relativeVec = aTo - aFrom * dot;
+		relativeVec.Normalize();
+		return (aFrom * cosf(theta)) + (relativeVec * sinf(theta));
 	}
 
 	template <typename T> Vector3<T> operator+(const T& aScalar, const Vector3<T>& aVector) {
@@ -279,14 +303,6 @@ namespace Crimson
 		return Vector3<T>(Crimson::Clamp(x, aMin.x, aMax.x),
 						  Crimson::Clamp(y, aMin.y, aMax.y),
 						  Crimson::Clamp(z, aMin.z, aMax.z));
-	}
-
-	template<typename T>
-	inline Vector3<T> Vector3<T>::Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
-	{
-		return Vector3<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
-						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage));
 	}
 
 	template<typename T>

@@ -54,8 +54,6 @@ namespace Crimson
 		inline Vector4<T> Clamp(T aMin, T aMax);
 		inline Vector4<T> Clamp(const Vector4<T>& aMin, const Vector4<T>& aMax);
 
-		inline static Vector4<T> Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage);
-
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
 
@@ -132,6 +130,34 @@ namespace Crimson
 	Vector4<double> RadianToDegreePrecise(const Vector4<T>& aRadian)
 	{
 		return static_cast<Vector4<double>>(aRadian) * globalRadianToDegreeMultiplier;
+	}
+
+	template<typename T>
+	inline Vector4<T> Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		return Vector4<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
+			Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
+			Crimson::Lerp(aFrom.z, aTo.z, aPercentage),
+			Crimson::Lerp(aFrom.w, aTo.w, aPercentage));
+	}
+
+	// Cheaper less accurate Slerp, Uses aFrom's w as result w
+	template<typename T>
+	inline Vector4<T> Nlerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		return Vector4<T>(Nlerp(Vector3<T>(aFrom), Vector3<T>(aTo), aPercentage), aFrom.w);
+	}
+
+	// Uses aFrom's w as result w
+	template<typename T>
+	inline Vector4<T> Slerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		float dot = aFrom.Dot(aTo);
+		Clamp(dot, -1.0f, 1.0f);
+		float theta = acosf(dot) * aPercentage;
+		Vector3<T> relativeVec = aTo - aFrom * dot;
+		relativeVec.Normalize();
+		return Vector4((aFrom * cosf(theta)) + (relativeVec * sinf(theta)), aFrom.w);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,15 +311,6 @@ namespace Crimson
 						  Crimson::Clamp(y, aMin.y, aMax.y),
 						  Crimson::Clamp(z, aMin.z, aMax.z),
 						  Crimson::Clamp(w, aMin.w, aMax.w));
-	}
-
-	template<typename T>
-	inline Vector4<T> Vector4<T>::Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
-	{
-		return Vector4<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
-						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage),
-						  Crimson::Lerp(aFrom.w, aTo.w, aPercentage));
 	}
 
 	template<typename T>

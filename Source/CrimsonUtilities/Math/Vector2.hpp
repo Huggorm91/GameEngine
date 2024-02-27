@@ -63,7 +63,6 @@ namespace Crimson
 		inline Vector2<T> ClampMagnitude(T aMaxLength);
 		inline Vector2<T> Clamp(T aMin, T aMax);
 		inline Vector2<T> Clamp(const Vector2<T>& aMin, const Vector2<T>& aMax);
-		inline static Vector2<T> Lerp(const Vector2<T>& aFrom, const Vector2<T>& aTo, float aPercentage);
 
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
@@ -106,6 +105,14 @@ namespace Crimson
 	typedef Vector2<float> Vector2f;
 	typedef Vector2<unsigned int> Vector2ui;
 	typedef Vector2<int>  Vector2i;
+
+	template<typename T>
+	inline Vector2<T> Lerp(const Vector2<T>& aFrom, const Vector2<T>& aTo, float aPercentage)
+	{
+		return Vector2<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
+			Crimson::Lerp(aFrom.y, aTo.y, aPercentage));
+	}
+
 
 	template <typename T> Vector2<T> operator+(const T& aScalar, const Vector2<T>& aVector) {
 		return aVector + aScalar;
@@ -310,13 +317,6 @@ namespace Crimson
 	{
 		return Vector2<T>(Crimson::Clamp(x, aMin.x, aMax.x),
 						  Crimson::Clamp(y, aMin.y, aMax.y));
-	}
-
-	template<typename T>
-	inline Vector2<T> Vector2<T>::Lerp(const Vector2<T>& aFrom, const Vector2<T>& aTo, float aPercentage)
-	{
-		return Vector2<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage));
 	}
 
 	template<typename T>
