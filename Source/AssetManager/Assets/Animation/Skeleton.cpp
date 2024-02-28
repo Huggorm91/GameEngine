@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "Skeleton.h"
 
-Skeleton::Skeleton(const TGA::FBX::Skeleton& aSkeleton): myName(aSkeleton.Name), myPath(nullptr), myIndexMap(aSkeleton.BoneNameToIndex), myBones(), mySockets()
+Skeleton::Skeleton(const TGA::FBX::Skeleton& aSkeleton): myName(aSkeleton.Name), path(nullptr), myIndexMap(aSkeleton.BoneNameToIndex), myBones(), mySockets()
 {
 	for (auto& bone : aSkeleton.Bones)
 	{
@@ -21,12 +21,12 @@ const std::string& Skeleton::GetName() const
 
 const std::string& Skeleton::GetPath() const
 {
-	return *myPath;
+	return *path;
 }
 
 void Skeleton::SetPath(const std::string* aPath)
 {
-	myPath = aPath;
+	path = aPath;
 }
 
 bool Skeleton::HasBone(const std::string& aName) const

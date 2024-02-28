@@ -13,15 +13,15 @@
 #include "../../ImguiTransform.h"
 #endif // !_RETAIL
 
-MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myIsDeferred(true)
+MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myIsDeferred(true)
 {
 }
 
-MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myPath(nullptr), myIsDeferred(true)
+MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myIsDeferred(true)
 {
 }
 
-MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myPath(aPath), myColor{ 0.f, 0.f, 0.f, 1.f },
+MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myColor{ 0.f, 0.f, 0.f, 1.f },
 myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), myIsDeferred(true)
 {
 	if (aMesh.BoxBounds.IsValid && aMesh.BoxSphereBounds.Radius == 0.f)
@@ -31,7 +31,7 @@ myBoxSphereBounds(aMesh.BoxSphereBounds), myTransform(), myRenderShadow(true), m
 }
 
 MeshComponent::MeshComponent(const MeshComponent& aMeshComponent) : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
-myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
+myName(aMeshComponent.myName), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
 {
 	if (myParent)
 	{
@@ -40,7 +40,7 @@ myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMe
 }
 
 MeshComponent::MeshComponent(MeshComponent&& aMeshComponent) noexcept : Component(aMeshComponent), myTransform(aMeshComponent.myTransform), myColor(aMeshComponent.myColor), myElements(aMeshComponent.myElements), myBoxSphereBounds(aMeshComponent.myBoxSphereBounds),
-myName(aMeshComponent.myName), myPath(aMeshComponent.myPath), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
+myName(aMeshComponent.myName), myRenderShadow(aMeshComponent.myRenderShadow), myIsDeferred(aMeshComponent.myIsDeferred)
 {
 	if (myParent)
 	{
@@ -56,7 +56,6 @@ MeshComponent& MeshComponent::operator=(const MeshComponent& aMeshComponent)
 	myElements = aMeshComponent.myElements;
 	myBoxSphereBounds = aMeshComponent.myBoxSphereBounds;
 	myName = aMeshComponent.myName;
-	myPath = aMeshComponent.myPath;
 	myRenderShadow = aMeshComponent.myRenderShadow;
 	myIsDeferred = aMeshComponent.myIsDeferred;
 
@@ -76,7 +75,6 @@ MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
 	myElements = aMeshComponent.myElements;
 	myBoxSphereBounds = aMeshComponent.myBoxSphereBounds;
 	myName = aMeshComponent.myName;
-	myPath = aMeshComponent.myPath;
 	myRenderShadow = aMeshComponent.myRenderShadow;
 	myIsDeferred = aMeshComponent.myIsDeferred;
 
@@ -128,11 +126,10 @@ void MeshComponent::Init(const Json::Value& aJson)
 	}
 }
 
-void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath)
+void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const std::string& aName)
 {
 	myElements = anElementList;
 	myName = aName;
-	myPath = aPath;
 
 	Crimson::Vector3f min;
 	Crimson::Vector3f max;
@@ -318,8 +315,6 @@ void MeshComponent::Serialize(std::ostream& aStream) const
 	aStream.write(reinterpret_cast<const char*>(&myRenderShadow), sizeof(myRenderShadow));
 	aStream.write(reinterpret_cast<const char*>(&myColor), sizeof(myColor));
 	aStream.write(reinterpret_cast<const char*>(&myBoxSphereBounds), sizeof(myBoxSphereBounds));
-	size_t pathSize = myPath ? myPath->size() + 1 : 1;
-	aStream.write(myPath ? myPath->c_str() : "\0", pathSize);
 	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);
 	for (auto& element : myElements)
@@ -335,13 +330,10 @@ void MeshComponent::Deserialize(std::istream& aStream)
 	aStream.read(reinterpret_cast<char*>(&myRenderShadow), sizeof(myRenderShadow));
 	aStream.read(reinterpret_cast<char*>(&myColor), sizeof(myColor));
 	aStream.read(reinterpret_cast<char*>(&myBoxSphereBounds), sizeof(myBoxSphereBounds));
-	std::string path;
-	std::getline(aStream, path, '\0');
 	std::getline(aStream, myName, '\0');
 	myTransform.Deserialize(aStream);
 
-	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(path);
-	myPath = AssetManager::GetAsset <std::string*>(path);
+	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(myName);
 
 	for (auto& element : myElements)
 	{
@@ -356,10 +348,7 @@ Json::Value MeshComponent::ToJson() const
 	result["IsDeferred"] = myIsDeferred;
 	result["Color"] = myColor.ToJsonColor();
 	result["Transform"] = myTransform.ToJson();
-	if (myPath)
-	{
-		result["Path"] = *myPath;
-	}
+	result["Path"] = myName;
 	result["Elements"] = Json::arrayValue;
 	for (int i = 0; i < myElements.size(); i++)
 	{

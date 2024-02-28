@@ -10,7 +10,7 @@ class MeshComponent : public Component
 public:
 	MeshComponent();
 	MeshComponent(ComponentType aType);
-	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType = ComponentType::Mesh);
+	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, ComponentType aType = ComponentType::Mesh);
 	MeshComponent(const MeshComponent& aMeshComponent);
 	MeshComponent(MeshComponent&& aMeshComponent) noexcept;
 	virtual ~MeshComponent() = default;
@@ -22,7 +22,7 @@ public:
 
 	void Init(GameObject* aParent) override;
 	void Init(const Json::Value& aJson) override;
-	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath);
+	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName);
 
 	void SetOffsetPosition(const Crimson::Vector3f& aPosition);
 	void SetOffsetRotation(const Crimson::Vector3f& aRotation);
@@ -66,7 +66,6 @@ protected:
 	bool myRenderShadow;
 	Crimson::Vector4f myColor;
 	BoxSphereBounds myBoxSphereBounds;
-	const std::string* myPath;
 	std::string myName;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;

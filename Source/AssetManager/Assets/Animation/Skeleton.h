@@ -26,7 +26,7 @@ public:
 	const Socket& GetSocket(const std::string& aName) const;
 
 private:
-	const std::string* myPath;
+	const std::string* path;
 	std::string myName;
 	std::vector<Bone> myBones;
 	std::unordered_map<std::string, size_t> myIndexMap;

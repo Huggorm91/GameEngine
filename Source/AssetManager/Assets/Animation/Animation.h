@@ -11,7 +11,6 @@ public:
 	bool operator==(const Animation& anAnimation) const;
 
 	const std::string& GetName() const override;
-	const std::string& GetPath() const override;
 
 	float GetFPS() const override;
 	float GetFrameDelta() const override;
@@ -43,5 +42,6 @@ protected:
 	AnimationData* myData;
 	unsigned myCurrentFrame;
 
+private:
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const;
 };

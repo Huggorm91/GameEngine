@@ -3,11 +3,11 @@
 
 struct Bone
 {
-	Crimson::Matrix4x4f myBindPoseInverse;
-	std::vector<unsigned int> myChildren;
-	std::string myNamespaceName;
-	std::string myName;
-	int myParent;
+	Crimson::Matrix4x4f bindPoseInverse;
+	std::vector<unsigned int> children;
+	std::string namespaceName;
+	std::string name;
+	int parent;
 
 	Bone(const TGA::FBX::Skeleton::Bone& aBone);
 };

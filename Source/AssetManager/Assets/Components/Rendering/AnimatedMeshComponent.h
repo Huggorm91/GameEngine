@@ -14,7 +14,7 @@ public:
 	};
 
 	AnimatedMeshComponent();
-	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton);
+	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
 	~AnimatedMeshComponent() = default;
@@ -25,7 +25,7 @@ public:
 	void Render() override;
 
 	void Init(const Json::Value& aJson) override;
-	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton);
+	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton);
 
 	void SetLooping(bool aIsLooping);
 	void ToogleLooping();

@@ -5,7 +5,7 @@ struct Socket
 {
 	Crimson::Matrix4x4f myRestTransform;
 	std::string myNamespaceName;
-	std::string myName;
+	std::string name;
 	int myParentBoneIdx;
 
 	Socket(TGA::FBX::Skeleton::Socket aSocket);

@@ -8,7 +8,6 @@ public:
 	~BlendState() = default;
 
 	const std::string& GetName() const override;
-	const std::string& GetPath() const override;
 
 	float GetFPS() const override;
 	float GetFrameDelta() const override;

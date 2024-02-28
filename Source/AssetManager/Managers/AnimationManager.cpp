@@ -54,7 +54,6 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath, bool aShoul
 	if (success)
 	{
 		auto dataIter = myAnimationData.emplace(aPath, tgaAnimation);
-		dataIter.first->second.myPath = &dataIter.first->first;
 		auto iter = myAnimations.emplace(aPath, dataIter.first->second);
 		return &iter.first->second;
 	}

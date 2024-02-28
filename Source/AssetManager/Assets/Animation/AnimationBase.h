@@ -13,24 +13,24 @@ struct AnimationTransform
 
 struct AnimationFrame
 {
-	std::unordered_map<std::string, Crimson::Matrix4x4f> myGlobalTransforms;
-	std::unordered_map<std::string, Crimson::Matrix4x4f> myLocalTransforms;
-	std::unordered_map<std::string, Crimson::Matrix4x4f> mySocketTransforms;
-	std::unordered_map<std::string, bool> myTriggeredEvents;
+	std::unordered_map<std::string, Crimson::Matrix4x4f> globalTransformMatrices;
+	std::unordered_map<std::string, Crimson::Matrix4x4f> localTransformMatrices;
+	std::unordered_map<std::string, AnimationTransform> globalQuatTransforms;
+	std::unordered_map<std::string, Crimson::Matrix4x4f> socketTransforms;
+	std::unordered_map<std::string, bool> triggeredEvents;
 
 	AnimationFrame(const TGA::FBX::Animation::Frame& aFrame);
 };
 
 struct AnimationData
 {
-	std::vector<AnimationFrame> myFrames;
-	std::vector<std::string> myEventNames;
-	std::string myName;
-	double myDuration;
-	const std::string* myPath;
-	float myFramesPerSecond;
-	float myFrameDelta;
-	unsigned int myLength;
+	std::vector<AnimationFrame> frames;
+	std::vector<std::string> eventNames;
+	std::string name;
+	double duration;
+	float framesPerSecond;
+	float frameDelta;
+	unsigned int length;
 
 	AnimationData(const TGA::FBX::Animation& anAnimation);
 };
@@ -41,7 +41,6 @@ public:
 	virtual ~AnimationBase() = default;
 
 	virtual const std::string& GetName() const = 0;
-	virtual const std::string& GetPath() const = 0;
 
 	virtual float GetFPS() const = 0;
 	virtual float GetFrameDelta() const = 0;

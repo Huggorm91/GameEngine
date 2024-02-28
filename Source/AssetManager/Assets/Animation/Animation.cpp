@@ -2,30 +2,30 @@
 #include "Animation.h"
 #include "Skeleton.h"
 
-AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : myGlobalTransforms(), myLocalTransforms(), mySocketTransforms(), myTriggeredEvents(aFrame.TriggeredEvents)
+AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globalTransformMatrices(), localTransformMatrices(), socketTransforms(), triggeredEvents(aFrame.TriggeredEvents)
 {
 	for (auto& [key, value] : aFrame.GlobalTransforms)
 	{
-		myGlobalTransforms.emplace(key, ConvertMatrix(value));
+		globalTransformMatrices.emplace(key, ConvertMatrix(value));
 	}
 
 	for (auto& [key, value] : aFrame.LocalTransforms)
 	{
-		myLocalTransforms.emplace(key, ConvertMatrix(value));
+		localTransformMatrices.emplace(key, ConvertMatrix(value));
 	}
 
 	for (auto& [key, value] : aFrame.SocketTransforms)
 	{
-		mySocketTransforms.emplace(key, ConvertMatrix(value));
+		socketTransforms.emplace(key, ConvertMatrix(value));
 	}
 }
 
-AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : myFrames(), myEventNames(anAnimation.EventNames), myName(anAnimation.Name), myDuration(anAnimation.Duration), myFramesPerSecond(anAnimation.FramesPerSecond),
-myFrameDelta(1.f / myFramesPerSecond), myLength(anAnimation.Length), myPath(nullptr)
+AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : frames(), eventNames(anAnimation.EventNames), name(anAnimation.Name), duration(anAnimation.Duration), framesPerSecond(anAnimation.FramesPerSecond),
+frameDelta(1.f / framesPerSecond), length(anAnimation.Length)
 {
 	for (auto& frame : anAnimation.Frames)
 	{
-		myFrames.emplace_back(frame);
+		frames.emplace_back(frame);
 	}
 }
 
@@ -42,27 +42,22 @@ bool Animation::operator==(const Animation& anAnimation) const
 
 const std::string& Animation::GetName() const
 {
-	return myData->myName;
-}
-
-const std::string& Animation::GetPath() const
-{
-	return *myData->myPath;
+	return myData->name;
 }
 
 float Animation::GetFPS() const
 {
-	return myData->myFramesPerSecond;
+	return myData->framesPerSecond;
 }
 
 float Animation::GetFrameDelta() const
 {
-	return myData->myFrameDelta;
+	return myData->frameDelta;
 }
 
 unsigned Animation::GetFrameCount() const
 {
-	return myData->myLength;
+	return myData->length;
 }
 
 void Animation::SetToFirstFrame()
@@ -72,7 +67,7 @@ void Animation::SetToFirstFrame()
 
 void Animation::SetToLastFrame()
 {
-	myCurrentFrame = myData->myLength - 1;
+	myCurrentFrame = myData->length - 1;
 }
 
 void Animation::SetFrameIndex(unsigned anIndex)
@@ -82,11 +77,11 @@ void Animation::SetFrameIndex(unsigned anIndex)
 
 bool Animation::NextFrame()
 {
-	if (++myCurrentFrame == myData->myLength)
+	if (++myCurrentFrame == myData->length)
 	{
 		SetToFirstFrame();
 	}
-	if (myCurrentFrame == myData->myLength -1)
+	if (myCurrentFrame == myData->length -1)
 	{
 		return false;
 	}
@@ -113,17 +108,17 @@ void Animation::UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::M
 
 const AnimationFrame& Animation::GetFrame(unsigned int anIndex) const
 {
-	return myData->myFrames[anIndex];
+	return myData->frames[anIndex];
 }
 
 const AnimationFrame& Animation::GetCurrentFrame() const
 {
-	return myData->myFrames[myCurrentFrame];
+	return myData->frames[myCurrentFrame];
 }
 
 unsigned Animation::GetLastFrameIndex() const
 {
-	return myData->myLength - 1;
+	return myData->length - 1;
 }
 
 unsigned Animation::GetCurrentFrameIndex() const
@@ -144,8 +139,8 @@ const AnimationData& Animation::GetData() const
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
-	outBones[anIndex] = bone.myBindPoseInverse * myData->myFrames[myCurrentFrame].myGlobalTransforms.at(bone.myNamespaceName);
-	for (auto& childIndex : bone.myChildren)
+	outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.namespaceName);
+	for (auto& childIndex : bone.children)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex);
 	}

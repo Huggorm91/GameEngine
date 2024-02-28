@@ -9,7 +9,7 @@
 AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
 {}
 
-AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton) : MeshComponent(aMesh, anElementList, aPath, ComponentType::AnimatedMesh), myBoneTransformCache(),
+AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) : MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh), myBoneTransformCache(),
 mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
 {}
 
@@ -76,9 +76,9 @@ void AnimatedMeshComponent::Init(const Json::Value& aJson)
 	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
-void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton)
+void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton)
 {
-	MeshComponent::Init(anElementList, aName, aPath);
+	MeshComponent::Init(anElementList, aName);
 	mySkeleton = aSkeleton;
 }
 
@@ -221,7 +221,7 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation->GetPath();
+	result["Animation"] = myAnimation->GetName();
 	result["AnimationTimer"] = myAnimationTimer;
 	result["IsLooping"] = myIsLooping;
 	result["IsPlayingInReverse"] = myIsPlayingInReverse;

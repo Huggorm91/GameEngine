@@ -337,7 +337,7 @@ void SkeletonEditor::CreateSkeletonInspector()
 
 void SkeletonEditor::CreateBoneList(const Bone& aBone)
 {
-	const bool isOpen = ImGui::TreeNodeEx(aBone.myName.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (mySelectedBone == &aBone ? ImGuiTreeNodeFlags_Selected : 0) | (aBone.myChildren.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
+	const bool isOpen = ImGui::TreeNodeEx(aBone.name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (mySelectedBone == &aBone ? ImGuiTreeNodeFlags_Selected : 0) | (aBone.children.empty() ? ImGuiTreeNodeFlags_Leaf : 0));
 
 	if (ImGui::IsItemHovered() && myHoveredBone != &aBone)
 	{
@@ -380,7 +380,7 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 
 	if (isOpen)
 	{
-		for (auto& child : aBone.myChildren)
+		for (auto& child : aBone.children)
 		{
 			CreateBoneList(mySkeleton->GetBone(child));
 		}
@@ -426,20 +426,20 @@ void SkeletonEditor::CreateAnimationInspector()
 		}
 
 		const auto& animationData = myAnimation.GetData();
-		ImGui::Text(animationData.myName.c_str());
+		ImGui::Text(animationData.name.c_str());
 
 		ImGui::Separator();
 
-		const std::string frameCount = "Frames: " + std::to_string(animationData.myLength);
+		const std::string frameCount = "Frames: " + std::to_string(animationData.length);
 		ImGui::Text(frameCount.c_str());
 
-		const std::string eventCount = "Events: " + std::to_string(animationData.myEventNames.size());
+		const std::string eventCount = "Events: " + std::to_string(animationData.eventNames.size());
 		ImGui::Text(eventCount.c_str());
 
-		const std::string fps = "FPS: " + std::to_string(animationData.myFramesPerSecond);
+		const std::string fps = "FPS: " + std::to_string(animationData.framesPerSecond);
 		ImGui::Text(fps.c_str());
 
-		const std::string duration = "Length: " + std::to_string(animationData.myDuration) + " seconds";
+		const std::string duration = "Length: " + std::to_string(animationData.duration) + " seconds";
 		ImGui::Text(duration.c_str());
 
 		ImGui::Separator();
@@ -547,7 +547,7 @@ bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 	{
 		if (myAnimation.IsValid())
 		{
-			isSelected = myAnimation.GetPath() == aFile;
+			isSelected = myAnimation.GetName() == aFile;
 		}
 	}
 	else
@@ -642,10 +642,10 @@ void SkeletonEditor::UpdateAvailableFiles()
 
 void SkeletonEditor::GenerateSkeletonDrawing()
 {
-	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
+	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->bindPoseInverse.GetInverse();
 	myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), myBoneColor, mySkeletonOffset->GetTransformMatrix()));
 
-	for (auto& childIndex : myRootBone->myChildren)
+	for (auto& childIndex : myRootBone->children)
 	{
 		GenerateSkeletonDrawing(childIndex, center);
 	}
@@ -655,15 +655,15 @@ void SkeletonEditor::GenerateSkeletonDrawing(unsigned anIndex, const Crimson::Ve
 {
 	const Bone& bone = mySkeleton->GetBone(anIndex);
 
-	if (bone.myChildren.empty())
+	if (bone.children.empty())
 	{
 		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), myBoneColor, mySkeletonOffset->GetTransformMatrix()));
 	}
 	else
 	{
-		auto position = Crimson::Vector4f::NullPosition * bone.myBindPoseInverse.GetInverse();
+		auto position = Crimson::Vector4f::NullPosition * bone.bindPoseInverse.GetInverse();
 		myLines.emplace(&bone, GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, myBoneColor, mySkeletonOffset->GetTransformMatrix()));
-		for (auto& childIndex : bone.myChildren)
+		for (auto& childIndex : bone.children)
 		{
 			GenerateSkeletonDrawing(childIndex, position);
 		}
@@ -672,7 +672,7 @@ void SkeletonEditor::GenerateSkeletonDrawing(unsigned anIndex, const Crimson::Ve
 
 void SkeletonEditor::DrawSkeleton()
 {
-	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->myBindPoseInverse.GetInverse();
+	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->bindPoseInverse.GetInverse();
 	auto* color = &myBoneColor;
 	if (mySelectedBone == myRootBone)
 	{
@@ -684,7 +684,7 @@ void SkeletonEditor::DrawSkeleton()
 	}
 	GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(myRootBone));
 
-	for (auto& childIndex : myRootBone->myChildren)
+	for (auto& childIndex : myRootBone->children)
 	{
 		DrawSkeleton(childIndex, center);
 	}
@@ -703,15 +703,15 @@ void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aPa
 		color = &myHoveredColor;
 	}
 
-	if (bone.myChildren.empty())
+	if (bone.children.empty())
 	{
 		GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
 	}
 	else
 	{
-		auto position = Crimson::Vector4f::NullPosition * bone.myBindPoseInverse.GetInverse();
+		auto position = Crimson::Vector4f::NullPosition * bone.bindPoseInverse.GetInverse();
 		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
-		for (auto& childIndex : bone.myChildren)
+		for (auto& childIndex : bone.children)
 		{
 			DrawSkeleton(childIndex, position);
 		}
@@ -729,10 +729,10 @@ void SkeletonEditor::DrawFrame()
 
 	if (mySelectedBone && mySelectedBone != myRootBone)
 	{
-		auto& parentBone = mySkeleton->GetBone(mySelectedBone->myParent);
-		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * parentBone.myBindPoseInverse.GetInverse();
+		auto& parentBone = mySkeleton->GetBone(mySelectedBone->parent);
+		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * parentBone.bindPoseInverse.GetInverse();
 
-		for (auto& childIndex : parentBone.myChildren)
+		for (auto& childIndex : parentBone.children)
 		{
 			if (&mySkeleton->GetBone(childIndex) == mySelectedBone)
 			{
@@ -745,7 +745,7 @@ void SkeletonEditor::DrawFrame()
 	}
 	else
 	{
-		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame.myGlobalTransforms.at(myRootBone->myName);
+		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame.globalTransformMatrices.at(myRootBone->name);
 		auto* color = &myBoneColor;
 		if (mySelectedBone == myRootBone)
 		{
@@ -757,7 +757,7 @@ void SkeletonEditor::DrawFrame()
 		}
 		GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(myRootBone));
 
-		for (auto& childIndex : myRootBone->myChildren)
+		for (auto& childIndex : myRootBone->children)
 		{
 			DrawFrame(childIndex, center, frame);
 		}
@@ -779,16 +779,16 @@ void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParen
 		color = &myHoveredColor;
 	}
 
-	if (bone.myChildren.empty())
+	if (bone.children.empty())
 	{
 		GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
 	}
 	else
 	{
-		const auto& position = Crimson::Vector4f::NullPosition * aFrame.myGlobalTransforms.at(bone.myName);
+		const auto& position = Crimson::Vector4f::NullPosition * aFrame.globalTransformMatrices.at(bone.name);
 		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
 
-		for (auto& childIndex : bone.myChildren)
+		for (auto& childIndex : bone.children)
 		{
 			DrawFrame(childIndex, position, aFrame);
 		}
@@ -809,17 +809,17 @@ void SkeletonEditor::CheckSkeletonAnimationMatching()
 	}
 
 	const auto& frame = myAnimation.GetFrame(0);
-	if (mySkeleton->GetBoneCount() != frame.myGlobalTransforms.size())
+	if (mySkeleton->GetBoneCount() != frame.globalTransformMatrices.size())
 	{
-		myMissMatchMessage = "Different Bonecounts! \nBones in Animation: " + std::to_string(frame.myGlobalTransforms.size());
+		myMissMatchMessage = "Different Bonecounts! \nBones in Animation: " + std::to_string(frame.globalTransformMatrices.size());
 		return;
 	}
 
 	for (auto& bone : mySkeleton->GetBones())
 	{
-		if (frame.myGlobalTransforms.find(bone.myName) == frame.myGlobalTransforms.end())
+		if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end())
 		{
-			myMissMatchMessage = "Bone not found in animation! \nBone: " + bone.myName;
+			myMissMatchMessage = "Bone not found in animation! \nBone: " + bone.name;
 			return;
 		}
 	}
