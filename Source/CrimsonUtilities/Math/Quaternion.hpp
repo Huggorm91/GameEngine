@@ -14,13 +14,14 @@ namespace Crimson
 		Quaternion(const T& aReal, const T& aX, const T& aY, const T& aZ);
 		Quaternion(const T& aRealPart, const Vector3<T>& anImaginaryPart);
 		Quaternion(const Vector3<T>& aRadianRotation);
+		Quaternion(const Matrix3x3<T>& aRotationMatrix);
 		~Quaternion() = default;
 
 		Vector3<T> GetAsEuler() const;
 		void SetFromEuler(Vector3<T> aRadianRotation);
 
 		Matrix3x3<T> GetAsMatrix3x3() const;
-		Matrix4x4<T> GetAsMatrix4x4() const;
+		void SetFromRotationMatrix(const Matrix3x3<T>& aRotationMatrix);
 
 		// Same result as GetInverse() if used on a unit Quaternion
 		Quaternion<T> GetConjugate() const;
@@ -45,6 +46,17 @@ namespace Crimson
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	typedef Quaternion<float> QuatF;
+
+	template <typename T>
+	Quaternion<T> operator*(const T& aScalar, const Quaternion<T>& aQuaternion)
+	{
+		return aQuaternion * aScalar;
+	}
+	template <typename T>
+	Quaternion<T> operator/(const T& aScalar, const Quaternion<T>& aQuaternion)
+	{
+		return aQuaternion / aScalar;
+	}
 
 	template<typename T>
 	inline Quaternion<T> Slerp(const Quaternion<T>& aFrom, Quaternion<T> aTo, float aPercentage)
@@ -107,9 +119,15 @@ namespace Crimson
 	{}
 
 	template<typename T>
-	inline Quaternion<T>::Quaternion(const Vector3<T>& aRadianRotation)
+	inline Quaternion<T>::Quaternion(const Vector3<T>& aRadianRotation) : Quaternion()
 	{
 		SetFromEuler(aRadianRotation);
+	}
+
+	template<typename T>
+	inline Quaternion<T>::Quaternion(const Matrix3x3<T>& aRotationMatrix) : Quaternion()
+	{
+		SetFromRotationMatrix(aRotationMatrix);
 	}
 
 	// This returns the angle in radians
@@ -157,6 +175,87 @@ namespace Crimson
 		x = sr * cp * cy - cr * sp * sy;
 		y = cr * sp * cy + sr * cp * sy;
 		z = cr * cp * sy - sr * sp * cy;
+	}
+
+	template<typename T>
+	inline Matrix3x3<T> Quaternion<T>::GetAsMatrix3x3() const
+	{
+		const T& xPow2 = (x * x) * T(2);
+		const T& yPow2 = (y * y) * T(2);
+		const T& zPow2 = (z * z) * T(2);
+
+		const T& wx = (w * x) * T(2);
+		const T& wy = (w * y) * T(2);
+		const T& wz = (w * z) * T(2);
+
+		const T& xy = (x * y) * T(2);
+		const T& xz = (x * z) * T(2);
+
+		const T& yz = (y * z) * T(2);
+
+		return Matrix3x3<T>{
+			{ T(1) - yPow2 - zPow2, xy + wz, xz - wy },
+			{ xy - wz, T(1) - xPow2 - zPow2, yz + wx },
+			{ xz + wy, yz - wx, T(1) - xPow2 - yPow2 }};
+	}
+
+	template<typename T>
+	inline void Quaternion<T>::SetFromRotationMatrix(const Matrix3x3<T>& aMatrix)
+	{
+		// Determine which of w, x, y, or z has the largest absolute value
+		const float wVal = aMatrix.m11 + aMatrix.m22 + aMatrix.m33;
+		const float xVal = aMatrix.m11 - aMatrix.m22 - aMatrix.m33;
+		const float yVal = aMatrix.m22 - aMatrix.m11 - aMatrix.m33;
+		const float zVal = aMatrix.m33 - aMatrix.m11 - aMatrix.m22;
+
+		int biggestIndex = 0;
+		float currentBiggest = wVal;
+		if (xVal > currentBiggest)
+		{
+			currentBiggest = xVal;
+			biggestIndex = 1;
+		}
+		if (yVal > currentBiggest)
+		{
+			currentBiggest = yVal;
+			biggestIndex = 2;
+		}
+		if (zVal > currentBiggest)
+		{
+			currentBiggest = zVal;
+			biggestIndex = 3;
+		}
+
+		float biggestVal = sqrt(currentBiggest + 1.0f) * 0.5f;
+		float mult = 0.25f / biggestVal;
+
+		switch (biggestIndex)
+		{
+		case 0:
+			w = biggestVal;
+			x = (aMatrix.m23 - aMatrix.m32) * mult;
+			y = (aMatrix.m31 - aMatrix.m13) * mult;
+			z = (aMatrix.m12 - aMatrix.m21) * mult;
+			break;
+		case 1:
+			x = biggestVal;
+			w = (aMatrix.m23 - aMatrix.m32) * mult;
+			y = (aMatrix.m12 + aMatrix.m21) * mult;
+			z = (aMatrix.m31 + aMatrix.m13) * mult;
+			break;
+		case 2:
+			y = biggestVal;
+			w = (aMatrix.m31 - aMatrix.m13) * mult;
+			x = (aMatrix.m12 + aMatrix.m21) * mult;
+			z = (aMatrix.m23 + aMatrix.m32) * mult;
+			break;
+		case 3:
+			z = biggestVal;
+			w = (aMatrix.m12 - aMatrix.m21) * mult;
+			x = (aMatrix.m31 + aMatrix.m13) * mult;
+			y = (aMatrix.m23 + aMatrix.m32) * mult;
+			break;
+		}
 	}
 
 	template<typename T>
@@ -214,6 +313,7 @@ namespace Crimson
 		x *= aScalar;
 		y *= aScalar;
 		z *= aScalar;
+		return *this;
 	}
 
 	template<typename T>
@@ -221,6 +321,31 @@ namespace Crimson
 	{
 		Quaternion<T> result = *this;
 		result *= aScalar;
+		return result;
+	}
+
+	template<typename T>
+	inline Quaternion<T>& Quaternion<T>::operator/=(const T& aScalar)
+	{
+		assert(aScalar != T(0));
+		if (aScalar == T(0))
+		{
+			return *this;
+		}
+
+		double invert = 1. / static_cast<double>(aScalar);
+		x = static_cast<T>(x * invert);
+		y = static_cast<T>(y * invert);
+		z = static_cast<T>(z * invert);
+		w = static_cast<T>(w * invert);
+		return *this;
+	}
+
+	template<typename T>
+	inline Quaternion<T> Quaternion<T>::operator/(const T& aScalar) const
+	{
+		Quaternion<T> result = *this;
+		result /= aScalar;
 		return result;
 	}
 
