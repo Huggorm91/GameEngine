@@ -139,7 +139,7 @@ void AnimatedMeshComponent::PauseAnimation()
 
 void AnimatedMeshComponent::ResetBoneCache()
 {
-	myBoneTransformCache.fill(Crimson::Matrix4x4f::Null);
+	myBoneTransformCache.fill(Crimson::Matrix4x4f::Identity);
 }
 
 bool AnimatedMeshComponent::HasSkeleton() const
