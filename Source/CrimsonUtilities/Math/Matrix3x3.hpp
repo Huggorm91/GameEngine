@@ -17,7 +17,7 @@ namespace Crimson
 		T m32;
 		T m33;
 
-		static const Matrix3x3 Null;
+		static const Matrix3x3 Identity;
 
 		// Creates the identity matrix.
 		Matrix3x3<T>();
@@ -87,7 +87,7 @@ namespace Crimson
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template<typename T> const Matrix3x3<T> Matrix3x3<T>::Null{};
+	template<typename T> const Matrix3x3<T> Matrix3x3<T>::Identity{};
 
 	typedef Matrix3x3<float> Matrix3x3f;
 	typedef Matrix3x3<int>  Matrix3x3i;

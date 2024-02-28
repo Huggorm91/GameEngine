@@ -1,8 +1,15 @@
 #pragma once
 #include "../Components/ComponentParts/TgaImporterConversions.h"
 #include "GraphicsEngine/GraphicsEngineDefines.h"
+#include "Math/Quaternion.hpp"
 
 class Skeleton;
+
+struct AnimationTransform
+{
+	Crimson::Vector3f position;
+	Crimson::QuatF rotation;
+};
 
 struct AnimationFrame
 {

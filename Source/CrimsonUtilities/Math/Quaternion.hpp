@@ -10,7 +10,9 @@ namespace Crimson
 		T w; // Real
 		T x, y, z; // Imaginary
 
-		Quaternion() = default;
+		static const Quaternion<T> Identity;
+
+		Quaternion();
 		Quaternion(const T& aReal, const T& aX, const T& aY, const T& aZ);
 		Quaternion(const T& aRealPart, const Vector3<T>& anImaginaryPart);
 		Quaternion(const Vector3<T>& aRadianRotation);
@@ -30,6 +32,9 @@ namespace Crimson
 		T LengthSqr() const;
 		T Length() const;
 
+		void Normalize();
+		Quaternion<T> GetNormalized() const;
+
 		T Dot(const Quaternion<T>& aQuaternion) const;
 
 		Quaternion<T>& operator*= (const Quaternion<T>& aQuaternion);
@@ -44,6 +49,8 @@ namespace Crimson
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T> const Quaternion<T> Quaternion<T>::Identity{};
 
 	typedef Quaternion<float> QuatF;
 
@@ -70,19 +77,18 @@ namespace Crimson
 			aTo = -aTo;
 			cosOmega = -cosOmega;
 		}
-		// Check if they are very close together, to protect against divide?by?zero
+
+		// Check if they are very close together, to protect against divide by zero
 		float k0, k1;
 		if (cosOmega > 0.9999f)
 		{
-			// Very close ? use linearinterpolation
+			// Linear interpolation
 			k0 = 1.0f - aPercentage;
 			k1 = aPercentage;
 		}
 		else
 		{
-			// Compute the sin of the angle
 			const float sinOmega = sqrt(1.0f - cosOmega * cosOmega);
-			// Compute the angle from its sine and cosine
 			const float omega = atan2(sinOmega, cosOmega);
 			const float sinOmegaInverse = 1.0f / sinOmega;
 
@@ -101,6 +107,10 @@ namespace Crimson
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	inline Quaternion<T>::Quaternion(): w(1), x(0), y(0), z(0)
+	{}
 
 	template<typename T>
 	inline Quaternion<T>::Quaternion(const T& aReal, const T& aX, const T& aY, const T& aZ) :
@@ -280,6 +290,23 @@ namespace Crimson
 	inline T Quaternion<T>::Length() const
 	{
 		return static_cast<T>(sqrt(LengthSqr()));
+	}
+
+	template<typename T>
+	inline void Quaternion<T>::Normalize()
+	{
+		const T length = Length();
+		if (length == T(0))
+		{
+			return;
+		}
+		*this /= length;
+	}
+
+	template<typename T>
+	inline Quaternion<T> Quaternion<T>::GetNormalized() const
+	{
+		return Quaternion<T>();
 	}
 
 	template<typename T>

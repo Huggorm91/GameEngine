@@ -24,7 +24,7 @@ namespace Crimson
 		T m43;
 		T m44;
 
-		static const Matrix4x4<T> Null;
+		static const Matrix4x4<T> Identity;
 
 		// Creates the identity matrix.
 		Matrix4x4<T>();
@@ -96,7 +96,7 @@ namespace Crimson
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template<typename T> const Matrix4x4<T> Matrix4x4<T>::Null{};
+	template<typename T> const Matrix4x4<T> Matrix4x4<T>::Identity{};
 
 	typedef Matrix4x4<float> Mat4;
 	typedef Matrix4x4<float> Matrix4x4f;
