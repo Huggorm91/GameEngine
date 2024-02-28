@@ -2,33 +2,6 @@
 #include "Animation.h"
 #include "Skeleton.h"
 
-AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globalTransformMatrices(), localTransformMatrices(), socketTransforms(), triggeredEvents(aFrame.TriggeredEvents)
-{
-	for (auto& [key, value] : aFrame.GlobalTransforms)
-	{
-		globalTransformMatrices.emplace(key, ConvertMatrix(value));
-	}
-
-	for (auto& [key, value] : aFrame.LocalTransforms)
-	{
-		localTransformMatrices.emplace(key, ConvertMatrix(value));
-	}
-
-	for (auto& [key, value] : aFrame.SocketTransforms)
-	{
-		socketTransforms.emplace(key, ConvertMatrix(value));
-	}
-}
-
-AnimationData::AnimationData(const TGA::FBX::Animation& anAnimation) : frames(), eventNames(anAnimation.EventNames), name(anAnimation.Name), duration(anAnimation.Duration), framesPerSecond(anAnimation.FramesPerSecond),
-frameDelta(1.f / framesPerSecond), length(anAnimation.Length)
-{
-	for (auto& frame : anAnimation.Frames)
-	{
-		frames.emplace_back(frame);
-	}
-}
-
 Animation::Animation() : myData(nullptr), myCurrentFrame(1)
 {}
 

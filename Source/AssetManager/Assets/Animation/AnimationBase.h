@@ -9,13 +9,16 @@ struct AnimationTransform
 {
 	Crimson::Vector3f position;
 	Crimson::QuatF rotation;
+
+	Crimson::Matrix4x4f GetAsMatrix() const;
+	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
 };
 
 struct AnimationFrame
 {
 	std::unordered_map<std::string, Crimson::Matrix4x4f> globalTransformMatrices;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> localTransformMatrices;
-	std::unordered_map<std::string, AnimationTransform> globalQuatTransforms;
+	std::unordered_map<std::string, AnimationTransform> globalTransforms;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> socketTransforms;
 	std::unordered_map<std::string, bool> triggeredEvents;
 
