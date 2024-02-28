@@ -19,7 +19,7 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 	{
 		const auto& matrix = ConvertMatrix(value);
 		globalTransformMatrices.emplace(key, matrix);
-
+		globalTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix) });
 	}
 
 	for (auto& [key, value] : aFrame.LocalTransforms)

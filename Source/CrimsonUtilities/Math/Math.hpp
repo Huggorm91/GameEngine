@@ -107,7 +107,7 @@ namespace Crimson
 		return !(aFirst < aSecond) && !(aSecond < aFirst);
 	}
 
-	inline bool CloseEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon())
+	inline bool GimbalCheck(float a, float b, float epsilon = std::numeric_limits<float>::epsilon())
 	{
 		return (epsilon > Abs(a - b));
 	}
