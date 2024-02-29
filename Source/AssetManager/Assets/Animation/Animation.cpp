@@ -74,9 +74,21 @@ bool Animation::PreviousFrame()
 	return true;
 }
 
-void Animation::UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const
+void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const
 {
-	UpdateBoneCacheInternal(aSkeleton, outBones, 0u);
+	UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame]);
+}
+
+void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame) const
+{
+	if (anInterpolatePreviousFrame)
+	{
+		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetPreviousFrame(), anInterpolationValue);
+	}
+	else
+	{
+		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetNextFrame(), anInterpolationValue);
+	}
 }
 
 const AnimationFrame& Animation::GetFrame(unsigned int anIndex) const
@@ -109,12 +121,45 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
-void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const
+const AnimationFrame& Animation::GetNextFrame() const
+{
+	unsigned nextFrame = myCurrentFrame + 1;
+	if (nextFrame == myData->length)
+	{
+		nextFrame = 1;
+	}
+
+	return myData->frames[nextFrame];
+}
+
+const AnimationFrame& Animation::GetPreviousFrame() const
+{
+	unsigned previousFrame = myCurrentFrame - 1;
+	if (previousFrame == 0)
+	{
+		previousFrame = GetLastFrameIndex();
+	}
+
+	return myData->frames[previousFrame];
+}
+
+void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
 	outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.namespaceName);
 	for (auto& childIndex : bone.children)
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex);
+		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aFrame);
+	}
+}
+
+void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const
+{
+	const auto& bone = aSkeleton->GetBone(anIndex);
+	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.namespaceName), anInterpolationFrame.globalTransforms.at(bone.namespaceName), anInterpolationValue);
+	outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+	for (auto& childIndex : bone.children)
+	{
+		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue);
 	}
 }

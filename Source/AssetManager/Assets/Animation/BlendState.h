@@ -23,7 +23,8 @@ public:
 	void SetBlendValue(float aValue);
 	void SetBlendValueGetter(const std::function<float()>& aFunction);
 
-	void UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
 
 	bool IsValid() const override;
 

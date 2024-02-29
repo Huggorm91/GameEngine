@@ -8,11 +8,12 @@ public:
 	AnimationLayer(AnimationData& someData, unsigned aBoneIndex);
 	~AnimationLayer() = default;
 
-	void UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
 
 private:
 	unsigned myBoneIndex;
 
-	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const;
+	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex) const;
 };
 

@@ -10,7 +10,7 @@ Crimson::Matrix4x4f AnimationTransform::GetAsMatrix() const
 
 AnimationTransform AnimationTransform::Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage)
 {
-	return AnimationTransform{ Lerp(aFrom.position, aTo.position, aPercentage), Slerp(aFrom.rotation, aTo.rotation, aPercentage) };
+	return AnimationTransform{ Lerp(aFrom.position, aTo.position, aPercentage), Nlerp(aFrom.rotation, aTo.rotation, aPercentage) };
 }
 
 AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globalTransformMatrices(), localTransformMatrices(), socketTransforms(), triggeredEvents(aFrame.TriggeredEvents)
@@ -19,7 +19,7 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 	{
 		const auto& matrix = ConvertMatrix(value);
 		globalTransformMatrices.emplace(key, matrix);
-		globalTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix) });
+		globalTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix).GetNormalized()});
 	}
 
 	for (auto& [key, value] : aFrame.LocalTransforms)

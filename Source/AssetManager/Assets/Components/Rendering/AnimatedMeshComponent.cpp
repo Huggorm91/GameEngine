@@ -6,16 +6,39 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include "Time/Timer.h"
 
-AnimatedMeshComponent::AnimatedMeshComponent() : MeshComponent(ComponentType::AnimatedMesh), myBoneTransformCache(), mySkeleton(nullptr), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
+AnimatedMeshComponent::AnimatedMeshComponent() :
+	MeshComponent(ComponentType::AnimatedMesh),
+	mySkeleton(nullptr),
+	myAnimationTimer(0.f),
+	myInterpolationTimer(0.f),
+	myTargetFrameDelta(0.f),
+	myAnimationState(AnimationState::Stopped),
+	myIsLooping(false),
+	myIsPlayingInReverse(false)
 {}
 
-AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) : MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh), myBoneTransformCache(),
-mySkeleton(aSkeleton), myAnimation(), myAnimationTimer(), myAnimationState(AnimationState::Stopped), myIsLooping(false), myIsPlayingInReverse(false)
+AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) :
+	MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh),
+	mySkeleton(aSkeleton),
+	myAnimationTimer(0.f),
+	myInterpolationTimer(0.f),
+	myTargetFrameDelta(0.f),
+	myAnimationState(AnimationState::Stopped),
+	myIsLooping(false),
+	myIsPlayingInReverse(false)
 {}
 
-AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aComponent) : MeshComponent(aComponent), myBoneTransformCache(aComponent.myBoneTransformCache),
-mySkeleton(aComponent.mySkeleton), myAnimation(aComponent.myAnimation), myAnimationTimer(aComponent.myAnimationTimer),
-myAnimationState(aComponent.myAnimationState), myIsLooping(aComponent.myIsLooping), myIsPlayingInReverse(aComponent.myIsPlayingInReverse)
+AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aComponent) :
+	MeshComponent(aComponent),
+	myBoneTransformCache(aComponent.myBoneTransformCache),
+	mySkeleton(aComponent.mySkeleton),
+	myAnimation(aComponent.myAnimation),
+	myAnimationTimer(aComponent.myAnimationTimer),
+	myInterpolationTimer(aComponent.myInterpolationTimer),
+	myTargetFrameDelta(aComponent.myTargetFrameDelta),
+	myAnimationState(aComponent.myAnimationState),
+	myIsLooping(aComponent.myIsLooping),
+	myIsPlayingInReverse(aComponent.myIsPlayingInReverse)
 {}
 
 void AnimatedMeshComponent::Update()
@@ -30,18 +53,31 @@ void AnimatedMeshComponent::Update()
 		myAnimationTimer += Crimson::Timer::GetDeltaTime();
 		const float frameDelta = myAnimation->GetFrameDelta();
 
-		while (myAnimationTimer >= frameDelta)
+		if (myAnimationTimer >= frameDelta)
 		{
-			myAnimationTimer -= frameDelta;
-			const bool hasMoreFrames = myIsPlayingInReverse ? myAnimation->PreviousFrame() : myAnimation->NextFrame();
-			if (!hasMoreFrames && myAnimationState == AnimationState::PlayOnce)
+			myInterpolationTimer = 0.f;
+			while (myAnimationTimer >= frameDelta)
 			{
-				myAnimationTimer = 0.f;
-				PauseAnimation();
-				break;
+				myAnimationTimer -= frameDelta;
+				const bool hasMoreFrames = myIsPlayingInReverse ? myAnimation->PreviousFrame() : myAnimation->NextFrame();
+				if (!hasMoreFrames && myAnimationState == AnimationState::PlayOnce)
+				{
+					myAnimationTimer = 0.f;
+					PauseAnimation();
+					break;
+				}
+			}
+			myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
+		}
+		else if (myTargetFrameDelta > 0.f)
+		{
+			myInterpolationTimer += Crimson::Timer::GetDeltaTime();
+			if (myInterpolationTimer >= myTargetFrameDelta)
+			{
+				myInterpolationTimer -= myTargetFrameDelta;
+				myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / frameDelta, myIsPlayingInReverse);
 			}
 		}
-		myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 	}
 
 	Render();
@@ -105,11 +141,21 @@ bool AnimatedMeshComponent::IsLooping() const
 	return myIsLooping;
 }
 
+void AnimatedMeshComponent::SetPlayInReverse(bool aShouldPlayInReverse)
+{
+	myIsPlayingInReverse = aShouldPlayInReverse;
+}
+
 void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
 	myAnimationTimer = 0.f;
 	myAnimation = anAnimation;
 	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
+}
+
+void AnimatedMeshComponent::SetTargetFPS(float aFPS)
+{
+	myTargetFrameDelta = 1.f / aFPS;
 }
 
 void AnimatedMeshComponent::StartAnimation()

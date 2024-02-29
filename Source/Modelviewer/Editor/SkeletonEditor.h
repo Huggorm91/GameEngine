@@ -1,6 +1,7 @@
 #pragma once
 #include "AssetManager/Assets/GameObject.h"
 #include "AssetManager/Assets/Animation/Skeleton.h"
+#include "AssetManager/Assets/Animation/Animation.h"
 #include "GraphicsEngine/Drawer/LineHandle.h"
 
 class SkeletonEditor
@@ -19,6 +20,7 @@ public:
 	void SetMouseSensitivity(float aSensitivity);
 
 	void Activate();
+	void Deactivate();
 
 private:
 	bool myIsActive;
@@ -29,6 +31,7 @@ private:
 
 	float myAnimationTimer;
 	float myPlaybackMultiplier;
+	float myTargetFPS;
 
 	Crimson::Vector2f myWindowSize;
 

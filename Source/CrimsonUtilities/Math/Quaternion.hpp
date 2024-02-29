@@ -66,6 +66,29 @@ namespace Crimson
 	}
 
 	template<typename T>
+	inline Quaternion<T> Lerp(const Quaternion<T>& aFrom, Quaternion<T> aTo, float aPercentage)
+	{
+		const float dot = aFrom.Dot(aTo);
+		if (dot < 0.0f)
+		{
+			aTo = -aTo;
+		}
+
+		Quaternion<T> result;
+		result.x = aFrom.x - aPercentage * (aFrom.x - aTo.x);
+		result.y = aFrom.y - aPercentage * (aFrom.y - aTo.y);
+		result.z = aFrom.z - aPercentage * (aFrom.z - aTo.z);
+		result.w = aFrom.w - aPercentage * (aFrom.w - aTo.w);
+		return result;
+	}
+
+	template<typename T>
+	inline Quaternion<T> Nlerp(const Quaternion<T>& aFrom, Quaternion<T> aTo, float aPercentage)
+	{
+		return Lerp(aFrom, aTo, aPercentage).GetNormalized();
+	}
+
+	template<typename T>
 	inline Quaternion<T> Slerp(const Quaternion<T>& aFrom, Quaternion<T> aTo, float aPercentage)
 	{
 		// Compute the ”cosine of the angle” between the quaternions
@@ -109,7 +132,7 @@ namespace Crimson
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	inline Quaternion<T>::Quaternion(): w(1), x(0), y(0), z(0)
+	inline Quaternion<T>::Quaternion() : w(1), x(0), y(0), z(0)
 	{}
 
 	template<typename T>
@@ -204,9 +227,9 @@ namespace Crimson
 		const T& yz = (y * z) * T(2);
 
 		return Matrix3x3<T>{
-			{ T(1) - yPow2 - zPow2, xy + wz, xz - wy },
-			{ xy - wz, T(1) - xPow2 - zPow2, yz + wx },
-			{ xz + wy, yz - wx, T(1) - xPow2 - yPow2 }};
+			{ T(1) - yPow2 - zPow2, xy - wz, xz + wy },
+			{ xy + wz, T(1) - xPow2 - zPow2, yz - wx },
+			{ xz - wy, yz + wx, T(1) - xPow2 - yPow2 }};
 	}
 
 	template<typename T>
@@ -306,7 +329,9 @@ namespace Crimson
 	template<typename T>
 	inline Quaternion<T> Quaternion<T>::GetNormalized() const
 	{
-		return Quaternion<T>();
+		Quaternion<T> result(*this);
+		result.Normalize();
+		return result;
 	}
 
 	template<typename T>
@@ -318,10 +343,7 @@ namespace Crimson
 	template<typename T>
 	inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& aQuaternion)
 	{
-		w = (w * aQuaternion.w) - (x * aQuaternion.x) - (y * aQuaternion.y) - (z * aQuaternion.z);
-		x = (w * aQuaternion.x) + (x * aQuaternion.w) + (y * aQuaternion.z) - (z * aQuaternion.y);
-		y = (w * aQuaternion.y) + (y * aQuaternion.w) + (z * aQuaternion.x) - (x * aQuaternion.z);
-		z = (w * aQuaternion.z) + (z * aQuaternion.w) + (x * aQuaternion.y) - (y * aQuaternion.x);
+		*this = *this * aQuaternion;
 		return *this;
 	}
 
@@ -329,7 +351,10 @@ namespace Crimson
 	inline Quaternion<T> Quaternion<T>::operator*(const Quaternion<T>& aQuaternion) const
 	{
 		Quaternion<T> result = *this;
-		result *= aQuaternion;
+		result.w = (w * aQuaternion.w) - (x * aQuaternion.x) - (y * aQuaternion.y) - (z * aQuaternion.z);
+		result.x = (w * aQuaternion.x) + (x * aQuaternion.w) + (y * aQuaternion.z) - (z * aQuaternion.y);
+		result.y = (w * aQuaternion.y) + (y * aQuaternion.w) + (z * aQuaternion.x) - (x * aQuaternion.z);
+		result.z = (w * aQuaternion.z) + (z * aQuaternion.w) + (x * aQuaternion.y) - (y * aQuaternion.x);
 		return result;
 	}
 

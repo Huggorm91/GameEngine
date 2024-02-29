@@ -25,7 +25,8 @@ public:
 	// Returns false if the new frame is the first, will loop to the last frame if called after returning false
 	bool PreviousFrame() override;
 
-	void UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
 
 	const AnimationFrame& GetFrame(unsigned int anIndex) const;
 	const AnimationFrame& GetCurrentFrame() const;
@@ -42,6 +43,10 @@ protected:
 	AnimationData* myData;
 	unsigned myCurrentFrame;
 
+	const AnimationFrame& GetNextFrame() const;
+	const AnimationFrame& GetPreviousFrame() const;
+
 private:
-	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones, unsigned anIndex) const;
+	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const;
+	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& aInterpolationFrame, float anInterpolationValue) const;
 };

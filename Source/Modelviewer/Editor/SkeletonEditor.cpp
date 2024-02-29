@@ -15,6 +15,7 @@ SkeletonEditor::SkeletonEditor() :
 	myShouldRenderMesh(true),
 	myAnimationTimer(0.f),
 	myPlaybackMultiplier(1.f),
+	myTargetFPS(60.f),
 	mySkeleton(nullptr),
 	myMeshTexture(nullptr),
 	myMesh(nullptr),
@@ -55,6 +56,7 @@ void SkeletonEditor::Update()
 
 	if (myIsPlayingAnimation)
 	{
+		myMesh->Update();
 		myAnimationTimer += Crimson::Timer::GetUnscaledDeltaTime() * myPlaybackMultiplier;
 		if (myAnimationTimer >= myAnimation.GetFrameDelta())
 		{
@@ -67,8 +69,7 @@ void SkeletonEditor::Update()
 			{
 				myAnimation.NextFrame();
 			}
-			
-			myMesh->SetAnimation(std::make_shared<Animation>(myAnimation));
+
 			DrawFrame();
 		}
 	}
@@ -111,6 +112,8 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 	if (mySkeleton)
 	{
 		*myMesh = AssetManager::GetAsset<AnimatedMeshComponent>(mySkeleton->GetPath());
+		myMesh->SetTargetFPS(myTargetFPS);
+		myMesh->SetLooping(true);
 
 		myRootBone = &mySkeleton->GetBone(0);
 		GenerateSkeletonDrawing();
@@ -170,11 +173,30 @@ void SkeletonEditor::Activate()
 	UpdateAvailableFiles();
 	myCamera.SetActiveComponents(true);
 
+	Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
+
 	GraphicsEngine::Get().SetLightMode(GraphicsEngine::LightMode::IgnoreLight);
 	GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(false);
 	for (auto& [bone, line] : myLines)
 	{
 		line.SetActive(true);
+	}
+}
+
+void SkeletonEditor::Deactivate()
+{
+	myIsActive = false;
+	myCamera.SetActiveComponents(false);
+	ModelViewer::Get().SetIsSceneActive(true);
+	ModelViewer::Get().ActivateImGuiEditor();
+	ModelViewer::Get().RestoreDebugSettings();
+
+	Crimson::Timer::SetTimeScale(1.f);
+
+	GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(true);
+	for (auto& [bone, line] : myLines)
+	{
+		line.SetActive(false);
 	}
 }
 
@@ -184,17 +206,7 @@ void SkeletonEditor::CreateMenubar()
 	{
 		if (ImGui::MenuItem("Close"))
 		{
-			myIsActive = false;
-			myCamera.SetActiveComponents(false);
-			ModelViewer::Get().SetIsSceneActive(true);
-			ModelViewer::Get().ActivateImGuiEditor();
-			ModelViewer::Get().RestoreDebugSettings();
-
-			GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(true);
-			for (auto& [bone, line] : myLines)
-			{
-				line.SetActive(false);
-			}
+			Deactivate();
 		}
 		ImGui::EndMenuBar();
 	}
@@ -449,6 +461,7 @@ void SkeletonEditor::CreateAnimationInspector()
 			if (ImGui::Button("Start"))
 			{
 				myIsPlayingAnimation = true;
+				myMesh->StartAnimation();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Stop"))
@@ -456,16 +469,24 @@ void SkeletonEditor::CreateAnimationInspector()
 				myIsPlayingAnimation = false;
 				myAnimationTimer = 0.f;
 				myAnimation.SetToFirstFrame();
+				myMesh->StopAnimation();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Pause"))
 			{
 				myIsPlayingAnimation = false;
+				myMesh->PauseAnimation();
 			}
 
-			ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse);
+			if (ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse))
+			{
+				myMesh->SetPlayInReverse(myIsPlayingInReverse);
+			}
 
-			ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+			{
+				Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
+			}
 
 			int index = myAnimation.GetCurrentFrameIndex();
 			if (ImGui::SliderInt("Frame", &index, 0, myAnimation.GetLastFrameIndex(), "%d", ImGuiSliderFlags_AlwaysClamp))

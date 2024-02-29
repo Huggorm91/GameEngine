@@ -31,7 +31,10 @@ public:
 	void ToogleLooping();
 	bool IsLooping() const;
 
+	void SetPlayInReverse(bool aShouldPlayInReverse);
+
 	void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+	void SetTargetFPS(float aFPS);
 
 	void StartAnimation();
 	void StopAnimation();
@@ -60,6 +63,8 @@ private:
 
 	std::shared_ptr<AnimationBase> myAnimation;
 	float myAnimationTimer;
+	float myInterpolationTimer;
+	float myTargetFrameDelta;
 	AnimationState myAnimationState;
 	bool myIsLooping;
 	bool myIsPlayingInReverse;

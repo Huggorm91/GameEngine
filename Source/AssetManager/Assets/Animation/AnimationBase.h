@@ -40,6 +40,8 @@ struct AnimationData
 
 class AnimationBase
 {
+protected:
+	typedef std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> BoneCache;
 public:
 	virtual ~AnimationBase() = default;
 
@@ -56,7 +58,8 @@ public:
 	// Returns false if the new frame is the first, will loop to the last frame if called after returning false
 	virtual bool PreviousFrame() = 0;
 
-	virtual void UpdateBoneCache(const Skeleton* aSkeleton, std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& outBones) const = 0;
+	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const = 0;
+	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const = 0;
 
 	virtual bool IsValid() const = 0;
 
