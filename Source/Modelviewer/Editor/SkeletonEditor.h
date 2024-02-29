@@ -32,6 +32,7 @@ private:
 	float myAnimationTimer;
 	float myPlaybackMultiplier;
 	float myTargetFPS;
+	float myEditorTimeScale;
 
 	Crimson::Vector2f myWindowSize;
 

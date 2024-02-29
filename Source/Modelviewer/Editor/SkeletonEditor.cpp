@@ -16,6 +16,7 @@ SkeletonEditor::SkeletonEditor() :
 	myAnimationTimer(0.f),
 	myPlaybackMultiplier(1.f),
 	myTargetFPS(60.f),
+	myEditorTimeScale(0.f),
 	mySkeleton(nullptr),
 	myMeshTexture(nullptr),
 	myMesh(nullptr),
@@ -57,7 +58,7 @@ void SkeletonEditor::Update()
 	if (myIsPlayingAnimation)
 	{
 		myMesh->Update();
-		myAnimationTimer += Crimson::Timer::GetUnscaledDeltaTime() * myPlaybackMultiplier;
+		myAnimationTimer += Crimson::Timer::GetDeltaTime();
 		if (myAnimationTimer >= myAnimation.GetFrameDelta())
 		{
 			myAnimationTimer -= myAnimation.GetFrameDelta();
@@ -173,6 +174,7 @@ void SkeletonEditor::Activate()
 	UpdateAvailableFiles();
 	myCamera.SetActiveComponents(true);
 
+	myEditorTimeScale = Crimson::Timer::GetTimeScale();
 	Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
 
 	GraphicsEngine::Get().SetLightMode(GraphicsEngine::LightMode::IgnoreLight);
@@ -191,7 +193,7 @@ void SkeletonEditor::Deactivate()
 	ModelViewer::Get().ActivateImGuiEditor();
 	ModelViewer::Get().RestoreDebugSettings();
 
-	Crimson::Timer::SetTimeScale(1.f);
+	Crimson::Timer::SetTimeScale(myEditorTimeScale);
 
 	GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(true);
 	for (auto& [bone, line] : myLines)
@@ -481,6 +483,11 @@ void SkeletonEditor::CreateAnimationInspector()
 			if (ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse))
 			{
 				myMesh->SetPlayInReverse(myIsPlayingInReverse);
+			}
+
+			if (ImGui::DragFloat("Target FPS", &myTargetFPS, 1.f, 0.f, FLT_MAX, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+			{
+				myMesh->SetTargetFPS(myTargetFPS);
 			}
 
 			if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
