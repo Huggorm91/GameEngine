@@ -129,7 +129,7 @@
     <ClInclude Include="Assets\Animation\AnimationLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Animation\BlendState.h">
+    <ClInclude Include="Assets\Animation\BlendSpace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -239,7 +239,7 @@
     <ClCompile Include="Assets\Animation\AnimationLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets\Animation\BlendState.cpp">
+    <ClCompile Include="Assets\Animation\BlendSpace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

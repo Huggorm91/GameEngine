@@ -2,10 +2,10 @@
 #include "AnimationLayer.h"
 #include <functional>
 
-class BlendState: public AnimationBase
+class BlendSpace: public AnimationBase
 {
 public:
-	~BlendState() = default;
+	~BlendSpace() = default;
 
 	const std::string& GetName() const override;
 
@@ -27,6 +27,7 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
 
 	bool IsValid() const override;
+	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
 
 private:
 	struct BlendData

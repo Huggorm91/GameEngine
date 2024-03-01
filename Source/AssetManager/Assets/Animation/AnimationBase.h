@@ -62,6 +62,7 @@ public:
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const = 0;
 
 	virtual bool IsValid() const = 0;
+	virtual bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const = 0;
 
 	//virtual void Serialize(std::ostream& aStream) const = 0;
 	//virtual void Deserialize(std::istream& aStream) = 0;

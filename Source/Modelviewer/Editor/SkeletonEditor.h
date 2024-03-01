@@ -1,7 +1,7 @@
 #pragma once
 #include "AssetManager/Assets/GameObject.h"
 #include "AssetManager/Assets/Animation/Skeleton.h"
-#include "AssetManager/Assets/Animation/Animation.h"
+#include "AssetManager/Assets/Animation/BlendSpace.h"
 #include "GraphicsEngine/Drawer/LineHandle.h"
 
 class SkeletonEditor
@@ -14,7 +14,7 @@ public:
 	void Update();
 
 	void SetSkeleton(Skeleton* aSkeleton, bool aHideLines = true);
-	void SetAnimation(Animation anAnimation);
+	void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
 
 	void SetCameraSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);
@@ -36,7 +36,7 @@ private:
 
 	Crimson::Vector2f myWindowSize;
 
-	Animation myAnimation;
+	std::shared_ptr<AnimationBase> myAnimation;
 	Skeleton* mySkeleton;
 	Texture* myMeshTexture;
 	AnimatedMeshComponent* myMesh; // Points to myModels AnimatedMeshComponent
@@ -89,4 +89,9 @@ private:
 	void CheckSkeletonAnimationMatching();
 
 	void ClearLines();
+
+	unsigned GetBoneIndex(const Bone* aBone) const;
+	void SetMeshAnimation();
+
+	void SelectBone(const Bone* aBone);
 };

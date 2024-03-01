@@ -6,6 +6,8 @@ class Animation: public AnimationBase
 public:
 	Animation();
 	Animation(AnimationData& someData);
+	Animation(const Animation& anAnimation);
+	Animation(Animation&& anAnimation) noexcept;
 	~Animation() = default;
 
 	bool operator==(const Animation& anAnimation) const;
@@ -34,6 +36,8 @@ public:
 	unsigned GetCurrentFrameIndex() const;
 
 	bool IsValid() const override;
+	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
+
 	const AnimationData& GetData() const;
 
 	//void Serialize(std::ostream& aStream) const override;
@@ -46,7 +50,6 @@ protected:
 	const AnimationFrame& GetNextFrame() const;
 	const AnimationFrame& GetPreviousFrame() const;
 
-private:
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const;
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& aInterpolationFrame, float anInterpolationValue) const;
 };

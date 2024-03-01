@@ -5,15 +5,18 @@ class AnimationLayer: public Animation
 {
 public:
 	AnimationLayer();
-	AnimationLayer(AnimationData& someData, unsigned aBoneIndex);
+	AnimationLayer(AnimationData& someData, unsigned aBoneIndex = 0);
+	AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex = 0);
+	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
+
+	void SetBoneIndex(unsigned anIndex);
+	unsigned GetBoneIndex() const;
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
 
 private:
 	unsigned myBoneIndex;
-
-	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex) const;
 };
 

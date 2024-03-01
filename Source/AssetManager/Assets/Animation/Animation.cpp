@@ -8,6 +8,12 @@ Animation::Animation() : myData(nullptr), myCurrentFrame(1)
 Animation::Animation(AnimationData& someData) : myData(&someData), myCurrentFrame(1)
 {}
 
+Animation::Animation(const Animation& anAnimation) : myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+{}
+
+Animation::Animation(Animation&& anAnimation) noexcept : myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+{}
+
 bool Animation::operator==(const Animation& anAnimation) const
 {
 	return myData == anAnimation.myData;
@@ -54,7 +60,7 @@ bool Animation::NextFrame()
 	{
 		SetToFirstFrame();
 	}
-	if (myCurrentFrame == myData->length -1)
+	if (myCurrentFrame == myData->length - 1)
 	{
 		return false;
 	}
@@ -114,6 +120,42 @@ unsigned Animation::GetCurrentFrameIndex() const
 bool Animation::IsValid() const
 {
 	return myData != nullptr;
+}
+
+bool Animation::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage) const
+{
+	if (aSkeleton == nullptr || !IsValid())
+	{
+		if (outErrorMessage)
+		{
+			*outErrorMessage = "Missing Animation or Skeleton";
+		}
+		return false;
+	}
+
+	const auto& frame = GetFrame(0);
+	if (aSkeleton->GetBoneCount() != frame.globalTransformMatrices.size())
+	{
+		if (outErrorMessage)
+		{
+			*outErrorMessage = "Different Bonecounts! \nBones in Animation: " + std::to_string(frame.globalTransformMatrices.size());
+		}
+		return false;
+	}
+
+	for (auto& bone : aSkeleton->GetBones())
+	{
+		if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end())
+		{
+			if (outErrorMessage)
+			{
+				*outErrorMessage = "Bone not found in animation! \nBone: " + bone.name;
+			}
+			return false;
+		}
+	}
+
+	return true;
 }
 
 const AnimationData& Animation::GetData() const
