@@ -3,16 +3,19 @@
 #include "Skeleton.h"
 #include "Time/Timer.h"
 
-Animation::Animation() :AnimationBase(), myData(nullptr), myCurrentFrame(1)
+Animation::Animation() :AnimationBase(AnimationType::Animation), myData(nullptr), myCurrentFrame(1)
 {}
 
-Animation::Animation(AnimationData& someData) : AnimationBase(), myData(&someData), myCurrentFrame(1)
+Animation::Animation(AnimationData& someData) : AnimationBase(AnimationType::Animation), myData(&someData), myCurrentFrame(1)
 {}
 
 Animation::Animation(const Animation& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
 {}
 
 Animation::Animation(Animation&& anAnimation) noexcept : AnimationBase(std::move(anAnimation)), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+{}
+
+Animation::Animation(AnimationType aType) : AnimationBase(aType), myData(nullptr), myCurrentFrame(1)
 {}
 
 bool Animation::operator==(const Animation& anAnimation) const

@@ -56,6 +56,8 @@ protected:
 	AnimationData* myData;
 	unsigned myCurrentFrame;
 
+	Animation(AnimationType aType);
+
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const;
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& aInterpolationFrame, float anInterpolationValue) const;
 };

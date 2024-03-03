@@ -1,14 +1,13 @@
 #include "AssetManager.pch.h"
 #include "AnimationLayer.h"
 
-AnimationLayer::AnimationLayer() : Animation(), myBoneIndex(0u)
-{}
-
-AnimationLayer::AnimationLayer(AnimationData& someData, unsigned aBoneIndex) : Animation(someData), myBoneIndex(aBoneIndex)
+AnimationLayer::AnimationLayer() : Animation(AnimationType::AnimationLayer), myBoneIndex(0u)
 {}
 
 AnimationLayer::AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex) : Animation(anAnimation), myBoneIndex(aBoneIndex)
-{}
+{
+	myType = AnimationType::AnimationLayer;
+}
 
 void AnimationLayer::SetBoneIndex(unsigned anIndex)
 {

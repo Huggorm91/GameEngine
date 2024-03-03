@@ -5,7 +5,7 @@
 class BlendSpace : public AnimationBase
 {
 public:
-	BlendSpace() = default;
+	BlendSpace();
 	~BlendSpace() = default;
 
 	bool Update() override;

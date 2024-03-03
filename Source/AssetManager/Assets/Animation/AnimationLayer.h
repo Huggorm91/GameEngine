@@ -5,7 +5,6 @@ class AnimationLayer: public Animation
 {
 public:
 	AnimationLayer();
-	AnimationLayer(AnimationData& someData, unsigned aBoneIndex = 0);
 	AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex = 0);
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;

@@ -2,6 +2,7 @@
 #include "../Components/ComponentParts/TgaImporterConversions.h"
 #include "GraphicsEngine/GraphicsEngineDefines.h"
 #include "Math/Quaternion.hpp"
+#include "Math/Transform.h"
 
 class Skeleton;
 
@@ -43,7 +44,14 @@ class AnimationBase
 protected:
 	typedef std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> BoneCache;
 public:
-	AnimationBase();
+	enum class AnimationType : char
+	{
+		Invalid,
+		Animation,
+		AnimationLayer,
+		BlendSpace
+	};
+	AnimationBase(AnimationType aType);
 	virtual ~AnimationBase() = default;
 
 	// Will be called when added to a Component
@@ -55,7 +63,7 @@ public:
 	/// <param name="aTargetFPS">: Will interpolate frames to match the specified FPS. Will use default FPS of Animation if 0</param>
 	/// <param name="aIsLooping">: Stops on the last frame if not looping</param>
 	/// <param name="aPlayInReverse">: Used to choose which way to iterate through frames</param>
-	void SetParameters(float aTargetFPS = 0.f, bool aIsLooping = false, bool aPlayInReverse = false);
+	void SetPlaySettings(float aTargetFPS = 0.f, bool aIsLooping = false, bool aPlayInReverse = false);
 
 	// Returns true while playing
 	virtual bool Update() = 0;
@@ -63,6 +71,9 @@ public:
 	void StartAnimation();
 	void StopAnimation();
 	bool IsPlaying() const;
+
+	void EnableRootMotion(Transform& aTransformToApplyMotionTo);
+	void DisableRootMotion();
 
 	void ResetTimer();
 
@@ -77,6 +88,7 @@ public:
 	bool IsPlayingInReverse() const;
 
 	virtual const std::string& GetName() const = 0;
+	AnimationType GetType() const;
 
 	virtual void SetToFirstFrame() = 0;
 	virtual void SetToLastFrame() = 0;
@@ -102,9 +114,11 @@ public:
 protected:
 	const Skeleton* mySkeleton;
 	BoneCache* myBoneCache;
+	Transform* myRootMotionTransform;
 	float myTargetFrameDelta;
 	float myAnimationTimer;
 	float myInterpolationTimer;
+	AnimationType myType;
 	bool myIsPlaying;
 	bool myIsLooping;
 	bool myIsPlayingInReverse;

@@ -46,12 +46,13 @@ frameDelta(1.f / framesPerSecond), length(anAnimation.Length)
 	}
 }
 
-AnimationBase::AnimationBase(): 
-	mySkeleton(nullptr), 
+AnimationBase::AnimationBase(AnimationType aType) :
+	mySkeleton(nullptr),
 	myBoneCache(nullptr),
 	myTargetFrameDelta(0.f),
 	myAnimationTimer(0.f),
 	myInterpolationTimer(0.f),
+	myType(aType),
 	myIsPlaying(false),
 	myIsLooping(false),
 	myIsPlayingInReverse(false)
@@ -79,7 +80,7 @@ Json::Value AnimationBase::ToJson() const
 	return Json::Value();
 }
 
-void AnimationBase::SetParameters(float aTargetFPS, bool aIsLooping, bool aPlayInReverse)
+void AnimationBase::SetPlaySettings(float aTargetFPS, bool aIsLooping, bool aPlayInReverse)
 {
 	myTargetFrameDelta = 1.f / aTargetFPS;
 	myIsLooping = aIsLooping;
@@ -99,6 +100,16 @@ void AnimationBase::StopAnimation()
 bool AnimationBase::IsPlaying() const
 {
 	return myIsPlaying;
+}
+
+void AnimationBase::EnableRootMotion(Transform& aTransformToApplyMotionTo)
+{
+	myRootMotionTransform = &aTransformToApplyMotionTo;
+}
+
+void AnimationBase::DisableRootMotion()
+{
+	myRootMotionTransform = nullptr;
 }
 
 void AnimationBase::ResetTimer()
@@ -140,6 +151,11 @@ void AnimationBase::SetIsPlayingInReverse(bool aShouldPlayBackwards)
 bool AnimationBase::IsPlayingInReverse() const
 {
 	return myIsPlayingInReverse;
+}
+
+AnimationBase::AnimationType AnimationBase::GetType() const
+{
+	return myType;
 }
 
 bool AnimationBase::IsValid() const
