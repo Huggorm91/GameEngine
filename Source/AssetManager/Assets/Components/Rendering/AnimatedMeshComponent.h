@@ -18,12 +18,13 @@ public:
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
 	~AnimatedMeshComponent() = default;
-	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent) = default;
+	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent);
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
 	void Render() override;
 
+	void Init(GameObject* aParent) override;
 	void Init(const Json::Value& aJson) override;
 	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton);
 
@@ -62,11 +63,6 @@ private:
 	Skeleton* mySkeleton;
 
 	std::shared_ptr<AnimationBase> myAnimation;
-	float myAnimationTimer;
-	float myInterpolationTimer;
-	float myTargetFrameDelta;
 	AnimationState myAnimationState;
-	bool myIsLooping;
-	bool myIsPlayingInReverse;
 };
 

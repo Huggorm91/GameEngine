@@ -14,7 +14,9 @@ public:
 	unsigned GetBoneIndex() const;
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
-	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
+
+	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
 private:
 	unsigned myBoneIndex;

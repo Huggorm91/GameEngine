@@ -15,6 +15,8 @@ AnimationTransform AnimationTransform::Interpolate(const AnimationTransform& aFr
 
 AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globalTransformMatrices(), localTransformMatrices(), socketTransforms(), triggeredEvents(aFrame.TriggeredEvents)
 {
+	globalTransformMatrices.reserve(aFrame.GlobalTransforms.size());
+	globalTransforms.reserve(aFrame.GlobalTransforms.size());
 	for (auto& [key, value] : aFrame.GlobalTransforms)
 	{
 		const auto& matrix = ConvertMatrix(value);
@@ -22,11 +24,13 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 		globalTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix).GetNormalized()});
 	}
 
+	localTransformMatrices.reserve(aFrame.LocalTransforms.size());
 	for (auto& [key, value] : aFrame.LocalTransforms)
 	{
 		localTransformMatrices.emplace(key, ConvertMatrix(value));
 	}
 
+	socketTransforms.reserve(aFrame.SocketTransforms.size());
 	for (auto& [key, value] : aFrame.SocketTransforms)
 	{
 		socketTransforms.emplace(key, ConvertMatrix(value));
@@ -40,4 +44,105 @@ frameDelta(1.f / framesPerSecond), length(anAnimation.Length)
 	{
 		frames.emplace_back(frame);
 	}
+}
+
+AnimationBase::AnimationBase(): 
+	mySkeleton(nullptr), 
+	myBoneCache(nullptr),
+	myTargetFrameDelta(0.f),
+	myAnimationTimer(0.f),
+	myInterpolationTimer(0.f),
+	myIsPlaying(false),
+	myIsLooping(false),
+	myIsPlayingInReverse(false)
+{}
+
+void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
+{
+	myBoneCache = &aBoneCache;
+	mySkeleton = aSkeleton;
+	if (IsValid())
+	{
+		UpdateBoneCache(mySkeleton, *myBoneCache);
+	}	
+}
+
+void AnimationBase::LoadFromJson(const Json::Value& aJson)
+{
+	assert(!"Not Implemented!");
+	aJson;
+}
+
+Json::Value AnimationBase::ToJson() const
+{
+	assert(!"Not Implemented!");
+	return Json::Value();
+}
+
+void AnimationBase::SetParameters(float aTargetFPS, bool aIsLooping, bool aPlayInReverse)
+{
+	myTargetFrameDelta = 1.f / aTargetFPS;
+	myIsLooping = aIsLooping;
+	myIsPlayingInReverse = aPlayInReverse;
+}
+
+void AnimationBase::StartAnimation()
+{
+	myIsPlaying = true;
+}
+
+void AnimationBase::StopAnimation()
+{
+	myIsPlaying = false;
+}
+
+bool AnimationBase::IsPlaying() const
+{
+	return myIsPlaying;
+}
+
+void AnimationBase::ResetTimer()
+{
+	myAnimationTimer = 0.f;
+	myInterpolationTimer = 0.f;
+}
+
+void AnimationBase::SetTargetFPS(float anFPS)
+{
+	myTargetFrameDelta = 1.f / anFPS;
+}
+
+float AnimationBase::GetTargetFrameDelta() const
+{
+	return myTargetFrameDelta;
+}
+
+void AnimationBase::SetIsLooping(bool aShouldLoop)
+{
+	myIsLooping = aShouldLoop;
+}
+
+void AnimationBase::ToogleLooping()
+{
+	myIsLooping = !myIsLooping;
+}
+
+bool AnimationBase::IsLooping() const
+{
+	return myIsLooping;
+}
+
+void AnimationBase::SetIsPlayingInReverse(bool aShouldPlayBackwards)
+{
+	myIsPlayingInReverse = aShouldPlayBackwards;
+}
+
+bool AnimationBase::IsPlayingInReverse() const
+{
+	return myIsPlayingInReverse;
+}
+
+bool AnimationBase::IsValid() const
+{
+	return mySkeleton && myBoneCache;
 }

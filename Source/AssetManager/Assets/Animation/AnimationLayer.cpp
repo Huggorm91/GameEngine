@@ -1,7 +1,7 @@
 #include "AssetManager.pch.h"
 #include "AnimationLayer.h"
 
-AnimationLayer::AnimationLayer() : myBoneIndex(0u)
+AnimationLayer::AnimationLayer() : Animation(), myBoneIndex(0u)
 {}
 
 AnimationLayer::AnimationLayer(AnimationData& someData, unsigned aBoneIndex) : Animation(someData), myBoneIndex(aBoneIndex)
@@ -25,9 +25,9 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame]);
 }
 
-void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame) const
+void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const
 {
-	if (anInterpolatePreviousFrame)
+	if (myIsPlayingInReverse)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], GetPreviousFrame(), anInterpolationValue);
 	}
@@ -35,4 +35,9 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], GetNextFrame(), anInterpolationValue);
 	}
+}
+
+std::shared_ptr<AnimationBase> AnimationLayer::GetAsSharedPtr() const
+{
+	return std::make_shared<AnimationLayer>(*this);
 }

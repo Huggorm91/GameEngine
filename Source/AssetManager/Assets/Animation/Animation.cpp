@@ -1,22 +1,59 @@
 #include "AssetManager.pch.h"
 #include "Animation.h"
 #include "Skeleton.h"
+#include "Time/Timer.h"
 
-Animation::Animation() : myData(nullptr), myCurrentFrame(1)
+Animation::Animation() :AnimationBase(), myData(nullptr), myCurrentFrame(1)
 {}
 
-Animation::Animation(AnimationData& someData) : myData(&someData), myCurrentFrame(1)
+Animation::Animation(AnimationData& someData) : AnimationBase(), myData(&someData), myCurrentFrame(1)
 {}
 
-Animation::Animation(const Animation& anAnimation) : myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+Animation::Animation(const Animation& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
 {}
 
-Animation::Animation(Animation&& anAnimation) noexcept : myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+Animation::Animation(Animation&& anAnimation) noexcept : AnimationBase(std::move(anAnimation)), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
 {}
 
 bool Animation::operator==(const Animation& anAnimation) const
 {
 	return myData == anAnimation.myData;
+}
+
+bool Animation::Update()
+{
+	myAnimationTimer += Crimson::Timer::GetDeltaTime();
+	bool isLastFrame = false;
+	if (myAnimationTimer >= myData->frameDelta)
+	{
+		myInterpolationTimer = 0.f;
+		while (myAnimationTimer >= myData->frameDelta)
+		{
+			myAnimationTimer -= myData->frameDelta;
+			const bool hasMoreFrames = myIsPlayingInReverse ? PreviousFrame() : NextFrame();
+			if (!hasMoreFrames)
+			{
+				isLastFrame = true;
+				if (!myIsLooping)
+				{
+					myIsPlaying = false;
+					myAnimationTimer = 0.f;
+					break;
+				}
+			}
+		}
+		UpdateBoneCache(mySkeleton, *myBoneCache);
+	}
+	else if (myTargetFrameDelta > 0.f)
+	{
+		myInterpolationTimer += Crimson::Timer::GetDeltaTime();
+		if (myInterpolationTimer >= myTargetFrameDelta)
+		{
+			myInterpolationTimer -= myTargetFrameDelta;
+			UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
+		}
+	}
+	return isLastFrame;
 }
 
 const std::string& Animation::GetName() const
@@ -85,9 +122,9 @@ void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) 
 	UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame]);
 }
 
-void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame) const
+void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const
 {
-	if (anInterpolatePreviousFrame)
+	if (myIsPlayingInReverse)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetPreviousFrame(), anInterpolationValue);
 	}
@@ -107,6 +144,28 @@ const AnimationFrame& Animation::GetCurrentFrame() const
 	return myData->frames[myCurrentFrame];
 }
 
+const AnimationFrame& Animation::GetNextFrame() const
+{
+	unsigned nextFrame = myCurrentFrame + 1;
+	if (nextFrame == myData->length)
+	{
+		nextFrame = 1;
+	}
+
+	return myData->frames[nextFrame];
+}
+
+const AnimationFrame& Animation::GetPreviousFrame() const
+{
+	unsigned previousFrame = myCurrentFrame - 1;
+	if (previousFrame == 0)
+	{
+		previousFrame = GetLastFrameIndex();
+	}
+
+	return myData->frames[previousFrame];
+}
+
 unsigned Animation::GetLastFrameIndex() const
 {
 	return myData->length - 1;
@@ -119,12 +178,17 @@ unsigned Animation::GetCurrentFrameIndex() const
 
 bool Animation::IsValid() const
 {
-	return myData != nullptr;
+	return myData && AnimationBase::IsValid();
+}
+
+bool Animation::HasData() const
+{
+	return myData;
 }
 
 bool Animation::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage) const
 {
-	if (aSkeleton == nullptr || !IsValid())
+	if (aSkeleton == nullptr || !HasData())
 	{
 		if (outErrorMessage)
 		{
@@ -163,26 +227,9 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
-const AnimationFrame& Animation::GetNextFrame() const
+std::shared_ptr<AnimationBase> Animation::GetAsSharedPtr() const
 {
-	unsigned nextFrame = myCurrentFrame + 1;
-	if (nextFrame == myData->length)
-	{
-		nextFrame = 1;
-	}
-
-	return myData->frames[nextFrame];
-}
-
-const AnimationFrame& Animation::GetPreviousFrame() const
-{
-	unsigned previousFrame = myCurrentFrame - 1;
-	if (previousFrame == 0)
-	{
-		previousFrame = GetLastFrameIndex();
-	}
-
-	return myData->frames[previousFrame];
+	return std::make_shared<Animation>(*this);
 }
 
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const

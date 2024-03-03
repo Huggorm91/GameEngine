@@ -62,6 +62,8 @@ private:
 	std::unordered_set<std::string> myAvailableSkeletons;
 	std::unordered_set<std::string> myAvailableAnimations;
 
+	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransforms;
+
 	void CreateMenubar();
 	void CreateViewport();
 
@@ -85,6 +87,7 @@ private:
 
 	void DrawFrame();
 	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame);
+	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const Crimson::Matrix4x4f& aParentMatrix, const AnimationFrame& aFrame);
 
 	void CheckSkeletonAnimationMatching();
 

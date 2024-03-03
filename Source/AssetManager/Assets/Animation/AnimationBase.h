@@ -43,12 +43,40 @@ class AnimationBase
 protected:
 	typedef std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> BoneCache;
 public:
+	AnimationBase();
 	virtual ~AnimationBase() = default;
 
-	virtual const std::string& GetName() const = 0;
+	// Will be called when added to a Component
+	virtual void Init(BoneCache& aBoneCache, const Skeleton* aSkeleton);
 
-	virtual float GetFPS() const = 0;
-	virtual float GetFrameDelta() const = 0;
+	virtual void LoadFromJson(const Json::Value& aJson);
+	virtual Json::Value ToJson() const;
+
+	/// <param name="aTargetFPS">: Will interpolate frames to match the specified FPS. Will use default FPS of Animation if 0</param>
+	/// <param name="aIsLooping">: Stops on the last frame if not looping</param>
+	/// <param name="aPlayInReverse">: Used to choose which way to iterate through frames</param>
+	void SetParameters(float aTargetFPS = 0.f, bool aIsLooping = false, bool aPlayInReverse = false);
+
+	// Returns true while playing
+	virtual bool Update() = 0;
+
+	void StartAnimation();
+	void StopAnimation();
+	bool IsPlaying() const;
+
+	void ResetTimer();
+
+	void SetTargetFPS(float anFPS);
+	float GetTargetFrameDelta() const;
+
+	void SetIsLooping(bool aShouldLoop);
+	void ToogleLooping();
+	bool IsLooping() const;
+
+	void SetIsPlayingInReverse(bool aShouldPlayBackwards);
+	bool IsPlayingInReverse() const;
+
+	virtual const std::string& GetName() const = 0;
 
 	virtual void SetToFirstFrame() = 0;
 	virtual void SetToLastFrame() = 0;
@@ -59,12 +87,26 @@ public:
 	virtual bool PreviousFrame() = 0;
 
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const = 0;
-	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const = 0;
+	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const = 0;
 
 	virtual bool IsValid() const = 0;
+	virtual bool HasData() const = 0;
+
 	virtual bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const = 0;
+
+	virtual std::shared_ptr<AnimationBase> GetAsSharedPtr() const = 0;
 
 	//virtual void Serialize(std::ostream& aStream) const = 0;
 	//virtual void Deserialize(std::istream& aStream) = 0;
+
+protected:
+	const Skeleton* mySkeleton;
+	BoneCache* myBoneCache;
+	float myTargetFrameDelta;
+	float myAnimationTimer;
+	float myInterpolationTimer;
+	bool myIsPlaying;
+	bool myIsLooping;
+	bool myIsPlayingInReverse;
 };
 

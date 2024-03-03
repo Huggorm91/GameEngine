@@ -12,10 +12,12 @@ public:
 
 	bool operator==(const Animation& anAnimation) const;
 
+	bool Update() override;
+
 	const std::string& GetName() const override;
 
-	float GetFPS() const override;
-	float GetFrameDelta() const override;
+	float GetFPS() const;
+	float GetFrameDelta() const;
 	unsigned GetFrameCount() const;
 
 	void SetToFirstFrame() override;
@@ -28,17 +30,24 @@ public:
 	bool PreviousFrame() override;
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
-	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue, bool anInterpolatePreviousFrame = false) const override;
+	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 
 	const AnimationFrame& GetFrame(unsigned int anIndex) const;
 	const AnimationFrame& GetCurrentFrame() const;
+	const AnimationFrame& GetNextFrame() const;
+	const AnimationFrame& GetPreviousFrame() const;
+
 	unsigned GetLastFrameIndex() const;
 	unsigned GetCurrentFrameIndex() const;
 
 	bool IsValid() const override;
+	bool HasData() const override;
+
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
 
 	const AnimationData& GetData() const;
+
+	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
 	//void Serialize(std::ostream& aStream) const override;
 	//void Deserialize(std::istream& aStream) override;
@@ -46,9 +55,6 @@ public:
 protected:
 	AnimationData* myData;
 	unsigned myCurrentFrame;
-
-	const AnimationFrame& GetNextFrame() const;
-	const AnimationFrame& GetPreviousFrame() const;
 
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const;
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& aInterpolationFrame, float anInterpolationValue) const;
