@@ -15,70 +15,67 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImGui\imconfig.h">
+    <ClInclude Include="ScriptGraphNodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx11.h">
+    <ClInclude Include="Events\SGNode_BeginPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_win32.h">
+    <ClInclude Include="Math\SGNode_MathAdd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
+    <ClInclude Include="ScriptGraphTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_rectpack.h">
+    <ClInclude Include="Events\SGNode_Tick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_textedit.h">
+    <ClInclude Include="Text\SGNode_FormatText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\imstb_truetype.h">
+    <ClInclude Include="Text\SGNode_LogText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\misc\cpp\imgui_stdlib.h">
+    <ClInclude Include="FlowControl\SGNode_Sequence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImGui\misc\single_file\imgui_single_file.h">
+    <ClInclude Include="NodeIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImGui\imgui.cpp">
+    <ClCompile Include="ScriptGraphNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_demo.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
+    <ClCompile Include="Events\SGNode_BeginPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
+    <ClCompile Include="Math\SGNode_MathAdd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+    <ClCompile Include="ScriptGraphTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_tables.cpp">
+    <ClCompile Include="Events\SGNode_Tick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\imgui_widgets.cpp">
+    <ClCompile Include="Text\SGNode_FormatText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\misc\cpp\imgui_stdlib.cpp">
+    <ClCompile Include="Text\SGNode_LogText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGui\misc\fonts\binary_to_compressed_c.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\misc\fonts\File.cpp">
+    <ClCompile Include="FlowControl\SGNode_Sequence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="ImGui\imgui.natvis" />
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

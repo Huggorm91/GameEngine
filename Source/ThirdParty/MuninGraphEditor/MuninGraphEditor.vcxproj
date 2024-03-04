@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2401f8e1-66a8-4a33-a8fa-2df968e7c84f}</ProjectGuid>
-    <RootNamespace>DearImGui</RootNamespace>
+    <ProjectGuid>{3996b64c-9a2b-41f5-9d0e-1a1525dae621}</ProjectGuid>
+    <RootNamespace>MuninGraphEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -44,7 +44,6 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -52,7 +51,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -73,12 +71,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir);$(SolutionDir)Source\Scripting\ImGui\;$(SolutionDir)Source\Scripting\ImGuiNodeEditor\;$(SolutionDir)Source\Scripting\MuninGraph\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,14 +111,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;$(SolutionDir)ThirdParty\DearImGui\ImGui;$(SolutionDir)ThirdParty\ImGuiNodeEditor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -133,16 +128,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;$(SolutionDir)ThirdParty\DearImGui\ImGui;$(SolutionDir)ThirdParty\ImGuiNodeEditor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -153,31 +147,56 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ImGui\imconfig.h" />
-    <ClInclude Include="ImGui\imgui.h" />
-    <ClInclude Include="ImGui\imgui_impl_dx11.h" />
-    <ClInclude Include="ImGui\imgui_impl_win32.h" />
-    <ClInclude Include="ImGui\imgui_internal.h" />
-    <ClInclude Include="ImGui\imstb_rectpack.h" />
-    <ClInclude Include="ImGui\imstb_textedit.h" />
-    <ClInclude Include="ImGui\imstb_truetype.h" />
-    <ClInclude Include="ImGui\misc\cpp\imgui_stdlib.h" />
-    <ClInclude Include="ImGui\misc\single_file\imgui_single_file.h" />
+    <ClInclude Include="DirectX\DDSTextureLoader11.h" />
+    <ClInclude Include="Fonts\FontAwesomeRegular.h" />
+    <ClInclude Include="Fonts\FontAwesomeSolid.h" />
+    <ClInclude Include="Fonts\IconsFontAwesome6.h" />
+    <ClInclude Include="GraphEditor\GraphEditorUtils.h" />
+    <ClInclude Include="ScriptGraphEditor\ScriptGraphEditor.h" />
+    <ClInclude Include="MuninGraphEditor.h" />
+    <ClInclude Include="GraphEditor\GraphEditorBase.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Fonts\RobotoBold.h" />
+    <ClInclude Include="Fonts\RobotoLightItalic.h" />
+    <ClInclude Include="Fonts\RobotoRegular.h" />
+    <ClInclude Include="ScriptGraphEditor\ScriptGraphEditorTypeRegistry.h" />
+    <ClInclude Include="ScriptGraphEditor\ScriptGraphEditorTypes.h" />
+    <ClInclude Include="Textures\Texture_Event_Icon.h" />
+    <ClInclude Include="Textures\Texture_Function_Icon.h" />
+    <ClInclude Include="Textures\Texture_Hazard.h" />
+    <ClInclude Include="Textures\Texture_NodeGradient.h" />
+    <ClInclude Include="Textures\Texture_NodeHeader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImGui\imgui.cpp" />
-    <ClCompile Include="ImGui\imgui_demo.cpp" />
-    <ClCompile Include="ImGui\imgui_draw.cpp" />
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
-    <ClCompile Include="ImGui\imgui_tables.cpp" />
-    <ClCompile Include="ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="ImGui\misc\cpp\imgui_stdlib.cpp" />
-    <ClCompile Include="ImGui\misc\fonts\binary_to_compressed_c.cpp" />
-    <ClCompile Include="ImGui\misc\fonts\File.cpp" />
+    <ClCompile Include="DirectX\DDSTextureLoader11.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="GraphEditor\GraphEditorBase.cpp" />
+    <ClCompile Include="GraphEditor\GraphEditorUtils.cpp" />
+    <ClCompile Include="ScriptGraphEditor\ScriptGraphEditor.cpp" />
+    <ClCompile Include="MuninGraphEditor.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ScriptGraphEditor\ScriptGraphEditorTypeRegistry.cpp" />
+    <ClCompile Include="ScriptGraphEditor\ScriptGraphEditorTypes.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="ImGui\imgui.natvis" />
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImGuiNodeEditor\ImGuiNodeEditor.vcxproj">
+      <Project>{a4912cdb-df6b-46c5-8b09-4d3ddb85f985}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\MuninGraph\MuninGraph.vcxproj">
+      <Project>{cab443dd-87c5-4989-a385-f45201559698}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptGraphNodes\ScriptGraphNodes.vcxproj">
+      <Project>{1b06105b-c006-49ec-8500-983773169cb7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
