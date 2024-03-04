@@ -183,6 +183,12 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	mySkeletonEditor.Init(fov, nearPlane, farPlane, myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity);
 
+	MuninGraph::Get().Initialize();
+	myScriptGraphEditorSettings = std::make_shared<ScriptGraphEditorSettings>(RHI::Device);
+	myScriptGraphEditorState = std::make_shared<ScriptGraphEditorState>();
+	myScriptGraph = std::make_shared<ScriptGraph>();
+	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScriptGraph.get());
+
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
@@ -579,6 +585,10 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
+	RHI::BeginEvent(L"NodeEditor Render");
+	myScriptGraphEditor->Render();
+	RHI::EndEvent();
+
 	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
 	RHI::EndEvent();

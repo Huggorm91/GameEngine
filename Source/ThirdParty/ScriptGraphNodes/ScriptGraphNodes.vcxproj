@@ -71,15 +71,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Source\Scripting\MuninGraph\;$(SolutionDir)Source\Scripting\ImGui\;$(ProjectDir);$(IncludePath)</IncludePath>
     <CustomBuildAfterTargets>PreBuildEvent</CustomBuildAfterTargets>
     <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)Source\Scripting\MuninGraph\;$(SolutionDir)Source\Scripting\ImGui\;$(ProjectDir);$(IncludePath)</IncludePath>
     <CustomBuildAfterTargets>PreBuildEvent</CustomBuildAfterTargets>
     <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>

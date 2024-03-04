@@ -26,9 +26,17 @@ using namespace Microsoft::WRL;
 #include "File/DirectoryFunctions.h"
 
 #ifndef _RETAIL
-#include "ThirdParty/DearImGui/ImGui/imgui.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_win32.h"
-#include "ThirdParty/DearImGui/ImGui/imgui_impl_dx11.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
+
+#pragma warning(push, 1)
+#pragma warning(disable:4244)
+#include "ThirdParty/MuninGraph/MuninGraph.h"
+#include "ThirdParty/ScriptGraphNodes/ScriptGraphNodes.h"
+#include "ThirdParty/MuninGraphEditor/ScriptGraphEditor/ScriptGraphEditor.h"
+#pragma warning(pop)
 #endif // !_RETAIL
 
 #endif //MODELVIEWER_PCH_H

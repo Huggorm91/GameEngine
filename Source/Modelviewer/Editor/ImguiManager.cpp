@@ -10,10 +10,10 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_stdlib.h"
-#include "ImGui/imgui_impl_win32.h"
-#include "ImGui/imgui_impl_dx11.h"
+#include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
 
 #include "File\FileSelectors.h"
 #include "Input/InputMapper.h"

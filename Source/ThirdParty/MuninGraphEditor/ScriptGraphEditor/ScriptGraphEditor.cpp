@@ -15,6 +15,7 @@
 #include "Textures/Texture_Function_Icon.h"
 #include "Textures/Texture_NodeGradient.h"
 #include "Textures/Texture_NodeHeader.h"
+#include "File/FileSelectors.h"
 
 constexpr std::string_view ScriptGraphEditor_TriggerEntryPointDialogName(ICON_FA_PLAY "  Events");
 constexpr std::string_view ScriptGraphEditor_EditVariablesDialogName( ICON_FA_CODE "  Variables");
@@ -551,13 +552,37 @@ void ScriptGraphEditor::RenderToolbar()
 	ImGui::SameLine();
 	if(ImGui::Button(ICON_FA_FLOPPY_DISK "  Save"))
 	{		
-		myGraph->Serialize(TEMP_SAVE_LOAD_dataBlock);
+		std::string path;
+		if (Crimson::ShowSaveFileSelector(path, L"Script", L"blp", { L"Blueprints", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
+		{
+			myGraph->Serialize(TEMP_SAVE_LOAD_dataBlock);
+
+			std::ofstream file(path, std::ios::binary | std::ios::trunc);
+			size_t size = TEMP_SAVE_LOAD_dataBlock.size();
+			file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+			file.write(reinterpret_cast<const char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
+			file.close();
+		}
+		
 	}
 	ImGui::SameLine();
 	if(ImGui::Button(ICON_FA_FOLDER_OPEN "  Load"))
 	{
-		myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
-		myEditorState->Layout.RefreshNodePositions = true;
+		std::string path;
+		if (Crimson::ShowOpenFileSelector(path, { L"Blueprints", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
+		{
+			TEMP_SAVE_LOAD_dataBlock.clear();
+
+			std::ifstream file(path, std::ios::binary);
+			size_t size;
+			file.read(reinterpret_cast<char*>(&size), sizeof(size));
+			TEMP_SAVE_LOAD_dataBlock.resize(size);
+			file.read(reinterpret_cast<char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
+			file.close();
+			
+			myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
+			myEditorState->Layout.RefreshNodePositions = true;
+		}
 	}
 
 	ScriptGraphEditor_TriggerEntryPointDialog();

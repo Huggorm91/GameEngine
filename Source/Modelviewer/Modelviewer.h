@@ -7,13 +7,17 @@
 
 class SplashWindow;
 class GameObject;
+class ScriptGraphEditor;
+class ScriptGraph;
+struct ScriptGraphEditorSettings;
+struct ScriptGraphEditorState;
 
 #ifndef _RETAIL
 #include "Editor/SkeletonEditor.h"
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
-class ModelViewer: public Crimson::InputObserver
+class ModelViewer : public Crimson::InputObserver
 {
 #else
 class ModelViewer
@@ -21,19 +25,29 @@ class ModelViewer
 #endif // _RETAIL
 public:
 	// Singleton Getter.
-	static ModelViewer& Get() {
+	static ModelViewer& Get()
+	{
 		static ModelViewer myInstance; return myInstance;
 	}
 
 	// Acceleration Getters for components.
-	FORCEINLINE static ApplicationState& GetApplicationState() { return Get().myApplicationState; }
-	FORCEINLINE static Logger& GetLogger() { return Get().myLogger; }
+	FORCEINLINE static ApplicationState& GetApplicationState()
+	{
+		return Get().myApplicationState;
+	}
+	FORCEINLINE static Logger& GetLogger()
+	{
+		return Get().myLogger;
+	}
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 
 #ifndef _RETAIL
-	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
+	FORCEINLINE static ImguiManager& GetImguiManager()
+	{
+		return Get().myImguiManager;
+	}
 	void SetDropFile(HDROP aHandle);
 
 	void SetPlayMode(bool aState);
@@ -91,6 +105,11 @@ private:
 	GraphicsEngine::LightMode myLightMode;
 	GraphicsEngine::RenderMode myRenderMode;
 
+	std::shared_ptr<ScriptGraphEditor> myScriptGraphEditor;
+	std::shared_ptr<ScriptGraph>myScriptGraph;
+	std::shared_ptr<ScriptGraphEditorSettings> myScriptGraphEditorSettings;
+	std::shared_ptr<ScriptGraphEditorState> myScriptGraphEditorState;
+	
 	ImguiManager myImguiManager;
 	SkeletonEditor mySkeletonEditor;
 
@@ -105,7 +124,7 @@ private:
 
 	SplashWindow* mySplashWindow{ nullptr };
 
-	const std::string mySettingsPath{"Settings/mw_settings.json"};
+	const std::string mySettingsPath{ "Settings/mw_settings.json" };
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
