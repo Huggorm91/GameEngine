@@ -20,6 +20,7 @@ struct AnimationFrame
 	std::unordered_map<std::string, Crimson::Matrix4x4f> globalTransformMatrices;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> localTransformMatrices;
 	std::unordered_map<std::string, AnimationTransform> globalTransforms;
+	std::unordered_map<std::string, AnimationTransform> localTransforms;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> socketTransforms;
 	std::unordered_map<std::string, bool> triggeredEvents;
 

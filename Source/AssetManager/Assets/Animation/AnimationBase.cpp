@@ -27,7 +27,9 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 	localTransformMatrices.reserve(aFrame.LocalTransforms.size());
 	for (auto& [key, value] : aFrame.LocalTransforms)
 	{
-		localTransformMatrices.emplace(key, ConvertMatrix(value));
+		const auto& matrix = ConvertMatrix(value);
+		localTransformMatrices.emplace(key, matrix);
+		localTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix).GetNormalized() });
 	}
 
 	socketTransforms.reserve(aFrame.SocketTransforms.size());
@@ -49,6 +51,7 @@ frameDelta(1.f / framesPerSecond), length(anAnimation.Length)
 AnimationBase::AnimationBase(AnimationType aType) :
 	mySkeleton(nullptr),
 	myBoneCache(nullptr),
+	myRootMotionTransform(nullptr),
 	myTargetFrameDelta(0.f),
 	myAnimationTimer(0.f),
 	myInterpolationTimer(0.f),
