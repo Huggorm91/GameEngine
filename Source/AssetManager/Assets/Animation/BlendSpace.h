@@ -16,6 +16,9 @@ public:
 	void AddAnimation(const AnimationLayer& anAnimation, float aBlendValue);
 	void AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue); // Will add the Animation as an AnimationLayer
 
+	void RemoveAnimation(const Animation& anAnimation, float aBlendValue);
+	void RemoveAnimation(const AnimationLayer& anAnimation, float aBlendValue);
+
 	void SetToFirstFrame() override;
 	void SetToLastFrame() override;
 
@@ -25,6 +28,8 @@ public:
 	bool PreviousFrame() override;
 
 	void SetBlendValue(float aValue);
+
+	// Will override any manually assigned blendvalues in Update
 	void SetBlendValueGetter(const std::function<float()>& aFunction);
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
@@ -43,6 +48,10 @@ private:
 		Animation* animation = nullptr;
 		float blendValue = 0.f;
 
+		~BlendData()
+		{
+			delete animation;
+		}
 		bool operator<(const BlendData& someData) const
 		{
 			return blendValue < someData.blendValue;
@@ -51,7 +60,7 @@ private:
 	std::vector<BlendData> myAnimations;
 	std::string myName;
 
-	std::function<float()> myBlendValueGetter; // https://en.cppreference.com/w/cpp/utility/functional/function/operator_bool
+	std::function<float()> myBlendValueGetter;
 	float myBlendValue;
 };
 

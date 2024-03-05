@@ -81,21 +81,25 @@ unsigned Animation::GetFrameCount() const
 
 void Animation::SetToFirstFrame()
 {
+	ResetTimer();
 	myCurrentFrame = 1;
 }
 
 void Animation::SetToLastFrame()
 {
+	ResetTimer();
 	myCurrentFrame = myData->length - 1;
 }
 
 void Animation::SetFrameIndex(unsigned anIndex)
 {
+	ResetTimer();
 	myCurrentFrame = Crimson::Min(anIndex, GetLastFrameIndex());
 }
 
 bool Animation::NextFrame()
 {
+	ResetTimer();
 	if (++myCurrentFrame == myData->length)
 	{
 		SetToFirstFrame();
@@ -109,6 +113,7 @@ bool Animation::NextFrame()
 
 bool Animation::PreviousFrame()
 {
+	ResetTimer();
 	if (--myCurrentFrame == 0)
 	{
 		SetToLastFrame();
