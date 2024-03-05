@@ -260,6 +260,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\Animation\StateMachine\AnimationStateBase.h" />
+    <ClInclude Include="Assets\Animation\StateMachine\AnimationStateMachine.h" />
     <ClInclude Include="Assets\Animation\AnimationLayer.h" />
     <ClInclude Include="Assets\Animation\AnimationBase.h" />
     <ClInclude Include="Assets\ComponentInclude.h" />
@@ -301,6 +303,8 @@
     <ClInclude Include="Assets\Components\Particles\Emitters\StreamEmitter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets\Animation\StateMachine\AnimationStateBase.cpp" />
+    <ClCompile Include="Assets\Animation\StateMachine\AnimationStateMachine.cpp" />
     <ClCompile Include="Assets\Animation\AnimationLayer.cpp" />
     <ClCompile Include="Assets\Animation\AnimationBase.cpp" />
     <ClCompile Include="Assets\Components\Rendering\AnimatedMeshComponent.cpp" />

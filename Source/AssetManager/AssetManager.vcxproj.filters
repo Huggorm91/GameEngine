@@ -132,6 +132,12 @@
     <ClInclude Include="Assets\Animation\BlendSpace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Assets\Animation\StateMachine\AnimationStateMachine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Animation\StateMachine\AnimationStateBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetManager.pch.cpp">
@@ -240,6 +246,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Animation\BlendSpace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Animation\StateMachine\AnimationStateMachine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Animation\StateMachine\AnimationStateBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
