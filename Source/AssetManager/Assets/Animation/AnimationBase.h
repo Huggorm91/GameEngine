@@ -35,7 +35,7 @@ struct AnimationData
 	double duration;
 	float framesPerSecond;
 	float frameDelta;
-	unsigned int length;
+	unsigned length;
 
 	AnimationData(const TGA::FBX::Animation& anAnimation);
 };
@@ -43,6 +43,7 @@ struct AnimationData
 class AnimationBase
 {
 protected:
+	friend class SkeletonEditor;
 	typedef std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> BoneCache;
 public:
 	enum class AnimationType : char

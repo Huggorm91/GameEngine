@@ -25,26 +25,27 @@ bool Animation::operator==(const Animation& anAnimation) const
 
 bool Animation::Update()
 {
+	if (!myData)
+	{
+		return false;
+	}
+
 	myAnimationTimer += Crimson::Timer::GetDeltaTime();
-	bool isLastFrame = false;
 	if (myAnimationTimer >= myData->frameDelta)
 	{
 		myInterpolationTimer = 0.f;
-		while (myAnimationTimer >= myData->frameDelta)
+		do
 		{
 			myAnimationTimer -= myData->frameDelta;
 			const bool hasMoreFrames = myIsPlayingInReverse ? PreviousFrame() : NextFrame();
-			if (!hasMoreFrames)
+			if (!hasMoreFrames && !myIsLooping)
 			{
-				isLastFrame = true;
-				if (!myIsLooping)
-				{
-					myIsPlaying = false;
-					myAnimationTimer = 0.f;
-					break;
-				}
+				myIsPlaying = false;
+				myAnimationTimer = 0.f;
+				break;
 			}
-		}
+		} while (myAnimationTimer >= myData->frameDelta);
+
 		UpdateBoneCache(mySkeleton, *myBoneCache);
 	}
 	else if (myTargetFrameDelta > 0.f)
@@ -56,7 +57,7 @@ bool Animation::Update()
 			UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
 		}
 	}
-	return isLastFrame;
+	return myIsPlaying;
 }
 
 const std::string& Animation::GetName() const

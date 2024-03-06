@@ -60,12 +60,10 @@ void SkeletonEditor::Update()
 	if (myIsPlayingAnimation)
 	{
 		myMesh->Update();
+		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetTargetFrameDelta();
 		myAnimation->Update();
-		myAnimationTimer += Crimson::Timer::GetDeltaTime();
-		if (myAnimationTimer >= myAnimation->GetTargetFrameDelta())
+		if (hasStepped)
 		{
-			myAnimationTimer -= myAnimation->GetTargetFrameDelta();
-
 			DrawFrame();
 		}
 	}

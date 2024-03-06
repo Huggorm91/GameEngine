@@ -17,7 +17,6 @@ public:
 	void AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue); // Will add the Animation as an AnimationLayer
 
 	void RemoveAnimation(const Animation& anAnimation, float aBlendValue);
-	void RemoveAnimation(const AnimationLayer& anAnimation, float aBlendValue);
 
 	void SetToFirstFrame() override;
 	void SetToLastFrame() override;
@@ -27,10 +26,9 @@ public:
 	// Returns false if the new frame is the first, will loop to the last frame if called after returning false
 	bool PreviousFrame() override;
 
-	void SetBlendValue(float aValue);
-
 	// Will override any manually assigned blendvalues in Update
 	void SetBlendValueGetter(const std::function<float()>& aFunction);
+	void SetBlendValue(float aValue);
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
@@ -45,22 +43,41 @@ public:
 private:
 	struct BlendData
 	{
-		Animation* animation = nullptr;
-		float blendValue = 0.f;
+		std::shared_ptr<Animation> animation;
+		float blendValue;
+		const unsigned id;
 
-		~BlendData()
+		BlendData(std::shared_ptr<Animation> anAnimation, float aValue, unsigned anID) : animation(anAnimation), blendValue(aValue), id(anID) {}
+		inline BlendData& operator=(const BlendData& someData)
 		{
-			delete animation;
+			animation = someData.animation;
+			blendValue = someData.blendValue;
+			const_cast<unsigned&>(id) = someData.id;
+			return *this;
 		}
-		bool operator<(const BlendData& someData) const
+		inline bool operator<(const BlendData& someData) const
 		{
 			return blendValue < someData.blendValue;
 		}
 	};
+
 	std::vector<BlendData> myAnimations;
+	std::unordered_map<unsigned, float> myTimers;
+
 	std::string myName;
+
+	const Animation* myLongestAnimation;
 
 	std::function<float()> myBlendValueGetter;
 	float myBlendValue;
+
+	unsigned myBlendDataCounter;
+	bool myHasMatchingFPS;
+
+	void AddInternal();
+	void UpdateMatchingFPS();
+	void CreateTimers();
+
+	void UpdateAnimations();
 };
 
