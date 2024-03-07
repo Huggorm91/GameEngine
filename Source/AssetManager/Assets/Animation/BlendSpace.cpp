@@ -64,8 +64,10 @@ bool BlendSpace::Update()
 
 			myInterpolationTimer = 0.f;
 
-			// TODO: Add case for playing in reverse
-			if (myLongestAnimation->GetCurrentFrameIndex() == myLongestAnimation->GetLastFrameIndex() && !myIsLooping)
+			const unsigned current = myLongestAnimation->GetCurrentFrameIndex();
+			bool isLastFrame = myIsPlayingInReverse ? current == 1 : current == myLongestAnimation->GetLastFrameIndex();
+
+			if (isLastFrame && !myIsLooping)
 			{
 				myIsPlaying = false;
 				myAnimationTimer = 0.f;
