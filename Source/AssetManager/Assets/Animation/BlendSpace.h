@@ -36,6 +36,8 @@ public:
 	bool IsValid() const override;
 	bool HasData() const override;
 
+	void SetIsPlayingInReverse(bool aShouldPlayBackwards) override;
+
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;

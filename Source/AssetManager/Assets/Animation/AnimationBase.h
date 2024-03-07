@@ -11,6 +11,9 @@ struct AnimationTransform
 	Crimson::Vector3f position;
 	Crimson::QuatF rotation;
 
+	AnimationTransform() = default;
+	AnimationTransform(const Crimson::Matrix4x4f& aMatrix);
+	AnimationTransform(const Crimson::Vector3f& aPosition, const Crimson::QuatF& aRotation);
 	Crimson::Matrix4x4f GetAsMatrix() const;
 	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
 };
@@ -86,7 +89,7 @@ public:
 	void ToogleLooping();
 	bool IsLooping() const;
 
-	void SetIsPlayingInReverse(bool aShouldPlayBackwards);
+	virtual void SetIsPlayingInReverse(bool aShouldPlayBackwards);
 	bool IsPlayingInReverse() const;
 
 	virtual const std::string& GetName() const = 0;

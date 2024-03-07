@@ -236,6 +236,24 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
+std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms()
+{
+	return myData->frames[myCurrentFrame].globalTransforms;
+}
+
+std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms(float anInterpolationValue)
+{
+	std::unordered_map<std::string, AnimationTransform> result;
+	const auto& current = myData->frames[myCurrentFrame];
+	const auto& next = myIsPlayingInReverse ? GetPreviousFrame() : GetNextFrame();
+	result.reserve(current.globalTransforms.size());
+	for (auto& [bone, transform] : current.globalTransforms)
+	{
+		result.emplace(bone, AnimationTransform::Interpolate(transform, next.globalTransforms.at(bone), anInterpolationValue));
+	}
+	return result;
+}
+
 std::shared_ptr<AnimationBase> Animation::GetAsSharedPtr() const
 {
 	return std::make_shared<Animation>(*this);

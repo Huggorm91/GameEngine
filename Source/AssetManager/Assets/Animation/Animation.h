@@ -46,6 +46,8 @@ public:
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
 
 	const AnimationData& GetData() const;
+	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms();
+	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue);
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
@@ -60,5 +62,5 @@ protected:
 
 private:
 	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const;
-	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& aInterpolationFrame, float anInterpolationValue) const;
+	void UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const;
 };

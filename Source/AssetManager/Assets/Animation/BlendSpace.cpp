@@ -226,6 +226,14 @@ bool BlendSpace::HasData() const
 	return !myAnimations.empty();
 }
 
+void BlendSpace::SetIsPlayingInReverse(bool aShouldPlayBackwards)
+{
+	for (auto& data : myAnimations)
+	{
+		data.animation->SetIsPlayingInReverse(aShouldPlayBackwards);
+	}
+}
+
 bool BlendSpace::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage) const
 {
 	for (auto& data : myAnimations)

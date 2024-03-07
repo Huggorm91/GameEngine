@@ -1,6 +1,12 @@
 #include "AssetManager.pch.h"
 #include "AnimationBase.h"
 
+AnimationTransform::AnimationTransform(const Crimson::Matrix4x4f& aMatrix) :position(aMatrix.GetTranslation()), rotation(Crimson::QuatF(aMatrix).GetNormalized())
+{}
+
+AnimationTransform::AnimationTransform(const Crimson::Vector3f& aPosition, const Crimson::QuatF& aRotation) :position(aPosition), rotation(aRotation)
+{}
+
 Crimson::Matrix4x4f AnimationTransform::GetAsMatrix() const
 {
 	Crimson::Matrix4x4f result = rotation.GetAsMatrix3x3();
@@ -10,7 +16,7 @@ Crimson::Matrix4x4f AnimationTransform::GetAsMatrix() const
 
 AnimationTransform AnimationTransform::Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage)
 {
-	return AnimationTransform{ Lerp(aFrom.position, aTo.position, aPercentage), Nlerp(aFrom.rotation, aTo.rotation, aPercentage) };
+	return AnimationTransform(Lerp(aFrom.position, aTo.position, aPercentage), Nlerp(aFrom.rotation, aTo.rotation, aPercentage));
 }
 
 AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globalTransformMatrices(), localTransformMatrices(), socketTransforms(), triggeredEvents(aFrame.TriggeredEvents)
@@ -21,7 +27,7 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 	{
 		const auto& matrix = ConvertMatrix(value);
 		globalTransformMatrices.emplace(key, matrix);
-		globalTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix).GetNormalized()});
+		globalTransforms.emplace(key, matrix);
 	}
 
 	localTransformMatrices.reserve(aFrame.LocalTransforms.size());
@@ -29,7 +35,7 @@ AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : globa
 	{
 		const auto& matrix = ConvertMatrix(value);
 		localTransformMatrices.emplace(key, matrix);
-		localTransforms.emplace(key, AnimationTransform{ matrix.GetTranslation(), Crimson::QuatF(matrix).GetNormalized() });
+		localTransforms.emplace(key, matrix);
 	}
 
 	socketTransforms.reserve(aFrame.SocketTransforms.size());
@@ -68,7 +74,7 @@ void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 	if (IsValid())
 	{
 		UpdateBoneCache(mySkeleton, *myBoneCache);
-	}	
+	}
 }
 
 void AnimationBase::LoadFromJson(const Json::Value& aJson)
