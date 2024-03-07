@@ -28,6 +28,7 @@ private:
 	bool myIsPlayingAnimation;
 	bool myIsPlayingInReverse;
 	bool myShouldRenderMesh;
+	bool myShouldRenderSkeleton;
 
 	float myAnimationTimer;
 	float myPlaybackMultiplier;

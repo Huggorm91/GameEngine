@@ -13,6 +13,7 @@ SkeletonEditor::SkeletonEditor() :
 	myIsPlayingAnimation(false),
 	myIsPlayingInReverse(false),
 	myShouldRenderMesh(true),
+	myShouldRenderSkeleton(true),
 	myAnimationTimer(0.f),
 	myPlaybackMultiplier(1.f),
 	myTargetFPS(60.f),
@@ -59,7 +60,11 @@ void SkeletonEditor::Update()
 
 	if (myIsPlayingAnimation)
 	{
-		myMesh->Update();
+		if (myShouldRenderMesh && mySkeleton)
+		{
+			myMesh->Update();
+		}
+
 		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetTargetFrameDelta();
 		myAnimation->Update();
 		if (hasStepped)
@@ -137,13 +142,14 @@ void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimat
 	}
 
 	myAnimation = anAnimation;
-	myAnimation->Init(myBoneTransforms, mySkeleton);
-	myAnimation->SetTargetFPS(myTargetFPS);
-	myAnimation->SetIsLooping(true);
 
 	CheckSkeletonAnimationMatching();
 	if (myHasMatchingBones)
 	{
+		myAnimation->Init(myBoneTransforms, mySkeleton);
+		myAnimation->SetTargetFPS(myTargetFPS);
+		myAnimation->SetIsLooping(true);
+
 		SetMeshAnimation();
 		DrawFrame();
 	}
@@ -248,7 +254,21 @@ void SkeletonEditor::CreateSkeletonInspector()
 			return;
 		}
 
-		ImGui::Checkbox("Show Mesh", &myShouldRenderMesh);
+		if (ImGui::Checkbox("Show Skeleton", &myShouldRenderSkeleton))
+		{
+			for (auto& [bone, line] : myLines)
+			{
+				line.SetActive(myShouldRenderSkeleton);
+			}
+		}
+		ImGui::SameLine();
+
+		if (ImGui::Checkbox("Show Mesh", &myShouldRenderMesh))
+		{
+			SetMeshAnimation();
+			DrawFrame();
+		}
+		
 		if (myShouldRenderMesh)
 		{
 			auto color = myMesh->GetColor();
@@ -456,6 +476,7 @@ void SkeletonEditor::CreateAnimationInspector()
 				myAnimationTimer = 0.f;
 				myAnimation->SetToFirstFrame();
 				myMesh->StopAnimation();
+				DrawFrame();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Pause"))
@@ -472,6 +493,7 @@ void SkeletonEditor::CreateAnimationInspector()
 			if (ImGui::DragFloat("Target FPS", &myTargetFPS, 1.f, 0.f, FLT_MAX, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 			{
 				myMesh->SetTargetFPS(myTargetFPS);
+				myAnimation->SetTargetFPS(myTargetFPS);
 			}
 
 			if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
