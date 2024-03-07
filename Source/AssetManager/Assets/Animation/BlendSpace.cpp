@@ -2,6 +2,7 @@
 #include "BlendSpace.h"
 #include "Time/Timer.h"
 #include "Math/Sort.hpp"
+#include "Skeleton.h"
 
 BlendSpace::BlendSpace() :
 	AnimationBase(AnimationType::BlendSpace),
@@ -206,8 +207,74 @@ void BlendSpace::SetBlendValue(float aValue)
 
 void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const
 {
-	assert(!"Not Implemented!");
-	aSkeleton; outBones;
+	const BlendData* previous = nullptr;
+	for (auto& data : myAnimations)
+	{
+		if (myBlendValue <= data.blendValue)
+		{
+			// Check if lower than first value, or equal to higher value
+			if (previous == nullptr || Crimson::GimbalCheck(data.blendValue, myBlendValue, Crimson::FloatTolerance))
+			{
+				data.animation->UpdateBoneCache(aSkeleton, outBones);
+			}
+			else
+			{
+				const auto& lowerTransforms = previous->animation->GetFrameTransforms();
+				const auto& higherTransforms = data.animation->GetFrameTransforms();
+				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
+
+				// Ensure it is always the bigger list that is iterated
+				if (lowerTransforms.size() == higherTransforms.size())
+				{
+					for (auto& [boneName, transform] : lowerTransforms)
+					{
+						const unsigned index = aSkeleton->GetBoneIndex(boneName);
+						const auto& bone = aSkeleton->GetBone(index);
+
+						const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
+						outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					}
+				}
+				else if (lowerTransforms.size() < higherTransforms.size())
+				{
+					for (auto& [boneName, transform] : higherTransforms)
+					{
+						const unsigned index = aSkeleton->GetBoneIndex(boneName);
+						const auto& bone = aSkeleton->GetBone(index);
+
+						if (auto iter = lowerTransforms.find(boneName); iter != lowerTransforms.end())
+						{
+							const auto& interpolatedTransform = AnimationTransform::Interpolate(iter->second, transform, interpolationValue);
+							outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+						}
+						else
+						{
+							outBones[index] = bone.bindPoseInverse * transform.GetAsMatrix();
+						}
+					}
+				}
+				else
+				{
+					for (auto& [boneName, transform] : lowerTransforms)
+					{
+						const unsigned index = aSkeleton->GetBoneIndex(boneName);
+						const auto& bone = aSkeleton->GetBone(index);
+
+						if (auto iter = higherTransforms.find(boneName); iter != higherTransforms.end())
+						{
+							const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, iter->second, interpolationValue);
+							outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+						}
+						else
+						{
+							outBones[index] = bone.bindPoseInverse * transform.GetAsMatrix();
+						}
+					}
+				}
+			}
+		}
+		previous = &data;
+	}
 }
 
 void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const

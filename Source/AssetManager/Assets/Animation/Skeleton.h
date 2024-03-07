@@ -14,8 +14,10 @@ public:
 	void SetPath(const std::string* aPath);
 
 	bool HasBone(const std::string& aName) const;
-	const Bone& GetBone(unsigned int anIndex) const;
+	const Bone& GetBone(unsigned anIndex) const;
 	const Bone& GetBone(const std::string& aName) const;
+
+	unsigned GetBoneIndex(const std::string& aName) const;
 
 	const std::vector<Bone>& GetBones() const;
 

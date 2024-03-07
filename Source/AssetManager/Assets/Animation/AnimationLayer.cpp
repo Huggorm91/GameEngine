@@ -47,7 +47,7 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	}
 }
 
-std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms()
+std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms() const
 {
 	std::unordered_map<std::string, AnimationTransform> result;
 	const auto& bone = mySkeleton->GetBone(myBoneIndex);
@@ -62,7 +62,7 @@ std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTran
 	return result;
 }
 
-std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms(float anInterpolationValue)
+std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms(float anInterpolationValue) const
 {
 	std::unordered_map<std::string, AnimationTransform> result;
 	const auto& next = myIsPlayingInReverse ? GetPreviousFrame() : GetNextFrame();
@@ -106,7 +106,7 @@ void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCach
 	}
 }
 
-void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform)
+void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	const auto& bone = mySkeleton->GetBone(anIndex);
 	const auto& matrix = aFrame.localTransformMatrices.at(bone.name) * aParentTransform;
@@ -117,7 +117,7 @@ void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, 
 	}
 }
 
-void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform)
+void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	const auto& bone = mySkeleton->GetBone(anIndex);
 	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(bone.namespaceName), anInterpolationFrame.localTransforms.at(bone.namespaceName), anInterpolationValue);

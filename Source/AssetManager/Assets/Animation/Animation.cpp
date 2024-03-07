@@ -236,12 +236,12 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
-std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms()
+std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms() const
 {
 	return myData->frames[myCurrentFrame].globalTransforms;
 }
 
-std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms(float anInterpolationValue)
+std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms(float anInterpolationValue) const
 {
 	std::unordered_map<std::string, AnimationTransform> result;
 	const auto& current = myData->frames[myCurrentFrame];

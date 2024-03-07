@@ -34,7 +34,7 @@ bool Skeleton::HasBone(const std::string& aName) const
 	return myIndexMap.find(aName) != myIndexMap.end();
 }
 
-const Bone& Skeleton::GetBone(unsigned int anIndex) const
+const Bone& Skeleton::GetBone(unsigned anIndex) const
 {
 	return myBones[anIndex];
 }
@@ -42,6 +42,11 @@ const Bone& Skeleton::GetBone(unsigned int anIndex) const
 const Bone& Skeleton::GetBone(const std::string& aName) const
 {
 	return myBones[myIndexMap.at(aName)];
+}
+
+unsigned Skeleton::GetBoneIndex(const std::string& aName) const
+{
+	return static_cast<unsigned>(myIndexMap.at(aName));
 }
 
 const std::vector<Bone>& Skeleton::GetBones() const
