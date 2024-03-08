@@ -11,12 +11,13 @@ public:
 	bool Update() override;
 
 	const std::string& GetName() const override;
+	unsigned GetStartBoneIndex() const override;
 
-	void AddAnimation(const Animation& anAnimation, float aBlendValue);
-	void AddAnimation(const AnimationLayer& anAnimation, float aBlendValue);
-	void AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue); // Will add the Animation as an AnimationLayer
+	bool AddAnimation(const Animation& anAnimation, float aBlendValue);
+	bool AddAnimation(const AnimationLayer& anAnimation, float aBlendValue);
+	bool AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue); // Will add the Animation as an AnimationLayer
 
-	void RemoveAnimation(const Animation& anAnimation, float aBlendValue);
+	bool RemoveAnimation(const Animation& anAnimation, float aBlendValue);
 
 	void SetToFirstFrame() override;
 	void SetToLastFrame() override;
@@ -47,16 +48,8 @@ private:
 	{
 		std::shared_ptr<Animation> animation;
 		float blendValue;
-		const unsigned id;
+		float timer;
 
-		BlendData(std::shared_ptr<Animation> anAnimation, float aValue, unsigned anID) : animation(anAnimation), blendValue(aValue), id(anID) {}
-		inline BlendData& operator=(const BlendData& someData)
-		{
-			animation = someData.animation;
-			blendValue = someData.blendValue;
-			const_cast<unsigned&>(id) = someData.id;
-			return *this;
-		}
 		inline bool operator<(const BlendData& someData) const
 		{
 			return blendValue < someData.blendValue;
@@ -64,7 +57,6 @@ private:
 	};
 
 	std::vector<BlendData> myAnimations;
-	std::unordered_map<unsigned, float> myTimers;
 
 	std::string myName;
 
@@ -73,12 +65,11 @@ private:
 	std::function<float()> myBlendValueGetter;
 	float myBlendValue;
 
-	unsigned myBlendDataCounter;
+	unsigned myBoneIndex;
 	bool myHasMatchingFPS;
 
 	void AddInternal();
 	void UpdateMatchingFPS();
-	void CreateTimers();
 
 	void UpdateAnimations();
 };

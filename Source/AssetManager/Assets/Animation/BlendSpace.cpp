@@ -9,7 +9,7 @@ BlendSpace::BlendSpace() :
 	myLongestAnimation(nullptr),
 	myBlendValueGetter(nullptr),
 	myBlendValue(0.f),
-	myBlendDataCounter(0u),
+	myBoneIndex(0u),
 	myHasMatchingFPS(true)
 {}
 
@@ -85,32 +85,71 @@ const std::string& BlendSpace::GetName() const
 	return myName;
 }
 
-void BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue)
+unsigned BlendSpace::GetStartBoneIndex() const
 {
-	myAnimations.emplace_back(BlendData(std::make_shared<Animation>(anAnimation), aBlendValue, ++myBlendDataCounter));
-	AddInternal();
+	return myBoneIndex;
 }
 
-void BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendValue)
+bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue)
 {
-	myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation), aBlendValue, ++myBlendDataCounter));
-	AddInternal();
+	if (myBoneIndex == 0u)
+	{
+		myAnimations.emplace_back(BlendData(std::make_shared<Animation>(anAnimation), aBlendValue));
+		AddInternal();
+		return true;
+	}
+	return false;
 }
 
-void BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue)
+bool BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendValue)
 {
-	myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue, ++myBlendDataCounter));
-	AddInternal();
+	if (myAnimations.empty())
+	{
+		myBoneIndex = anAnimation.GetStartBoneIndex();
+		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation), aBlendValue));
+		AddInternal();
+		return true;
+	}
+	else
+	{
+		if (myBoneIndex == anAnimation.GetStartBoneIndex())
+		{
+			myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation), aBlendValue));
+			AddInternal();
+			return true;
+		}
+	}
+	return false;
 }
 
-void BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue)
+bool BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue)
+{
+	if (myAnimations.empty())
+	{
+		myBoneIndex = aBoneIndex;
+		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue));
+		AddInternal();
+		return true;
+	}
+	else
+	{
+		if (myBoneIndex == aBoneIndex)
+		{
+			myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue));
+			AddInternal();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue)
 {
 	unsigned index = 0;
 	for (auto iter = myAnimations.begin(); iter != myAnimations.end(); iter++)
 	{
 		if (*iter->animation == anAnimation && iter->blendValue == aBlendValue)
 		{
-			unsigned id = iter->id;
 			if (myLongestAnimation == iter->animation.get())
 			{
 				myLongestAnimation = nullptr;
@@ -119,12 +158,10 @@ void BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue
 			UpdateMatchingFPS();
 			if (myHasMatchingFPS)
 			{
-				myTimers.clear();
 				myLongestAnimation = nullptr;
 			}
 			else
 			{
-				myTimers.erase(id);
 				if (myLongestAnimation == nullptr)
 				{
 					for (auto& data : myAnimations)
@@ -136,10 +173,11 @@ void BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue
 					}
 				}
 			}
-			return;
+			return true;
 		}
 		++index;
 	}
+	return false;
 }
 
 void BlendSpace::SetToFirstFrame()
@@ -147,6 +185,7 @@ void BlendSpace::SetToFirstFrame()
 	ResetTimer();
 	for (auto& data : myAnimations)
 	{
+		data.timer = 0.f;
 		data.animation->SetToFirstFrame();
 	}
 }
@@ -156,6 +195,7 @@ void BlendSpace::SetToLastFrame()
 	ResetTimer();
 	for (auto& data : myAnimations)
 	{
+		data.timer = 0.f;
 		data.animation->SetToLastFrame();
 	}
 }
@@ -164,6 +204,7 @@ bool BlendSpace::NextFrame()
 {
 	for (auto& data : myAnimations)
 	{
+		data.timer = 0.f;
 		data.animation->NextFrame();
 	}
 
@@ -182,6 +223,7 @@ bool BlendSpace::PreviousFrame()
 {
 	for (auto& data : myAnimations)
 	{
+		data.timer = 0.f;
 		data.animation->PreviousFrame();
 	}
 	
@@ -327,7 +369,6 @@ void BlendSpace::AddInternal()
 	else
 	{
 		const auto& data = myAnimations.back();
-		myTimers.emplace(data.id, 0.f);
 		if (data.animation->GetData().length > myLongestAnimation->GetData().length)
 		{
 			myLongestAnimation = data.animation.get();
@@ -343,10 +384,6 @@ void BlendSpace::UpdateMatchingFPS()
 	{
 		if (previous && data.animation->GetFPS() != previous->GetFPS())
 		{
-			if (myHasMatchingFPS)
-			{
-				CreateTimers();
-			}
 			myHasMatchingFPS = false;
 			return;
 		}
@@ -355,31 +392,16 @@ void BlendSpace::UpdateMatchingFPS()
 	myHasMatchingFPS = true;
 }
 
-void BlendSpace::CreateTimers()
-{
-	myTimers.clear();
-	myTimers.reserve(myAnimations.size());
-	for (auto& data : myAnimations)
-	{
-		if (!myLongestAnimation || data.animation->GetData().length > myLongestAnimation->GetData().length)
-		{
-			myLongestAnimation = data.animation.get();
-		}
-		myTimers.emplace(data.id, myAnimationTimer);
-	}
-}
-
 void BlendSpace::UpdateAnimations()
 {
 	const float deltaTime = Crimson::Timer::GetDeltaTime();
 	for (auto& data : myAnimations)
 	{
-		auto& timer = myTimers.at(data.id);
-		timer += deltaTime;
+		data.timer += deltaTime;
 
-		while (timer >= data.animation->GetFrameDelta())
+		while (data.timer >= data.animation->GetFrameDelta())
 		{
-			timer -= data.animation->GetFrameDelta();
+			data.timer -= data.animation->GetFrameDelta();
 			if (myIsPlayingInReverse)
 			{
 				data.animation->PreviousFrame();

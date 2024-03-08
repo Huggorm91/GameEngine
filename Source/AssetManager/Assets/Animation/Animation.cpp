@@ -65,6 +65,11 @@ const std::string& Animation::GetName() const
 	return myData->name;
 }
 
+unsigned Animation::GetStartBoneIndex() const
+{
+	return 0u;
+}
+
 float Animation::GetFPS() const
 {
 	return myData->framesPerSecond;

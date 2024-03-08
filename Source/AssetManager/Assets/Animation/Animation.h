@@ -15,6 +15,7 @@ public:
 	bool Update() override;
 
 	const std::string& GetName() const override;
+	unsigned GetStartBoneIndex() const override;
 
 	float GetFPS() const;
 	float GetFrameDelta() const;

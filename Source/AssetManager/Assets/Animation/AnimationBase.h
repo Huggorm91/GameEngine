@@ -94,6 +94,7 @@ public:
 
 	virtual const std::string& GetName() const = 0;
 	AnimationType GetType() const;
+	virtual unsigned GetStartBoneIndex() const = 0;
 
 	virtual void SetToFirstFrame() = 0;
 	virtual void SetToLastFrame() = 0;

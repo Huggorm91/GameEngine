@@ -10,14 +10,14 @@ AnimationLayer::AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex
 	myType = AnimationType::AnimationLayer;
 }
 
+unsigned AnimationLayer::GetStartBoneIndex() const
+{
+	return myBoneIndex;
+}
+
 void AnimationLayer::SetBoneIndex(unsigned anIndex)
 {
 	myBoneIndex = anIndex;
-}
-
-unsigned AnimationLayer::GetBoneIndex() const
-{
-	return myBoneIndex;
 }
 
 void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const

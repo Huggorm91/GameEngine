@@ -9,8 +9,9 @@ public:
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
 
+	unsigned GetStartBoneIndex() const override;
+
 	void SetBoneIndex(unsigned anIndex);
-	unsigned GetBoneIndex() const;
 
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
