@@ -67,6 +67,12 @@ AnimationBase::AnimationBase(AnimationType aType) :
 	myIsPlayingInReverse(false)
 {}
 
+AnimationBase::AnimationBase(const Json::Value & aJson)
+{
+	aJson;
+	assert(!"Not Implemented!");
+}
+
 void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 {
 	myBoneCache = &aBoneCache;
@@ -75,18 +81,6 @@ void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 	{
 		UpdateBoneCache(mySkeleton, *myBoneCache);
 	}
-}
-
-void AnimationBase::LoadFromJson(const Json::Value& aJson)
-{
-	assert(!"Not Implemented!");
-	aJson;
-}
-
-Json::Value AnimationBase::ToJson() const
-{
-	assert(!"Not Implemented!");
-	return Json::Value();
 }
 
 void AnimationBase::SetPlaySettings(float aTargetFPS, bool aIsLooping, bool aPlayInReverse)
@@ -170,4 +164,18 @@ AnimationBase::AnimationType AnimationBase::GetType() const
 bool AnimationBase::IsValid() const
 {
 	return mySkeleton && myBoneCache;
+}
+
+Json::Value AnimationBase::ToJson() const
+{
+	assert(!"Not Implemented!");
+	// result["Path"] = GetPath();
+	return Json::Value();
+}
+
+std::shared_ptr<AnimationBase> LoadAnimationFromJson(const Json::Value& aJson)
+{
+	assert(!"Not Implemented!");
+	aJson;
+	return std::shared_ptr<AnimationBase>();
 }

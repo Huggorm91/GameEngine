@@ -2,11 +2,15 @@
 #include "Animation.h"
 #include "Skeleton.h"
 #include "Time/Timer.h"
+#include "AssetManager.h"
 
 Animation::Animation() :AnimationBase(AnimationType::Animation), myData(nullptr), myCurrentFrame(1)
 {}
 
-Animation::Animation(AnimationData& someData) : AnimationBase(AnimationType::Animation), myData(&someData), myCurrentFrame(1)
+Animation::Animation(const Json::Value & aJson): AnimationBase(aJson), myData(AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString())), myCurrentFrame(1)
+{}
+
+Animation::Animation(AnimationData* someData) : AnimationBase(AnimationType::Animation), myData(someData), myCurrentFrame(1)
 {}
 
 Animation::Animation(const Animation& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
@@ -60,7 +64,7 @@ bool Animation::Update()
 	return myIsPlaying;
 }
 
-const std::string& Animation::GetName() const
+const std::string& Animation::GetPath() const
 {
 	return myData->name;
 }

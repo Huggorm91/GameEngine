@@ -3,6 +3,7 @@
 #include "Time/Timer.h"
 #include "Math/Sort.hpp"
 #include "Skeleton.h"
+#include "AssetManager.h"
 
 BlendSpace::BlendSpace() :
 	AnimationBase(AnimationType::BlendSpace),
@@ -12,6 +13,32 @@ BlendSpace::BlendSpace() :
 	myBoneIndex(0u),
 	myHasMatchingFPS(true)
 {}
+
+BlendSpace::BlendSpace(const Json::Value& aJson) :
+	AnimationBase(aJson),
+	myPath(aJson["Path"].asString()),
+	myName(aJson["Name"].asString()),
+	myLongestAnimation(nullptr),
+	myBlendValueGetter(nullptr),
+	myBlendValue(aJson["BlendValue"].asFloat()),
+	myBoneIndex(aJson["BoneIndex"].asUInt()),
+	myHasMatchingFPS(true)
+{
+	if (myBoneIndex == 0u)
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), data["Value"].asFloat());
+		}
+	}
+	else
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), myBoneIndex, data["Value"].asFloat());
+		}
+	}
+}
 
 bool BlendSpace::Update()
 {
@@ -83,6 +110,11 @@ bool BlendSpace::Update()
 const std::string& BlendSpace::GetName() const
 {
 	return myName;
+}
+
+const std::string& BlendSpace::GetPath() const
+{
+	return myPath;
 }
 
 unsigned BlendSpace::GetStartBoneIndex() const
@@ -344,6 +376,63 @@ bool BlendSpace::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErro
 std::shared_ptr<AnimationBase> BlendSpace::GetAsSharedPtr() const
 {
 	return std::make_shared<BlendSpace>(*this);
+}
+
+Json::Value BlendSpace::ToJson() const
+{
+	Json::Value result = AnimationBase::ToJson();
+	result["Name"] = myName;
+	result["BoneIndex"] = myBoneIndex;
+	result["BlendValue"] = myBlendValue;
+	result["Animations"] = Json::arrayValue;
+	unsigned index = 0;
+	for (auto& data : myAnimations)
+	{
+		auto& json = result["Animations"][index];
+		json["Path"] = data.animation->GetPath();
+		json["Value"] = data.blendValue;
+		++index;
+	}
+	return result;
+}
+
+void BlendSpace::LoadFromJson(const Json::Value& aJson, const std::string& aPath)
+{
+	myPath = aPath;
+	myName = aJson["Name"].asString();
+	myBoneIndex = aJson["BoneIndex"].asUInt();
+
+	if (myBoneIndex == 0u)
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), data["Value"].asFloat());
+		}
+	}
+	else
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), myBoneIndex, data["Value"].asFloat());
+		}
+	}
+}
+
+Json::Value BlendSpace::CreateJson() const
+{
+	Json::Value result;
+	result["Name"] = myName;
+	result["BoneIndex"] = myBoneIndex;
+	result["Animations"] = Json::arrayValue;
+	unsigned index = 0;
+	for (auto& data : myAnimations)
+	{
+		auto& json = result["Animations"][index];
+		json["Path"] = data.animation->GetPath();
+		json["Value"] = data.blendValue;
+		++index;
+	}
+	return result;
 }
 
 void BlendSpace::AddInternal()

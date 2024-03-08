@@ -84,9 +84,8 @@ void AnimatedMeshComponent::Init(GameObject* aParent)
 void AnimatedMeshComponent::Init(const Json::Value& aJson)
 {
 	MeshComponent::Init(aJson);
-	myAnimation = std::make_shared<Animation>(AssetManager::GetAsset<Animation>(aJson["Animation"].asString()));
+	myAnimation = LoadAnimationFromJson(aJson["Animation"]);
 	myAnimation->Init(myBoneTransformCache, mySkeleton);
-	//myAnimation->LoadFromJson(aJson["AnimationData"]);
 
 	myAnimationState = static_cast<AnimationState>(aJson["AnimationState"].asInt());
 	if (!mySkeleton || mySkeleton->GetPath() != aJson["Skeleton"].asString())
@@ -197,7 +196,7 @@ const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& AnimatedMeshComponent::Ge
 void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	MeshComponent::CreateImGuiComponents(aWindowName);
-	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetName()), ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetPath()), ImGuiInputTextFlags_ReadOnly);
 	/*if (ImGui::Checkbox("Loop", &myIsLooping) && myAnimationState != AnimationState::Stopped)
 	{
 		StartAnimation();
@@ -249,8 +248,7 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation->GetName();
-	result["AnimationData"] = myAnimation->ToJson();
+	result["Animation"] = myAnimation->ToJson();
 	result["AnimationState"] = static_cast<int>(myAnimationState);
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;

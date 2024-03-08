@@ -207,6 +207,24 @@ void SkeletonEditor::CreateMenubar()
 {
 	if (ImGui::BeginMenuBar())
 	{
+		if (ImGui::BeginMenu("Blend Space"))
+		{
+			if (ImGui::MenuItem("Create New"))
+			{
+				BlendSpace newBlendSpace;
+				newBlendSpace.myName = "NewBlendSpace";
+				SetAnimation(std::make_shared<BlendSpace>(newBlendSpace));
+			}
+			if (ImGui::MenuItem("Load"))
+			{
+				LoadBlendSpace();
+			}
+			if (ImGui::MenuItem("Save"))
+			{
+				SaveBlendSpace();
+			}
+			ImGui::EndMenu();
+		}
 		if (ImGui::MenuItem("Close"))
 		{
 			Deactivate();
@@ -595,7 +613,7 @@ bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 	{
 		if (myAnimation->HasData())
 		{
-			isSelected = myAnimation->GetName() == aFile;
+			isSelected = myAnimation->GetPath() == aFile;
 		}
 	}
 	else
@@ -963,4 +981,26 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 		DrawSkeleton();
 		DrawFrame();
 	}
+}
+
+void SkeletonEditor::LoadBlendSpace()
+{
+	/*std::wstring extensions = L"*" + std::wstring(AssetManager::GetSceneExtensionW()) + L";*";
+	extensions += std::wstring(AssetManager::GetSceneBinaryExtensionW()) + L";";
+	std::string path;
+	if (Crimson::ShowOpenFileSelector(path, { L"Scenes", extensions }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+	{
+		myModelViewer->LoadScene(path);
+	}*/
+}
+
+void SkeletonEditor::SaveBlendSpace()
+{
+	/*std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
+	std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneExtension(), true));
+	std::string path;
+	if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+	{
+		myModelViewer->SaveScene(path, false);
+	}*/
 }

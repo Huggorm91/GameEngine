@@ -7,12 +7,12 @@ using namespace Crimson;
 
 void AnimationManager::Init()
 {
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
 }
 
-Animation* AnimationManager::GetAnimation(const std::string& aPath, bool aShouldLogErrors)
+AnimationData* AnimationManager::GetAnimation(const std::string& aPath, bool aShouldLogErrors)
 {
-	if (auto iter = myAnimations.find(aPath); iter != myAnimations.end())
+	if (auto iter = myAnimationData.find(aPath); iter != myAnimationData.end())
 	{
 		return &iter->second;
 	}
@@ -22,10 +22,53 @@ Animation* AnimationManager::GetAnimation(const std::string& aPath, bool aShould
 	}
 }
 
-Animation* AnimationManager::LoadAnimation(const std::string& aPath, bool aShouldLogErrors)
+BlendSpace AnimationManager::GetBlendSpace(const std::string& aPath, bool aShouldLogErrors)
 {
-	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
-	path = Crimson::GetValidPath(path, GetPath());
+	if (auto iter = myBlendSpaces.find(aPath); iter != myBlendSpaces.end())
+	{
+		return iter->second;
+	}
+	else
+	{
+		return LoadBlendSpace(aPath, aShouldLogErrors);
+	}
+}
+
+void AnimationManager::SaveBlendSpace(const BlendSpace& aBlendSpace, const std::string& aPath)
+{
+	std::string path = aPath;
+	if (!HasValidExtension(aPath, GetBlendSpaceExtension()))
+	{
+		path += GetBlendSpaceExtension();
+	}
+	path = CreateValidPath(path, GetPath());
+
+	if (path.empty())
+	{
+		AMLogger.Warn("AnimationManager: Could not save blendspace to path: " + aPath);
+		return;
+	}
+
+	std::fstream fileStream(path, std::ios::out | std::ios::trunc);
+	if (fileStream)
+	{
+		Json::Value blendspace = aBlendSpace.ToJson();
+		Json::StreamWriterBuilder builder;
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(blendspace, &fileStream);
+		fileStream.flush();
+	}
+	else
+	{
+		AMLogger.Err("AnimationManager: Could not open file at: " + aPath);
+	}
+	fileStream.close();
+}
+
+AnimationData* AnimationManager::LoadAnimation(const std::string& aPath, bool aShouldLogErrors)
+{
+	std::string path = AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath());
 	if (path.empty())
 	{
 		if (aShouldLogErrors)
@@ -53,8 +96,7 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath, bool aShoul
 
 	if (success)
 	{
-		auto dataIter = myAnimationData.emplace(aPath, tgaAnimation);
-		auto iter = myAnimations.emplace(aPath, dataIter.first->second);
+		auto iter = myAnimationData.emplace(aPath, tgaAnimation);
 		return &iter.first->second;
 	}
 
@@ -63,4 +105,39 @@ Animation* AnimationManager::LoadAnimation(const std::string& aPath, bool aShoul
 		AMLogger.Err("AnimationManager: Something went wrong when loading animation at: " + aPath);
 	}
 	return nullptr;
+}
+
+BlendSpace AnimationManager::LoadBlendSpace(const std::string& aPath, bool aShouldLogErrors)
+{
+	std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+	path = GetValidPath(path, GetPath());
+	if (path.empty())
+	{
+		if (aShouldLogErrors)
+		{
+			AMLogger.Warn("AnimationManager: Could not load blendspace from path: " + aPath);
+		}
+		return BlendSpace();
+	}
+
+	Json::Value json;
+	std::ifstream fileStream(path);
+	if (fileStream)
+	{
+		fileStream >> json;
+	}
+	else
+	{
+		if (aShouldLogErrors)
+		{
+			AMLogger.Err("AnimationManager: Could not open file at: " + aPath);
+		}
+		fileStream.close();
+		return BlendSpace();
+	}
+	fileStream.close();
+
+	auto iter = myBlendSpaces.emplace(aPath, json);
+
+	return iter.first->second;
 }

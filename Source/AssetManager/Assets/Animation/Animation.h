@@ -5,7 +5,8 @@ class Animation: public AnimationBase
 {
 public:
 	Animation();
-	Animation(AnimationData& someData);
+	Animation(const Json::Value& aJson);
+	Animation(AnimationData* someData);
 	Animation(const Animation& anAnimation);
 	Animation(Animation&& anAnimation) noexcept;
 	~Animation() = default;
@@ -14,7 +15,7 @@ public:
 
 	bool Update() override;
 
-	const std::string& GetName() const override;
+	const std::string& GetPath() const override;
 	unsigned GetStartBoneIndex() const override;
 
 	float GetFPS() const;

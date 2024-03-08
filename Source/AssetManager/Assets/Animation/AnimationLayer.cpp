@@ -5,6 +5,9 @@
 AnimationLayer::AnimationLayer() : Animation(AnimationType::AnimationLayer), myBoneIndex(0u)
 {}
 
+AnimationLayer::AnimationLayer(const Json::Value & aJson) : Animation(aJson), myBoneIndex(aJson["BoneIndex"].asUInt())
+{}
+
 AnimationLayer::AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex) : Animation(anAnimation), myBoneIndex(aBoneIndex)
 {
 	myType = AnimationType::AnimationLayer;
@@ -81,6 +84,13 @@ std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTran
 std::shared_ptr<AnimationBase> AnimationLayer::GetAsSharedPtr() const
 {
 	return std::make_shared<AnimationLayer>(*this);
+}
+
+Json::Value AnimationLayer::ToJson() const
+{
+	Json::Value result = Animation::ToJson();
+	result["BoneIndex"] = myBoneIndex;
+	return result;
 }
 
 void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const

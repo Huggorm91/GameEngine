@@ -5,6 +5,7 @@ class AnimationLayer: public Animation
 {
 public:
 	AnimationLayer();
+	AnimationLayer(const Json::Value& aJson);
 	AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex = 0);
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
@@ -20,6 +21,8 @@ public:
 	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
+
+	Json::Value ToJson() const override;
 
 private:
 	unsigned myBoneIndex;

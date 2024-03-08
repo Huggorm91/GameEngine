@@ -4,13 +4,16 @@
 
 class BlendSpace : public AnimationBase
 {
+	friend class SkeletonEditor;
 public:
 	BlendSpace();
+	BlendSpace(const Json::Value& aJson);
 	~BlendSpace() = default;
 
 	bool Update() override;
 
-	const std::string& GetName() const override;
+	const std::string& GetName() const;
+	const std::string& GetPath() const override;
 	unsigned GetStartBoneIndex() const override;
 
 	bool AddAnimation(const Animation& anAnimation, float aBlendValue);
@@ -43,6 +46,11 @@ public:
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
+	Json::Value ToJson() const override;
+
+	void LoadFromJson(const Json::Value& aJson, const std::string& aPath);
+	Json::Value CreateJson() const;
+
 private:
 	struct BlendData
 	{
@@ -58,6 +66,7 @@ private:
 
 	std::vector<BlendData> myAnimations;
 
+	std::string myPath;
 	std::string myName;
 
 	const Animation* myLongestAnimation;

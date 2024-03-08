@@ -98,4 +98,7 @@ private:
 	void SetMeshAnimation();
 
 	void SelectBone(const Bone* aBone);
+
+	void LoadBlendSpace();
+	void SaveBlendSpace();
 };
