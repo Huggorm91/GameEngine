@@ -59,6 +59,11 @@ Component* AddComponent(const Component* aComponent, GameObject& aParent)
 		const EditorCameraControllerComponent& component = *dynamic_cast<const EditorCameraControllerComponent*>(aComponent); 
 		return &aParent.AddComponent(component);
 	}
+	case ComponentType::AnimationController:
+	{
+		const AnimationControllerComponent& component = *dynamic_cast<const AnimationControllerComponent*>(aComponent); 
+		return &aParent.AddComponent(component);
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -106,6 +111,10 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	case ComponentType::EditorCameraController:
 	{
 		return &aParent.AddComponent<EditorCameraControllerComponent>();
+	}
+	case ComponentType::AnimationController:
+	{
+		return &aParent.AddComponent<AnimationControllerComponent>();
 	}
 	default:
 	{
@@ -163,6 +172,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	case ComponentType::EditorCameraController:
 	{
+		break;
+	}
+	case ComponentType::AnimationController:
+	{
+		aParent.AddComponent(AnimationControllerComponent(aJson));
 		break;
 	}
 	default:
@@ -229,8 +243,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 	}
 	case ComponentType::EditorCameraController:
 	{
-		auto& emitter = aParent.AddComponent<EditorCameraControllerComponent>();
-		emitter.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::AnimationController:
+	{
+		auto& controller = aParent.AddComponent<AnimationControllerComponent>();
+		controller.Deserialize(aStream);
 		break;
 	}
 	case ComponentType::Count:
@@ -280,6 +298,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::EditorCameraController:
 	{
 		return "EditorCameraController";
+	}
+	case ComponentType::AnimationController:
+	{
+		return "AnimationController";
 	}
 	default:
 	{

@@ -15,6 +15,7 @@ enum class ComponentType
 	PerspectiveCamera,
 	ParticleEmitter,
 	EditorCameraController,
+	AnimationController,
 	Count
 };
 
