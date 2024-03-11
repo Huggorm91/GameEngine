@@ -2,6 +2,7 @@
 
 struct ID3D11Resource;
 struct ID3D11ShaderResourceView;
+struct ID3D11DepthStencilView;
 struct ID3D11RenderTargetView;
 struct D3D11_VIEWPORT;
 

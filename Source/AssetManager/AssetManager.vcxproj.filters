@@ -90,10 +90,7 @@
     <ClInclude Include="Assets\Components\ComponentType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\ComponentInclude.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Assets\Components\ComponentTemplate.h">
+    <ClInclude Include="Assets\Components\ComponentInclude.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Managers\PrefabManager.h">
@@ -139,6 +136,36 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Components\Rendering\AnimationControllerComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\ComponentMacros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\BoxColliderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\CapsuleColliderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\ColliderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\ColliderForwards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\EnumCollisions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\Intersection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\RayColliderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\Components\Collision\SphereColliderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\CollisionManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -260,5 +287,29 @@
     <ClCompile Include="Assets\Components\Rendering\AnimationControllerComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\BoxColliderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\CapsuleColliderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\ColliderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\Intersection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\RayColliderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\Components\Collision\SphereColliderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\CollisionManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@ private:
 		std::string myState;
 	};
 
-	std::vector<AnimationState*> myStateStack;
+	std::vector<std::shared_ptr<AnimationState>> myStateStack;
 	std::unordered_map<std::string, std::shared_ptr<AnimationState>> myCachedStates;
 	std::vector<Command> myCommands;
 };

@@ -13,12 +13,37 @@
 #include "../../ImguiTransform.h"
 #endif // !_RETAIL
 
-MeshComponent::MeshComponent() : Component(ComponentType::Mesh), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myIsDeferred(true)
-{
-}
+MeshComponent::MeshComponent() :
+	Component(ComponentType::Mesh),
+	myColor{ 0.f, 0.f, 0.f, 1.f },
+	myRenderShadow(true),
+	myIsDeferred(true)
+{}
 
-MeshComponent::MeshComponent(ComponentType aType) : Component(aType), myTransform(), myColor{ 0.f, 0.f, 0.f, 1.f }, myElements(), myBoxSphereBounds(), myRenderShadow(true), myName(), myIsDeferred(true)
+MeshComponent::MeshComponent(ComponentType aType) :
+	Component(aType),
+	myColor{ 0.f, 0.f, 0.f, 1.f },
+	myRenderShadow(true),
+	myIsDeferred(true)
+{}
+
+MeshComponent::MeshComponent(const Json::Value& aJson) :
+	Component(aJson),
+	myIsDeferred(aJson["IsDeferred"].asBool()),
+	myRenderShadow(aJson["RenderShadow"].asBool()),
+	myColor(aJson["Color"]),
+	myName(aJson["Path"].asString()),
+	myTransform(aJson["Transform"])
 {
+	if (!aJson["Path"].isNull())
+	{
+		myBoxSphereBounds = AssetManager::GetAsset<BoxSphereBounds>(aJson["Path"].asString());
+		myElements = AssetManager::GetAsset<std::vector<MeshElement>>(aJson["Path"].asString());
+		for (auto& element : aJson["Elements"])
+		{
+			myElements[element["Index"].asInt()].myMaterial = element["Material"];
+		}
+	}
 }
 
 MeshComponent::MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, ComponentType aType) : Component(aType), myElements(anElementList), myName(aMesh.Name), myColor{ 0.f, 0.f, 0.f, 1.f },
@@ -112,20 +137,6 @@ void MeshComponent::Init(GameObject* aParent)
 	TransformHasChanged();
 }
 
-void MeshComponent::Init(const Json::Value& aJson)
-{
-	Component::Init(aJson);
-	myRenderShadow = aJson["RenderShadow"].asBool();
-	myColor = Crimson::Vector4f(aJson["Color"]);
-	myTransform = aJson["Transform"];
-	myTransform.SetParent(GetParentTransform());
-	myIsDeferred = aJson["IsDeferred"].asBool();
-	for (auto& element : aJson["Elements"])
-	{
-		myElements[element["Index"].asInt()].myMaterial = element["Material"];
-	}
-}
-
 void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const std::string& aName)
 {
 	myElements = anElementList;
@@ -197,6 +208,11 @@ const Crimson::Matrix4x4f& MeshComponent::GetTransform() const
 const Crimson::Vector4f& MeshComponent::GetWorldPosition() const
 {
 	return myTransform.GetWorldPosition();
+}
+
+const BoxSphereBounds& MeshComponent::GetBounds() const
+{
+	return myBoxSphereBounds;
 }
 
 const std::vector<MeshElement>& MeshComponent::GetElements() const
@@ -296,7 +312,7 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::ColorEdit4("Color", &myColor.x);
 
 	ImGui::Checkbox("Is Deferred Rendered", &myIsDeferred);
-	
+
 	int i = 0;
 	for (auto& element : myElements)
 	{
@@ -358,16 +374,6 @@ Json::Value MeshComponent::ToJson() const
 	}
 
 	return result;
-}
-
-inline std::string MeshComponent::ToString() const
-{
-	return "Mesh";
-}
-
-const MeshComponent* MeshComponent::GetTypePointer() const
-{
-	return this;
 }
 
 #ifndef _RETAIL

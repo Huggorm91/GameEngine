@@ -1,26 +1,26 @@
 #include "AssetManager.pch.h"
 #include "AnimationControllerComponent.h"
 
-AnimationControllerComponent::AnimationControllerComponent(): Component(ComponentType::AnimationController)
+AnimationControllerComponent::AnimationControllerComponent(): 
+    MeshComponent(ComponentType::AnimationController), 
+    mySkeleton(nullptr)
 {}
 
-AnimationControllerComponent::AnimationControllerComponent(const Json::Value& aJson): Component(aJson)
+AnimationControllerComponent::AnimationControllerComponent(const Json::Value& aJson): 
+    MeshComponent(aJson),
+    mySkeleton(nullptr)
+{}
+
+void AnimationControllerComponent::Update()
 {}
 
 void AnimationControllerComponent::CreateImGuiComponents(const std::string& aWindowName)
-{}
+{
+    MeshComponent::CreateImGuiComponents(aWindowName);
+}
 
 Json::Value AnimationControllerComponent::ToJson() const
 {
-    return Json::Value();
-}
-
-inline std::string AnimationControllerComponent::ToString() const
-{
-    return "AnimationController";
-}
-
-inline const AnimationControllerComponent* AnimationControllerComponent::GetTypePointer() const
-{
-    return this;
+    Json::Value result = MeshComponent::ToJson();
+    return result;
 }

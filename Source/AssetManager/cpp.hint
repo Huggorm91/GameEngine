@@ -1,0 +1,43 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define CW_COUNT_ARGS_N(_0, _1, _2, N, ...) N
+#define CW_COUNT_ARGS(...) CW_EXPAND(CW_COUNT_ARGS_N(__VA_ARGS__, _2, _1, _0))
+#define CW_EXPAND(...) __VA_ARGS__
+#define CW_SELECT_FUNC_EXPAND(MFunc,NumArgs) MFunc ## NumArgs
+#define CW_SELECT_FUNC(MFunc,NumArgs) CW_SELECT_FUNC_EXPAND(MFunc, NumArgs)
+#define CW_OVERLOAD_MACRO(MFunc, ...) CW_SELECT_FUNC(MFunc, CW_COUNT_ARGS(, __VA_ARGS__))(__VA_ARGS__)
+
+#define CW_COMPONENT_INTERFACE(Name){\
+	friend Editor::Name##Editor;\
+public:\
+	inline const Name* GetTypePointer() const override\
+	{ return this; }\
+	inline Name* GetTypePointer() override\
+	{ return this; }\
+	inline void MoveTo(void* aTarget) override\
+	{ new (aTarget) Name(std::move(*this)); }\
+	inline void CopyTo(void* aTarget) const override\
+	{ new (aTarget) Name(*this); }\
+	inline size_t SizeOf() const override\
+	{ return sizeof(Name); }\
+	inline std::type_index TypeId() const override\
+	{ return typeid(Name); }\
+private:
+
+#define BEGIN_COMPONENT_1(Name) namespace Editor{ class Name##Editor; }\
+class Name : public Component CW_COMPONENT_INTERFACE(Name)
+
+#define BEGIN_COMPONENT_2(Name, Parent) namespace Editor{ class Name##Editor; }\
+class Name : public Parent CW_COMPONENT_INTERFACE(Name)
+
+#define BEGIN_COMPONENT_MULTI_INHERITANCE(Name, Parent, ...) namespace Editor{ class Name##Editor; }\
+class Name : public Parent, __VA_ARGS__ CW_COMPONENT_INTERFACE(Name)
+
+#define BEGIN_COMPONENT_ABSTRACT(Name) namespace Editor{ class Name##Editor; }\
+class Name : public Component {\
+	friend Editor::Name##Editor;\
+
+#define BEGIN_COMPONENT(...) CW_OVERLOAD_MACRO(BEGIN_COMPONENT, __VA_ARGS__)
+
+#define END_COMPONENT };

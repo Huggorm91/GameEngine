@@ -18,6 +18,8 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+
+#include <d3d11.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
 

@@ -1,4 +1,7 @@
 #pragma once
+#include "Container/Blackboard.hpp"
+
+class AnimationStateMachine;
 
 class AnimationState
 {
@@ -6,7 +9,7 @@ public:
 	AnimationState() = default;
 	virtual ~AnimationState() = default;
 
-	virtual void Init() = 0;
+	virtual void Init(AnimationStateMachine* aStateMachine) = 0;
 	virtual void Update() = 0;
 
 	virtual void Enter() = 0;
@@ -15,6 +18,7 @@ public:
 	virtual bool CanExit() = 0;
 private:
 	// ScriptGraph
-	// BlackBoard for variables
+	Crimson::Blackboard<std::string> myVariables;
 	std::string myName;
+	AnimationStateMachine* myStateMachine;
 };

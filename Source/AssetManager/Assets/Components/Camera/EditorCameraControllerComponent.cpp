@@ -54,16 +54,6 @@ void EditorCameraControllerComponent::SetMouseSensitivity(float aSensitivity)
 	myMouseSensitivity = aSensitivity;
 }
 
-inline std::string EditorCameraControllerComponent::ToString() const
-{
-    return "EditorCameraController";
-}
-
-inline const EditorCameraControllerComponent* EditorCameraControllerComponent::GetTypePointer() const
-{
-    return this;
-}
-
 void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
 	if (!myIsActive || !myParent->IsActive())

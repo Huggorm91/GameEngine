@@ -3,10 +3,10 @@
 #include "..\..\Animation\Animation.h"	
 #include "..\..\Animation\Skeleton.h"
 
-class AnimatedMeshComponent: public MeshComponent
-{
+BEGIN_COMPONENT(AnimatedMeshComponent, MeshComponent)
 public:
 	AnimatedMeshComponent();
+	AnimatedMeshComponent(const Json::Value& aJson);
 	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
@@ -18,7 +18,6 @@ public:
 	void Render() override;
 
 	void Init(GameObject* aParent) override;
-	void Init(const Json::Value& aJson) override;
 	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton);
 
 	void SetLooping(bool aIsLooping);
@@ -47,8 +46,6 @@ public:
 	void Deserialize(std::istream& aStream) override;
 
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const AnimatedMeshComponent* GetTypePointer() const override;
 
 private:
 	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransformCache;

@@ -5,24 +5,19 @@
 unsigned int Component::localIDCount = 0;
 
 Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentType::Unknown), myID(++localIDCount)
-{
-}
+{}
 
 Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType), myID(++localIDCount)
-{
-}
+{}
 
 Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(++localIDCount)
-{
-}
+{}
 
 Component::Component(Component&& aComponent) noexcept : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(aComponent.myID)
-{
-}
+{}
 
 Component::Component(const Json::Value& aJson) : myParent(nullptr), myIsActive(aJson["IsActive"].asBool()), myType(static_cast<ComponentType>(aJson["Type"].asInt())), myID(aJson["ID"].asUInt())
-{
-}
+{}
 
 Component& Component::operator=(const Component& aComponent)
 {
@@ -41,24 +36,14 @@ Component& Component::operator=(Component&& aComponent) noexcept
 	return *this;
 }
 
-void Component::Init(const Json::Value& aJson)
-{
-	myIsActive = aJson["IsActive"].asBool();
-	myType = static_cast<ComponentType>(aJson["Type"].asInt());
-	const_cast<unsigned&>(myID) = aJson["ID"].asUInt();
-}
-
 void Component::Init(GameObject* aParent)
 {
 	myParent = aParent;
 }
 
-void Component::Update()
+void Component::SetParent(GameObject* aParent)
 {
-}
-
-void Component::Render()
-{
+	myParent = aParent;
 }
 
 const GameObject& Component::GetParent() const
@@ -101,10 +86,6 @@ bool Component::IsActive() const
 	return myIsActive;
 }
 
-void Component::TransformHasChanged() const
-{
-}
-
 void Component::CreateImGuiComponents(const std::string&)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
@@ -112,11 +93,6 @@ void Component::CreateImGuiComponents(const std::string&)
 	{
 		SetActive(myIsActive);
 	}
-}
-
-inline std::string Component::ToString() const
-{
-	return "Unimplemented ToString() in ComponentID: " + std::to_string(myID) + " | GameObjectID: " + std::to_string(myParent->GetID());
 }
 
 Json::Value Component::ToJson() const
@@ -130,11 +106,6 @@ Json::Value Component::ToJson() const
 #endif // _DEBUG
 
 	return result;
-}
-
-const Component* Component::GetTypePointer() const
-{
-	return this;
 }
 
 void Component::Serialize(std::ostream& aStream) const
@@ -168,18 +139,6 @@ void Component::CopyID(const Component* aComponent, bool aDecrementIDCount)
 		localIDCount--;
 	}
 	const_cast<unsigned&>(myID) = aComponent->myID;
-}
-
-const Crimson::Blackboard<unsigned int>& Component::GetComponentContainer() const
-{
-	assert(myParent != nullptr && "Component not Initialized!");
-	return myParent->myComponents;
-}
-
-Crimson::Blackboard<unsigned int>& Component::GetComponentContainer()
-{
-	assert(myParent != nullptr && "Component not Initialized!");
-	return myParent->myComponents;
 }
 
 const Transform* Component::GetParentTransform() const

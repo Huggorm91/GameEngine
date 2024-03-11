@@ -221,6 +221,28 @@ std::vector<MeshElement> ModelManager::GetMeshElements(const std::string& aPath,
 	return std::vector<MeshElement>();
 }
 
+BoxSphereBounds ModelManager::GetMeshBounds(const std::string& aPath, bool aShouldLogErrors)
+{
+	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
+	{
+		if (model->HasComponent<MeshComponent>())
+		{
+			return model->GetComponent<MeshComponent>().GetBounds();
+		}
+		else
+		{
+			return model->GetComponent<AnimatedMeshComponent>().GetBounds();
+		}
+	}
+
+	if (aShouldLogErrors)
+	{
+		AMLogger.Warn("ModelManager: Could not find any Mesh bounds: " + aPath);
+	}
+
+	return BoxSphereBounds();
+}
+
 const std::string* ModelManager::GetMeshPathPointer(const std::string& aPath)
 {
 	if (auto iter = myMeshData.find(aPath); iter != myMeshData.end())

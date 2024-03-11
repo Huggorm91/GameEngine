@@ -11,6 +11,21 @@ AnimatedMeshComponent::AnimatedMeshComponent() :
 	mySkeleton(nullptr)
 {}
 
+AnimatedMeshComponent::AnimatedMeshComponent(const Json::Value & aJson):
+	MeshComponent(aJson),
+	mySkeleton(nullptr)
+{
+	if (!aJson["Animation"].isNull())
+	{
+		myAnimation = LoadAnimationFromJson(aJson["Animation"]);
+	}
+	
+	if (!aJson["Skeleton"].isNull())
+	{
+		mySkeleton = AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString());
+	}
+}
+
 AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) :
 	MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh),
 	mySkeleton(aSkeleton)
@@ -42,7 +57,6 @@ void AnimatedMeshComponent::Update()
 		return;
 	}
 
-
 	if (myAnimation->IsPlaying())
 	{
 		myAnimation->Update();
@@ -72,20 +86,6 @@ void AnimatedMeshComponent::Init(GameObject* aParent)
 	{
 		myAnimation->Init(myBoneTransformCache, mySkeleton);
 	}
-}
-
-void AnimatedMeshComponent::Init(const Json::Value& aJson)
-{
-	MeshComponent::Init(aJson);
-	myAnimation = LoadAnimationFromJson(aJson["Animation"]);
-	myAnimation->Init(myBoneTransformCache, mySkeleton);
-
-	if (!mySkeleton || mySkeleton->GetPath() != aJson["Skeleton"].asString())
-	{
-		mySkeleton = AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString());
-	}
-
-	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
 void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton)
@@ -223,14 +223,4 @@ Json::Value AnimatedMeshComponent::ToJson() const
 	result["Animation"] = myAnimation->ToJson();
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;
-}
-
-inline std::string AnimatedMeshComponent::ToString() const
-{
-	return "AnimatedMesh";
-}
-
-const AnimatedMeshComponent* AnimatedMeshComponent::GetTypePointer() const
-{
-	return this;
 }

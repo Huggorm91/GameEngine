@@ -190,16 +190,6 @@ Json::Value PerspectiveCameraComponent::ToJson() const
 	return result;
 }
 
-std::string PerspectiveCameraComponent::ToString() const
-{
-	return "PerspectiveCamera";
-}
-
-const PerspectiveCameraComponent* PerspectiveCameraComponent::GetTypePointer() const
-{
-	return this;
-}
-
 void PerspectiveCameraComponent::UpdateTransform()
 {
 	if (myParent)

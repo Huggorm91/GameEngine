@@ -2,8 +2,7 @@
 #include "../Component.h"
 #include "Input/InputObserver.hpp"
 
-class EditorCameraControllerComponent : public Component, public Crimson::InputObserver
-{
+BEGIN_COMPONENT_MULTI_INHERITANCE(EditorCameraControllerComponent, Component, public Crimson::InputObserver)
 public:
 	EditorCameraControllerComponent();
 	EditorCameraControllerComponent(float aSpeed, float aSensitivity);
@@ -18,9 +17,6 @@ public:
 
 	void SetSpeed(float aSpeed);
 	void SetMouseSensitivity(float aSensitivity);
-
-	inline std::string ToString() const override;
-	inline const EditorCameraControllerComponent* GetTypePointer() const override;
 
 	void ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey) override;
 

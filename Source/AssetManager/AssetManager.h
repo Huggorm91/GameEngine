@@ -138,9 +138,9 @@ inline std::vector<MeshElement> AssetManager::GetAsset(const std::string& anIden
 }
 
 template<>
-inline const std::string* AssetManager::GetAsset(const std::string& anIdentifier)
+inline BoxSphereBounds AssetManager::GetAsset(const std::string& anIdentifier)
 {
-	return myModelManager.GetMeshPathPointer(anIdentifier);
+	return myModelManager.GetMeshBounds(anIdentifier, myIsLoggingErrors);
 }
 
 template<>

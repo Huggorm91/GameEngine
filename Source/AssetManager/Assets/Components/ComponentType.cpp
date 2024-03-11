@@ -1,76 +1,8 @@
 #include "AssetManager.pch.h"
 #include "ComponentType.h"
 #include "Json/JsonVector.hpp"
-#include "../ComponentInclude.h"
+#include "ComponentInclude.h"
 #include "AssetManager/AssetManager.h"
-
-Component* AddComponent(const Component* aComponent, GameObject& aParent)
-{
-	if (aComponent == nullptr)
-	{
-		AMLogger.Err("AddComponent: aComponent was nullptr! GameObject ID : " + std::to_string(aParent.GetID()));
-		return nullptr;
-	}
-
-	switch (aComponent->GetType())
-	{
-	case ComponentType::Mesh:
-	{
-		const MeshComponent& component = *dynamic_cast<const MeshComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::AnimatedMesh:
-	{
-		const AnimatedMeshComponent& component = *dynamic_cast<const AnimatedMeshComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::Directionallight:
-	{
-		const DirectionallightComponent& component = *dynamic_cast<const DirectionallightComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::Pointlight:
-	{
-		const PointlightComponent& component = *dynamic_cast<const PointlightComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::Spotlight:
-	{
-		const SpotlightComponent& component = *dynamic_cast<const SpotlightComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::DebugDraw:
-	{
-		const DebugDrawComponent& component = *dynamic_cast<const DebugDrawComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::PerspectiveCamera:
-	{
-		const PerspectiveCameraComponent& component = *dynamic_cast<const PerspectiveCameraComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::ParticleEmitter:
-	{
-		const ParticleEmitterComponent& component = *dynamic_cast<const ParticleEmitterComponent*>(aComponent);
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::EditorCameraController:
-	{
-		const EditorCameraControllerComponent& component = *dynamic_cast<const EditorCameraControllerComponent*>(aComponent); 
-		return &aParent.AddComponent(component);
-	}
-	case ComponentType::AnimationController:
-	{
-		const AnimationControllerComponent& component = *dynamic_cast<const AnimationControllerComponent*>(aComponent); 
-		return &aParent.AddComponent(component);
-	}
-	default:
-	{
-		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
-	}
-	}
-	return nullptr;
-}
 
 Component* AddComponent(const ComponentType aType, GameObject& aParent)
 {
@@ -116,9 +48,26 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	{
 		return &aParent.AddComponent<AnimationControllerComponent>();
 	}
+	case ComponentType::BoxCollider:
+	{
+		return &aParent.AddComponent<BoxColliderComponent>();
+	}
+	case ComponentType::SphereCollider:
+	{
+		return &aParent.AddComponent<SphereColliderComponent>();
+	}
+	case ComponentType::RayCollider:
+	{
+		return &aParent.AddComponent<RayColliderComponent>();
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		return &aParent.AddComponent<CapsuleColliderComponent>();
+	}
 	default:
 	{
-		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
+		break;
 	}
 	}
 	return nullptr;
@@ -131,14 +80,12 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	{		
 	case ComponentType::Mesh:
 	{
-		auto& mesh = aParent.AddComponent(AssetManager::GetAsset<MeshComponent>(aJson["Path"].asString()));
-		mesh.Init(aJson);		
+		aParent.AddComponent(MeshComponent(aJson));	
 		break;
 	}
 	case ComponentType::AnimatedMesh:
 	{
-		auto& mesh = aParent.AddComponent(AssetManager::GetAsset<AnimatedMeshComponent>(aJson["Path"].asString()));
-		mesh.Init(aJson);		
+		aParent.AddComponent(AnimatedMeshComponent(aJson));	
 		break;
 	}
 	case ComponentType::Directionallight:
@@ -179,9 +126,30 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 		aParent.AddComponent(AnimationControllerComponent(aJson));
 		break;
 	}
+	case ComponentType::BoxCollider:
+	{
+		aParent.AddComponent(BoxColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		aParent.AddComponent(SphereColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		aParent.AddComponent(RayColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		aParent.AddComponent(CapsuleColliderComponent(aJson));
+		break;
+	}
 	default:
 	{
-		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(type)));
+		break;
 	}
 	}
 }
@@ -251,10 +219,34 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		controller.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::BoxCollider:
+	{
+		auto& collider = aParent.AddComponent<BoxColliderComponent>();
+		collider.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::SphereCollider:
+	{
+		auto& collider = aParent.AddComponent<SphereColliderComponent>();
+		collider.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::RayCollider:
+	{
+		auto& collider = aParent.AddComponent<RayColliderComponent>();
+		collider.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		auto& collider = aParent.AddComponent<CapsuleColliderComponent>();
+		collider.Deserialize(aStream);
+		break;
+	}
 	case ComponentType::Count:
 		break;
 	default:
-		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
+		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(type)));
 		break;
 	}
 }
@@ -303,9 +295,25 @@ std::string ComponentTypeToString(const ComponentType aType)
 	{
 		return "AnimationController";
 	}
+	case ComponentType::BoxCollider:
+	{
+		return "BoxCollider";
+	}
+	case ComponentType::SphereCollider:
+	{
+		return "SphereCollider";
+	}
+	case ComponentType::RayCollider:
+	{
+		return "RayCollider";
+	}
+	case ComponentType::CapsuleCollider:
+	{
+		return "CapsuleCollider";
+	}
 	default:
 	{
-		AMLogger.Err("ComponentTypeToString: Invalid component type!");
+		AMLogger.Err("ComponentTypeToString: Invalid component type: " + std::to_string(static_cast<int>(aType)));
 		return "Invalid";
 	}
 	}
