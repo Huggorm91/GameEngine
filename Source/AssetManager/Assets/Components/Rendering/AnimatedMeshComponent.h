@@ -6,13 +6,6 @@
 class AnimatedMeshComponent: public MeshComponent
 {
 public:
-	enum class AnimationState
-	{
-		PlayOnce,
-		Looping,
-		Stopped,
-	};
-
 	AnimatedMeshComponent();
 	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
@@ -59,10 +52,7 @@ public:
 
 private:
 	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransformCache;
-
-	Skeleton* mySkeleton;
-
 	std::shared_ptr<AnimationBase> myAnimation;
-	AnimationState myAnimationState;
+	Skeleton* mySkeleton;
 };
 

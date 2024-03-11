@@ -8,22 +8,19 @@
 
 AnimatedMeshComponent::AnimatedMeshComponent() :
 	MeshComponent(ComponentType::AnimatedMesh),
-	mySkeleton(nullptr),
-	myAnimationState(AnimationState::Stopped)
+	mySkeleton(nullptr)
 {}
 
 AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) :
 	MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh),
-	mySkeleton(aSkeleton),
-	myAnimationState(AnimationState::Stopped)
+	mySkeleton(aSkeleton)
 {}
 
 AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aComponent) :
 	MeshComponent(aComponent),
 	myBoneTransformCache(aComponent.myBoneTransformCache),
 	mySkeleton(aComponent.mySkeleton),
-	myAnimation(aComponent.myAnimation ? aComponent.myAnimation->GetAsSharedPtr(): nullptr),
-	myAnimationState(aComponent.myAnimationState)
+	myAnimation(aComponent.myAnimation ? aComponent.myAnimation->GetAsSharedPtr(): nullptr)
 {}
 
 AnimatedMeshComponent& AnimatedMeshComponent::operator=(const AnimatedMeshComponent& aComponent)
@@ -35,25 +32,20 @@ AnimatedMeshComponent& AnimatedMeshComponent::operator=(const AnimatedMeshCompon
 	{
 		myAnimation = aComponent.myAnimation->GetAsSharedPtr();
 	}
-	myAnimationState = aComponent.myAnimationState;
 	return *this;
 }
 
 void AnimatedMeshComponent::Update()
 {
-	if (!myIsActive)
+	if (!myIsActive || !myAnimation)
 	{
 		return;
 	}
 
 
-	if (myAnimationState != AnimationState::Stopped)
+	if (myAnimation->IsPlaying())
 	{
-		const bool isPlaying = myAnimation->Update();
-		if (!isPlaying && myAnimationState == AnimationState::PlayOnce)
-		{
-			myAnimationState = AnimationState::Stopped;
-		}
+		myAnimation->Update();
 	}
 
 	Render();
@@ -65,6 +57,7 @@ void AnimatedMeshComponent::Render()
 	{
 		return;
 	}
+
 	if (myRenderShadow)
 	{
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
@@ -87,7 +80,6 @@ void AnimatedMeshComponent::Init(const Json::Value& aJson)
 	myAnimation = LoadAnimationFromJson(aJson["Animation"]);
 	myAnimation->Init(myBoneTransformCache, mySkeleton);
 
-	myAnimationState = static_cast<AnimationState>(aJson["AnimationState"].asInt());
 	if (!mySkeleton || mySkeleton->GetPath() != aJson["Skeleton"].asString())
 	{
 		mySkeleton = AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString());
@@ -105,19 +97,11 @@ void AnimatedMeshComponent::Init(std::vector<MeshElement>& anElementList, const 
 void AnimatedMeshComponent::SetLooping(bool aIsLooping)
 {
 	myAnimation->SetIsLooping(aIsLooping);
-	if (myAnimationState != AnimationState::Stopped)
-	{
-		StartAnimation();
-	}
 }
 
 void AnimatedMeshComponent::ToogleLooping()
 {
 	myAnimation->ToogleLooping();
-	if (myAnimationState != AnimationState::Stopped)
-	{
-		StartAnimation();
-	}
 }
 
 bool AnimatedMeshComponent::IsLooping() const
@@ -144,19 +128,10 @@ void AnimatedMeshComponent::SetTargetFPS(float aFPS)
 void AnimatedMeshComponent::StartAnimation()
 {
 	myAnimation->StartAnimation();
-	if (myAnimation->IsLooping())
-	{
-		myAnimationState = AnimationState::Looping;
-	}
-	else
-	{
-		myAnimationState = AnimationState::PlayOnce;
-	}
 }
 
 void AnimatedMeshComponent::StopAnimation()
 {
-	myAnimationState = AnimationState::Stopped;
 	myAnimation->StopAnimation();
 	myAnimation->SetToFirstFrame();
 	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
@@ -164,7 +139,6 @@ void AnimatedMeshComponent::StopAnimation()
 
 void AnimatedMeshComponent::PauseAnimation()
 {
-	myAnimationState = AnimationState::Stopped;
 	myAnimation->StopAnimation();
 }
 
@@ -228,7 +202,6 @@ void AnimatedMeshComponent::Serialize(std::ostream& aStream) const
 	aStream.write(mySkeleton ? mySkeleton->GetPath().c_str() : "\0", skeletonSize);
 	//size_t animationSize = myAnimation.IsValid() ? myAnimation.GetPath().size() + 1 : 1;
 	//aStream.write(myAnimation.IsValid() ? myAnimation.GetPath().c_str() : "\0", animationSize);
-	aStream.write(reinterpret_cast<const char*>(&myAnimationState), sizeof(myAnimationState));
 }
 
 void AnimatedMeshComponent::Deserialize(std::istream& aStream)
@@ -238,7 +211,6 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 	std::getline(aStream, skeletonPath, '\0');
 	//std::string animationPath;
 	//std::getline(aStream, animationPath, '\0');
-	aStream.read(reinterpret_cast<char*>(&myAnimationState), sizeof(myAnimationState));
 
 	mySkeleton = AssetManager::GetAsset<Skeleton*>(skeletonPath);
 	//myAnimation = AssetManager::GetAsset<Animation>(animationPath);
@@ -249,7 +221,6 @@ Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
 	result["Animation"] = myAnimation->ToJson();
-	result["AnimationState"] = static_cast<int>(myAnimationState);
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;
 }
