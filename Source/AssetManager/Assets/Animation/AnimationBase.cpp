@@ -73,6 +73,32 @@ AnimationBase::AnimationBase(const Json::Value & aJson)
 	assert(!"Not Implemented!");
 }
 
+AnimationBase::AnimationBase(const AnimationBase& anAnimation): 
+	mySkeleton(anAnimation.mySkeleton),
+	myBoneCache(anAnimation.myBoneCache),
+	myRootMotionTransform(anAnimation.myRootMotionTransform),
+	myTargetFrameDelta(anAnimation.myTargetFrameDelta),
+	myAnimationTimer(anAnimation.myAnimationTimer),
+	myInterpolationTimer(anAnimation.myInterpolationTimer),
+	myType(anAnimation.myType),
+	myIsPlaying(anAnimation.myIsPlaying),
+	myIsLooping(anAnimation.myIsLooping),
+	myIsPlayingInReverse(anAnimation.myIsPlayingInReverse)
+{}
+
+AnimationBase::AnimationBase(AnimationBase && anAnimation) noexcept :
+	mySkeleton(anAnimation.mySkeleton),
+	myBoneCache(anAnimation.myBoneCache),
+	myRootMotionTransform(anAnimation.myRootMotionTransform),
+	myTargetFrameDelta(anAnimation.myTargetFrameDelta),
+	myAnimationTimer(anAnimation.myAnimationTimer),
+	myInterpolationTimer(anAnimation.myInterpolationTimer),
+	myType(anAnimation.myType),
+	myIsPlaying(anAnimation.myIsPlaying),
+	myIsLooping(anAnimation.myIsLooping),
+	myIsPlayingInReverse(anAnimation.myIsPlayingInReverse)
+{}
+
 void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 {
 	myBoneCache = &aBoneCache;
@@ -175,7 +201,7 @@ Json::Value AnimationBase::ToJson() const
 
 std::shared_ptr<AnimationBase> LoadAnimationFromJson(const Json::Value& aJson)
 {
-	assert(!"Not Implemented!");
+	//assert(!"Not Implemented!");
 	aJson;
 	return std::shared_ptr<AnimationBase>();
 }

@@ -23,6 +23,9 @@ public:
 	void Init();
 	void GeneratePrimitives();
 
+	void UpdateFilePaths();
+	const std::unordered_set<std::string>& GetModellist();
+
 	GameObject* GetModel(const std::string& aPath, bool aShouldLogErrors);
 	GameObject* GetModel(Primitives aPrimitive);
 

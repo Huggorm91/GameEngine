@@ -17,6 +17,8 @@ public:
 	static void GeneratePrimitives();
 	static void PreLoadAssets();
 
+	static void UpdateFilepaths();
+
 	// Call after releasing importer in order to initialize the Importer again
 	static void RestartImporter();
 	// Uninitializes the Importer in order to free resources
@@ -41,6 +43,8 @@ public:
 	inline static void SaveAsset(const Scene& anAsset, const std::string& aPath, bool anAsBinary = true) { mySceneManager.SaveScene(aPath, anAsset, anAsBinary); }
 	inline static void SaveAsset(const EditorScene& anAsset, const std::string& aPath, bool anAsBinary = true) { mySceneManager.SaveScene(aPath, anAsset, anAsBinary); }
 
+	inline static void SaveAsset(const BlendSpace& anAsset, const std::string& aPath) { myAnimationManager.SaveBlendSpace(anAsset, aPath); }
+
 	inline static Prefab GetPrefab(const std::string& anIdentifier) { return myPrefabManager.GetPrefab(anIdentifier, myIsLoggingErrors); }
 
 	inline static void CreatePrefab(const GameObject& anAsset, const std::string& anIdentifier) { myPrefabManager.CreatePrefab(anIdentifier, anAsset); }
@@ -52,6 +56,7 @@ public:
 
 	inline static const char* GetModelExtension() { return ModelManager::GetExtension(); }
 	inline static const char* GetAnimationExtension() { return AnimationManager::GetExtension(); }
+	inline static const char* GetBlendSpaceExtension() { return AnimationManager::GetBlendSpaceExtension(); }
 	inline static const char* GetTextureExtension() { return TextureManager::GetExtension(); }
 	inline static const char* GetMaterialExtension() { return MaterialManager::GetExtension(); }
 	inline static const char* GetShaderExtension() { return ShaderManager::GetExtension(); }
@@ -84,8 +89,8 @@ public:
 	inline static const wchar_t* GetPrefabPathW() { return PrefabManager::GetPathW(); }
 	inline static const wchar_t* GetScenePathW() { return SceneManager::GetPathW(); }
 
-	// inline static const std::unordered_set<std::string>& GetAvailableModels(){ return myModelManager.GetModellist(); }
-	// inline static const std::unordered_set<std::string>& GetAvailableAnimations(){ return myAnimationManager.GetAnimationlist(); }
+	inline static const std::unordered_set<std::string>& GetAvailableModels(){ return myModelManager.GetModellist(); }
+	inline static const std::unordered_set<std::string>& GetAvailableAnimations(){ return myAnimationManager.GetAnimationlist(); }
 	inline static const std::unordered_set<std::string>& GetAvailableTextures() { return myTextureManager.GetTexturelist(); }
 	// inline static const std::unordered_set<std::string>& GetAvailableMaterials(){ return myMaterialManager.GetMateriallist(); }
 	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetShaderlist(); }

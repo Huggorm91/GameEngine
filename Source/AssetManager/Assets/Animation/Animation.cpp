@@ -10,7 +10,7 @@ Animation::Animation() :AnimationBase(AnimationType::Animation), myData(nullptr)
 Animation::Animation(const Json::Value & aJson): AnimationBase(aJson), myData(AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString())), myCurrentFrame(1)
 {}
 
-Animation::Animation(AnimationData* someData) : AnimationBase(AnimationType::Animation), myData(someData), myCurrentFrame(1)
+Animation::Animation(const AnimationData* someData) : AnimationBase(AnimationType::Animation), myData(someData), myCurrentFrame(1)
 {}
 
 Animation::Animation(const Animation& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)

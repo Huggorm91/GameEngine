@@ -52,6 +52,7 @@ private:
 	Crimson::Vector4f myHoveredColor;
 
 	std::string myMissMatchMessage;
+	std::string mySelectedAnimationPath;
 
 	GameObject myCamera;
 	GameObject myModel;
@@ -73,6 +74,10 @@ private:
 	void CreateTexturePicker();
 
 	void CreateAnimationInspector();
+	void CreateAnimationInfo(Animation* anAnimation);
+	void CreateAnimationControls();
+	void CreateAnimationParameters(Animation* anAnimation);
+	void PrintAnimationMissmatchError();
 
 	void CreateAssetBrowser();
 	bool CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
@@ -87,8 +92,7 @@ private:
 	void DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
 
 	void DrawFrame();
-	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame);
-	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const Crimson::Matrix4x4f& aParentMatrix, const AnimationFrame& aFrame);
+	void DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition);
 
 	void CheckSkeletonAnimationMatching();
 

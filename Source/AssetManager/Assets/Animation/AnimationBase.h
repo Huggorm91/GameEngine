@@ -58,6 +58,8 @@ public:
 	};
 	AnimationBase(AnimationType aType);
 	AnimationBase(const Json::Value& aJson);
+	AnimationBase(const AnimationBase& anAnimation);
+	AnimationBase(AnimationBase&& anAnimation) noexcept;
 	virtual ~AnimationBase() = default;
 
 	// Will be called when added to a Component

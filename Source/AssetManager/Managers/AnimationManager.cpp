@@ -7,7 +7,22 @@ using namespace Crimson;
 
 void AnimationManager::Init()
 {
-	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
+}
+
+void AnimationManager::UpdateFilePaths()
+{
+	myFilePaths = GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
+	auto blendspaces = Crimson::GetAllFilepathsInDirectory(GetPath(), GetBlendSpaceExtension(), true);
+	for (auto& path : blendspaces)
+	{
+		myFilePaths.emplace(path);
+	}
+}
+
+const std::unordered_set<std::string>& AnimationManager::GetAnimationlist()
+{
+	return myFilePaths;
 }
 
 AnimationData* AnimationManager::GetAnimation(const std::string& aPath, bool aShouldLogErrors)
@@ -53,6 +68,7 @@ void AnimationManager::SaveBlendSpace(const BlendSpace& aBlendSpace, const std::
 	if (fileStream)
 	{
 		Json::Value blendspace = aBlendSpace.ToJson();
+		blendspace["Path"] = path;
 		Json::StreamWriterBuilder builder;
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(blendspace, &fileStream);
@@ -138,6 +154,5 @@ BlendSpace AnimationManager::LoadBlendSpace(const std::string& aPath, bool aShou
 	fileStream.close();
 
 	auto iter = myBlendSpaces.emplace(aPath, json);
-
 	return iter.first->second;
 }

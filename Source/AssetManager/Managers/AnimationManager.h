@@ -11,6 +11,9 @@ public:
 
 	void Init();
 
+	void UpdateFilePaths();
+	const std::unordered_set<std::string>& GetAnimationlist();
+
 	AnimationData* GetAnimation(const std::string& aPath, bool aShouldLogErrors);
 	BlendSpace GetBlendSpace(const std::string& aPath, bool aShouldLogErrors);
 

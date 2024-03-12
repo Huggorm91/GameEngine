@@ -122,6 +122,30 @@ unsigned BlendSpace::GetStartBoneIndex() const
 	return myBoneIndex;
 }
 
+void BlendSpace::SetBoneIndex(unsigned anIndex)
+{
+	myBoneIndex = anIndex;
+
+	auto tempAnimations = myAnimations;
+	myAnimations.clear();
+	if (anIndex == 0)
+	{
+		for (auto& data : tempAnimations)
+		{
+			data.animation = std::make_shared<Animation>(&data.animation->GetData());
+			myAnimations.emplace_back(BlendData(data));
+		}
+	}
+	else
+	{
+		for (auto& data : tempAnimations)
+		{
+			data.animation = std::make_shared<AnimationLayer>(*data.animation, myBoneIndex);
+			myAnimations.emplace_back(BlendData(data));
+		}
+	}
+}
+
 bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue)
 {
 	if (myBoneIndex == 0u)
@@ -281,6 +305,11 @@ void BlendSpace::SetBlendValue(float aValue)
 
 void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const
 {
+	if (myAnimations.empty())
+	{
+		return;
+	}
+
 	const BlendData* previous = nullptr;
 	for (auto& data : myAnimations)
 	{
@@ -306,13 +335,22 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones)
 					outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
 				}
 			}
+			return;
 		}
 		previous = &data;
 	}
+
+	// Current blendvalue is higher than last animations blendvalue
+	previous->animation->UpdateBoneCache(aSkeleton, outBones);
 }
 
 void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const
 {
+	if (myAnimations.empty())
+	{
+		return;
+	}
+
 	const BlendData* previous = nullptr;
 	for (auto& data : myAnimations)
 	{
@@ -338,9 +376,13 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 					outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
 				}
 			}
+			return;
 		}
 		previous = &data;
 	}
+
+	// Current blendvalue is higher than last animations blendvalue
+	previous->animation->UpdateBoneCache(aSkeleton, outBones, anInterpolationValue);
 }
 
 bool BlendSpace::IsValid() const
@@ -363,6 +405,11 @@ void BlendSpace::SetIsPlayingInReverse(bool aShouldPlayBackwards)
 
 bool BlendSpace::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage) const
 {
+	if (myAnimations.empty())
+	{
+		return false;
+	}
+
 	for (auto& data : myAnimations)
 	{
 		if (!data.animation->IsValidSkeleton(aSkeleton, outErrorMessage))

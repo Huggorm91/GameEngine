@@ -123,6 +123,11 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 	//GetClientRect(GetDesktopWindow(), &windowRect);
 
+	if (myApplicationState.WindowSize == Crimson::Vector2i::Null)
+	{
+		myApplicationState.WindowSize = { 1920, 1080 };
+	}
+
 	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (myApplicationState.WindowSize.x * 0.5f));
 	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (myApplicationState.WindowSize.y * 0.5f));
 	windowRect.right = myApplicationState.WindowSize.x;

@@ -5,6 +5,7 @@
 class BlendSpace : public AnimationBase
 {
 	friend class SkeletonEditor;
+	friend class AnimationManager;
 public:
 	BlendSpace();
 	BlendSpace(const Json::Value& aJson);
@@ -14,7 +15,9 @@ public:
 
 	const std::string& GetName() const;
 	const std::string& GetPath() const override;
+
 	unsigned GetStartBoneIndex() const override;
+	void SetBoneIndex(unsigned anIndex);
 
 	bool AddAnimation(const Animation& anAnimation, float aBlendValue);
 	bool AddAnimation(const AnimationLayer& anAnimation, float aBlendValue);
@@ -78,6 +81,7 @@ private:
 	bool myHasMatchingFPS;
 
 	void AddInternal();
+
 	void UpdateMatchingFPS();
 
 	void UpdateAnimations();

@@ -6,7 +6,12 @@ using namespace Crimson;
 
 void MaterialManager::Init()
 {
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
+}
+
+void MaterialManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
 }
 
 Material* MaterialManager::GetMaterial(const std::string& aPath, bool aShouldLogErrors)

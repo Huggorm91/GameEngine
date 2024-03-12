@@ -6,7 +6,7 @@ class Animation: public AnimationBase
 public:
 	Animation();
 	Animation(const Json::Value& aJson);
-	Animation(AnimationData* someData);
+	Animation(const AnimationData* someData);
 	Animation(const Animation& anAnimation);
 	Animation(Animation&& anAnimation) noexcept;
 	~Animation() = default;
@@ -57,7 +57,7 @@ public:
 	//void Deserialize(std::istream& aStream) override;
 
 protected:
-	AnimationData* myData;
+	const AnimationData* myData;
 	unsigned myCurrentFrame;
 
 	Animation(AnimationType aType);

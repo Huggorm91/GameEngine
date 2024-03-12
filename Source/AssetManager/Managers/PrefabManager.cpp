@@ -5,7 +5,7 @@ using namespace Crimson;
 
 void PrefabManager::Init()
 {
-	myUnloadedFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	myUnloadedFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
 
 	for (auto& path : myUnloadedFilePaths)
 	{

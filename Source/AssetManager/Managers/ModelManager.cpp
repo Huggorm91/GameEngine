@@ -9,8 +9,7 @@ using namespace Crimson;
 
 void ModelManager::Init()
 {
-
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
 }
 
 void ModelManager::GeneratePrimitives()
@@ -84,6 +83,16 @@ void ModelManager::GeneratePrimitives()
 		model.AddComponent<AnimatedMeshComponent>();
 		model.MarkAsPrefab();
 	}
+}
+
+void ModelManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
+}
+
+const std::unordered_set<std::string>& ModelManager::GetModellist()
+{
+	return myFilePaths;
 }
 
 GameObject* ModelManager::GetModel(const std::string& aPath, bool aShouldLogErrors)

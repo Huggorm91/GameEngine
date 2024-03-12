@@ -114,7 +114,7 @@ bool Assets::IsType(eAssetType aType, std::string anAsset)
 	}
 	case Assets::eAssetType::Animation:
 	{
-		if (extension == AssetManager::GetAnimationExtension())
+		if (extension == AssetManager::GetAnimationExtension() || extension == AssetManager::GetBlendSpaceExtension())
 		{
 			return true;
 		}
@@ -183,7 +183,7 @@ std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anEx
 		result.emplace_back(eAssetType::AnimatedModel);
 	}
 
-	if (extension == AssetManager::GetAnimationExtension())
+	if (extension == AssetManager::GetAnimationExtension() || extension == AssetManager::GetBlendSpaceExtension())
 	{
 		result.emplace_back(eAssetType::Animation);
 	}

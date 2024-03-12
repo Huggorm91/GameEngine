@@ -4,8 +4,10 @@
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 #include "AssetManager/Assets/ImguiTransform.h"
 #include "GraphicsEngine/GraphicsEngine.h"
+#include "File/FileSelectors.h"
 #include "Modelviewer.h"
 #include "Time/Timer.h"
+#include "Math/Sort.hpp"
 
 SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),
@@ -111,7 +113,7 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 	if (mySkeleton)
 	{
 		*myMesh = AssetManager::GetAsset<AnimatedMeshComponent>(mySkeleton->GetPath());
-		
+
 		myRootBone = &mySkeleton->GetBone(0);
 		GenerateSkeletonDrawing();
 	}
@@ -142,6 +144,7 @@ void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimat
 	}
 
 	myAnimation = anAnimation;
+	mySelectedAnimationPath = anAnimation->GetPath();
 
 	CheckSkeletonAnimationMatching();
 	if (myHasMatchingBones)
@@ -149,6 +152,11 @@ void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimat
 		myAnimation->Init(myBoneTransforms, mySkeleton);
 		myAnimation->SetTargetFPS(myTargetFPS);
 		myAnimation->SetIsLooping(true);
+		myAnimation->SetIsPlayingInReverse(myIsPlayingInReverse);
+		if (myIsPlayingAnimation)
+		{
+			myAnimation->StartAnimation();
+		}
 
 		SetMeshAnimation();
 		DrawFrame();
@@ -286,7 +294,7 @@ void SkeletonEditor::CreateSkeletonInspector()
 			SetMeshAnimation();
 			DrawFrame();
 		}
-		
+
 		if (myShouldRenderMesh)
 		{
 			auto color = myMesh->GetColor();
@@ -448,103 +456,190 @@ void SkeletonEditor::CreateAnimationInspector()
 {
 	if (ImGui::Begin("Animation Inspector"))
 	{
-		if (!myAnimation->HasData())
-		{
-			ImGui::End();
-			return;
-		}
-
 		if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
 		{
-			const auto& animationData = animationPtr->GetData();
-			ImGui::Text(animationData.name.c_str());
+			// Animation & AnimationLayer
+			if (!myAnimation->HasData())
+			{
+				ImGui::End();
+				return;
+			}
+
+			CreateAnimationInfo(animationPtr.get());
 
 			ImGui::Separator();
 
-			const std::string frameCount = "Frames: " + std::to_string(animationData.length);
-			ImGui::Text(frameCount.c_str());
-
-			const std::string eventCount = "Events: " + std::to_string(animationData.eventNames.size());
-			ImGui::Text(eventCount.c_str());
-
-			const std::string fps = "FPS: " + std::to_string(animationData.framesPerSecond);
-			ImGui::Text(fps.c_str());
-
-			const std::string duration = "Length: " + std::to_string(animationData.duration) + " seconds";
-			ImGui::Text(duration.c_str());
+			if (myHasMatchingBones)
+			{
+				CreateAnimationControls();
+				ImGui::Separator();
+				CreateAnimationParameters(animationPtr.get());
+			}
+			else
+			{
+				PrintAnimationMissmatchError();
+			}
 		}
 		else
 		{
 			// BlendSpace
-		}
+			auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
+			ImGui::InputText("Name", &blendPtr->myName);
 
-		ImGui::Separator();
-
-		if (myHasMatchingBones)
-		{
-			if (ImGui::Button("Start"))
+			if (!blendPtr->myAnimations.empty())
 			{
-				myIsPlayingAnimation = true;
-				myMesh->StartAnimation();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Stop"))
-			{
-				myIsPlayingAnimation = false;
-				myAnimationTimer = 0.f;
-				myAnimation->SetToFirstFrame();
-				myMesh->StopAnimation();
-				DrawFrame();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Pause"))
-			{
-				myIsPlayingAnimation = false;
-				myMesh->PauseAnimation();
-			}
-
-			if (ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse))
-			{
-				myMesh->SetPlayInReverse(myIsPlayingInReverse);
-			}
-
-			if (ImGui::DragFloat("Target FPS", &myTargetFPS, 1.f, 0.f, FLT_MAX, "%.3f", ImGuiSliderFlags_AlwaysClamp))
-			{
-				myMesh->SetTargetFPS(myTargetFPS);
-				myAnimation->SetTargetFPS(myTargetFPS);
-			}
-
-			if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
-			{
-				Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
-			}
-
-			if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
-			{
-				int index = animationPtr->GetCurrentFrameIndex();
-				if (ImGui::SliderInt("Frame", &index, 0, animationPtr->GetLastFrameIndex(), "%d", ImGuiSliderFlags_AlwaysClamp))
+				Animation* animation = const_cast<Animation*>(blendPtr->myLongestAnimation);
+				if (animation == nullptr)
 				{
-					myIsPlayingAnimation = false;
-					myAnimationTimer = 0.f;
-					animationPtr->SetFrameIndex(index);
-					SetMeshAnimation();
-					DrawFrame();
+					animation = blendPtr->myAnimations.back().animation.get();
+				}
+
+				CreateAnimationInfo(animation);
+				ImGui::DragFloat("Test Blend Value", &blendPtr->myBlendValue);
+			}
+
+			ImGui::Separator();
+
+			{
+				const bool isDisabled = mySelectedAnimationPath.empty();
+				if (isDisabled)
+				{
+					ImGui::BeginDisabled();
+				}
+
+				if (ImGui::Button("Add Animation"))
+				{
+					if (Crimson::GetFileExtension(mySelectedAnimationPath) == AssetManager::GetAnimationExtension())
+					{
+						if (blendPtr->myBoneIndex == 0u)
+						{
+							blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), 0.f);
+						}
+						else
+						{
+							blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), blendPtr->myBoneIndex, 0.f);
+						}
+						SetAnimation(blendPtr);
+					}
+				}
+
+				if (isDisabled)
+				{
+					ImGui::EndDisabled();
+				}
+			}
+
+			if (myHasMatchingBones)
+			{
+				CreateAnimationControls();
+				
+				ImGui::Separator();
+
+				int index = 0;
+				for (auto& data : blendPtr->myAnimations)
+				{
+					ImGui::PushID(index);
+					ImGui::Text(data.animation->GetPath().c_str());
+					CreateAnimationParameters(data.animation.get());
+					if (ImGui::DragFloat("Blend Value", &data.blendValue))
+					{
+						Crimson::QuickSort(blendPtr->myAnimations);
+						ImGui::PopID();
+						break;
+					}
+					ImGui::Dummy(ImGui::GetItemRectSize());
+					ImGui::PopID();
+					index++;
 				}
 			}
 			else
 			{
-				// BlendSpace
+				PrintAnimationMissmatchError();
 			}
-		}
-		else
-		{
-			ImGui::Text("WARNING!");
-			ImGui::Text("Animation does not match Skeleton!");
-			ImGui::Spacing();
-			ImGui::Text(myMissMatchMessage.c_str());
 		}
 	}
 	ImGui::End();
+}
+
+void SkeletonEditor::CreateAnimationInfo(Animation* anAnimation)
+{
+	const auto& animationData = anAnimation->GetData();
+	ImGui::Text(animationData.name.c_str());
+
+	ImGui::Separator();
+
+	const std::string frameCount = "Frames: " + std::to_string(animationData.length);
+	ImGui::Text(frameCount.c_str());
+
+	const std::string eventCount = "Events: " + std::to_string(animationData.eventNames.size());
+	ImGui::Text(eventCount.c_str());
+
+	const std::string fps = "FPS: " + std::to_string(animationData.framesPerSecond);
+	ImGui::Text(fps.c_str());
+
+	const std::string duration = "Length: " + std::to_string(animationData.duration) + " seconds";
+	ImGui::Text(duration.c_str());
+}
+
+void SkeletonEditor::CreateAnimationControls()
+{
+	if (ImGui::Button("Start"))
+	{
+		myIsPlayingAnimation = true;
+		myMesh->StartAnimation();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Stop"))
+	{
+		myIsPlayingAnimation = false;
+		myAnimationTimer = 0.f;
+		myAnimation->SetToFirstFrame();
+		myMesh->StopAnimation();
+		DrawFrame();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Pause"))
+	{
+		myIsPlayingAnimation = false;
+		myMesh->PauseAnimation();
+	}
+
+	if (ImGui::Checkbox("Play in reverse", &myIsPlayingInReverse))
+	{
+		myMesh->SetPlayInReverse(myIsPlayingInReverse);
+	}
+
+	if (ImGui::DragFloat("Target FPS", &myTargetFPS, 1.f, 0.f, FLT_MAX, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		myMesh->SetTargetFPS(myTargetFPS);
+		myAnimation->SetTargetFPS(myTargetFPS);
+	}
+
+	if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
+	}
+}
+
+void SkeletonEditor::CreateAnimationParameters(Animation* anAnimation)
+{
+	int index = anAnimation->GetCurrentFrameIndex();
+	if (ImGui::SliderInt("Frame", &index, 0, anAnimation->GetLastFrameIndex(), "%d", ImGuiSliderFlags_AlwaysClamp))
+	{
+		myIsPlayingAnimation = false;
+		myAnimationTimer = 0.f;
+		anAnimation->SetFrameIndex(index);
+		SetMeshAnimation();
+		DrawFrame();
+	}
+}
+
+void SkeletonEditor::PrintAnimationMissmatchError()
+{
+	ImGui::Text("WARNING!");
+	ImGui::Text("Animation does not match Skeleton!");
+	ImGui::Spacing();
+	ImGui::Text(myMissMatchMessage.c_str());
 }
 
 void SkeletonEditor::CreateAssetBrowser()
@@ -580,14 +675,21 @@ void SkeletonEditor::CreateAssetBrowser()
 		{
 			if (CreateFileButton(file, iconSize, true))
 			{
-				if (mySelectedBone != nullptr)
+				if (myAnimation && myAnimation->GetType() == AnimationBase::AnimationType::BlendSpace)
 				{
-					SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(file), GetBoneIndex(mySelectedBone)));
+					mySelectedAnimationPath = file;
 				}
 				else
 				{
-					SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(file)));
-				}
+					if (mySelectedBone != nullptr)
+					{
+						SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(file), GetBoneIndex(mySelectedBone)));
+					}
+					else
+					{
+						SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(file)));
+					}
+				}				
 			}
 
 			const float next = groupsize + (groupsize * count);
@@ -611,10 +713,7 @@ bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 
 	if (anIsAnimation)
 	{
-		if (myAnimation->HasData())
-		{
-			isSelected = myAnimation->GetPath() == aFile;
-		}
+		isSelected = mySelectedAnimationPath == aFile;
 	}
 	else
 	{
@@ -687,7 +786,7 @@ void SkeletonEditor::UpdateAvailableFiles()
 	}
 
 	{ // Sort out animations
-		auto files = Crimson::GetAllFilepathsInDirectory(AssetManager::GetAnimationPath(), true);
+		auto files = AssetManager::GetAvailableAnimations();
 		for (auto& file : files)
 		{
 			auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
@@ -791,26 +890,18 @@ void SkeletonEditor::DrawFrame()
 		return;
 	}
 
-	const AnimationFrame* frame = nullptr;
-	if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
-	{
-		frame = &animationPtr->GetCurrentFrame();
-	}
-	else
-	{
-		// BlendSpace
-	}
-	
+	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransforms);
+
 	if (mySelectedBone && mySelectedBone != myRootBone)
 	{
 		auto& parentBone = mySkeleton->GetBone(mySelectedBone->parent);
 		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * parentBone.bindPoseInverse.GetInverse();
 
-		DrawFrame(GetBoneIndex(mySelectedBone), center, parentBone.bindPoseInverse.GetInverse(), *frame);
+		DrawFrame(GetBoneIndex(mySelectedBone), center);
 	}
 	else
 	{
-		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * frame->globalTransformMatrices.at(myRootBone->name);
+		const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myBoneTransforms[0];
 		auto* color = &myBoneColor;
 		if (mySelectedBone == myRootBone)
 		{
@@ -824,12 +915,12 @@ void SkeletonEditor::DrawFrame()
 
 		for (auto& childIndex : myRootBone->children)
 		{
-			DrawFrame(childIndex, center, *frame);
+			DrawFrame(childIndex, center);
 		}
 	}
 }
 
-void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const AnimationFrame& aFrame)
+void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition)
 {
 	const Bone& bone = mySkeleton->GetBone(anIndex);
 
@@ -849,43 +940,12 @@ void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParen
 	}
 	else
 	{
-		const auto& position = Crimson::Vector4f::NullPosition * aFrame.globalTransformMatrices.at(bone.name);
+		const auto& position = Crimson::Vector4f::NullPosition * (bone.bindPoseInverse.GetInverse() * myBoneTransforms[anIndex]);
 		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
 
 		for (auto& childIndex : bone.children)
 		{
-			DrawFrame(childIndex, position, aFrame);
-		}
-	}
-}
-
-void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParentPosition, const Crimson::Matrix4x4f& aParentMatrix, const AnimationFrame& aFrame)
-{
-	const Bone& bone = mySkeleton->GetBone(anIndex);
-
-	auto* color = &myBoneColor;
-	if (mySelectedBone == &bone)
-	{
-		color = &mySelectedColor;
-	}
-	else if (myHoveredBone == &bone)
-	{
-		color = &myHoveredColor;
-	}
-
-	if (bone.children.empty())
-	{
-		GraphicsEngine::Get().GetLineDrawer().AddCube(aParentPosition, Crimson::Vector3f(.5f), *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
-	}
-	else
-	{
-		const auto& matrix = aFrame.localTransformMatrices.at(bone.name)* aParentMatrix;
-		const auto& position = Crimson::Vector4f::NullPosition * matrix;
-		GraphicsEngine::Get().GetLineDrawer().AddLine(aParentPosition, position, *color, mySkeletonOffset->GetTransformMatrix(), false, &myLines.at(&bone));
-
-		for (auto& childIndex : bone.children)
-		{
-			DrawFrame(childIndex, position, matrix, aFrame);
+			DrawFrame(childIndex, position);
 		}
 	}
 }
@@ -893,10 +953,14 @@ void SkeletonEditor::DrawFrame(unsigned anIndex, const Crimson::Vector4f& aParen
 void SkeletonEditor::CheckSkeletonAnimationMatching()
 {
 	myMissMatchMessage = "";
-	myIsPlayingAnimation = false;
 	myAnimationTimer = 0.f;
 
 	myHasMatchingBones = myAnimation->IsValidSkeleton(mySkeleton, &myMissMatchMessage);
+
+	if (!myHasMatchingBones)
+	{
+		myIsPlayingAnimation = false;
+	}
 }
 
 void SkeletonEditor::ClearLines()
@@ -941,8 +1005,8 @@ void SkeletonEditor::SetMeshAnimation()
 	}
 	else
 	{
-		//auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
-		//myMesh->SetAnimation(std::make_shared<BlendSpace>(*blendPtr));
+		auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
+		myMesh->SetAnimation(std::make_shared<BlendSpace>(*blendPtr));
 	}
 }
 
@@ -958,7 +1022,7 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 	if (mySelectedBone)
 	{
 		myLines.at(mySelectedBone).UpdateColor(mySelectedColor);
-	}	
+	}
 
 	if (myIsPlayingAnimation)
 	{
@@ -970,37 +1034,39 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 			}
 			else
 			{
-				myAnimation = std::make_shared<Animation>(*animationPtr);
+				myAnimation = std::make_shared<Animation>(&animationPtr->GetData());
 			}
 		}
 		else
 		{
-			// BlendSpace
+			auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
+			blendPtr->SetBoneIndex(GetBoneIndex(mySelectedBone));
 		}
-		SetMeshAnimation();
-		DrawSkeleton();
-		DrawFrame();
+		SetAnimation(myAnimation);
 	}
 }
 
 void SkeletonEditor::LoadBlendSpace()
 {
-	/*std::wstring extensions = L"*" + std::wstring(AssetManager::GetSceneExtensionW()) + L";*";
-	extensions += std::wstring(AssetManager::GetSceneBinaryExtensionW()) + L";";
 	std::string path;
-	if (Crimson::ShowOpenFileSelector(path, { L"Scenes", extensions }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+	if (Crimson::ShowOpenFileSelector(path, { L"Blend Spaces",  L"*" + Crimson::ToWString(AssetManager::GetBlendSpaceExtension()) + L";*" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetAnimationPath()))))
 	{
-		myModelViewer->LoadScene(path);
-	}*/
+		SetAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(path)));
+	}
 }
 
 void SkeletonEditor::SaveBlendSpace()
 {
-	/*std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
-	std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneExtension(), true));
-	std::string path;
-	if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+	if (myAnimation && myAnimation->GetType() == AnimationBase::AnimationType::BlendSpace)
 	{
-		myModelViewer->SaveScene(path, false);
-	}*/
+		std::shared_ptr<BlendSpace> blendspace = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
+		std::wstring extension = Crimson::ToWString(AssetManager::GetBlendSpaceExtension());
+		std::wstring filename = Crimson::ToWString(Crimson::AddExtensionIfMissing(blendspace->GetName(), AssetManager::GetBlendSpaceExtension(), true));
+		std::string path;
+		if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetScenePath()))))
+		{
+			blendspace->myPath = path;
+			AssetManager::SaveAsset(*blendspace, path);
+		}
+	}
 }

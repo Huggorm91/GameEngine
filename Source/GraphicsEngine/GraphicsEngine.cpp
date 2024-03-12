@@ -7,12 +7,22 @@
 #include "Math/Sort.hpp"
 #include "File/DirectoryFunctions.h"
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(),
-myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders(), myIsUsingBloom(true),
-myAssetPath("Settings\\EngineAssets\\"), mySettingsPath("Settings\\ge_settings.json")
+GraphicsEngine::GraphicsEngine() :
+	myWindowHandle(),
+	myWorldRadius(1.f),
+	myWindowSize{ 0,0 },
+	myRenderCommands(&myFirstCommandlist),
+	myUpdateCommands(&mySecondCommandlist),
+	myDirectionalShadowMap(nullptr),
+	myPointShadowMap{ nullptr },
+	mySpotShadowMap{ nullptr },
+	myIsUsingBloom(true),
+	myAssetPath("Settings\\EngineAssets\\"),
+	mySettingsPath("Settings\\ge_settings.json")
 #ifndef _RETAIL
-, myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
+	, myDebugMode(DebugMode::Default),
+	myLightMode(LightMode::Default),
+	myRenderMode(RenderMode::Mesh)
 #endif // !_RETAIL	
 {}
 
@@ -1053,7 +1063,7 @@ void GraphicsEngine::RenderFrame()
 	else
 	{
 		RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
-	}
+}
 #else
 	if (myLineDrawer.IsUsingDepthBuffer())
 	{
