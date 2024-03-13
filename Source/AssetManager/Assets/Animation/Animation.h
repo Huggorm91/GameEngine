@@ -43,6 +43,8 @@ public:
 	unsigned GetLastFrameIndex() const;
 	unsigned GetCurrentFrameIndex() const;
 
+	bool IsEndOfLoop() const override;
+
 	bool IsValid() const override;
 	bool HasData() const override;
 

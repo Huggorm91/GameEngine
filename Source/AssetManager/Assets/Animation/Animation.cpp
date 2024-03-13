@@ -197,6 +197,11 @@ unsigned Animation::GetCurrentFrameIndex() const
 	return myCurrentFrame;
 }
 
+bool Animation::IsEndOfLoop() const
+{
+	return myIsPlayingInReverse ? myCurrentFrame == 1 : myCurrentFrame == GetLastFrameIndex();
+}
+
 bool Animation::IsValid() const
 {
 	return myData && AnimationBase::IsValid();

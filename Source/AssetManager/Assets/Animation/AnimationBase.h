@@ -89,6 +89,7 @@ public:
 	void SetIsLooping(bool aShouldLoop);
 	void ToogleLooping();
 	bool IsLooping() const;
+	virtual bool IsEndOfLoop() const = 0;
 
 	virtual void SetIsPlayingInReverse(bool aShouldPlayBackwards);
 	bool IsPlayingInReverse() const;

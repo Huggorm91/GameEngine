@@ -41,6 +41,8 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 
+	bool IsEndOfLoop() const override;
+
 	bool IsValid() const override;
 	bool HasData() const override;
 

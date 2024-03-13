@@ -210,20 +210,13 @@ bool BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue
 			}
 			myAnimations.erase(iter);
 			UpdateMatchingFPS();
-			if (myHasMatchingFPS)
+			if (myLongestAnimation == nullptr)
 			{
-				myLongestAnimation = nullptr;
-			}
-			else
-			{
-				if (myLongestAnimation == nullptr)
+				for (auto& data : myAnimations)
 				{
-					for (auto& data : myAnimations)
+					if (!myLongestAnimation || data.animation->GetData().length > myLongestAnimation->GetData().length)
 					{
-						if (!myLongestAnimation || data.animation->GetData().length > myLongestAnimation->GetData().length)
-						{
-							myLongestAnimation = data.animation.get();
-						}
+						myLongestAnimation = data.animation.get();
 					}
 				}
 			}
@@ -383,6 +376,11 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 	previous->animation->UpdateBoneCache(aSkeleton, outBones, anInterpolationValue);
 }
 
+bool BlendSpace::IsEndOfLoop() const
+{
+	return myLongestAnimation->IsEndOfLoop();
+}
+
 bool BlendSpace::IsValid() const
 {
 	return HasData() && AnimationBase::IsValid();
@@ -486,13 +484,18 @@ void BlendSpace::AddInternal()
 	{
 		UpdateMatchingFPS();
 	}
-	else
+
+	if (myLongestAnimation)
 	{
 		const auto& data = myAnimations.back();
 		if (data.animation->GetData().length > myLongestAnimation->GetData().length)
 		{
 			myLongestAnimation = data.animation.get();
 		}
+	}
+	else
+	{
+		myLongestAnimation = myAnimations.back().animation.get();
 	}
 	Crimson::QuickSort(myAnimations);
 }

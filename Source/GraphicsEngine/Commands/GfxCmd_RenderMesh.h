@@ -20,6 +20,7 @@ private:
 	Crimson::Vector4f myWorldPosition;
 	Crimson::Vector4f myColor;
 	unsigned myID;
+	unsigned myBoneCount;
 	bool myHasBones;
 #ifdef _DEBUG
 	std::string myMeshName;

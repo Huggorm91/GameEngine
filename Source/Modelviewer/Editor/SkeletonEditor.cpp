@@ -62,11 +62,6 @@ void SkeletonEditor::Update()
 
 	if (myIsPlayingAnimation)
 	{
-		if (myShouldRenderMesh && mySkeleton)
-		{
-			myMesh->Render();
-		}
-
 		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetTargetFrameDelta();
 		myAnimation->Update();
 		if (hasStepped)
@@ -77,7 +72,7 @@ void SkeletonEditor::Update()
 
 	if (myShouldRenderMesh && mySkeleton)
 	{
-		myModel.Render();
+		myMesh->Render();
 	}
 
 	// Create Editor workarea
@@ -537,7 +532,7 @@ void SkeletonEditor::CreateAnimationInspector()
 					ImGui::PushID(index);
 					ImGui::Text(data.animation->GetPath().c_str());
 					CreateAnimationParameters(data.animation.get());
-					if (ImGui::DragFloat("Blend Value", &data.blendValue))
+					if (ImGui::InputFloat("Blend Value", &data.blendValue))
 					{
 						Crimson::QuickSort(blendPtr->myAnimations);
 						ImGui::PopID();

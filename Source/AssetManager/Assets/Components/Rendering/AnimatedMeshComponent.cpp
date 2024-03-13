@@ -146,6 +146,10 @@ bool AnimatedMeshComponent::HasSkeleton() const
 void AnimatedMeshComponent::SetSkeleton(Skeleton* aSkeleton)
 {
 	mySkeleton = aSkeleton;
+	if (myAnimation)
+	{
+		myAnimation->Init(myBoneTransformCache, mySkeleton);
+	}
 }
 
 const Skeleton& AnimatedMeshComponent::GetSkeleton() const
@@ -211,8 +215,23 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation->GetPath();
-	result["AnimationData"] = myAnimation->ToJson();
-	result["Skeleton"] = mySkeleton->GetPath();
+	if (myAnimation->IsValid())
+	{
+		result["Animation"] = myAnimation->GetPath();
+		result["AnimationData"] = myAnimation->ToJson();
+	}
+	else
+	{
+		result["Animation"] = Json::nullValue;
+	}
+
+	if (mySkeleton)
+	{
+		result["Skeleton"] = mySkeleton->GetPath();
+	}
+	else
+	{
+		result["Skeleton"] = Json::nullValue;
+	}
 	return result;
 }
