@@ -80,7 +80,7 @@ private:
 	void PrintAnimationMissmatchError();
 
 	void CreateAssetBrowser();
-	bool CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
+	void CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
 
 	void UpdateAvailableFiles();
 

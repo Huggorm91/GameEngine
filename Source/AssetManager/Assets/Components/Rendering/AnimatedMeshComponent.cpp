@@ -11,20 +11,11 @@ AnimatedMeshComponent::AnimatedMeshComponent() :
 	mySkeleton(nullptr)
 {}
 
-AnimatedMeshComponent::AnimatedMeshComponent(const Json::Value & aJson):
+AnimatedMeshComponent::AnimatedMeshComponent(const Json::Value& aJson) :
 	MeshComponent(aJson),
-	mySkeleton(nullptr)
-{
-	if (!aJson["Animation"].isNull())
-	{
-		myAnimation = LoadAnimationFromJson(aJson["Animation"]);
-	}
-	
-	if (!aJson["Skeleton"].isNull())
-	{
-		mySkeleton = AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString());
-	}
-}
+	myAnimation(aJson["Animation"].isNull() ? nullptr : LoadAnimationFromJson(aJson["Animation"].asString(), aJson["AnimationData"])),
+	mySkeleton(aJson["Skeleton"].isNull() ? nullptr : AssetManager::GetAsset<Skeleton*>(aJson["Skeleton"].asString()))
+{}
 
 AnimatedMeshComponent::AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton) :
 	MeshComponent(aMesh, anElementList, ComponentType::AnimatedMesh),
@@ -35,7 +26,7 @@ AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& aCompo
 	MeshComponent(aComponent),
 	myBoneTransformCache(aComponent.myBoneTransformCache),
 	mySkeleton(aComponent.mySkeleton),
-	myAnimation(aComponent.myAnimation ? aComponent.myAnimation->GetAsSharedPtr(): nullptr)
+	myAnimation(aComponent.myAnimation ? aComponent.myAnimation->GetAsSharedPtr() : nullptr)
 {}
 
 AnimatedMeshComponent& AnimatedMeshComponent::operator=(const AnimatedMeshComponent& aComponent)
@@ -220,7 +211,8 @@ void AnimatedMeshComponent::Deserialize(std::istream& aStream)
 Json::Value AnimatedMeshComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
-	result["Animation"] = myAnimation->ToJson();
+	result["Animation"] = myAnimation->GetPath();
+	result["AnimationData"] = myAnimation->ToJson();
 	result["Skeleton"] = mySkeleton->GetPath();
 	return result;
 }

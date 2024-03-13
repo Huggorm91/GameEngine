@@ -14,32 +14,6 @@ BlendSpace::BlendSpace() :
 	myHasMatchingFPS(true)
 {}
 
-BlendSpace::BlendSpace(const Json::Value& aJson) :
-	AnimationBase(aJson),
-	myPath(aJson["Path"].asString()),
-	myName(aJson["Name"].asString()),
-	myLongestAnimation(nullptr),
-	myBlendValueGetter(nullptr),
-	myBlendValue(aJson["BlendValue"].asFloat()),
-	myBoneIndex(aJson["BoneIndex"].asUInt()),
-	myHasMatchingFPS(true)
-{
-	if (myBoneIndex == 0u)
-	{
-		for (auto& data : aJson["Animations"])
-		{
-			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), data["Value"].asFloat());
-		}
-	}
-	else
-	{
-		for (auto& data : aJson["Animations"])
-		{
-			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), myBoneIndex, data["Value"].asFloat());
-		}
-	}
-}
-
 bool BlendSpace::Update()
 {
 	if (myAnimations.empty())
@@ -105,6 +79,30 @@ bool BlendSpace::Update()
 		}
 	}
 	return myIsPlaying;
+}
+
+void BlendSpace::Init(const Json::Value& aJson)
+{
+	AnimationBase::Init(aJson);
+	myPath = aJson["Path"].asString();
+	myName = aJson["Name"].asString();
+	myBlendValue = aJson["BlendValue"].asFloat();
+	myBoneIndex = aJson["BoneIndex"].asUInt();
+
+	if (myBoneIndex == 0u)
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), data["Value"].asFloat());
+		}
+	}
+	else
+	{
+		for (auto& data : aJson["Animations"])
+		{
+			AddAnimation(AssetManager::GetAsset<Animation>(data["Path"].asString()), myBoneIndex, data["Value"].asFloat());
+		}
+	}
 }
 
 const std::string& BlendSpace::GetName() const

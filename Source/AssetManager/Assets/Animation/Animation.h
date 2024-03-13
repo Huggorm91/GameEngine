@@ -5,7 +5,6 @@ class Animation: public AnimationBase
 {
 public:
 	Animation();
-	Animation(const Json::Value& aJson);
 	Animation(const AnimationData* someData);
 	Animation(const Animation& anAnimation);
 	Animation(Animation&& anAnimation) noexcept;
@@ -14,6 +13,8 @@ public:
 	bool operator==(const Animation& anAnimation) const;
 
 	bool Update() override;
+
+	void Init(const Json::Value& aJson) override;
 
 	const std::string& GetPath() const override;
 	unsigned GetStartBoneIndex() const override;

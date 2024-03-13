@@ -57,13 +57,14 @@ public:
 		BlendSpace
 	};
 	AnimationBase(AnimationType aType);
-	AnimationBase(const Json::Value& aJson);
 	AnimationBase(const AnimationBase& anAnimation);
 	AnimationBase(AnimationBase&& anAnimation) noexcept;
 	virtual ~AnimationBase() = default;
 
 	// Will be called when added to a Component
 	virtual void Init(BoneCache& aBoneCache, const Skeleton* aSkeleton);
+
+	virtual void Init(const Json::Value& aJson);
 
 	/// <param name="aTargetFPS">: Will interpolate frames to match the specified FPS. Will use default FPS of Animation if 0</param>
 	/// <param name="aIsLooping">: Stops on the last frame if not looping</param>
@@ -132,4 +133,4 @@ protected:
 	bool myIsPlayingInReverse;
 };
 
-std::shared_ptr<AnimationBase> LoadAnimationFromJson(const Json::Value& aJson);
+std::shared_ptr<AnimationBase> LoadAnimationFromJson(const std::string& aPath, const Json::Value& aJson);

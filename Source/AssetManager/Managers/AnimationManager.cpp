@@ -67,12 +67,14 @@ void AnimationManager::SaveBlendSpace(const BlendSpace& aBlendSpace, const std::
 	std::fstream fileStream(path, std::ios::out | std::ios::trunc);
 	if (fileStream)
 	{
-		Json::Value blendspace = aBlendSpace.ToJson();
+		Json::Value blendspace = aBlendSpace.CreateJson();
 		blendspace["Path"] = path;
 		Json::StreamWriterBuilder builder;
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(blendspace, &fileStream);
 		fileStream.flush();
+
+		AMLogger.Succ("AnimationManager: Successfully saved blendspace to: " + path);
 	}
 	else
 	{
@@ -152,7 +154,8 @@ BlendSpace AnimationManager::LoadBlendSpace(const std::string& aPath, bool aShou
 		return BlendSpace();
 	}
 	fileStream.close();
-
-	auto iter = myBlendSpaces.emplace(aPath, json);
+	BlendSpace blendspace;
+	blendspace.LoadFromJson(json, path);
+	auto iter = myBlendSpaces.emplace(aPath, std::move(blendspace));
 	return iter.first->second;
 }

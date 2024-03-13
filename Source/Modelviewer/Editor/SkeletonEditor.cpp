@@ -64,7 +64,7 @@ void SkeletonEditor::Update()
 	{
 		if (myShouldRenderMesh && mySkeleton)
 		{
-			myMesh->Update();
+			myMesh->Render();
 		}
 
 		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetTargetFrameDelta();
@@ -149,7 +149,6 @@ void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimat
 	CheckSkeletonAnimationMatching();
 	if (myHasMatchingBones)
 	{
-		myAnimation->Init(myBoneTransforms, mySkeleton);
 		myAnimation->SetTargetFPS(myTargetFPS);
 		myAnimation->SetIsLooping(true);
 		myAnimation->SetIsPlayingInReverse(myIsPlayingInReverse);
@@ -222,10 +221,6 @@ void SkeletonEditor::CreateMenubar()
 				BlendSpace newBlendSpace;
 				newBlendSpace.myName = "NewBlendSpace";
 				SetAnimation(std::make_shared<BlendSpace>(newBlendSpace));
-			}
-			if (ImGui::MenuItem("Load"))
-			{
-				LoadBlendSpace();
 			}
 			if (ImGui::MenuItem("Save"))
 			{
@@ -495,13 +490,17 @@ void SkeletonEditor::CreateAnimationInspector()
 				}
 
 				CreateAnimationInfo(animation);
-				ImGui::DragFloat("Test Blend Value", &blendPtr->myBlendValue);
+				if (ImGui::DragFloat("Test Blend Value", &blendPtr->myBlendValue))
+				{
+					DrawFrame();
+					SetMeshAnimation();
+				}
 			}
 
 			ImGui::Separator();
 
 			{
-				const bool isDisabled = mySelectedAnimationPath.empty();
+				const bool isDisabled = mySelectedAnimationPath.empty() || Crimson::GetFileExtension(mySelectedAnimationPath) != AssetManager::GetAnimationExtension();
 				if (isDisabled)
 				{
 					ImGui::BeginDisabled();
@@ -509,18 +508,15 @@ void SkeletonEditor::CreateAnimationInspector()
 
 				if (ImGui::Button("Add Animation"))
 				{
-					if (Crimson::GetFileExtension(mySelectedAnimationPath) == AssetManager::GetAnimationExtension())
+					if (blendPtr->myBoneIndex == 0u)
 					{
-						if (blendPtr->myBoneIndex == 0u)
-						{
-							blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), 0.f);
-						}
-						else
-						{
-							blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), blendPtr->myBoneIndex, 0.f);
-						}
-						SetAnimation(blendPtr);
+						blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), 0.f);
 					}
+					else
+					{
+						blendPtr->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), blendPtr->myBoneIndex, 0.f);
+					}
+					SetAnimation(blendPtr);
 				}
 
 				if (isDisabled)
@@ -532,7 +528,7 @@ void SkeletonEditor::CreateAnimationInspector()
 			if (myHasMatchingBones)
 			{
 				CreateAnimationControls();
-				
+
 				ImGui::Separator();
 
 				int index = 0;
@@ -654,7 +650,8 @@ void SkeletonEditor::CreateAssetBrowser()
 
 		for (auto& file : myAvailableSkeletons)
 		{
-			if (CreateFileButton(file, iconSize, false))
+			CreateFileButton(file, iconSize, false);
+			if (ImGui::IsItemClicked())
 			{
 				SetSkeleton(AssetManager::GetAsset<Skeleton*>(file), false);
 			}
@@ -673,23 +670,31 @@ void SkeletonEditor::CreateAssetBrowser()
 
 		for (auto& file : myAvailableAnimations)
 		{
-			if (CreateFileButton(file, iconSize, true))
+			CreateFileButton(file, iconSize, true);
+			if (ImGui::IsItemClicked())
 			{
-				if (myAnimation && myAnimation->GetType() == AnimationBase::AnimationType::BlendSpace)
+				if (mySelectedAnimationPath != file)
 				{
 					mySelectedAnimationPath = file;
 				}
 				else
 				{
-					if (mySelectedBone != nullptr)
+					if (Crimson::GetFileExtension(file) == AssetManager::GetBlendSpaceExtension())
 					{
-						SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(file), GetBoneIndex(mySelectedBone)));
+						SetAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(file)));
 					}
 					else
 					{
-						SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(file)));
+						if (mySelectedBone != nullptr)
+						{
+							SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(file), GetBoneIndex(mySelectedBone)));
+						}
+						else
+						{
+							SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(file)));
+						}
 					}
-				}				
+				}
 			}
 
 			const float next = groupsize + (groupsize * count);
@@ -707,7 +712,7 @@ void SkeletonEditor::CreateAssetBrowser()
 	ImGui::End();
 }
 
-bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation)
+void SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation)
 {
 	bool isSelected = false;
 
@@ -753,12 +758,6 @@ bool SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 		draw_list->AddRectFilled(p_min, p_max, IM_COL32(255, 255, 255, 127));
 		draw_list->ChannelsMerge();
 	}
-
-	if (ImGui::IsItemClicked())
-	{
-		return true;
-	}
-	return false;
 }
 
 void SkeletonEditor::UpdateAvailableFiles()
@@ -790,6 +789,11 @@ void SkeletonEditor::UpdateAvailableFiles()
 		for (auto& file : files)
 		{
 			auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
+			if (potentialTypes.size() == 1 && potentialTypes.back() == Assets::eAssetType::Animation)
+			{
+				myAvailableAnimations.emplace(file);
+				continue;
+			}
 			for (auto& type : potentialTypes)
 			{
 				if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
@@ -995,18 +999,11 @@ unsigned SkeletonEditor::GetBoneIndex(const Bone* aBone) const
 void SkeletonEditor::SetMeshAnimation()
 {
 	myMesh->ResetBoneCache();
-	if (auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(myAnimation))
+	myMesh->SetAnimation(myAnimation);
+
+	if (myIsPlayingAnimation)
 	{
-		myMesh->SetAnimation(std::make_shared<AnimationLayer>(*layerPtr));
-	}
-	else if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
-	{
-		myMesh->SetAnimation(std::make_shared<Animation>(*animationPtr));
-	}
-	else
-	{
-		auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myAnimation);
-		myMesh->SetAnimation(std::make_shared<BlendSpace>(*blendPtr));
+		myMesh->StartAnimation();
 	}
 }
 
@@ -1049,7 +1046,7 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 void SkeletonEditor::LoadBlendSpace()
 {
 	std::string path;
-	if (Crimson::ShowOpenFileSelector(path, { L"Blend Spaces",  L"*" + Crimson::ToWString(AssetManager::GetBlendSpaceExtension()) + L";*" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetAnimationPath()))))
+	if (Crimson::ShowOpenFileSelector(path, { L"Blend Spaces",  L"*" + Crimson::ToWString(AssetManager::GetBlendSpaceExtension()) + L";" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetAnimationPath()))))
 	{
 		SetAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(path)));
 	}
@@ -1063,7 +1060,7 @@ void SkeletonEditor::SaveBlendSpace()
 		std::wstring extension = Crimson::ToWString(AssetManager::GetBlendSpaceExtension());
 		std::wstring filename = Crimson::ToWString(Crimson::AddExtensionIfMissing(blendspace->GetName(), AssetManager::GetBlendSpaceExtension(), true));
 		std::string path;
-		if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetScenePath()))))
+		if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Blend Space", L"*" + extension + L";" }, Crimson::ToWString(Crimson::GetAbsolutePath(AssetManager::GetAnimationPath()))))
 		{
 			blendspace->myPath = path;
 			AssetManager::SaveAsset(*blendspace, path);

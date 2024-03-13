@@ -5,12 +5,15 @@
 AnimationLayer::AnimationLayer() : Animation(AnimationType::AnimationLayer), myBoneIndex(0u)
 {}
 
-AnimationLayer::AnimationLayer(const Json::Value & aJson) : Animation(aJson), myBoneIndex(aJson["BoneIndex"].asUInt())
-{}
-
 AnimationLayer::AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex) : Animation(anAnimation), myBoneIndex(aBoneIndex)
 {
 	myType = AnimationType::AnimationLayer;
+}
+
+void AnimationLayer::Init(const Json::Value& aJson)
+{
+	Animation::Init(aJson);
+	myBoneIndex = aJson["BoneIndex"].asUInt();
 }
 
 unsigned AnimationLayer::GetStartBoneIndex() const

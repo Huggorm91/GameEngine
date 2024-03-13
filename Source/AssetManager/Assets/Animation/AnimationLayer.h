@@ -5,10 +5,11 @@ class AnimationLayer: public Animation
 {
 public:
 	AnimationLayer();
-	AnimationLayer(const Json::Value& aJson);
 	AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex = 0);
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
+
+	void Init(const Json::Value& aJson) override;
 
 	unsigned GetStartBoneIndex() const override;
 

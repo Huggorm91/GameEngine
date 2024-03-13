@@ -8,10 +8,11 @@ class BlendSpace : public AnimationBase
 	friend class AnimationManager;
 public:
 	BlendSpace();
-	BlendSpace(const Json::Value& aJson);
 	~BlendSpace() = default;
 
 	bool Update() override;
+
+	void Init(const Json::Value& aJson) override;
 
 	const std::string& GetName() const;
 	const std::string& GetPath() const override;

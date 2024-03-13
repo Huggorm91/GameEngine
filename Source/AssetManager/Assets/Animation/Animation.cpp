@@ -7,9 +7,6 @@
 Animation::Animation() :AnimationBase(AnimationType::Animation), myData(nullptr), myCurrentFrame(1)
 {}
 
-Animation::Animation(const Json::Value & aJson): AnimationBase(aJson), myData(AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString())), myCurrentFrame(1)
-{}
-
 Animation::Animation(const AnimationData* someData) : AnimationBase(AnimationType::Animation), myData(someData), myCurrentFrame(1)
 {}
 
@@ -62,6 +59,12 @@ bool Animation::Update()
 		}
 	}
 	return myIsPlaying;
+}
+
+void Animation::Init(const Json::Value& aJson)
+{
+	AnimationBase::Init(aJson);
+	myData = AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString());
 }
 
 const std::string& Animation::GetPath() const

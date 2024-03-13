@@ -1,5 +1,6 @@
 #include "AssetManager.pch.h"
 #include "AnimationBase.h"
+#include "AssetManager.h"
 
 AnimationTransform::AnimationTransform(const Crimson::Matrix4x4f& aMatrix) :position(aMatrix.GetTranslation()), rotation(Crimson::QuatF(aMatrix).GetNormalized())
 {}
@@ -67,12 +68,6 @@ AnimationBase::AnimationBase(AnimationType aType) :
 	myIsPlayingInReverse(false)
 {}
 
-AnimationBase::AnimationBase(const Json::Value & aJson)
-{
-	aJson;
-	assert(!"Not Implemented!");
-}
-
 AnimationBase::AnimationBase(const AnimationBase& anAnimation): 
 	mySkeleton(anAnimation.mySkeleton),
 	myBoneCache(anAnimation.myBoneCache),
@@ -107,6 +102,15 @@ void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 	{
 		UpdateBoneCache(mySkeleton, *myBoneCache);
 	}
+}
+
+void AnimationBase::Init(const Json::Value& aJson)
+{
+	myTargetFrameDelta= aJson["TargetFrameDelta"].asFloat();
+	myType= static_cast<AnimationType>(aJson["Type"].asInt());
+	myIsPlaying= aJson["IsPlaying"].asBool();
+	myIsLooping= aJson["IsLooping"].asBool();
+	myIsPlayingInReverse= aJson["IsPlayingInReverse"].asBool();
 }
 
 void AnimationBase::SetPlaySettings(float aTargetFPS, bool aIsLooping, bool aPlayInReverse)
@@ -194,14 +198,40 @@ bool AnimationBase::IsValid() const
 
 Json::Value AnimationBase::ToJson() const
 {
-	assert(!"Not Implemented!");
-	// result["Path"] = GetPath();
-	return Json::Value();
+	Json::Value result;
+	result["TargetFrameDelta"] = myTargetFrameDelta;
+	result["Type"] = static_cast<int>(myType);
+	result["IsPlaying"] = myIsPlaying;
+	result["IsLooping"] = myIsLooping;
+	result["IsPlayingInReverse"] = myIsPlayingInReverse;
+	return result;
 }
 
-std::shared_ptr<AnimationBase> LoadAnimationFromJson(const Json::Value& aJson)
+std::shared_ptr<AnimationBase> LoadAnimationFromJson(const std::string& aPath, const Json::Value& aJson)
 {
-	//assert(!"Not Implemented!");
-	aJson;
+	AnimationBase::AnimationType type = static_cast<AnimationBase::AnimationType>(aJson["Type"].asInt());
+	switch (type)
+	{
+	case AnimationBase::AnimationType::Animation:
+	{
+		auto ptr = std::make_shared<Animation>(AssetManager::GetAsset<Animation>(aPath));
+		ptr->Init(aJson);
+		return ptr;
+	}
+	case AnimationBase::AnimationType::AnimationLayer:
+	{
+		auto ptr = std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(aPath));
+		ptr->Init(aJson);
+		return ptr;
+	}
+	case AnimationBase::AnimationType::BlendSpace:
+	{
+		auto ptr = std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(aPath));
+		ptr->Init(aJson);
+		return ptr;
+	}
+	default:
+		break;
+	}
 	return std::shared_ptr<AnimationBase>();
 }
