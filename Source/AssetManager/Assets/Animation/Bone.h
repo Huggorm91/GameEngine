@@ -9,5 +9,6 @@ struct Bone
 	std::string name;
 	int parent;
 
+	Bone() = default;
 	Bone(const TGA::FBX::Skeleton::Bone& aBone);
 };

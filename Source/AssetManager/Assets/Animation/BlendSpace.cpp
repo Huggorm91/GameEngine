@@ -36,16 +36,19 @@ bool BlendSpace::Update()
 			do
 			{
 				myAnimationTimer -= frameDelta;
-				const bool hasMoreFrames = myIsPlayingInReverse ? PreviousFrame() : NextFrame();
-				if (!hasMoreFrames && !myIsLooping)
+				const bool hasMoreFrames = myFlags[eIsReversing] ? PreviousFrame() : NextFrame();
+				if (!hasMoreFrames && !myFlags[eIsLooping])
 				{
-					myIsPlaying = false;
+					myFlags[eIsPlaying] = false;
 					myAnimationTimer = 0.f;
 					break;
 				}
 			} while (myAnimationTimer >= frameDelta);
 
-			UpdateBoneCache(mySkeleton, *myBoneCache);
+			if (mySkeleton && myBoneCache)
+			{
+				UpdateBoneCache(mySkeleton, *myBoneCache);
+			}
 		}
 		else if (myTargetFrameDelta > 0.f)
 		{
@@ -53,7 +56,10 @@ bool BlendSpace::Update()
 			if (myInterpolationTimer >= myTargetFrameDelta)
 			{
 				myInterpolationTimer -= myTargetFrameDelta;
-				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / frameDelta);
+				if (mySkeleton && myBoneCache)
+				{
+					UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / frameDelta);
+				}
 			}
 		}
 	}
@@ -67,18 +73,21 @@ bool BlendSpace::Update()
 			myInterpolationTimer = 0.f;
 
 			const unsigned current = myLongestAnimation->GetCurrentFrameIndex();
-			bool isLastFrame = myIsPlayingInReverse ? current == 1 : current == myLongestAnimation->GetLastFrameIndex();
+			bool isLastFrame = myFlags[eIsReversing] ? current == 1 : current == myLongestAnimation->GetLastFrameIndex();
 
-			if (isLastFrame && !myIsLooping)
+			if (isLastFrame && !myFlags[eIsLooping])
 			{
-				myIsPlaying = false;
+				myFlags[eIsPlaying] = false;
 				myAnimationTimer = 0.f;
 			}
 
-			UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myTargetFrameDelta);
+			if (mySkeleton && myBoneCache)
+			{
+				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myTargetFrameDelta);
+			}
 		}
 	}
-	return myIsPlaying;
+	return myFlags[eIsPlaying];
 }
 
 void BlendSpace::Init(const Json::Value& aJson)
@@ -144,21 +153,31 @@ void BlendSpace::SetBoneIndex(unsigned anIndex)
 	}
 }
 
-bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue)
+bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue, std::string* outErrorMessage)
 {
+	if (myAnimations.empty())
+	{
+		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
+	}
+
 	if (myBoneIndex == 0u)
 	{
 		myAnimations.emplace_back(BlendData(std::make_shared<Animation>(anAnimation), aBlendValue));
 		AddInternal();
 		return true;
 	}
+	else if (outErrorMessage)
+	{
+		*outErrorMessage = "Incorrect bone index!";
+	}
 	return false;
 }
 
-bool BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendValue)
+bool BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendValue, std::string* outErrorMessage)
 {
 	if (myAnimations.empty())
 	{
+		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
 		myBoneIndex = anAnimation.GetStartBoneIndex();
 		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation), aBlendValue));
 		AddInternal();
@@ -172,14 +191,19 @@ bool BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendVal
 			AddInternal();
 			return true;
 		}
+		else if (outErrorMessage)
+		{
+			*outErrorMessage = "Incorrect bone index!";
+		}
 	}
 	return false;
 }
 
-bool BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue)
+bool BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue, std::string* outErrorMessage)
 {
 	if (myAnimations.empty())
 	{
+		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
 		myBoneIndex = aBoneIndex;
 		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue));
 		AddInternal();
@@ -192,6 +216,10 @@ bool BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex,
 			myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue));
 			AddInternal();
 			return true;
+		}
+		else if (outErrorMessage)
+		{
+			*outErrorMessage = "Incorrect bone index!";
 		}
 	}
 	return false;
@@ -332,6 +360,7 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones)
 	}
 
 	// Current blendvalue is higher than last animations blendvalue
+	assert(previous && "Previous was nullptr");
 	previous->animation->UpdateBoneCache(aSkeleton, outBones);
 }
 
@@ -373,7 +402,90 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 	}
 
 	// Current blendvalue is higher than last animations blendvalue
+	assert(previous && "Previous was nullptr");
 	previous->animation->UpdateBoneCache(aSkeleton, outBones, anInterpolationValue);
+}
+
+std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransforms() const
+{
+	if (myAnimations.empty())
+	{
+		return std::unordered_map<std::string, AnimationTransform>();
+	}
+
+	const BlendData* previous = nullptr;
+	for (auto& data : myAnimations)
+	{
+		if (myBlendValue <= data.blendValue)
+		{
+			// Check if lower than first value, or equal to higher value
+			if (previous == nullptr || Crimson::GimbalCheck(data.blendValue, myBlendValue, Crimson::FloatTolerance))
+			{
+				return data.animation->GetFrameTransforms();
+			}
+			else
+			{
+				const auto& lowerTransforms = previous->animation->GetFrameTransforms();
+				const auto& higherTransforms = data.animation->GetFrameTransforms();
+				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
+
+				std::unordered_map<std::string, AnimationTransform> result;
+				result.reserve(higherTransforms.size());
+
+				for (auto& [boneName, transform] : lowerTransforms)
+				{
+					result.emplace(boneName, AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
+				}
+				return result;
+			}			
+		}
+		previous = &data;
+	}
+
+	// Current blendvalue is higher than last animations blendvalue
+	assert(previous && "Previous was nullptr");
+	return previous->animation->GetFrameTransforms();
+}
+
+std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransforms(float anInterpolationValue) const
+{
+	if (myAnimations.empty())
+	{
+		return std::unordered_map<std::string, AnimationTransform>();
+	}
+
+	const BlendData* previous = nullptr;
+	for (auto& data : myAnimations)
+	{
+		if (myBlendValue <= data.blendValue)
+		{
+			// Check if lower than first value, or equal to higher value
+			if (previous == nullptr || Crimson::GimbalCheck(data.blendValue, myBlendValue, Crimson::FloatTolerance))
+			{
+				return data.animation->GetFrameTransforms(anInterpolationValue);
+			}
+			else
+			{
+				const auto& lowerTransforms = previous->animation->GetFrameTransforms(anInterpolationValue);
+				const auto& higherTransforms = data.animation->GetFrameTransforms(anInterpolationValue);
+				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
+
+				std::unordered_map<std::string, AnimationTransform> result;
+				result.reserve(higherTransforms.size());
+
+				for (auto& [boneName, transform] : lowerTransforms)
+				{
+					result.emplace(boneName, AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
+				}
+				return result;
+			}
+		}
+		previous = &data;
+	}
+
+	// Current blendvalue is higher than last animations blendvalue
+	assert(previous && "Previous was nullptr");
+	return previous->animation->GetFrameTransforms(anInterpolationValue);
 }
 
 bool BlendSpace::IsEndOfLoop() const
@@ -409,6 +521,18 @@ bool BlendSpace::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErro
 	for (auto& data : myAnimations)
 	{
 		if (!data.animation->IsValidSkeleton(aSkeleton, outErrorMessage))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool BlendSpace::IsUsingNamespace(const Skeleton* aSkeleton) const
+{
+	for (auto& data : myAnimations)
+	{
+		if (!data.animation->IsUsingNamespace(aSkeleton))
 		{
 			return false;
 		}
@@ -484,10 +608,10 @@ void BlendSpace::AddInternal()
 	{
 		UpdateMatchingFPS();
 	}
-
+	const auto& data = myAnimations.back();
+	data.animation->ValidateUsingNamespace(mySkeleton);
 	if (myLongestAnimation)
 	{
-		const auto& data = myAnimations.back();
 		if (data.animation->GetData().length > myLongestAnimation->GetData().length)
 		{
 			myLongestAnimation = data.animation.get();
@@ -495,7 +619,7 @@ void BlendSpace::AddInternal()
 	}
 	else
 	{
-		myLongestAnimation = myAnimations.back().animation.get();
+		myLongestAnimation = data.animation.get();
 	}
 	Crimson::QuickSort(myAnimations);
 }
@@ -525,7 +649,7 @@ void BlendSpace::UpdateAnimations()
 		while (data.timer >= data.animation->GetFrameDelta())
 		{
 			data.timer -= data.animation->GetFrameDelta();
-			if (myIsPlayingInReverse)
+			if (myFlags[eIsReversing])
 			{
 				data.animation->PreviousFrame();
 			}

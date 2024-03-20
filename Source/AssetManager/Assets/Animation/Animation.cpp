@@ -38,16 +38,19 @@ bool Animation::Update()
 		do
 		{
 			myAnimationTimer -= myData->frameDelta;
-			const bool hasMoreFrames = myIsPlayingInReverse ? PreviousFrame() : NextFrame();
-			if (!hasMoreFrames && !myIsLooping)
+			const bool hasMoreFrames = myFlags[eIsReversing] ? PreviousFrame() : NextFrame();
+			if (!hasMoreFrames && !myFlags[eIsLooping])
 			{
-				myIsPlaying = false;
+				myFlags[eIsPlaying] = false;
 				myAnimationTimer = 0.f;
 				break;
 			}
 		} while (myAnimationTimer >= myData->frameDelta);
 
-		UpdateBoneCache(mySkeleton, *myBoneCache);
+		if (mySkeleton && myBoneCache)
+		{
+			UpdateBoneCache(mySkeleton, *myBoneCache);
+		}
 	}
 	else if (myTargetFrameDelta > 0.f)
 	{
@@ -55,10 +58,14 @@ bool Animation::Update()
 		if (myInterpolationTimer >= myTargetFrameDelta)
 		{
 			myInterpolationTimer -= myTargetFrameDelta;
-			UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
+
+			if (mySkeleton && myBoneCache)
+			{
+				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
+			}
 		}
 	}
-	return myIsPlaying;
+	return myFlags[eIsPlaying];
 }
 
 void Animation::Init(const Json::Value& aJson)
@@ -145,7 +152,7 @@ void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) 
 
 void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const
 {
-	if (myIsPlayingInReverse)
+	if (myFlags[eIsReversing])
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetPreviousFrame(), anInterpolationValue);
 	}
@@ -199,7 +206,7 @@ unsigned Animation::GetCurrentFrameIndex() const
 
 bool Animation::IsEndOfLoop() const
 {
-	return myIsPlayingInReverse ? myCurrentFrame == 1 : myCurrentFrame == GetLastFrameIndex();
+	return myFlags[eIsReversing] ? myCurrentFrame == 1 : myCurrentFrame == GetLastFrameIndex();
 }
 
 bool Animation::IsValid() const
@@ -235,17 +242,27 @@ bool Animation::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outError
 
 	for (auto& bone : aSkeleton->GetBones())
 	{
-		if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end())
+		if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end() && frame.globalTransformMatrices.find(bone.namespaceName) == frame.globalTransformMatrices.end())
 		{
 			if (outErrorMessage)
 			{
-				*outErrorMessage = "Bone not found in animation! \nBone: " + bone.name;
+				*outErrorMessage = "Bone not found in animation! \nBone: " + bone.namespaceName;
 			}
 			return false;
 		}
 	}
 
 	return true;
+}
+
+bool Animation::IsUsingNamespace(const Skeleton* aSkeleton) const
+{
+	const auto& frame = myData->frames.back();
+	if (frame.globalTransforms.find(aSkeleton->GetBone(0).namespaceName) != frame.globalTransforms.end())
+	{
+		return true;
+	}
+	return false;
 }
 
 const AnimationData& Animation::GetData() const
@@ -262,7 +279,7 @@ std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransform
 {
 	std::unordered_map<std::string, AnimationTransform> result;
 	const auto& current = myData->frames[myCurrentFrame];
-	const auto& next = myIsPlayingInReverse ? GetPreviousFrame() : GetNextFrame();
+	const auto& next = myFlags[eIsReversing] ? GetPreviousFrame() : GetNextFrame();
 	result.reserve(current.globalTransforms.size());
 	for (auto& [bone, transform] : current.globalTransforms)
 	{
@@ -279,7 +296,15 @@ std::shared_ptr<AnimationBase> Animation::GetAsSharedPtr() const
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
-	outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.namespaceName);
+	if (myFlags[eIsUsingNamespace])
+	{
+		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.namespaceName);
+	}
+	else
+	{
+		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.name);
+	}
+
 	for (auto& childIndex : bone.children)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aFrame);
@@ -289,8 +314,17 @@ void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& ou
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
-	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.namespaceName), anInterpolationFrame.globalTransforms.at(bone.namespaceName), anInterpolationValue);
-	outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+	if (myFlags[eIsUsingNamespace])
+	{
+		const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.namespaceName), anInterpolationFrame.globalTransforms.at(bone.namespaceName), anInterpolationValue);
+		outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+	}
+	else
+	{
+		const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.name), anInterpolationFrame.globalTransforms.at(bone.name), anInterpolationValue);
+		outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+	}
+
 	for (auto& childIndex : bone.children)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue);

@@ -20,9 +20,9 @@ public:
 	unsigned GetStartBoneIndex() const override;
 	void SetBoneIndex(unsigned anIndex);
 
-	bool AddAnimation(const Animation& anAnimation, float aBlendValue);
-	bool AddAnimation(const AnimationLayer& anAnimation, float aBlendValue);
-	bool AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue); // Will add the Animation as an AnimationLayer
+	bool AddAnimation(const Animation& anAnimation, float aBlendValue, std::string* outErrorMessage = nullptr);
+	bool AddAnimation(const AnimationLayer& anAnimation, float aBlendValue, std::string* outErrorMessage = nullptr);
+	bool AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue, std::string* outErrorMessage = nullptr); // Will add the Animation as an AnimationLayer
 
 	bool RemoveAnimation(const Animation& anAnimation, float aBlendValue);
 
@@ -41,6 +41,9 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
+
 	bool IsEndOfLoop() const override;
 
 	bool IsValid() const override;
@@ -49,6 +52,7 @@ public:
 	void SetIsPlayingInReverse(bool aShouldPlayBackwards) override;
 
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
+	bool IsUsingNamespace(const Skeleton* aSkeleton) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
@@ -88,5 +92,8 @@ private:
 	void UpdateMatchingFPS();
 
 	void UpdateAnimations();
+
+	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const;
+	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const;
 };
 

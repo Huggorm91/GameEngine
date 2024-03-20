@@ -7,7 +7,10 @@ class Skeleton
 public:
 	Skeleton() = default;
 	Skeleton(const TGA::FBX::Skeleton& aSkeleton);
+	Skeleton(std::istream& aStream);
 	~Skeleton() = default;
+
+	void Serialize(std::ostream& aStream) const;
 
 	const std::string& GetName() const;
 	const std::string& GetPath() const;
@@ -28,7 +31,7 @@ public:
 	const Socket& GetSocket(const std::string& aName) const;
 
 private:
-	const std::string* path;
+	const std::string* myPath;
 	std::string myName;
 	std::vector<Bone> myBones;
 	std::unordered_map<std::string, size_t> myIndexMap;

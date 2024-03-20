@@ -19,6 +19,10 @@ namespace Crimson
 		Quaternion(const Matrix3x3<T>& aRotationMatrix);
 		~Quaternion() = default;
 
+		void Serialize(std::ostream& aStream) const;
+		void Deserialize(std::istream& aStream);
+
+		// This returns the angle in radians
 		Vector3<T> GetAsEuler() const;
 		void SetFromEuler(Vector3<T> aRadianRotation);
 
@@ -163,7 +167,18 @@ namespace Crimson
 		SetFromRotationMatrix(aRotationMatrix);
 	}
 
-	// This returns the angle in radians
+	template<typename T>
+	inline void Quaternion<T>::Serialize(std::ostream& aStream) const
+	{
+		aStream.write(reinterpret_cast<const char*>(&w), sizeof(w) * 4);
+	}
+
+	template<typename T>
+	inline void Quaternion<T>::Deserialize(std::istream& aStream)
+	{
+		aStream.read(reinterpret_cast<char*>(&w), sizeof(w) * 4);
+	}
+
 	template<typename T>
 	inline Vector3<T> Quaternion<T>::GetAsEuler() const
 	{

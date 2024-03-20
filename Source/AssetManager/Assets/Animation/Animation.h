@@ -49,10 +49,11 @@ public:
 	bool HasData() const override;
 
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
+	bool IsUsingNamespace(const Skeleton* aSkeleton) const override;
 
 	const AnimationData& GetData() const;
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const;
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const;
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 

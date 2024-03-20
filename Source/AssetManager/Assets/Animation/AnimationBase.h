@@ -3,6 +3,7 @@
 #include "GraphicsEngine/GraphicsEngineDefines.h"
 #include "Math/Quaternion.hpp"
 #include "Math/Transform.h"
+#include <bitset>
 
 class Skeleton;
 
@@ -14,6 +15,10 @@ struct AnimationTransform
 	AnimationTransform() = default;
 	AnimationTransform(const Crimson::Matrix4x4f& aMatrix);
 	AnimationTransform(const Crimson::Vector3f& aPosition, const Crimson::QuatF& aRotation);
+
+	void Serialize(std::ostream& aStream) const;
+	void Deserialize(std::istream& aStream);
+
 	Crimson::Matrix4x4f GetAsMatrix() const;
 	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
 };
@@ -28,6 +33,9 @@ struct AnimationFrame
 	std::unordered_map<std::string, bool> triggeredEvents;
 
 	AnimationFrame(const TGA::FBX::Animation::Frame& aFrame);
+	AnimationFrame(std::istream& aStream);
+
+	void Serialize(std::ostream& aStream) const;
 };
 
 struct AnimationData
@@ -41,6 +49,9 @@ struct AnimationData
 	unsigned length;
 
 	AnimationData(const TGA::FBX::Animation& anAnimation);
+	AnimationData(std::istream& aStream);
+
+	void Serialize(std::ostream& aStream) const;
 };
 
 class AnimationBase
@@ -49,13 +60,14 @@ protected:
 	friend class SkeletonEditor;
 	typedef std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> BoneCache;
 public:
-	enum class AnimationType : char
+	enum class AnimationType : unsigned char
 	{
 		Invalid,
 		Animation,
 		AnimationLayer,
 		BlendSpace
 	};
+
 	AnimationBase(AnimationType aType);
 	AnimationBase(const AnimationBase& anAnimation);
 	AnimationBase(AnimationBase&& anAnimation) noexcept;
@@ -109,10 +121,14 @@ public:
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const = 0;
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const = 0;
 
+	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const = 0;
+	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const = 0;
+
 	virtual bool IsValid() const = 0;
 	virtual bool HasData() const = 0;
 
 	virtual bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const = 0;
+	virtual bool IsUsingNamespace(const Skeleton* aSkeleton) const = 0;
 
 	virtual std::shared_ptr<AnimationBase> GetAsSharedPtr() const = 0;
 
@@ -121,6 +137,7 @@ public:
 	//virtual void Serialize(std::ostream& aStream) const = 0;
 	//virtual void Deserialize(std::istream& aStream) = 0;
 
+	void ValidateUsingNamespace(const Skeleton* aSkeleton);
 protected:
 	const Skeleton* mySkeleton;
 	BoneCache* myBoneCache;
@@ -129,9 +146,16 @@ protected:
 	float myAnimationTimer;
 	float myInterpolationTimer;
 	AnimationType myType;
-	bool myIsPlaying;
-	bool myIsLooping;
-	bool myIsPlayingInReverse;
+
+	enum Flags
+	{
+		eIsPlaying,
+		eIsLooping,
+		eIsReversing,
+		eIsUsingNamespace,
+		eFlagCount
+	};
+	std::bitset<eFlagCount> myFlags;
 };
 
 std::shared_ptr<AnimationBase> LoadAnimationFromJson(const std::string& aPath, const Json::Value& aJson);
