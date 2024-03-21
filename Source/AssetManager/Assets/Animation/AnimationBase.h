@@ -128,7 +128,7 @@ public:
 	virtual bool HasData() const = 0;
 
 	virtual bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const = 0;
-	virtual bool IsUsingNamespace(const Skeleton* aSkeleton) const = 0;
+	bool IsUsingNamespace() const ;
 
 	virtual std::shared_ptr<AnimationBase> GetAsSharedPtr() const = 0;
 
@@ -137,7 +137,7 @@ public:
 	//virtual void Serialize(std::ostream& aStream) const = 0;
 	//virtual void Deserialize(std::istream& aStream) = 0;
 
-	void ValidateUsingNamespace(const Skeleton* aSkeleton);
+	virtual void ValidateUsingNamespace(const Skeleton* aSkeleton) = 0;
 protected:
 	const Skeleton* mySkeleton;
 	BoneCache* myBoneCache;

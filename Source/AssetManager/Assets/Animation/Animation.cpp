@@ -26,7 +26,7 @@ bool Animation::operator==(const Animation& anAnimation) const
 
 bool Animation::Update()
 {
-	if (!myData)
+	if (!myData || !myFlags[eIsPlaying])
 	{
 		return false;
 	}
@@ -71,7 +71,7 @@ bool Animation::Update()
 void Animation::Init(const Json::Value& aJson)
 {
 	AnimationBase::Init(aJson);
-	myData = AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString());
+	myData = AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString());	
 }
 
 const std::string& Animation::GetPath() const
@@ -255,16 +255,6 @@ bool Animation::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outError
 	return true;
 }
 
-bool Animation::IsUsingNamespace(const Skeleton* aSkeleton) const
-{
-	const auto& frame = myData->frames.back();
-	if (frame.globalTransforms.find(aSkeleton->GetBone(0).namespaceName) != frame.globalTransforms.end())
-	{
-		return true;
-	}
-	return false;
-}
-
 const AnimationData& Animation::GetData() const
 {
 	return *myData;
@@ -291,6 +281,12 @@ std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransform
 std::shared_ptr<AnimationBase> Animation::GetAsSharedPtr() const
 {
 	return std::make_shared<Animation>(*this);
+}
+
+void Animation::ValidateUsingNamespace(const Skeleton* aSkeleton)
+{
+	const auto& transforms = myData->frames.back().globalTransforms;
+	myFlags[eIsUsingNamespace] = transforms.find(aSkeleton->GetBone(0).namespaceName) != transforms.end();
 }
 
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const

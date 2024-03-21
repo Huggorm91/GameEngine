@@ -20,7 +20,7 @@ SkeletonEditor::SkeletonEditor() :
 	myPlaybackMultiplier(1.f),
 	myTargetFPS(60.f),
 	myEditorTimeScale(0.f),
-	myAnimation(std::make_shared<Animation>()),
+	myAnimation(nullptr),
 	mySkeleton(nullptr),
 	myMeshTexture(nullptr),
 	myMesh(nullptr),
@@ -121,7 +121,11 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 		}
 	}
 
-	CheckSkeletonAnimationMatching();
+	if (myAnimation)
+	{
+		CheckSkeletonAnimationMatching();
+	}
+
 	if (myHasMatchingBones)
 	{
 		myAnimation->Init(myBoneTransforms, mySkeleton);
@@ -180,8 +184,11 @@ void SkeletonEditor::Activate()
 	myEditorTimeScale = Crimson::Timer::GetTimeScale();
 	Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
 
-	GraphicsEngine::Get().SetLightMode(GraphicsEngine::LightMode::IgnoreLight);
-	GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(false);
+	auto& engine = GraphicsEngine::Get();
+	engine.SetDebugMode(GraphicsEngine::DebugMode::Default);
+	engine.SetLightMode(GraphicsEngine::LightMode::IgnoreLight);
+	engine.SetRenderMode(GraphicsEngine::RenderMode::Mesh);
+	engine.GetLineDrawer().SetUsingDepthBuffer(false);
 	for (auto& [bone, line] : myLines)
 	{
 		line.SetActive(true);
@@ -285,16 +292,13 @@ void SkeletonEditor::CreateSkeletonInspector()
 			DrawFrame();
 		}
 
-		if (myShouldRenderMesh)
+		auto color = myMesh->GetColor();
+		if (ImGui::ColorEdit4("Mesh Color", &color.x))
 		{
-			auto color = myMesh->GetColor();
-			if (ImGui::ColorEdit4("Mesh Color", &color.x))
-			{
-				myMesh->SetColor(color);
-			}
-
-			CreateTexturePicker();
+			myMesh->SetColor(color);
 		}
+
+		CreateTexturePicker();
 
 		ImGui::Separator();
 
@@ -446,6 +450,12 @@ void SkeletonEditor::CreateAnimationInspector()
 {
 	if (ImGui::Begin("Animation Inspector"))
 	{
+		if (!myAnimation)
+		{
+			ImGui::End();
+			return;
+		}
+
 		if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
 		{
 			// Animation & AnimationLayer
@@ -1016,7 +1026,7 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 		myLines.at(mySelectedBone).UpdateColor(mySelectedColor);
 	}
 
-	if (myIsPlayingAnimation)
+	if (myAnimation)
 	{
 		if (auto animationPtr = std::dynamic_pointer_cast<Animation>(myAnimation))
 		{

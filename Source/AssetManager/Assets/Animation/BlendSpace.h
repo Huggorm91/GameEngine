@@ -12,6 +12,7 @@ public:
 
 	bool Update() override;
 
+	void Init(BoneCache& aBoneCache, const Skeleton* aSkeleton) override;
 	void Init(const Json::Value& aJson) override;
 
 	const std::string& GetName() const;
@@ -52,7 +53,6 @@ public:
 	void SetIsPlayingInReverse(bool aShouldPlayBackwards) override;
 
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
-	bool IsUsingNamespace(const Skeleton* aSkeleton) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
@@ -60,6 +60,9 @@ public:
 
 	void LoadFromJson(const Json::Value& aJson, const std::string& aPath);
 	Json::Value CreateJson() const;
+
+	// Will be set to true if at least 1 of the animations uses namespace
+	void ValidateUsingNamespace(const Skeleton* aSkeleton) override;
 
 private:
 	struct BlendData

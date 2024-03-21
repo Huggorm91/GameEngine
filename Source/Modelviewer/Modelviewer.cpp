@@ -590,9 +590,9 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
-	RHI::BeginEvent(L"NodeEditor Render");
-	myScriptGraphEditor->Render();
-	RHI::EndEvent();
+	//RHI::BeginEvent(L"NodeEditor Render");
+	//myScriptGraphEditor->Render();
+	//RHI::EndEvent();
 
 	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
@@ -710,6 +710,10 @@ void ModelViewer::RedoCommand()
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
+	if (!myIsSceneActive)
+	{
+		return;
+	}
 	auto& engine = GraphicsEngine::Get();
 	if (anEvent == Crimson::eInputEvent::KeyDown)
 	{
@@ -755,6 +759,10 @@ void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 
 void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 {
+	if (!myIsSceneActive)
+	{
+		return;
+	}
 	if (aValue < 1.5f)
 	{
 		return;

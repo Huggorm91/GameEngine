@@ -14,6 +14,7 @@ public:
 
 	bool Update() override;
 
+	using AnimationBase::Init;
 	void Init(const Json::Value& aJson) override;
 
 	const std::string& GetPath() const override;
@@ -49,7 +50,6 @@ public:
 	bool HasData() const override;
 
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
-	bool IsUsingNamespace(const Skeleton* aSkeleton) const override;
 
 	const AnimationData& GetData() const;
 	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
@@ -59,6 +59,8 @@ public:
 
 	//void Serialize(std::ostream& aStream) const override;
 	//void Deserialize(std::istream& aStream) override;
+
+	void ValidateUsingNamespace(const Skeleton* aSkeleton) override;
 
 protected:
 	const AnimationData* myData;

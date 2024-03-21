@@ -108,7 +108,10 @@ void AnimatedMeshComponent::SetPlayInReverse(bool aShouldPlayInReverse)
 void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
 	myAnimation = anAnimation;
-	myAnimation->Init(myBoneTransformCache, mySkeleton);
+	if (myAnimation)
+	{
+		myAnimation->Init(myBoneTransformCache, mySkeleton);
+	}	
 }
 
 void AnimatedMeshComponent::SetTargetFPS(float aFPS)

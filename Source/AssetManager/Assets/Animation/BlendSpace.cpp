@@ -16,7 +16,7 @@ BlendSpace::BlendSpace() :
 
 bool BlendSpace::Update()
 {
-	if (myAnimations.empty())
+	if (myAnimations.empty() || !myFlags[eIsPlaying])
 	{
 		return false;
 	}
@@ -90,6 +90,15 @@ bool BlendSpace::Update()
 	return myFlags[eIsPlaying];
 }
 
+void BlendSpace::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
+{
+	AnimationBase::Init(aBoneCache, aSkeleton);
+	for (auto& data : myAnimations)
+	{
+		data.animation->Init(aBoneCache, aSkeleton);
+	}
+}
+
 void BlendSpace::Init(const Json::Value& aJson)
 {
 	AnimationBase::Init(aJson);
@@ -155,11 +164,6 @@ void BlendSpace::SetBoneIndex(unsigned anIndex)
 
 bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue, std::string* outErrorMessage)
 {
-	if (myAnimations.empty())
-	{
-		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
-	}
-
 	if (myBoneIndex == 0u)
 	{
 		myAnimations.emplace_back(BlendData(std::make_shared<Animation>(anAnimation), aBlendValue));
@@ -177,7 +181,6 @@ bool BlendSpace::AddAnimation(const AnimationLayer& anAnimation, float aBlendVal
 {
 	if (myAnimations.empty())
 	{
-		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
 		myBoneIndex = anAnimation.GetStartBoneIndex();
 		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation), aBlendValue));
 		AddInternal();
@@ -203,7 +206,6 @@ bool BlendSpace::AddAnimation(const Animation& anAnimation, unsigned aBoneIndex,
 {
 	if (myAnimations.empty())
 	{
-		myFlags[eIsUsingNamespace] = anAnimation.IsUsingNamespace(mySkeleton);
 		myBoneIndex = aBoneIndex;
 		myAnimations.emplace_back(BlendData(std::make_shared<AnimationLayer>(anAnimation, aBoneIndex), aBlendValue));
 		AddInternal();
@@ -528,18 +530,6 @@ bool BlendSpace::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErro
 	return true;
 }
 
-bool BlendSpace::IsUsingNamespace(const Skeleton* aSkeleton) const
-{
-	for (auto& data : myAnimations)
-	{
-		if (!data.animation->IsUsingNamespace(aSkeleton))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
 std::shared_ptr<AnimationBase> BlendSpace::GetAsSharedPtr() const
 {
 	return std::make_shared<BlendSpace>(*this);
@@ -602,6 +592,19 @@ Json::Value BlendSpace::CreateJson() const
 	return result;
 }
 
+void BlendSpace::ValidateUsingNamespace(const Skeleton* aSkeleton)
+{
+	myFlags[eIsUsingNamespace] = false;
+	for (auto& data : myAnimations)
+	{
+		data.animation->ValidateUsingNamespace(aSkeleton);
+		if (data.animation->IsUsingNamespace())
+		{
+			myFlags[eIsUsingNamespace] = true;
+		}
+	}
+}
+
 void BlendSpace::AddInternal()
 {
 	if (myHasMatchingFPS)
@@ -609,7 +612,17 @@ void BlendSpace::AddInternal()
 		UpdateMatchingFPS();
 	}
 	const auto& data = myAnimations.back();
-	data.animation->ValidateUsingNamespace(mySkeleton);
+
+	if (mySkeleton)
+	{
+		data.animation->Init(*myBoneCache, mySkeleton);
+		data.animation->ValidateUsingNamespace(mySkeleton);
+		if (data.animation->IsUsingNamespace())
+		{
+			myFlags[eIsUsingNamespace] = true;
+		}
+	}
+	
 	if (myLongestAnimation)
 	{
 		if (data.animation->GetData().length > myLongestAnimation->GetData().length)
@@ -659,4 +672,16 @@ void BlendSpace::UpdateAnimations()
 			}
 		}
 	}
+}
+
+void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
+{
+	assert(!"Not Implemented!");
+	outTransforms; anIndex; aFrame; aParentTransform;
+}
+
+void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
+{
+	assert(!"Not Implemented!");
+	outTransforms; anIndex; aCurrentFrame; anInterpolationFrame; anInterpolationValue; aParentTransform;
 }

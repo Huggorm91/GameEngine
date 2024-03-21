@@ -9,6 +9,7 @@ public:
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
 
+	using Animation::Init;
 	void Init(const Json::Value& aJson) override;
 
 	unsigned GetStartBoneIndex() const override;
@@ -18,8 +19,8 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const;
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const;
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
+	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 

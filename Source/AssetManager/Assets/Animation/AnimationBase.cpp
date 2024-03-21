@@ -267,9 +267,9 @@ void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 {
 	myBoneCache = &aBoneCache;
 	mySkeleton = aSkeleton;
-	ValidateUsingNamespace(aSkeleton);
 	if (IsValid())
 	{
+		ValidateUsingNamespace(aSkeleton);
 		UpdateBoneCache(mySkeleton, *myBoneCache);
 	}
 }
@@ -368,6 +368,11 @@ bool AnimationBase::IsValid() const
 	return mySkeleton && myBoneCache;
 }
 
+bool AnimationBase::IsUsingNamespace() const
+{
+	return myFlags[eIsUsingNamespace];
+}
+
 Json::Value AnimationBase::ToJson() const
 {
 	Json::Value result;
@@ -378,11 +383,6 @@ Json::Value AnimationBase::ToJson() const
 	result["IsPlayingInReverse"] = myFlags[eIsReversing];
 	result["UsesNamespace"] = myFlags[eIsUsingNamespace];
 	return result;
-}
-
-void AnimationBase::ValidateUsingNamespace(const Skeleton* aSkeleton)
-{
-	myFlags[eIsUsingNamespace] = IsUsingNamespace(aSkeleton);
 }
 
 std::shared_ptr<AnimationBase> LoadAnimationFromJson(const std::string& aPath, const Json::Value& aJson)
