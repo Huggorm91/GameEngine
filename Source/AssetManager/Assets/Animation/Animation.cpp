@@ -47,7 +47,7 @@ bool Animation::Update()
 			}
 		} while (myAnimationTimer >= myData->frameDelta);
 
-		if (mySkeleton && myBoneCache)
+		if (AnimationBase::IsValid())
 		{
 			UpdateBoneCache(mySkeleton, *myBoneCache);
 		}
@@ -59,7 +59,7 @@ bool Animation::Update()
 		{
 			myInterpolationTimer -= myTargetFrameDelta;
 
-			if (mySkeleton && myBoneCache)
+			if (AnimationBase::IsValid())
 			{
 				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
 			}
@@ -71,7 +71,7 @@ bool Animation::Update()
 void Animation::Init(const Json::Value& aJson)
 {
 	AnimationBase::Init(aJson);
-	myData = AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString());	
+	myData = AssetManager::GetAsset<AnimationData*>(aJson["Path"].asString());
 }
 
 const std::string& Animation::GetPath() const
@@ -91,7 +91,7 @@ float Animation::GetFPS() const
 
 float Animation::GetFrameDelta() const
 {
-	return myData->frameDelta;
+	return myTargetFrameDelta > 0.f ? myTargetFrameDelta : myData->frameDelta;
 }
 
 unsigned Animation::GetFrameCount() const

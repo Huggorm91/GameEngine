@@ -45,7 +45,7 @@ bool BlendSpace::Update()
 				}
 			} while (myAnimationTimer >= frameDelta);
 
-			if (mySkeleton && myBoneCache)
+			if (AnimationBase::IsValid())
 			{
 				UpdateBoneCache(mySkeleton, *myBoneCache);
 			}
@@ -56,7 +56,7 @@ bool BlendSpace::Update()
 			if (myInterpolationTimer >= myTargetFrameDelta)
 			{
 				myInterpolationTimer -= myTargetFrameDelta;
-				if (mySkeleton && myBoneCache)
+				if (AnimationBase::IsValid())
 				{
 					UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / frameDelta);
 				}
@@ -160,6 +160,11 @@ void BlendSpace::SetBoneIndex(unsigned anIndex)
 			myAnimations.emplace_back(BlendData(data));
 		}
 	}
+}
+
+float BlendSpace::GetFrameDelta() const
+{
+	return (myTargetFrameDelta > 0.f || !myHasMatchingFPS) ? myTargetFrameDelta : myLongestAnimation->GetFrameDelta();
 }
 
 bool BlendSpace::AddAnimation(const Animation& anAnimation, float aBlendValue, std::string* outErrorMessage)

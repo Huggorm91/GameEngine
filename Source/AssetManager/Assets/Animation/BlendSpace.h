@@ -21,6 +21,8 @@ public:
 	unsigned GetStartBoneIndex() const override;
 	void SetBoneIndex(unsigned anIndex);
 
+	float GetFrameDelta() const override;
+
 	bool AddAnimation(const Animation& anAnimation, float aBlendValue, std::string* outErrorMessage = nullptr);
 	bool AddAnimation(const AnimationLayer& anAnimation, float aBlendValue, std::string* outErrorMessage = nullptr);
 	bool AddAnimation(const Animation& anAnimation, unsigned aBoneIndex, float aBlendValue, std::string* outErrorMessage = nullptr); // Will add the Animation as an AnimationLayer

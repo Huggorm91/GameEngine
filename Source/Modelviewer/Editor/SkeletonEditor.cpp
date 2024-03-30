@@ -62,7 +62,7 @@ void SkeletonEditor::Update()
 
 	if (myIsPlayingAnimation)
 	{
-		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetTargetFrameDelta();
+		const bool hasStepped = myAnimation->myInterpolationTimer + Crimson::Timer::GetDeltaTime() >= myAnimation->GetFrameDelta();
 		myAnimation->Update();
 		if (hasStepped)
 		{

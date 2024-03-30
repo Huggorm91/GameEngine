@@ -21,7 +21,7 @@ public:
 	unsigned GetStartBoneIndex() const override;
 
 	float GetFPS() const;
-	float GetFrameDelta() const;
+	float GetFrameDelta() const override;
 	unsigned GetFrameCount() const;
 
 	void SetToFirstFrame() override;

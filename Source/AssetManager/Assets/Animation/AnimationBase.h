@@ -95,8 +95,10 @@ public:
 
 	void ResetTimer();
 
-	void SetTargetFPS(float anFPS);
-	float GetTargetFrameDelta() const;
+	void SetAdditiveAnimation(bool aState);
+
+	void SetTargetFPS(float aFPS);
+	virtual float GetFrameDelta() const = 0;
 
 	void SetIsLooping(bool aShouldLoop);
 	void ToogleLooping();
@@ -153,6 +155,7 @@ protected:
 		eIsLooping,
 		eIsReversing,
 		eIsUsingNamespace,
+		eIsAdditive,
 		eFlagCount
 	};
 	std::bitset<eFlagCount> myFlags;

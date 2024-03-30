@@ -323,14 +323,14 @@ void AnimationBase::ResetTimer()
 	myInterpolationTimer = 0.f;
 }
 
-void AnimationBase::SetTargetFPS(float anFPS)
+void AnimationBase::SetAdditiveAnimation(bool aState)
 {
-	myTargetFrameDelta = 1.f / anFPS;
+	myFlags[eIsAdditive] = aState;
 }
 
-float AnimationBase::GetTargetFrameDelta() const
+void AnimationBase::SetTargetFPS(float aFPS)
 {
-	return myTargetFrameDelta;
+	myTargetFrameDelta = 1.f / aFPS;
 }
 
 void AnimationBase::SetIsLooping(bool aShouldLoop)

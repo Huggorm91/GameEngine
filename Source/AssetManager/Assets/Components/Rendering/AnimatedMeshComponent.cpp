@@ -11,6 +11,12 @@ AnimatedMeshComponent::AnimatedMeshComponent() :
 	mySkeleton(nullptr)
 {}
 
+AnimatedMeshComponent::AnimatedMeshComponent(ComponentType aType) :
+	MeshComponent(aType),
+	mySkeleton(nullptr)
+{
+}
+
 AnimatedMeshComponent::AnimatedMeshComponent(const Json::Value& aJson) :
 	MeshComponent(aJson),
 	myAnimation(aJson["Animation"].isNull() ? nullptr : LoadAnimationFromJson(aJson["Animation"].asString(), aJson["AnimationData"])),
@@ -48,10 +54,7 @@ void AnimatedMeshComponent::Update()
 		return;
 	}
 
-	if (myAnimation->IsPlaying())
-	{
-		myAnimation->Update();
-	}
+	myAnimation->Update();
 
 	Render();
 }
@@ -111,7 +114,7 @@ void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& a
 	if (myAnimation)
 	{
 		myAnimation->Init(myBoneTransformCache, mySkeleton);
-	}	
+	}
 }
 
 void AnimatedMeshComponent::SetTargetFPS(float aFPS)

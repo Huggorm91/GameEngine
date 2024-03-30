@@ -6,11 +6,12 @@
 BEGIN_COMPONENT(AnimatedMeshComponent, MeshComponent)
 public:
 	AnimatedMeshComponent();
+	AnimatedMeshComponent(ComponentType aType);
 	AnimatedMeshComponent(const Json::Value& aJson);
 	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
-	~AnimatedMeshComponent() = default;
+	virtual ~AnimatedMeshComponent() = default;
 	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent);
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
@@ -20,18 +21,19 @@ public:
 	void Init(GameObject* aParent) override;
 	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton);
 
-	void SetLooping(bool aIsLooping);
-	void ToogleLooping();
+	virtual void SetLooping(bool aIsLooping);
+	virtual void ToogleLooping();
 	bool IsLooping() const;
 
-	void SetPlayInReverse(bool aShouldPlayInReverse);
+	virtual void SetPlayInReverse(bool aShouldPlayInReverse);
 
-	void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
-	void SetTargetFPS(float aFPS);
+	virtual void SetTargetFPS(float aFPS);
 
-	void StartAnimation();
-	void StopAnimation();
-	void PauseAnimation();
+	virtual void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+
+	virtual void StartAnimation();
+	virtual void StopAnimation();
+	virtual void PauseAnimation();
 
 	void ResetBoneCache();
 
@@ -47,7 +49,7 @@ public:
 
 	Json::Value ToJson() const override;
 
-private:
+protected:
 	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransformCache;
 	std::shared_ptr<AnimationBase> myAnimation;
 	Skeleton* mySkeleton;
