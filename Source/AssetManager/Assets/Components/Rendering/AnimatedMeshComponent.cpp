@@ -43,6 +43,7 @@ AnimatedMeshComponent& AnimatedMeshComponent::operator=(const AnimatedMeshCompon
 	if (aComponent.myAnimation)
 	{
 		myAnimation = aComponent.myAnimation->GetAsSharedPtr();
+		myAnimation->Init(myBoneTransformCache, mySkeleton);
 	}
 	return *this;
 }
@@ -55,8 +56,17 @@ void AnimatedMeshComponent::Update()
 	}
 
 	myAnimation->Update();
-
 	Render();
+}
+
+void AnimatedMeshComponent::UpdateNoRender()
+{
+	if (!myIsActive || !myAnimation)
+	{
+		return;
+	}
+
+	myAnimation->Update();
 }
 
 void AnimatedMeshComponent::Render()
@@ -115,6 +125,11 @@ void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& a
 	{
 		myAnimation->Init(myBoneTransformCache, mySkeleton);
 	}
+}
+
+bool AnimatedMeshComponent::HasAnimation() const
+{
+	return myAnimation != nullptr;
 }
 
 void AnimatedMeshComponent::SetTargetFPS(float aFPS)

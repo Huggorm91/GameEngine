@@ -3,14 +3,47 @@
 
 AnimationControllerComponent::AnimationControllerComponent() :
 	AnimatedMeshComponent(ComponentType::AnimationController),
-	myAnimationDelta(0.f)
+	myAnimationDelta(0.f),
+	myAnimationTimer(0.f)
 {}
+
+AnimationControllerComponent::AnimationControllerComponent(const AnimatedMeshComponent& aMeshComponent) :
+	AnimatedMeshComponent(aMeshComponent),
+	myAnimationDelta(0.f),
+	myAnimationTimer(0.f)
+{
+	if (myAnimation)
+	{
+		myAnimationDelta = myAnimation->GetFrameDelta();
+	}
+}
 
 AnimationControllerComponent::AnimationControllerComponent(const Json::Value& aJson) :
 	AnimatedMeshComponent(aJson)
 {}
 
+AnimationControllerComponent& AnimationControllerComponent::operator=(const AnimatedMeshComponent& aComponent)
+{
+	AnimatedMeshComponent::operator=(aComponent);
+	for (auto& animation : myAdditiveAnimations)
+	{
+		animation->Init(myBoneTransformCache, mySkeleton);
+	}
+	return *this;
+}
+
 void AnimationControllerComponent::Update()
+{
+	if (!myIsActive)
+	{
+		return;
+	}
+
+	UpdateNoRender();
+	Render();
+}
+
+void AnimationControllerComponent::UpdateNoRender()
 {
 	if (!myIsActive || !myAnimation)
 	{
@@ -19,12 +52,11 @@ void AnimationControllerComponent::Update()
 
 	if (myAdditiveAnimations.empty())
 	{
-		AnimatedMeshComponent::Update();
+		myAnimation->Update();
 	}
 	else
 	{
 		// Logic to manually step through animations
-		Render();
 	}
 }
 
@@ -41,7 +73,7 @@ void AnimationControllerComponent::SetAnimation(const std::shared_ptr<AnimationB
 {
 	myAdditiveAnimations.clear();
 	AnimatedMeshComponent::SetAnimation(anAnimation);
-	if (myAnimationDelta <= 0.f)
+	if (myAnimationDelta <= 0.f && anAnimation)
 	{
 		myAnimationDelta = anAnimation->GetFrameDelta();
 	}
@@ -87,7 +119,7 @@ void AnimationControllerComponent::StopAnimation()
 	{
 		animation->StopAnimation();
 		animation->SetToFirstFrame();
-	}	
+	}
 }
 
 void AnimationControllerComponent::PauseAnimation()
@@ -129,6 +161,16 @@ void AnimationControllerComponent::SetPlayInReverse(bool aShouldPlayInReverse)
 void AnimationControllerComponent::SetTargetFPS(float aFPS)
 {
 	myAnimationDelta = 1.f / aFPS;
+}
+
+void AnimationControllerComponent::UpdateBoneCache()
+{
+	ResetBoneCache();
+	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
+	for (auto& animation : myAdditiveAnimations)
+	{
+		animation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
+	}
 }
 
 void AnimationControllerComponent::CreateImGuiComponents(const std::string& aWindowName)

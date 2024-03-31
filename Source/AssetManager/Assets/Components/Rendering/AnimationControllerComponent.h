@@ -4,17 +4,21 @@
 #include "..\..\Animation\Skeleton.h"
 
 BEGIN_COMPONENT(AnimationControllerComponent, AnimatedMeshComponent)
+	friend class SkeletonEditor;
 public:
 	AnimationControllerComponent();
+	AnimationControllerComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimationControllerComponent(const AnimationControllerComponent& aComponent) = default;
 	AnimationControllerComponent(AnimationControllerComponent&& aComponent) noexcept = default;
 	AnimationControllerComponent(const Json::Value& aJson);
 	~AnimationControllerComponent() = default;
 
+	AnimationControllerComponent& operator=(const AnimatedMeshComponent& aComponent);
 	AnimationControllerComponent& operator=(const AnimationControllerComponent& aComponent) = default;
 	AnimationControllerComponent& operator=(AnimationControllerComponent&& aComponent) noexcept = default;
 
 	void Update() override;
+	void UpdateNoRender() override;
 
 	using AnimatedMeshComponent::Init;
 	void Init(GameObject* aParent) override;
@@ -34,10 +38,13 @@ public:
 
 	void SetTargetFPS(float aFPS)override;
 
+	void UpdateBoneCache();
+
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 
 private:
 	std::vector<std::shared_ptr<AnimationBase>> myAdditiveAnimations;
 	float myAnimationDelta;
+	float myAnimationTimer;
 };

@@ -16,6 +16,8 @@ public:
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
+	virtual void UpdateNoRender();
+
 	void Render() override;
 
 	void Init(GameObject* aParent) override;
@@ -30,6 +32,7 @@ public:
 	virtual void SetTargetFPS(float aFPS);
 
 	virtual void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+	bool HasAnimation() const;
 
 	virtual void StartAnimation();
 	virtual void StopAnimation();
