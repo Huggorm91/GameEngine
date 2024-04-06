@@ -50,6 +50,8 @@ namespace Crimson
 		Quaternion<T> operator/(const T& aScalar) const;
 
 		Quaternion<T> operator-() const;
+
+		bool operator==(const Quaternion<T>& aQuaternion) const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,5 +422,11 @@ namespace Crimson
 	inline Quaternion<T> Quaternion<T>::operator-() const
 	{
 		return Quaternion(-w, -x, -y, -z);
+	}
+
+	template<typename T>
+	inline bool Quaternion<T>::operator==(const Quaternion<T>& aQuaternion) const
+	{
+		return w == aQuaternion.w && x == aQuaternion.x && y == aQuaternion.y && z == aQuaternion.z;
 	}
 }

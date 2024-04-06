@@ -20,17 +20,26 @@ public:
 	Transform operator+(const Transform& aTransform) const;
 	Transform operator-(const Transform& aTransform) const;
 
+	void SetMatrix(const Crimson::Matrix4x4f& aMatrix);
+
 	void SetPosition(const Crimson::Vector3f& aPosition);
+	void AddToPosition(const Crimson::Vector3f& aChange);
 	const Crimson::Vector3f& GetPosition() const;
 
-	void SetRotation(const Crimson::Vector3f& aRotation);
-	const Crimson::Vector3f& GetRotation() const;
+	void SetRotationRadian(const Crimson::Vector3f& aRotation);
+	void SetRotationDegree(const Crimson::Vector3f& aRotation);
+	void AddToRotationRadian(const Crimson::Vector3f& aChange);
+	void AddToRotationDegree(const Crimson::Vector3f& aChange);
+	const Crimson::Vector3f& GetRotationRadian() const;
+	Crimson::Vector3f GetRotationDegree() const;
 
 	void SetScale(const Crimson::Vector3f& aScale);
+	void AddToScale(const Crimson::Vector3f& aChange);
 	const Crimson::Vector3f& GetScale() const;
 
 	const Crimson::Vector4f& GetWorldPosition() const;
 	const Crimson::Matrix4x4f& GetTransformMatrix() const;
+	const Crimson::Matrix4x4f GetLocalTransformMatrix() const;
 
 	const Transform* GetParent() const;
 	Transform* GetParent();
@@ -40,19 +49,26 @@ public:
 	void SetParent(Transform* aParent);
 	void RemoveParent();
 
-	void Update();
+	void Update(const bool aForceUpdate = false);
+
+	void SetForwardVector(const Crimson::Vector3f& aDirection);
+	Crimson::Vector3f GetForwardVector() const;
+	Crimson::Vector3f GetRightVector() const;
+	void SetUpVector(const Crimson::Vector3f& aDirection);
+	Crimson::Vector3f GetUpVector() const;
 
 	Json::Value ToJson() const;
 	void Serialize(std::ostream& aStream) const;
 	void Deserialize(std::istream& aStream);
 
 private:
-	bool myHasChanged;
+	bool myHasChangedInternal;
+	bool myHasChangedThisFrame;
 
 	Transform* myParent;
 
 	Crimson::Vector3f myPosition;
-	Crimson::Vector3f myRotation;
+	Crimson::Vector3f myRotation; // Stored as radians
 	Crimson::Vector3f myScale;
 
 	Crimson::Vector4f myWorldPosition;

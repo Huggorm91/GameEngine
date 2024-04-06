@@ -31,6 +31,7 @@ private:
 	bool myShouldRenderMesh;
 	bool myShouldRenderSkeleton;
 	bool myIsEditingBlendSpace;
+	bool myIsUsingRootMotion;
 
 	int myPlayCount;
 
@@ -45,7 +46,7 @@ private:
 	Texture* myMeshTexture;
 	AnimationControllerComponent* myMesh; // Points to myModel's AnimationControllerComponent
 	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>* myBoneTransforms; // Points to myMesh's BoneCache
-	const Transform* mySkeletonOffset; // Points to myModels Transform
+	Transform* mySkeletonOffset; // Points to myModels Transform
 
 	const Bone* mySelectedBone;
 	const Bone* myHoveredBone;
@@ -86,6 +87,9 @@ private:
 
 	void CreateAssetBrowser();
 	void CreateFileButton(const std::string& aFile, float anIconSize, bool anIsAnimation);
+
+	void SetAnimation(const std::string& aPath);
+	void AddAnimation(const std::string& aPath);
 
 	void UpdateAvailableFiles();
 

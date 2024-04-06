@@ -20,10 +20,10 @@ void EditCmd_ChangeMultipleGameObjects::Undo()
 	}
 	case EditCmd_ChangeMultipleGameObjects::TransformType::Rotation:
 	{
-		myEditorTransform->SetRotation(myEditorTransform->GetRotation() - myChange);
+		myEditorTransform->SetRotationDegree(myEditorTransform->GetRotationDegree() - myChange);
 		for (auto& object : myObjects)
 		{
-			object->SetRotation(object->GetTransform().GetRotation() - myChange);
+			object->SetRotation(object->GetTransform().GetRotationDegree() - myChange);
 		}
 		break;
 	}
@@ -56,10 +56,10 @@ void EditCmd_ChangeMultipleGameObjects::Execute()
 	}
 	case EditCmd_ChangeMultipleGameObjects::TransformType::Rotation:
 	{
-		myEditorTransform->SetRotation(myEditorTransform->GetRotation() + myChange);
+		myEditorTransform->SetRotationDegree(myEditorTransform->GetRotationDegree() + myChange);
 		for (auto& object : myObjects)
 		{
-			object->SetRotation(object->GetTransform().GetRotation() + myChange);
+			object->SetRotation(object->GetTransform().GetRotationDegree() + myChange);
 		}
 		break;
 	}

@@ -18,7 +18,7 @@ public:
 
 	void Release();
 
-	void Init();
+	void Init(bool aStartInSkeletonEditor);
 	void Update();
 	void Render();
 

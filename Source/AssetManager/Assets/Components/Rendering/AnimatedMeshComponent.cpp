@@ -4,7 +4,6 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
-#include "Time/Timer.h"
 
 AnimatedMeshComponent::AnimatedMeshComponent() :
 	MeshComponent(ComponentType::AnimatedMesh),
@@ -71,7 +70,7 @@ void AnimatedMeshComponent::UpdateNoRender()
 
 void AnimatedMeshComponent::Render()
 {
-	if (!myIsActive)
+	if (!myIsActive || mySkeleton == nullptr)
 	{
 		return;
 	}
@@ -121,9 +120,13 @@ void AnimatedMeshComponent::SetPlayInReverse(bool aShouldPlayInReverse)
 void AnimatedMeshComponent::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
 	myAnimation = anAnimation;
-	if (myAnimation)
+	if (myAnimation && mySkeleton)
 	{
 		myAnimation->Init(myBoneTransformCache, mySkeleton);
+	}
+	else
+	{
+		ResetBoneCache();
 	}
 }
 
@@ -146,6 +149,7 @@ void AnimatedMeshComponent::StopAnimation()
 {
 	myAnimation->StopAnimation();
 	myAnimation->SetToFirstFrame();
+	myAnimation->ResetTimer();
 	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache);
 }
 
@@ -186,14 +190,15 @@ const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& AnimatedMeshComponent::Ge
 void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	MeshComponent::CreateImGuiComponents(aWindowName);
-	ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetPath()), ImGuiInputTextFlags_ReadOnly);
-	/*if (ImGui::Checkbox("Loop", &myIsLooping) && myAnimationState != AnimationState::Stopped)
+	if (myAnimation)
 	{
-		StartAnimation();
+		ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetPath()), ImGuiInputTextFlags_ReadOnly);
 	}
-	ImGui::Checkbox("Reverse", &myIsPlayingInReverse);
-
-	ImGui::InputFloat("Timer", &myAnimationTimer, 0.f, 0.f, "%.4f", ImGuiInputTextFlags_ReadOnly);*/
+	else
+	{
+		std::string noAnimation = "No Animation selected";
+		ImGui::InputText("Animation", &noAnimation, ImGuiInputTextFlags_ReadOnly);
+	}
 
 	if (ImGui::Button("Start"))
 	{

@@ -1,5 +1,6 @@
 #include "AssetManager.pch.h"
 #include "AnimationControllerComponent.h"
+#include "Time/Timer.h"
 
 AnimationControllerComponent::AnimationControllerComponent() :
 	AnimatedMeshComponent(ComponentType::AnimationController),
@@ -50,14 +51,85 @@ void AnimationControllerComponent::UpdateNoRender()
 		return;
 	}
 
-	if (myAdditiveAnimations.empty())
+	myAnimation->Update();
+
+	if (!myAdditiveAnimations.empty())
 	{
-		myAnimation->Update();
+		for (auto& animation : myAdditiveAnimations)
+		{
+			animation->Update();
+		}
+
+		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		if (myAnimationTimer >= myAnimationDelta)
+		{
+			myAnimationTimer = 0.f;
+
+			auto resultTransforms = myAnimation->GetAdditiveTransforms();
+			for (auto& animation : myAdditiveAnimations)
+			{
+				auto currentTransforms = animation->GetAdditiveTransforms();
+
+				if (resultTransforms.size() < currentTransforms.size())
+				{
+					for (auto& [boneName, transform] : currentTransforms)
+					{
+						if (auto iter = resultTransforms.find(boneName); iter != resultTransforms.end())
+						{
+							iter->second = AnimationTransform::Interpolate(iter->second, transform, 0.5f);
+						}
+						else
+						{
+							resultTransforms.emplace(boneName, transform);
+						}
+					}
+				}
+				else
+				{
+					for (auto& [boneName, transform] : resultTransforms)
+					{
+						if (auto iter = currentTransforms.find(boneName); iter != currentTransforms.end())
+						{
+							transform = AnimationTransform::Interpolate(iter->second, transform, 0.5f);
+						}
+					}
+				}
+			}
+
+			unsigned index = 0;
+			if (myAnimation->IsUsingNamespace()) // If and else should be identical apart from using bone.name vs bone.namespaceName
+			{
+				for (auto& bone : mySkeleton->GetBones())
+				{
+					if (auto iter = resultTransforms.find(bone.namespaceName); iter != resultTransforms.end())
+					{
+						myBoneTransformCache[index] = bone.bindPoseInverse * iter->second.GetAsMatrix();
+					}
+					else
+					{
+						myBoneTransformCache[index] = bone.bindPoseInverse;
+					}
+					++index;
+				}
+			}
+			else
+			{
+				for (auto& bone : mySkeleton->GetBones())
+				{
+					if (auto iter = resultTransforms.find(bone.namespaceName); iter != resultTransforms.end())
+					{
+						myBoneTransformCache[index] = bone.bindPoseInverse * iter->second.GetAsMatrix();
+					}
+					else
+					{
+						myBoneTransformCache[index] = bone.bindPoseInverse;
+					}
+					++index;
+				}
+			}
+		}
 	}
-	else
-	{
-		// Logic to manually step through animations
-	}
+	myAnimation->UpdateRootMotion(Crimson::Timer::GetDeltaTime());
 }
 
 void AnimationControllerComponent::Init(GameObject* aParent)
@@ -73,26 +145,34 @@ void AnimationControllerComponent::SetAnimation(const std::shared_ptr<AnimationB
 {
 	myAdditiveAnimations.clear();
 	AnimatedMeshComponent::SetAnimation(anAnimation);
-	if (myAnimationDelta <= 0.f && anAnimation)
+	if (anAnimation)
 	{
-		myAnimationDelta = anAnimation->GetFrameDelta();
+		if (myAnimationDelta <= 0.f)
+		{
+			myAnimationDelta = anAnimation->GetFrameDelta();
+		}
+		else
+		{
+			myAnimation->SetTargetFrameDelta(myAnimationDelta);
+		}		
 	}
 }
 
-unsigned AnimationControllerComponent::AddAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
+size_t AnimationControllerComponent::AddAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
 	if (myAdditiveAnimations.empty())
 	{
 		myAnimation->SetAdditiveAnimation(true);
 	}
-	const unsigned index = static_cast<unsigned>(myAdditiveAnimations.size());
+	const size_t index = myAdditiveAnimations.size();
 	auto& animation = myAdditiveAnimations.emplace_back(anAnimation);
-	animation->Init(myBoneTransformCache, mySkeleton);
 	animation->SetAdditiveAnimation(true);
+	animation->SetTargetFrameDelta(myAnimationDelta);
+	animation->Init(myBoneTransformCache, mySkeleton);
 	return index;
 }
 
-void AnimationControllerComponent::RemoveAnimation(unsigned anIndex)
+void AnimationControllerComponent::RemoveAnimation(size_t anIndex)
 {
 	assert(anIndex < myAdditiveAnimations.size());
 	myAdditiveAnimations.erase(myAdditiveAnimations.begin() + anIndex);
@@ -119,6 +199,7 @@ void AnimationControllerComponent::StopAnimation()
 	{
 		animation->StopAnimation();
 		animation->SetToFirstFrame();
+		myAnimation->ResetTimer();
 	}
 }
 
@@ -161,6 +242,14 @@ void AnimationControllerComponent::SetPlayInReverse(bool aShouldPlayInReverse)
 void AnimationControllerComponent::SetTargetFPS(float aFPS)
 {
 	myAnimationDelta = 1.f / aFPS;
+	if (myAnimation)
+	{
+		myAnimation->SetTargetFrameDelta(myAnimationDelta);
+		for (auto& animation : myAdditiveAnimations)
+		{
+			animation->SetTargetFrameDelta(myAnimationDelta);
+		}
+	}
 }
 
 void AnimationControllerComponent::UpdateBoneCache()

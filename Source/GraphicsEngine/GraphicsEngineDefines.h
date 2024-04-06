@@ -1,2 +1,2 @@
 #pragma once
-#define MAX_BONE_COUNT 128
+#define MAX_BONE_COUNT 256

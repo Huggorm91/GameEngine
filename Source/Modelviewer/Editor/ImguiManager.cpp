@@ -39,7 +39,7 @@ void ImguiManager::Release()
 	ImGui::DestroyContext();
 }
 
-void ImguiManager::Init()
+void ImguiManager::Init(bool aStartInSkeletonEditor)
 {
 	myModelViewer = &ModelViewer::Get();
 	auto size = GraphicsEngine::Get().GetWindowSize();
@@ -86,6 +86,13 @@ void ImguiManager::Init()
 	{
 		RefreshAvailableFiles();
 		SelectAssetBrowserPath(myAssetPath);
+	}
+
+	if (aStartInSkeletonEditor)
+	{
+		myIsActive = false;
+		myModelViewer->SetIsSceneActive(false);
+		myModelViewer->ActivateSkeletonEditor();
 	}
 }
 

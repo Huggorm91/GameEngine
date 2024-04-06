@@ -16,6 +16,7 @@ SkeletonEditor::SkeletonEditor() :
 	myShouldRenderMesh(true),
 	myShouldRenderSkeleton(true),
 	myIsEditingBlendSpace(false),
+	myIsUsingRootMotion(false),
 	myPlayCount(0),
 	myAnimationTimer(0.f),
 	myPlaybackMultiplier(1.f),
@@ -24,6 +25,7 @@ SkeletonEditor::SkeletonEditor() :
 	mySkeleton(nullptr),
 	myMeshTexture(nullptr),
 	myMesh(nullptr),
+	myBoneTransforms(nullptr),
 	mySkeletonOffset(nullptr),
 	mySelectedBone(nullptr),
 	myHoveredBone(nullptr),
@@ -41,8 +43,9 @@ void SkeletonEditor::Init(float aFoVDegree, float aNearPlane, float aFarPlane, f
 
 	myMesh = &myModel.AddComponent<AnimationControllerComponent>();
 	myMesh->SetTargetFPS(myTargetFPS);
+	myMesh->SetRenderShadow(false);
 	myBoneTransforms = const_cast<std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>*>(&myMesh->GetBoneTransforms());
-	mySkeletonOffset = &myModel.GetTransform();
+	mySkeletonOffset = const_cast<Transform*>(&myModel.GetTransform());
 
 	myBoneColor = ColorManager::GetColor("White");
 	mySelectedColor = ColorManager::GetColor("Red");
@@ -63,10 +66,11 @@ void SkeletonEditor::Update()
 
 	if (myPlayCount > 0)
 	{
-		const bool hasStepped = myMesh->myAnimationTimer + Crimson::Timer::GetDeltaTime() >= myMesh->myAnimationDelta;
 		myMesh->UpdateNoRender();
-		if (hasStepped)
+		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		if (myAnimationTimer >= myMesh->myAnimationDelta)
 		{
+			myAnimationTimer = 0.f;
 			DrawFrame();
 		}
 	}
@@ -108,8 +112,12 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 
 	if (mySkeleton)
 	{
-		*myMesh = AssetManager::GetAsset<AnimatedMeshComponent>(mySkeleton->GetPath());
+		myMesh->SetMesh(AssetManager::GetAsset<AnimatedMeshComponent>(mySkeleton->GetPath()));
 
+		if (mySkeleton->GetBoneCount() > MAX_BONE_COUNT)
+		{
+			myShouldRenderMesh = false;
+		}
 		myRootBone = &mySkeleton->GetBone(0);
 		GenerateSkeletonDrawing();
 	}
@@ -125,8 +133,11 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 	if (myMesh->HasAnimation())
 	{
 		CheckSkeletonAnimationMatching(myMesh->myAnimation);
-		if (myHasMatchingBones) // This entire if should not be needed but better safe than sorry
+		if (myHasMatchingBones || (myIsEditingBlendSpace && !myMesh->myAnimation->HasData()))
 		{
+			myMesh->SetSkeleton(AssetManager::GetAsset<Skeleton*>(mySkeleton->GetPath()));
+
+			// This loop should not be needed but better safe than sorry
 			for (auto& animation : myMesh->myAdditiveAnimations)
 			{
 				CheckSkeletonAnimationMatching(animation);
@@ -136,6 +147,14 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 				}
 			}
 		}
+		else
+		{
+			myMesh->SetSkeleton(nullptr);
+		}
+	}
+	else
+	{
+		myMesh->SetSkeleton(AssetManager::GetAsset<Skeleton*>(mySkeleton->GetPath()));
 	}
 
 	if (myHasMatchingBones)
@@ -146,27 +165,42 @@ void SkeletonEditor::SetSkeleton(Skeleton* aSkeleton, bool aHideLines)
 
 void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
-	if (myHasMatchingBones)
+	bool wasMatching = myHasMatchingBones;
+	if (wasMatching)
 	{
 		ClearLines();
 		GenerateSkeletonDrawing();
 	}
 
 	myIsEditingBlendSpace = false;
+
+	if (!anAnimation)
+	{
+		myHasMatchingBones = false;
+		myMesh->SetAnimation(anAnimation);
+		return;
+	}
+
 	mySelectedAnimationPath = anAnimation->GetPath();
 
 	CheckSkeletonAnimationMatching(anAnimation);
 	if (myHasMatchingBones)
 	{
-		anAnimation->SetTargetFPS(myTargetFPS);
-		anAnimation->SetIsLooping(true);
-		anAnimation->SetIsPlayingInReverse(myIsPlayingInReverse);
+		if (myIsUsingRootMotion)
+		{
+			anAnimation->EnableRootMotion(*mySkeletonOffset);
+		}
 		if (myPlayCount > 0)
 		{
 			myPlayCount = 1;
 			anAnimation->StartAnimation();
 		}
+
 		myMesh->SetAnimation(anAnimation);
+		if (!wasMatching)
+		{
+			myMesh->SetSkeleton(AssetManager::GetAsset<Skeleton*>(mySkeleton->GetPath()));
+		}
 
 		DrawFrame();
 	}
@@ -175,11 +209,15 @@ void SkeletonEditor::SetAnimation(const std::shared_ptr<AnimationBase>& anAnimat
 		myMesh->ResetBoneCache();
 		myMesh->myAnimation = anAnimation;
 	}
+
+	myMesh->myAnimation->SetTargetFPS(myTargetFPS);
+	myMesh->myAnimation->SetIsLooping(true);
+	myMesh->myAnimation->SetIsPlayingInReverse(myIsPlayingInReverse);
 }
 
 void SkeletonEditor::AddAnimation(const std::shared_ptr<AnimationBase>& anAnimation)
 {
-	if (myIsEditingBlendSpace)
+	if (myIsEditingBlendSpace || anAnimation == nullptr || !myHasMatchingBones)
 	{
 		return;
 	}
@@ -269,7 +307,14 @@ void SkeletonEditor::CreateMenubar()
 			{
 				BlendSpace newBlendSpace;
 				newBlendSpace.myName = "NewBlendSpace";
-				SetAnimation(std::make_shared<BlendSpace>(newBlendSpace));
+				newBlendSpace.SetIsLooping(true);
+				myMesh->SetAnimation(std::make_shared<BlendSpace>(newBlendSpace));
+				myIsEditingBlendSpace = true;
+				myHasMatchingBones = true;
+				if (mySkeleton)
+				{
+					DrawFrame();
+				}
 			}
 			if (ImGui::MenuItem("Save"))
 			{
@@ -333,10 +378,20 @@ void SkeletonEditor::CreateSkeletonInspector()
 		}
 		ImGui::SameLine();
 
-		if (ImGui::Checkbox("Show Mesh", &myShouldRenderMesh))
+		const bool disableRender = mySkeleton->GetBoneCount() > MAX_BONE_COUNT;
+
+		if (disableRender)
 		{
-			DrawFrame();
+			ImGui::BeginDisabled();
 		}
+
+		ImGui::Checkbox("Show Mesh", &myShouldRenderMesh);
+
+		if (disableRender)
+		{
+			ImGui::EndDisabled();
+		}
+
 
 		auto color = myMesh->GetColor();
 		if (ImGui::ColorEdit4("Mesh Color", &color.x))
@@ -366,7 +421,7 @@ void SkeletonEditor::CreateSkeletonInspector()
 				myLines.at(mySelectedBone).UpdateColor(mySelectedColor);
 			}
 		}
-		if (ImGui::ColorEdit4("Hovered Bope Color", &myHoveredColor.x))
+		if (ImGui::ColorEdit4("Hovered Bone Color", &myHoveredColor.x))
 		{
 			if (myHoveredBone)
 			{
@@ -378,6 +433,14 @@ void SkeletonEditor::CreateSkeletonInspector()
 
 		const std::string boneCount = "Bones: " + std::to_string(mySkeleton->GetBoneCount());
 		ImGui::Text(boneCount.c_str());
+
+		if (mySkeleton->GetBoneCount() > MAX_BONE_COUNT)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.f, 0.f, 1.f));
+			const std::string warning = "WARNING! Too many bones! Maximum supported amount is: " + std::to_string(MAX_BONE_COUNT);
+			ImGui::Text(warning.c_str());
+			ImGui::PopStyleColor();
+		}
 
 		const std::string socketCount = "Sockets: " + std::to_string(mySkeleton->GetSocketCount());
 		ImGui::Text(socketCount.c_str());
@@ -392,7 +455,7 @@ void SkeletonEditor::CreateSkeletonInspector()
 			}
 		}
 
-		auto rotation = myModel.GetTransform().GetRotation();
+		auto rotation = myModel.GetTransform().GetRotationDegree();
 		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
 			myModel.SetRotation(rotation);
@@ -453,6 +516,15 @@ void SkeletonEditor::CreateBoneList(const Bone& aBone)
 			myHoveredBone = nullptr;
 		}
 		SelectBone(&aBone);
+		const unsigned boneIndex = mySkeleton->GetBoneIndex(aBone.name);
+		SetBone(boneIndex, myMesh->myAnimation);
+		for (auto& animation : myMesh->myAdditiveAnimations)
+		{
+			SetBone(boneIndex, animation);
+		}
+		myMesh->UpdateBoneCache();
+		DrawSkeleton();
+		DrawFrame();
 	}
 
 	if (isOpen)
@@ -513,73 +585,164 @@ void SkeletonEditor::CreateAnimationInspector()
 			Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
 		}
 
+		if (ImGui::Checkbox("Root Motion", &myIsUsingRootMotion))
+		{
+			if (myIsUsingRootMotion)
+			{
+				myMesh->myAnimation->EnableRootMotion(*mySkeletonOffset);
+			}
+			else
+			{
+				myMesh->myAnimation->DisableRootMotion();
+			}
+		}
+
 		ImGui::Separator();
 
-		if (myMesh->myAdditiveAnimations.empty() && !myHasMatchingBones)
-		{
-			PrintAnimationMissmatchError();
-			ImGui::End();
-			return;
-		}
+		{ // Buttons
+			const bool disabledAdd = myIsEditingBlendSpace || mySelectedAnimationPath.empty() || Crimson::GetFileExtension(mySelectedAnimationPath) != AssetManager::GetAnimationExtension();
 
-		switch (myMesh->myAnimation->myType)
-		{
-		case AnimationBase::AnimationType::Animation:
-		{
-			auto animationPtr = std::dynamic_pointer_cast<Animation>(myMesh->myAnimation);
-			CreateAnimationSection(animationPtr.get());
-			break;
-		}
-		case AnimationBase::AnimationType::AnimationLayer:
-		{
-			auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(myMesh->myAnimation);
-			CreateAnimationLayerSection(layerPtr.get());
-			break;
-		}
-		case AnimationBase::AnimationType::BlendSpace:
-		{
-			auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myMesh->myAnimation);
-			CreateBlendSpaceSection(blendPtr.get());
-			break;
-		}
-		default:
-			break;
-		}
-
-		size_t index = 0;
-		for (auto& animation : myMesh->myAdditiveAnimations)
-		{
-			if (!myHasMatchingBones && index + 1 == myMesh->myAdditiveAnimations.size())
+			if (disabledAdd)
 			{
-				PrintAnimationMissmatchError();
+				ImGui::BeginDisabled();
+			}
+
+			if (ImGui::Button("Add Animation"))
+			{
+				if (myMesh->myAnimation)
+				{
+					AddAnimation(mySelectedAnimationPath);
+				}
+				else
+				{
+					SetAnimation(mySelectedAnimationPath);
+				}
+			}
+
+			if (disabledAdd)
+			{
+				ImGui::EndDisabled();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Clear"))
+			{
+				SetAnimation(std::shared_ptr<AnimationBase>());
+				myPlayCount = 0;
+				myIsEditingBlendSpace = false;
 				ImGui::End();
 				return;
 			}
+		}
 
-			switch (animation->myType)
+		{ // Primary Animation
+			if (ImGui::CollapsingHeader("Primary Animation", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-			case AnimationBase::AnimationType::Animation:
+				switch (myMesh->myAnimation->myType)
+				{
+				case AnimationBase::AnimationType::Animation:
+				{
+					auto animationPtr = std::dynamic_pointer_cast<Animation>(myMesh->myAnimation);
+					CreateAnimationSection(animationPtr.get());
+					break;
+				}
+				case AnimationBase::AnimationType::AnimationLayer:
+				{
+					auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(myMesh->myAnimation);
+					CreateAnimationLayerSection(layerPtr.get());
+					break;
+				}
+				case AnimationBase::AnimationType::BlendSpace:
+				{
+					auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(myMesh->myAnimation);
+					CreateBlendSpaceSection(blendPtr.get());
+					break;
+				}
+				default:
+					break;
+				}
+
+				if (mySkeleton)
+				{
+					int boneIndex = myMesh->myAnimation->GetStartBoneIndex();
+					ImGui::Text(mySkeleton->GetBone(boneIndex).namespaceName.c_str());
+					if (ImGui::DragInt("Bone Index", &boneIndex, 1.f, 0, mySkeleton->GetBoneCount() - 1, "%d", ImGuiSliderFlags_AlwaysClamp))
+					{
+						SetBone(boneIndex, myMesh->myAnimation);
+						myMesh->UpdateBoneCache();
+						SelectBone(&mySkeleton->GetBone(boneIndex));
+						DrawFrame();
+					}
+				}
+			}
+		}
+
+		{ // Additive Animations
+			size_t index = 0;
+			for (auto& animation : myMesh->myAdditiveAnimations)
 			{
-				auto animationPtr = std::dynamic_pointer_cast<Animation>(animation);
-				CreateAnimationSection(animationPtr.get());
-				break;
+				if (!myHasMatchingBones && index + 1 == myMesh->myAdditiveAnimations.size())
+				{
+					PrintAnimationMissmatchError();
+					ImGui::End();
+					return;
+				}
+
+				const std::string& text = "Additive Animation " + std::to_string(index + 1);
+				if (ImGui::CollapsingHeader(text.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushID(static_cast<int>(index));
+					if (ImGui::Button("Remove"))
+					{
+						myMesh->RemoveAnimation(index);
+						ImGui::PopID();
+						ImGui::End();
+						return;
+					}
+
+					switch (animation->myType)
+					{
+					case AnimationBase::AnimationType::Animation:
+					{
+						auto animationPtr = std::dynamic_pointer_cast<Animation>(animation);
+						CreateAnimationSection(animationPtr.get());
+						break;
+					}
+					case AnimationBase::AnimationType::AnimationLayer:
+					{
+						auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(animation);
+						CreateAnimationLayerSection(layerPtr.get());
+						break;
+					}
+					case AnimationBase::AnimationType::BlendSpace:
+					{
+						auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(animation);
+						CreateBlendSpaceSection(blendPtr.get());
+						break;
+					}
+					default:
+						break;
+					}
+
+					if (mySkeleton)
+					{
+						int boneIndex = animation->GetStartBoneIndex();
+						ImGui::Text(mySkeleton->GetBone(boneIndex).namespaceName.c_str());
+						if (ImGui::DragInt("Bone Index", &boneIndex, 1.f, 0, mySkeleton->GetBoneCount() - 1, "%d", ImGuiSliderFlags_AlwaysClamp))
+						{
+							SetBone(boneIndex, animation);
+							myMesh->UpdateBoneCache();
+							SelectBone(&mySkeleton->GetBone(boneIndex));
+							DrawFrame();
+						}
+					}
+
+					ImGui::PopID();
+				}
+
+				++index;
 			}
-			case AnimationBase::AnimationType::AnimationLayer:
-			{
-				auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(animation);
-				CreateAnimationLayerSection(layerPtr.get());
-				break;
-			}
-			case AnimationBase::AnimationType::BlendSpace:
-			{
-				auto blendPtr = std::dynamic_pointer_cast<BlendSpace>(animation);
-				CreateBlendSpaceSection(blendPtr.get());
-				break;
-			}
-			default:
-				break;
-			}
-			++index;
 		}
 	}
 	ImGui::End();
@@ -587,6 +750,11 @@ void SkeletonEditor::CreateAnimationInspector()
 
 void SkeletonEditor::CreateAnimationSection(Animation* anAnimation)
 {
+	if (myMesh->myAdditiveAnimations.empty() && !myHasMatchingBones)
+	{
+		PrintAnimationMissmatchError();
+		return;
+	}
 	CreateAnimationInfo(anAnimation);
 
 	ImGui::Separator();
@@ -598,6 +766,11 @@ void SkeletonEditor::CreateAnimationSection(Animation* anAnimation)
 
 void SkeletonEditor::CreateAnimationLayerSection(AnimationLayer* anAnimation)
 {
+	if (myMesh->myAdditiveAnimations.empty() && !myHasMatchingBones)
+	{
+		PrintAnimationMissmatchError();
+		return;
+	}
 	CreateAnimationInfo(anAnimation);
 
 	ImGui::Separator();
@@ -619,11 +792,14 @@ void SkeletonEditor::CreateBlendSpaceSection(BlendSpace* aBlendSpace)
 			animation = aBlendSpace->myAnimations.back().animation.get();
 		}
 
-		CreateAnimationInfo(animation);
-		if (ImGui::DragFloat("Test Blend Value", &aBlendSpace->myBlendValue))
+		if (!aBlendSpace->myHasMatchingFPS)
 		{
-			DrawFrame();
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.f, 0.f, 1.f));
+			ImGui::Text("Warning! \nThe animations in this blend space does not have matching FPS. \nMake sure to set a target FPS for it to work properly!");
+			ImGui::PopStyleColor();
 		}
+		CreateAnimationInfo(animation);
+		ImGui::DragFloat("Test Blend Value", &aBlendSpace->myBlendValue);
 	}
 
 	ImGui::Separator();
@@ -635,7 +811,7 @@ void SkeletonEditor::CreateBlendSpaceSection(BlendSpace* aBlendSpace)
 			ImGui::BeginDisabled();
 		}
 
-		if (ImGui::Button("Add Animation"))
+		if (ImGui::Button("Add Blend Animation"))
 		{
 			if (aBlendSpace->myBoneIndex == 0u)
 			{
@@ -645,12 +821,23 @@ void SkeletonEditor::CreateBlendSpaceSection(BlendSpace* aBlendSpace)
 			{
 				aBlendSpace->AddAnimation(AssetManager::GetAsset<Animation>(mySelectedAnimationPath), aBlendSpace->myBoneIndex, 0.f);
 			}
+			CheckSkeletonAnimationMatching(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(mySelectedAnimationPath)));
+			if (myHasMatchingBones)
+			{
+				DrawFrame();
+			}
 		}
 
 		if (isDisabled)
 		{
 			ImGui::EndDisabled();
 		}
+	}
+
+	if (myMesh->myAdditiveAnimations.empty() && !myHasMatchingBones)
+	{
+		PrintAnimationMissmatchError();
+		return;
 	}
 
 	CreateAnimationControls(aBlendSpace);
@@ -705,22 +892,33 @@ void SkeletonEditor::CreateAnimationControls(AnimationBase* anAnimation)
 
 	if (ImGui::Button("Start"))
 	{
-		++myPlayCount;
+		if (!anAnimation->IsPlaying())
+		{
+			++myPlayCount;
+		}
+
 		anAnimation->StartAnimation();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Stop"))
 	{
-		--myPlayCount;
+		if (anAnimation->IsPlaying())
+		{
+			--myPlayCount;
+		}
 		myAnimationTimer = 0.f;
 		anAnimation->SetToFirstFrame();
 		anAnimation->StopAnimation();
+		myMesh->UpdateBoneCache();
 		DrawFrame();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Pause"))
 	{
-		--myPlayCount;
+		if (anAnimation->IsPlaying())
+		{
+			--myPlayCount;
+		}
 		anAnimation->StopAnimation();
 	}
 }
@@ -734,6 +932,7 @@ void SkeletonEditor::CreateAnimationParameters(Animation* anAnimation)
 		myMesh->PauseAnimation();
 		myAnimationTimer = 0.f;
 		anAnimation->SetFrameIndex(index);
+		myMesh->UpdateBoneCache();
 		DrawFrame();
 	}
 }
@@ -787,21 +986,7 @@ void SkeletonEditor::CreateAssetBrowser()
 				}
 				else
 				{
-					if (Crimson::GetFileExtension(file) == AssetManager::GetBlendSpaceExtension())
-					{
-						SetAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(file)));
-					}
-					else
-					{
-						if (mySelectedBone != nullptr)
-						{
-							SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(file), GetBoneIndex(mySelectedBone)));
-						}
-						else
-						{
-							SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(file)));
-						}
-					}
+					SetAnimation(file);
 				}
 			}
 
@@ -868,10 +1053,50 @@ void SkeletonEditor::CreateFileButton(const std::string& aFile, float anIconSize
 	}
 }
 
+void SkeletonEditor::SetAnimation(const std::string& aPath)
+{
+	if (Crimson::GetFileExtension(aPath) == AssetManager::GetBlendSpaceExtension())
+	{
+		SetAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(aPath)));
+	}
+	else
+	{
+		if (mySelectedBone != nullptr)
+		{
+			SetAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(aPath), GetBoneIndex(mySelectedBone)));
+		}
+		else
+		{
+			SetAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(aPath)));
+		}
+	}
+}
+
+void SkeletonEditor::AddAnimation(const std::string& aPath)
+{
+	if (Crimson::GetFileExtension(aPath) == AssetManager::GetBlendSpaceExtension())
+	{
+		AddAnimation(std::make_shared<BlendSpace>(AssetManager::GetAsset<BlendSpace>(aPath)));
+	}
+	else
+	{
+		if (mySelectedBone != nullptr)
+		{
+			AddAnimation(std::make_shared<AnimationLayer>(AssetManager::GetAsset<Animation>(aPath), GetBoneIndex(mySelectedBone)));
+		}
+		else
+		{
+			AddAnimation(std::make_shared<Animation>(AssetManager::GetAsset<Animation>(aPath)));
+		}
+	}
+}
+
 void SkeletonEditor::UpdateAvailableFiles()
 {
 	myAvailableSkeletons.clear();
 	myAvailableAnimations.clear();
+
+	AssetManager::SetLogErrors(false);
 
 	{ // Sort out skeletons
 		auto files = Crimson::GetAllFilepathsInDirectory(AssetManager::GetModelPath(), true);
@@ -882,7 +1107,7 @@ void SkeletonEditor::UpdateAvailableFiles()
 			{
 				if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
 				{
-					if (Assets::GetModelType(file) == Assets::eAssetType::AnimatedModel)
+					if (AssetManager::GetAsset<GameObject>(file).HasComponent<AnimatedMeshComponent>())
 					{
 						myAvailableSkeletons.emplace(file);
 					}
@@ -893,7 +1118,7 @@ void SkeletonEditor::UpdateAvailableFiles()
 	}
 
 	{ // Sort out animations
-		auto files = AssetManager::GetAvailableAnimations();
+		auto& files = AssetManager::GetAvailableAnimations();
 		for (auto& file : files)
 		{
 			auto potentialTypes = Assets::GetPossibleTypes(Crimson::GetFileExtension(file));
@@ -906,7 +1131,7 @@ void SkeletonEditor::UpdateAvailableFiles()
 			{
 				if (type == Assets::eAssetType::AnimatedModel || type == Assets::eAssetType::Model || type == Assets::eAssetType::Animation)
 				{
-					if (Assets::GetModelType(file) == Assets::eAssetType::Animation)
+					if (AssetManager::GetAsset<Animation>(file).HasData())
 					{
 						myAvailableAnimations.emplace(file);
 					}
@@ -915,10 +1140,16 @@ void SkeletonEditor::UpdateAvailableFiles()
 			}
 		}
 	}
+	AssetManager::SetLogErrors(true);
 }
 
 void SkeletonEditor::GenerateSkeletonDrawing()
 {
+	if (!myShouldRenderSkeleton)
+	{
+		return;
+	}
+
 	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->bindPoseInverse.GetInverse();
 	myLines.emplace(myRootBone, GraphicsEngine::Get().GetLineDrawer().AddCube(center, Crimson::Vector3f(2.f), myBoneColor, mySkeletonOffset->GetTransformMatrix()));
 
@@ -949,6 +1180,11 @@ void SkeletonEditor::GenerateSkeletonDrawing(unsigned anIndex, const Crimson::Ve
 
 void SkeletonEditor::DrawSkeleton()
 {
+	if (!myShouldRenderSkeleton)
+	{
+		return;
+	}
+
 	const Crimson::Vector4f& center = Crimson::Vector4f::NullPosition * myRootBone->bindPoseInverse.GetInverse();
 	auto* color = &myBoneColor;
 	if (mySelectedBone == myRootBone)
@@ -997,12 +1233,10 @@ void SkeletonEditor::DrawSkeleton(unsigned anIndex, const Crimson::Vector4f& aPa
 
 void SkeletonEditor::DrawFrame()
 {
-	if (!myHasMatchingBones)
+	if (!myHasMatchingBones || !myShouldRenderSkeleton)
 	{
 		return;
 	}
-
-	myMesh->UpdateBoneCache();
 
 	if (mySelectedBone && mySelectedBone != myRootBone)
 	{
@@ -1067,7 +1301,20 @@ void SkeletonEditor::CheckSkeletonAnimationMatching(const std::shared_ptr<Animat
 	myMissMatchMessage = "";
 	myAnimationTimer = 0.f;
 
+	if (!mySkeleton)
+	{
+		myHasMatchingBones = false;
+		myMissMatchMessage = "No Skeleton selected";
+		return;
+	}
+
 	myHasMatchingBones = anAnimation->IsValidSkeleton(mySkeleton, &myMissMatchMessage);
+
+	if (mySkeleton->GetBoneCount() > MAX_BONE_COUNT)
+	{
+		myHasMatchingBones = false;
+		myMissMatchMessage = "Animation has too many bones! Max amount is " + std::to_string(MAX_BONE_COUNT);
+	}
 
 	if (!myHasMatchingBones)
 	{
@@ -1133,7 +1380,14 @@ void SkeletonEditor::SetBone(unsigned anIndex, std::shared_ptr<AnimationBase>& o
 		}
 		else
 		{
-			outAnimation = std::make_shared<Animation>(&animationPtr->GetData());
+			if (auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(outAnimation))
+			{
+				outAnimation = std::make_shared<Animation>(*layerPtr);
+			}
+			else
+			{
+				outAnimation = std::make_shared<Animation>(*animationPtr);
+			}
 		}
 	}
 	else

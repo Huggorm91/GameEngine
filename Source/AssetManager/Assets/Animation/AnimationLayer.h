@@ -9,6 +9,11 @@ public:
 	AnimationLayer(const AnimationLayer& anAnimation) = default;
 	~AnimationLayer() = default;
 
+	// AnimationLayer never alters transform, use Animation instead
+	bool UpdateRootMotion(float aTimeSinceLastUpdate) override;
+	// Will always return no motion, use Animation instead
+	AnimationTransform GetRootMotion(float aPercentage) override;
+
 	using Animation::Init;
 	void Init(const Json::Value& aJson) override;
 

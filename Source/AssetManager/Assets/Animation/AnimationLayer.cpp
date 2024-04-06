@@ -10,6 +10,16 @@ AnimationLayer::AnimationLayer(const Animation& anAnimation, unsigned aBoneIndex
 	myType = AnimationType::AnimationLayer;
 }
 
+bool AnimationLayer::UpdateRootMotion(float)
+{
+	return false;
+}
+
+AnimationTransform AnimationLayer::GetRootMotion(float)
+{
+	return AnimationTransform();
+}
+
 void AnimationLayer::Init(const Json::Value& aJson)
 {
 	Animation::Init(aJson);
@@ -106,7 +116,16 @@ void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCach
 	}
 
 	const auto& matrix = aFrame.localTransformMatrices.at(*name) * aParentTransform;
-	outBones[anIndex] = bone.bindPoseInverse * matrix;
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform = matrix * outTransform;
+	}
+	else
+	{
+		outBones[anIndex] = bone.bindPoseInverse * matrix;
+	}
+
 	for (auto& childIndex : bone.children)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aFrame, matrix);
@@ -124,7 +143,16 @@ void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCach
 
 	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
 	const auto& matrix = interpolatedTransform.GetAsMatrix() * aParentTransform;
-	outBones[anIndex] = bone.bindPoseInverse * matrix;
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform = matrix * outTransform;
+	}
+	else
+	{
+		outBones[anIndex] = bone.bindPoseInverse * matrix;
+	}
+	
 	for (auto& childIndex : bone.children)
 	{
 		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue, matrix);

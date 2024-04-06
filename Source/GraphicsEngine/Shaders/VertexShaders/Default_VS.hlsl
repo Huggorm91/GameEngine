@@ -29,7 +29,7 @@ DefaultVertexToPixel main(DefaultVertexInput input)
 	[flatten]
 	if (OB_HasBones)
 	{
-		const float4x4 skinMatrix = GetSkinMatrix(input.BoneWeights, input.BoneIDs, OB_BoneTransforms);
+		const float4x4 skinMatrix = GetSkinMatrix(input.BoneWeights, input.BoneIDs);
 		result.Position = mul(skinMatrix, result.Position);
 		result.LocalPosition = mul(skinMatrix, result.LocalPosition);
 		

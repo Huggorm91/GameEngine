@@ -337,7 +337,7 @@ void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 
 void GameObject::SetRotation(const Crimson::Vector3f& aRotation)
 {
-	myTransform.SetRotation(aRotation);
+	myTransform.SetRotationDegree(aRotation);
 }
 
 void GameObject::SetScale(const Crimson::Vector3f& aScale)

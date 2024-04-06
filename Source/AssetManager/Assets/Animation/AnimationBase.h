@@ -21,6 +21,11 @@ struct AnimationTransform
 
 	Crimson::Matrix4x4f GetAsMatrix() const;
 	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
+
+	inline bool operator==(const AnimationTransform& aTranform) const
+	{
+		return position == aTranform.position && rotation == aTranform.rotation;
+	}
 };
 
 struct AnimationFrame
@@ -86,6 +91,14 @@ public:
 	// Returns true while playing
 	virtual bool Update() = 0;
 
+	/// <param name="aTimeSinceLastUpdate">The time since last this function was called, if called every frame it is the deltatime</param>
+	/// <returns>True if the animation altered the transform</returns>
+	virtual bool UpdateRootMotion(float aTimeSinceLastUpdate) = 0;
+
+	/// <param name="aPercentage">The amount of the total motion from the current frame to get, from 0.f to 1.f</param>
+	/// <returns>The interpolated motion</returns>
+	virtual AnimationTransform GetRootMotion(float aPercentage) = 0;
+
 	void StartAnimation();
 	void StopAnimation();
 	bool IsPlaying() const;
@@ -98,6 +111,7 @@ public:
 	void SetAdditiveAnimation(bool aState);
 
 	void SetTargetFPS(float aFPS);
+	void SetTargetFrameDelta(float aFrameDelta);
 	virtual float GetFrameDelta() const = 0;
 
 	void SetIsLooping(bool aShouldLoop);
@@ -122,6 +136,8 @@ public:
 
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const = 0;
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const = 0;
+
+	virtual std::unordered_map<std::string, AnimationTransform> GetAdditiveTransforms() const = 0;
 
 	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const = 0;
 	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const = 0;

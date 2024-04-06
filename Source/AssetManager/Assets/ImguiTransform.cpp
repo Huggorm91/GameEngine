@@ -13,19 +13,19 @@ void CreateImGuiComponents(Transform& aTransform)
 		auto position = aTransform.GetPosition();
 		if (ImGui::DragFloat3("Position", &position.x))
 		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myPosition, position, aTransform.myHasChanged));
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myPosition, position, aTransform.myHasChangedInternal));
 		}
 
-		auto rotation = aTransform.GetRotation();
+		auto rotation = aTransform.GetRotationDegree();
 		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myRotation, rotation, aTransform.myHasChanged));
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myRotation, rotation, aTransform.myHasChangedInternal));
 		}
 
 		auto scale = aTransform.GetScale();
 		if (ImGui::DragFloat3("Scale", &scale.x))
 		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myScale, scale, aTransform.myHasChanged));
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myScale, scale, aTransform.myHasChangedInternal));
 		}
 		ImGui::TreePop();
 	}
@@ -44,10 +44,10 @@ bool CreateImGuiComponentsNoUndo(Transform& aTransform)
 			hasChanged = true;
 		}
 
-		auto rotation = aTransform.GetRotation();
+		auto rotation = aTransform.GetRotationDegree();
 		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
-			aTransform.SetRotation(rotation);
+			aTransform.SetRotationDegree(rotation);
 			hasChanged = true;
 		}
 
@@ -76,11 +76,11 @@ bool CreateMultipleSelectionImGuiComponents(Transform& aTransform)
 			hasChanged = true;
 		}
 
-		auto rotation = aTransform.GetRotation();
+		auto rotation = aTransform.GetRotationDegree();
 		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(rotation - aTransform.GetRotation(), EditCmd_ChangeMultipleGameObjects::TransformType::Rotation, &aTransform));
-			aTransform.SetRotation(rotation);
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeMultipleGameObjects>(rotation - aTransform.GetRotationDegree(), EditCmd_ChangeMultipleGameObjects::TransformType::Rotation, &aTransform));
+			aTransform.SetRotationDegree(rotation);
 			hasChanged = true;
 		}
 

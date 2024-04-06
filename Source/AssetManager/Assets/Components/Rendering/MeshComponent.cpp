@@ -181,6 +181,13 @@ void MeshComponent::Init(const std::vector<MeshElement>& anElementList, const st
 	myBoxSphereBounds.Init(center, size);
 }
 
+void MeshComponent::SetMesh(const MeshComponent& aMesh)
+{
+	myElements = aMesh.myElements;
+	myBoxSphereBounds = aMesh.myBoxSphereBounds;
+	myName = aMesh.myName;
+}
+
 void MeshComponent::SetOffsetPosition(const Crimson::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);
@@ -188,7 +195,7 @@ void MeshComponent::SetOffsetPosition(const Crimson::Vector3f& aPosition)
 
 void MeshComponent::SetOffsetRotation(const Crimson::Vector3f& aRotation)
 {
-	myTransform.SetRotation(aRotation);
+	myTransform.SetRotationDegree(aRotation);
 }
 
 void MeshComponent::SetOffsetScale(const Crimson::Vector3f& aScale)

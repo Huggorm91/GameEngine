@@ -24,8 +24,8 @@ public:
 	void Init(GameObject* aParent) override;
 
 	void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation) override;
-	unsigned AddAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
-	void RemoveAnimation(unsigned anIndex);
+	size_t AddAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+	void RemoveAnimation(size_t anIndex);
 
 	void StartAnimation()override;
 	void StopAnimation()override;

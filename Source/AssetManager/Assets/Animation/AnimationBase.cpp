@@ -270,7 +270,10 @@ void AnimationBase::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
 	if (IsValid())
 	{
 		ValidateUsingNamespace(aSkeleton);
-		UpdateBoneCache(mySkeleton, *myBoneCache);
+		if (!myFlags[eIsAdditive])
+		{
+			UpdateBoneCache(mySkeleton, *myBoneCache);
+		}		
 	}
 }
 
@@ -331,6 +334,11 @@ void AnimationBase::SetAdditiveAnimation(bool aState)
 void AnimationBase::SetTargetFPS(float aFPS)
 {
 	myTargetFrameDelta = 1.f / aFPS;
+}
+
+void AnimationBase::SetTargetFrameDelta(float aFrameDelta)
+{
+	myTargetFrameDelta = aFrameDelta;
 }
 
 void AnimationBase::SetIsLooping(bool aShouldLoop)

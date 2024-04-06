@@ -1,18 +1,30 @@
 #pragma once
 #include "AnimationBase.h"
 
+class AnimationLayer;
+
 class Animation: public AnimationBase
 {
 public:
 	Animation();
 	Animation(const AnimationData* someData);
 	Animation(const Animation& anAnimation);
+	Animation(const AnimationLayer& anAnimation);
 	Animation(Animation&& anAnimation) noexcept;
 	~Animation() = default;
 
 	bool operator==(const Animation& anAnimation) const;
 
+	// Returns true while playing
 	bool Update() override;
+
+	/// <param name="aTimeSinceLastUpdate">The time since last this function was called, if called every frame it is the deltatime</param>
+	/// <returns>True if the animation altered the transform</returns>
+	bool UpdateRootMotion(float aTimeSinceLastUpdate)override;
+
+	/// <param name="aPercentage">The amount of the total motion from the current frame to get, from 0.f to 1.f</param>
+	/// <returns>The interpolated motion</returns>
+	AnimationTransform GetRootMotion(float aPercentage) override;
 
 	using AnimationBase::Init;
 	void Init(const Json::Value& aJson) override;
@@ -52,6 +64,8 @@ public:
 	bool IsValidSkeleton(const Skeleton* aSkeleton, std::string* outErrorMessage = nullptr) const override;
 
 	const AnimationData& GetData() const;
+
+	std::unordered_map<std::string, AnimationTransform> GetAdditiveTransforms() const override;
 	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
 	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
 

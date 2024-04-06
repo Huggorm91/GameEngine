@@ -23,6 +23,8 @@ public:
 	void Init(GameObject* aParent) override;
 	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName);
 
+	void SetMesh(const MeshComponent& aMesh);
+
 	void SetOffsetPosition(const Crimson::Vector3f& aPosition);
 	void SetOffsetRotation(const Crimson::Vector3f& aRotation);
 	void SetOffsetScale(const Crimson::Vector3f& aScale);

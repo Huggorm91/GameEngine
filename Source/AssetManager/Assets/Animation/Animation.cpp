@@ -3,6 +3,7 @@
 #include "Skeleton.h"
 #include "Time/Timer.h"
 #include "AssetManager.h"
+#include "AnimationLayer.h"
 
 Animation::Animation() :AnimationBase(AnimationType::Animation), myData(nullptr), myCurrentFrame(1)
 {}
@@ -12,6 +13,11 @@ Animation::Animation(const AnimationData* someData) : AnimationBase(AnimationTyp
 
 Animation::Animation(const Animation& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
 {}
+
+Animation::Animation(const AnimationLayer& anAnimation) : AnimationBase(anAnimation), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
+{
+	myType = AnimationType::Animation;
+}
 
 Animation::Animation(Animation&& anAnimation) noexcept : AnimationBase(std::move(anAnimation)), myData(anAnimation.myData), myCurrentFrame(anAnimation.myCurrentFrame)
 {}
@@ -47,7 +53,7 @@ bool Animation::Update()
 			}
 		} while (myAnimationTimer >= myData->frameDelta);
 
-		if (AnimationBase::IsValid())
+		if (AnimationBase::IsValid() && !myFlags[eIsAdditive])
 		{
 			UpdateBoneCache(mySkeleton, *myBoneCache);
 		}
@@ -59,13 +65,42 @@ bool Animation::Update()
 		{
 			myInterpolationTimer -= myTargetFrameDelta;
 
-			if (AnimationBase::IsValid())
+			if (AnimationBase::IsValid() && !myFlags[eIsAdditive])
 			{
 				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myData->frameDelta);
 			}
 		}
 	}
 	return myFlags[eIsPlaying];
+}
+
+bool Animation::UpdateRootMotion(float aTimeSinceLastUpdate)
+{
+	if (!myRootMotionTransform)
+	{
+		return false;
+	}
+
+	AnimationTransform transform = GetRootMotion(aTimeSinceLastUpdate / myData->frameDelta);
+	if (myFlags[eIsReversing])
+	{
+		transform.position = -transform.position;
+		transform.rotation = -transform.rotation;
+	}
+	if (transform != AnimationTransform())
+	{
+		myRootMotionTransform->AddToPosition(transform.position);
+		myRootMotionTransform->AddToRotationRadian(transform.rotation.GetAsEuler());
+		return true;
+	}
+	return false;
+}
+
+AnimationTransform Animation::GetRootMotion(float aPercentage)
+{
+	assert(mySkeleton && myRootMotionTransform && "Animation not configured correctly to use root motion!");
+	const auto& rootTransform = myData->frames[myCurrentFrame].localTransforms.at(myFlags[eIsUsingNamespace] ? mySkeleton->GetBone(0).namespaceName : mySkeleton->GetBone(0).name);
+	return AnimationTransform::Interpolate(AnimationTransform(), rootTransform, aPercentage);
 }
 
 void Animation::Init(const Json::Value& aJson)
@@ -101,25 +136,21 @@ unsigned Animation::GetFrameCount() const
 
 void Animation::SetToFirstFrame()
 {
-	ResetTimer();
 	myCurrentFrame = 1;
 }
 
 void Animation::SetToLastFrame()
 {
-	ResetTimer();
 	myCurrentFrame = myData->length - 1;
 }
 
 void Animation::SetFrameIndex(unsigned anIndex)
 {
-	ResetTimer();
 	myCurrentFrame = Crimson::Min(anIndex, GetLastFrameIndex());
 }
 
 bool Animation::NextFrame()
 {
-	ResetTimer();
 	if (++myCurrentFrame == myData->length)
 	{
 		SetToFirstFrame();
@@ -133,7 +164,6 @@ bool Animation::NextFrame()
 
 bool Animation::PreviousFrame()
 {
-	ResetTimer();
 	if (--myCurrentFrame == 0)
 	{
 		SetToLastFrame();
@@ -260,6 +290,18 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
+std::unordered_map<std::string, AnimationTransform> Animation::GetAdditiveTransforms() const
+{
+	if (myInterpolationTimer <= Crimson::FloatTolerance)
+	{
+		return GetFrameTransforms();
+	}
+	else
+	{
+		return GetFrameTransforms(myAnimationTimer / myData->frameDelta);
+	}
+}
+
 std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms() const
 {
 	return myData->frames[myCurrentFrame].globalTransforms;
@@ -292,13 +334,20 @@ void Animation::ValidateUsingNamespace(const Skeleton* aSkeleton)
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
-	if (myFlags[eIsUsingNamespace])
+	const std::string* boneName = &bone.namespaceName;
+	if (!myFlags[eIsUsingNamespace])
 	{
-		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.namespaceName);
+		boneName = &bone.name;
+	}
+
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform *= myData->frames[myCurrentFrame].globalTransformMatrices.at(*boneName);
 	}
 	else
 	{
-		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(bone.name);
+		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(*boneName);
 	}
 
 	for (auto& childIndex : bone.children)
@@ -310,14 +359,20 @@ void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& ou
 void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
-	if (myFlags[eIsUsingNamespace])
+	const std::string* boneName = &bone.namespaceName;
+	if (!myFlags[eIsUsingNamespace])
 	{
-		const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.namespaceName), anInterpolationFrame.globalTransforms.at(bone.namespaceName), anInterpolationValue);
-		outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+		boneName = &bone.name;
+	}
+
+	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(*boneName), anInterpolationFrame.globalTransforms.at(*boneName), anInterpolationValue);
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform = interpolatedTransform.GetAsMatrix() * outTransform;
 	}
 	else
 	{
-		const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(bone.name), anInterpolationFrame.globalTransforms.at(bone.name), anInterpolationValue);
 		outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
 	}
 

@@ -26,10 +26,10 @@ bool BlendSpace::Update()
 		myBlendValue = myBlendValueGetter();
 	}
 
-	myAnimationTimer += Crimson::Timer::GetDeltaTime();
 	if (myHasMatchingFPS)
 	{
-		const float frameDelta = myAnimations.back().animation->GetFrameDelta();
+		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		const float frameDelta = myLongestAnimation->GetFrameDelta();
 		if (myAnimationTimer >= frameDelta)
 		{
 			myInterpolationTimer = 0.f;
@@ -78,16 +78,34 @@ bool BlendSpace::Update()
 			if (isLastFrame && !myFlags[eIsLooping])
 			{
 				myFlags[eIsPlaying] = false;
-				myAnimationTimer = 0.f;
 			}
 
-			if (mySkeleton && myBoneCache)
+			if (AnimationBase::IsValid())
 			{
-				UpdateBoneCache(mySkeleton, *myBoneCache, myAnimationTimer / myTargetFrameDelta);
+				UpdateBoneCacheMixedFPS(mySkeleton, *myBoneCache);
 			}
 		}
 	}
 	return myFlags[eIsPlaying];
+}
+
+bool BlendSpace::UpdateRootMotion(float aTimeSinceLastUpdate)
+{
+	if (!myRootMotionTransform)
+	{
+		return false;
+	}
+
+	assert(!"Not Implemented!");
+	aTimeSinceLastUpdate;
+	return false;
+}
+
+AnimationTransform BlendSpace::GetRootMotion(float aPercentage)
+{
+	assert(!"Not Implemented!");
+	aPercentage;
+	return AnimationTransform();
 }
 
 void BlendSpace::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
@@ -148,7 +166,14 @@ void BlendSpace::SetBoneIndex(unsigned anIndex)
 	{
 		for (auto& data : tempAnimations)
 		{
-			data.animation = std::make_shared<Animation>(&data.animation->GetData());
+			if (auto layerPtr = std::dynamic_pointer_cast<AnimationLayer>(data.animation))
+			{
+				data.animation = std::make_shared<Animation>(*layerPtr);
+			}
+			else
+			{
+				data.animation = std::make_shared<Animation>(*data.animation);
+			}
 			myAnimations.emplace_back(BlendData(data));
 		}
 	}
@@ -264,7 +289,6 @@ bool BlendSpace::RemoveAnimation(const Animation& anAnimation, float aBlendValue
 
 void BlendSpace::SetToFirstFrame()
 {
-	ResetTimer();
 	for (auto& data : myAnimations)
 	{
 		data.timer = 0.f;
@@ -274,7 +298,6 @@ void BlendSpace::SetToFirstFrame()
 
 void BlendSpace::SetToLastFrame()
 {
-	ResetTimer();
 	for (auto& data : myAnimations)
 	{
 		data.timer = 0.f;
@@ -358,7 +381,14 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones)
 					const auto& bone = aSkeleton->GetBone(index);
 
 					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
-					outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					if (myFlags[eIsAdditive])
+					{
+						outBones[index] *= interpolatedTransform.GetAsMatrix();
+					}
+					else
+					{
+						outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					}
 				}
 			}
 			return;
@@ -400,7 +430,14 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 					const auto& bone = aSkeleton->GetBone(index);
 
 					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
-					outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					if (myFlags[eIsAdditive])
+					{
+						outBones[index] *= interpolatedTransform.GetAsMatrix();
+					}
+					else
+					{
+						outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					}
 				}
 			}
 			return;
@@ -411,6 +448,79 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 	// Current blendvalue is higher than last animations blendvalue
 	assert(previous && "Previous was nullptr");
 	previous->animation->UpdateBoneCache(aSkeleton, outBones, anInterpolationValue);
+}
+
+void BlendSpace::UpdateBoneCacheMixedFPS(const Skeleton* aSkeleton, BoneCache& outBones) const
+{
+	if (myAnimations.empty())
+	{
+		return;
+	}
+
+	const BlendData* previous = nullptr;
+	for (auto& data : myAnimations)
+	{
+		if (myBlendValue <= data.blendValue)
+		{
+			// Check if lower than first value, or equal to higher value
+			if (previous == nullptr || Crimson::GimbalCheck(data.blendValue, myBlendValue, Crimson::FloatTolerance))
+			{
+				data.animation->UpdateBoneCache(aSkeleton, outBones, data.timer / data.animation->GetFrameDelta());
+			}
+			else
+			{
+				const auto& lowerTransforms = previous->animation->GetFrameTransforms(previous->timer / previous->animation->GetFrameDelta());
+				const auto& higherTransforms = data.animation->GetFrameTransforms(data.timer / data.animation->GetFrameDelta());
+				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
+
+				for (auto& [boneName, transform] : lowerTransforms)
+				{
+					const unsigned index = aSkeleton->GetBoneIndex(boneName);
+					const auto& bone = aSkeleton->GetBone(index);
+
+					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
+					if (myFlags[eIsAdditive])
+					{
+						outBones[index] *= interpolatedTransform.GetAsMatrix();
+					}
+					else
+					{
+						outBones[index] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
+					}
+				}
+			}
+			return;
+		}
+		previous = &data;
+	}
+
+	// Current blendvalue is higher than last animations blendvalue
+	assert(previous && "Previous was nullptr");
+	previous->animation->UpdateBoneCache(aSkeleton, outBones, previous->timer / previous->animation->GetFrameDelta());
+}
+
+std::unordered_map<std::string, AnimationTransform> BlendSpace::GetAdditiveTransforms() const
+{
+	if (myAnimations.empty())
+	{
+		return std::unordered_map<std::string, AnimationTransform>();
+	}
+
+	if (myHasMatchingFPS)
+	{
+		if (myInterpolationTimer <= Crimson::FloatTolerance)
+		{
+			return GetFrameTransforms();
+		}
+		else
+		{
+			return GetFrameTransforms(myAnimationTimer / myLongestAnimation->GetFrameDelta());
+		}
+	}
+	else
+	{
+		return GetFrameTransforms(myAnimationTimer / myTargetFrameDelta);
+	}
 }
 
 std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransforms() const
@@ -444,7 +554,7 @@ std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransfor
 					result.emplace(boneName, AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
 				}
 				return result;
-			}			
+			}
 		}
 		previous = &data;
 	}
@@ -627,7 +737,7 @@ void BlendSpace::AddInternal()
 			myFlags[eIsUsingNamespace] = true;
 		}
 	}
-	
+
 	if (myLongestAnimation)
 	{
 		if (data.animation->GetData().length > myLongestAnimation->GetData().length)
@@ -659,10 +769,9 @@ void BlendSpace::UpdateMatchingFPS()
 
 void BlendSpace::UpdateAnimations()
 {
-	const float deltaTime = Crimson::Timer::GetDeltaTime();
 	for (auto& data : myAnimations)
 	{
-		data.timer += deltaTime;
+		data.timer += myInterpolationTimer;
 
 		while (data.timer >= data.animation->GetFrameDelta())
 		{
