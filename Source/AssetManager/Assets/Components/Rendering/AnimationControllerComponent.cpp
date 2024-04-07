@@ -255,10 +255,13 @@ void AnimationControllerComponent::SetTargetFPS(float aFPS)
 void AnimationControllerComponent::UpdateBoneCache()
 {
 	ResetBoneCache();
-	myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
-	for (auto& animation : myAdditiveAnimations)
+	if (myAnimation)
 	{
-		animation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
+		myAnimation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
+		for (auto& animation : myAdditiveAnimations)
+		{
+			animation->UpdateBoneCache(mySkeleton, myBoneTransformCache, myAnimationTimer / myAnimationDelta);
+		}
 	}
 }
 

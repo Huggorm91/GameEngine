@@ -672,7 +672,7 @@ void SkeletonEditor::CreateAnimationInspector()
 						SetBone(boneIndex, myMesh->myAnimation);
 						myMesh->UpdateBoneCache();
 						SelectBone(&mySkeleton->GetBone(boneIndex));
-						DrawFrame();
+						DrawSkeleton();
 					}
 				}
 			}
@@ -734,7 +734,7 @@ void SkeletonEditor::CreateAnimationInspector()
 							SetBone(boneIndex, animation);
 							myMesh->UpdateBoneCache();
 							SelectBone(&mySkeleton->GetBone(boneIndex));
-							DrawFrame();
+							DrawSkeleton();
 						}
 					}
 
@@ -1372,6 +1372,11 @@ void SkeletonEditor::SelectBone(const Bone* aBone)
 
 void SkeletonEditor::SetBone(unsigned anIndex, std::shared_ptr<AnimationBase>& outAnimation)
 {
+	if (!outAnimation)
+	{
+		return;
+	}
+
 	if (auto animationPtr = std::dynamic_pointer_cast<Animation>(outAnimation))
 	{
 		if (anIndex > 0u)
