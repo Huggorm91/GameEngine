@@ -199,7 +199,7 @@ void AnimationControllerComponent::StopAnimation()
 	{
 		animation->StopAnimation();
 		animation->SetToFirstFrame();
-		myAnimation->ResetTimer();
+		animation->ResetTimer();
 	}
 }
 

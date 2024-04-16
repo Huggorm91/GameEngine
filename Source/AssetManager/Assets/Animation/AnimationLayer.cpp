@@ -41,11 +41,11 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	const auto& bone = aSkeleton->GetBone(myBoneIndex);
 	if (bone.parent >= 0)
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], aSkeleton->GetBone(bone.parent).bindPoseInverse.GetInverse());
+		UpdateBoneCacheLocal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], aSkeleton->GetBone(bone.parent).bindPoseInverse.GetInverse());
 	}
 	else
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], Crimson::Matrix4x4f::Identity);
+		UpdateBoneCacheLocal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], Crimson::Matrix4x4f::Identity);
 	}
 }
 
@@ -55,11 +55,11 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	const auto& next = myFlags[eIsReversing] ? GetPreviousFrame() : GetNextFrame();
 	if (bone.parent >= 0)
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], next, anInterpolationValue, aSkeleton->GetBone(bone.parent).bindPoseInverse.GetInverse());
+		UpdateBoneCacheLocal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], next, anInterpolationValue, aSkeleton->GetBone(bone.parent).bindPoseInverse.GetInverse());
 	}
 	else
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], next, anInterpolationValue, Crimson::Matrix4x4f::Identity);
+		UpdateBoneCacheLocal(aSkeleton, outBones, myBoneIndex, myData->frames[myCurrentFrame], next, anInterpolationValue, Crimson::Matrix4x4f::Identity);
 	}
 }
 
@@ -104,59 +104,6 @@ Json::Value AnimationLayer::ToJson() const
 	Json::Value result = Animation::ToJson();
 	result["BoneIndex"] = myBoneIndex;
 	return result;
-}
-
-void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
-{
-	const auto& bone = aSkeleton->GetBone(anIndex);
-	const std::string* name = &bone.namespaceName;
-	if (!myFlags[eIsUsingNamespace])
-	{
-		name = &bone.name;
-	}
-
-	const auto& matrix = aFrame.localTransformMatrices.at(*name) * aParentTransform;
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform = matrix * outTransform;
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * matrix;
-	}
-
-	for (auto& childIndex : bone.children)
-	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aFrame, matrix);
-	}
-}
-
-void AnimationLayer::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
-{
-	const auto& bone = aSkeleton->GetBone(anIndex);
-	const std::string* name = &bone.namespaceName;
-	if (!myFlags[eIsUsingNamespace])
-	{
-		name = &bone.name;
-	}
-
-	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
-	const auto& matrix = interpolatedTransform.GetAsMatrix() * aParentTransform;
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform = matrix * outTransform;
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * matrix;
-	}
-	
-	for (auto& childIndex : bone.children)
-	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue, matrix);
-	}
 }
 
 void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const

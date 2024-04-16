@@ -81,12 +81,7 @@ bool Animation::UpdateRootMotion(float aTimeSinceLastUpdate)
 		return false;
 	}
 
-	AnimationTransform transform = GetRootMotion(aTimeSinceLastUpdate / myData->frameDelta);
-	if (myFlags[eIsReversing])
-	{
-		transform.position = -transform.position;
-		transform.rotation = -transform.rotation;
-	}
+	const AnimationTransform& transform = GetRootMotion(aTimeSinceLastUpdate / myData->frameDelta);
 	if (transform != AnimationTransform())
 	{
 		myRootMotionTransform->AddToPosition(transform.position);
@@ -99,8 +94,40 @@ bool Animation::UpdateRootMotion(float aTimeSinceLastUpdate)
 AnimationTransform Animation::GetRootMotion(float aPercentage)
 {
 	assert(mySkeleton && myRootMotionTransform && "Animation not configured correctly to use root motion!");
-	const auto& rootTransform = myData->frames[myCurrentFrame].localTransforms.at(myFlags[eIsUsingNamespace] ? mySkeleton->GetBone(0).namespaceName : mySkeleton->GetBone(0).name);
-	return AnimationTransform::Interpolate(AnimationTransform(), rootTransform, aPercentage);
+	const std::string* boneName = &mySkeleton->GetBone(0).namespaceName;
+	if (!myFlags[eIsUsingNamespace])
+	{
+		boneName = &mySkeleton->GetBone(0).name;
+	}
+
+	const AnimationFrame* previousFrame = nullptr;
+
+	if (myFlags[eIsReversing])
+	{
+		if (myCurrentFrame != GetLastFrameIndex())
+		{
+			previousFrame = &GetNextFrame();
+		}
+		else
+		{
+			previousFrame = &myData->frames[myCurrentFrame]; // This does not work correctly but it looks good enough on my current test animation.
+		}
+	}
+	else
+	{
+		if (myCurrentFrame != 1u)
+		{
+			previousFrame = &GetPreviousFrame();
+		}
+	}
+
+	const auto& previousTransform = previousFrame ? previousFrame->localTransforms.at(*boneName) : AnimationTransform();
+	const auto& rootTransform = myData->frames[myCurrentFrame].localTransforms.at(*boneName);
+
+	auto transform = AnimationTransform::Interpolate(previousTransform, rootTransform, aPercentage);
+	transform.position -= previousTransform.position;
+	transform.rotation = transform.rotation * previousTransform.rotation.GetInverse();
+	return transform;
 }
 
 void Animation::Init(const Json::Value& aJson)
@@ -177,18 +204,44 @@ bool Animation::PreviousFrame()
 
 void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const
 {
-	UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame]);
+	if (myRootMotionTransform)
+	{
+		outBones[0] = Crimson::Matrix4x4f::Identity;
+		for (auto& childIndex : aSkeleton->GetBone(0u).children)
+		{
+			UpdateBoneCacheLocal(aSkeleton, outBones, childIndex, myData->frames[myCurrentFrame], Crimson::Matrix4x4f::Identity);
+		}
+	}
+	else
+	{
+		UpdateBoneCacheGlobal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame]);
+	}
 }
 
 void Animation::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const
 {
+	const AnimationFrame* nextFrame = nullptr;
+
 	if (myFlags[eIsReversing])
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetPreviousFrame(), anInterpolationValue);
+		nextFrame = &GetPreviousFrame();
 	}
 	else
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], GetNextFrame(), anInterpolationValue);
+		nextFrame = &GetNextFrame();
+	}
+
+	if (myRootMotionTransform)
+	{
+		outBones[0] = Crimson::Matrix4x4f::Identity;
+		for (auto& childIndex : aSkeleton->GetBone(0u).children)
+		{
+			UpdateBoneCacheLocal(aSkeleton, outBones, childIndex, myData->frames[myCurrentFrame], *nextFrame, anInterpolationValue, Crimson::Matrix4x4f::Identity);
+		}
+	}
+	else
+	{
+		UpdateBoneCacheGlobal(aSkeleton, outBones, 0u, myData->frames[myCurrentFrame], *nextFrame, anInterpolationValue);
 	}
 }
 
@@ -261,24 +314,92 @@ bool Animation::IsValidSkeleton(const Skeleton* aSkeleton, std::string* outError
 	}
 
 	const auto& frame = GetFrame(0);
+	const bool usingNameSpace = frame.globalTransforms.find(aSkeleton->GetBone(0).namespaceName) != frame.globalTransforms.end();
 	if (aSkeleton->GetBoneCount() != frame.globalTransformMatrices.size())
 	{
 		if (outErrorMessage)
 		{
 			*outErrorMessage = "Different Bonecounts! \nBones in Animation: " + std::to_string(frame.globalTransformMatrices.size());
+
+			if (aSkeleton->GetBoneCount() < frame.globalTransformMatrices.size())
+			{
+				*outErrorMessage += "\n\nBones missing in Skeleton:";
+				auto remainingBones = frame.globalTransformMatrices;
+
+				if (usingNameSpace)
+				{
+					for (auto& bone : aSkeleton->GetBones())
+					{
+						remainingBones.erase(bone.namespaceName);
+					}
+				}
+				else
+				{
+					for (auto& bone : aSkeleton->GetBones())
+					{
+						remainingBones.erase(bone.name);
+					}
+				}
+
+				for (auto& [boneName, matrix] : remainingBones)
+				{
+					*outErrorMessage += "\n" + boneName;
+				}
+			}
+			else
+			{
+				*outErrorMessage += "\n\nBones missing in Animation:\n";
+				if (usingNameSpace)
+				{
+					for (auto& bone : aSkeleton->GetBones())
+					{
+						if (frame.globalTransformMatrices.find(bone.namespaceName) == frame.globalTransformMatrices.end())
+						{
+							*outErrorMessage += "\n" + bone.namespaceName;
+						}
+					}
+				}
+				else
+				{
+					for (auto& bone : aSkeleton->GetBones())
+					{
+						if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end())
+						{
+							*outErrorMessage += "\n" + bone.name;
+						}
+					}
+				}
+			}
 		}
 		return false;
 	}
 
-	for (auto& bone : aSkeleton->GetBones())
+	if (usingNameSpace)
 	{
-		if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end() && frame.globalTransformMatrices.find(bone.namespaceName) == frame.globalTransformMatrices.end())
+		for (auto& bone : aSkeleton->GetBones())
 		{
-			if (outErrorMessage)
+			if (frame.globalTransformMatrices.find(bone.namespaceName) == frame.globalTransformMatrices.end())
 			{
-				*outErrorMessage = "Bone not found in animation! \nBone: " + bone.namespaceName;
+				if (outErrorMessage)
+				{
+					*outErrorMessage = "Bone not found in animation! \nBone: " + bone.namespaceName;
+				}
+				return false;
 			}
-			return false;
+		}
+	}
+	else
+	{
+		for (auto& bone : aSkeleton->GetBones())
+		{
+			if (frame.globalTransformMatrices.find(bone.name) == frame.globalTransformMatrices.end())
+			{
+				if (outErrorMessage)
+				{
+					*outErrorMessage = "Bone not found in animation! \nBone: " + bone.name;
+				}
+				return false;
+			}
 		}
 	}
 
@@ -331,7 +452,7 @@ void Animation::ValidateUsingNamespace(const Skeleton* aSkeleton)
 	myFlags[eIsUsingNamespace] = transforms.find(aSkeleton->GetBone(0).namespaceName) != transforms.end();
 }
 
-void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const
+void Animation::UpdateBoneCacheGlobal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
 	const std::string* boneName = &bone.namespaceName;
@@ -352,11 +473,11 @@ void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& ou
 
 	for (auto& childIndex : bone.children)
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aFrame);
+		UpdateBoneCacheGlobal(aSkeleton, outBones, childIndex, aFrame);
 	}
 }
 
-void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const
+void Animation::UpdateBoneCacheGlobal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue) const
 {
 	const auto& bone = aSkeleton->GetBone(anIndex);
 	const std::string* boneName = &bone.namespaceName;
@@ -378,6 +499,59 @@ void Animation::UpdateBoneCacheInternal(const Skeleton* aSkeleton, BoneCache& ou
 
 	for (auto& childIndex : bone.children)
 	{
-		UpdateBoneCacheInternal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue);
+		UpdateBoneCacheGlobal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue);
+	}
+}
+
+void Animation::UpdateBoneCacheLocal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
+{
+	const auto& bone = aSkeleton->GetBone(anIndex);
+	const std::string* name = &bone.namespaceName;
+	if (!myFlags[eIsUsingNamespace])
+	{
+		name = &bone.name;
+	}
+
+	const auto& matrix = aFrame.localTransformMatrices.at(*name) * aParentTransform;
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform = matrix * outTransform;
+	}
+	else
+	{
+		outBones[anIndex] = bone.bindPoseInverse * matrix;
+	}
+
+	for (auto& childIndex : bone.children)
+	{
+		UpdateBoneCacheLocal(aSkeleton, outBones, childIndex, aFrame, matrix);
+	}
+}
+
+void Animation::UpdateBoneCacheLocal(const Skeleton* aSkeleton, BoneCache& outBones, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
+{
+	const auto& bone = aSkeleton->GetBone(anIndex);
+	const std::string* name = &bone.namespaceName;
+	if (!myFlags[eIsUsingNamespace])
+	{
+		name = &bone.name;
+	}
+
+	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
+	const auto& matrix = interpolatedTransform.GetAsMatrix() * aParentTransform;
+	if (myFlags[eIsAdditive])
+	{
+		auto& outTransform = outBones[anIndex];
+		outTransform = matrix * outTransform;
+	}
+	else
+	{
+		outBones[anIndex] = bone.bindPoseInverse * matrix;
+	}
+
+	for (auto& childIndex : bone.children)
+	{
+		UpdateBoneCacheLocal(aSkeleton, outBones, childIndex, aCurrentFrame, anInterpolationFrame, anInterpolationValue, matrix);
 	}
 }

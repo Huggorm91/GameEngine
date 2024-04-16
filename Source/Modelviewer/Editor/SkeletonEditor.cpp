@@ -663,7 +663,7 @@ void SkeletonEditor::CreateAnimationInspector()
 					break;
 				}
 
-				if (mySkeleton)
+				if (mySkeleton && myHasMatchingBones)
 				{
 					int boneIndex = myMesh->myAnimation->GetStartBoneIndex();
 					ImGui::Text(mySkeleton->GetBone(boneIndex).namespaceName.c_str());
@@ -1321,7 +1321,17 @@ void SkeletonEditor::CheckSkeletonAnimationMatching(const std::shared_ptr<Animat
 		myPlayCount = 0;
 		if (myMesh->HasAnimation())
 		{
-			myMesh->StopAnimation();
+			myMesh->ResetBoneCache();
+
+			myMesh->myAnimation->StopAnimation();
+			myMesh->myAnimation->SetToFirstFrame();
+			myMesh->myAnimation->ResetTimer();
+			for (auto& animation : myMesh->myAdditiveAnimations)
+			{
+				animation->StopAnimation();
+				animation->SetToFirstFrame();
+				animation->ResetTimer();
+			}
 		}
 	}
 }
