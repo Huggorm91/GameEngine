@@ -36,6 +36,18 @@ AnimationTransform AnimationTransform::Interpolate(const AnimationTransform& aFr
 	return AnimationTransform(Lerp(aFrom.position, aTo.position, aPercentage), Nlerp(aFrom.rotation, aTo.rotation, aPercentage));
 }
 
+void AnimationTransform::Add(const AnimationTransform& aTransform)
+{
+	position += aTransform.position;
+	rotation *= aTransform.rotation;
+}
+
+void AnimationTransform::Subtract(const AnimationTransform& aTransform)
+{
+	position -= aTransform.position;
+	rotation *= aTransform.rotation.GetInverse();
+}
+
 AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : triggeredEvents(aFrame.TriggeredEvents)
 {
 	globalTransformMatrices.reserve(aFrame.GlobalTransforms.size());

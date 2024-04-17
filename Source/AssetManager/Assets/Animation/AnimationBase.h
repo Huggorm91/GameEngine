@@ -7,8 +7,9 @@
 
 class Skeleton;
 
-struct AnimationTransform
+class AnimationTransform
 {
+public:
 	Crimson::Vector3f position;
 	Crimson::QuatF rotation;
 
@@ -21,6 +22,9 @@ struct AnimationTransform
 
 	Crimson::Matrix4x4f GetAsMatrix() const;
 	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
+
+	void Add(const AnimationTransform& aTransform);
+	void Subtract(const AnimationTransform& aTransform);
 
 	inline bool operator==(const AnimationTransform& aTranform) const
 	{

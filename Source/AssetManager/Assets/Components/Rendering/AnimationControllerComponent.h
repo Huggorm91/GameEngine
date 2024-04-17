@@ -47,4 +47,6 @@ private:
 	std::vector<std::shared_ptr<AnimationBase>> myAdditiveAnimations;
 	float myAnimationDelta;
 	float myAnimationTimer;
+
+	Crimson::Matrix4x4f CalculateAdditiveBoneCache(const std::unordered_map<std::string, AnimationTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& aBindPose);
 };

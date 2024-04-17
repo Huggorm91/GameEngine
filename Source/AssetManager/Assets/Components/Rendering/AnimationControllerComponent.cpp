@@ -55,11 +55,6 @@ void AnimationControllerComponent::UpdateNoRender()
 
 	if (!myAdditiveAnimations.empty())
 	{
-		for (auto& animation : myAdditiveAnimations)
-		{
-			animation->Update();
-		}
-
 		myAnimationTimer += Crimson::Timer::GetDeltaTime();
 		if (myAnimationTimer >= myAnimationDelta)
 		{
@@ -68,10 +63,12 @@ void AnimationControllerComponent::UpdateNoRender()
 			auto resultTransforms = myAnimation->GetAdditiveTransforms();
 			for (auto& animation : myAdditiveAnimations)
 			{
+				animation->Update();
 				auto currentTransforms = animation->GetAdditiveTransforms();
 
 				if (resultTransforms.size() < currentTransforms.size())
 				{
+					resultTransforms.reserve(currentTransforms.size());
 					for (auto& [boneName, transform] : currentTransforms)
 					{
 						if (auto iter = resultTransforms.find(boneName); iter != resultTransforms.end())
@@ -101,14 +98,7 @@ void AnimationControllerComponent::UpdateNoRender()
 			{
 				for (auto& bone : mySkeleton->GetBones())
 				{
-					if (auto iter = resultTransforms.find(bone.namespaceName); iter != resultTransforms.end())
-					{
-						myBoneTransformCache[index] = bone.bindPoseInverse * iter->second.GetAsMatrix();
-					}
-					else
-					{
-						myBoneTransformCache[index] = bone.bindPoseInverse;
-					}
+					myBoneTransformCache[index] = CalculateAdditiveBoneCache(resultTransforms, bone.namespaceName, bone.bindPoseInverse);
 					++index;
 				}
 			}
@@ -116,16 +106,16 @@ void AnimationControllerComponent::UpdateNoRender()
 			{
 				for (auto& bone : mySkeleton->GetBones())
 				{
-					if (auto iter = resultTransforms.find(bone.namespaceName); iter != resultTransforms.end())
-					{
-						myBoneTransformCache[index] = bone.bindPoseInverse * iter->second.GetAsMatrix();
-					}
-					else
-					{
-						myBoneTransformCache[index] = bone.bindPoseInverse;
-					}
+					myBoneTransformCache[index] = CalculateAdditiveBoneCache(resultTransforms, bone.name, bone.bindPoseInverse);
 					++index;
 				}
+			}
+		}
+		else // Update animations to keep thier timers working correctly
+		{
+			for (auto& animation : myAdditiveAnimations)
+			{
+				animation->Update();
 			}
 		}
 	}
@@ -274,4 +264,16 @@ Json::Value AnimationControllerComponent::ToJson() const
 {
 	Json::Value result = MeshComponent::ToJson();
 	return result;
+}
+
+Crimson::Matrix4x4f AnimationControllerComponent::CalculateAdditiveBoneCache(const std::unordered_map<std::string, AnimationTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& aBindPose)
+{
+	if (auto iter = someTransforms.find(aBoneName); iter != someTransforms.end())
+	{
+		return aBindPose * iter->second.GetAsMatrix();
+	}
+	else
+	{
+		return Crimson::Matrix4x4f::Identity;
+	}
 }

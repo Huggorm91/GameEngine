@@ -125,8 +125,7 @@ AnimationTransform Animation::GetRootMotion(float aPercentage)
 	const auto& rootTransform = myData->frames[myCurrentFrame].localTransforms.at(*boneName);
 
 	auto transform = AnimationTransform::Interpolate(previousTransform, rootTransform, aPercentage);
-	transform.position -= previousTransform.position;
-	transform.rotation = transform.rotation * previousTransform.rotation.GetInverse();
+	transform.Subtract(previousTransform);
 	return transform;
 }
 
