@@ -37,13 +37,12 @@ void Logger::PrintToFile(const std::string& aString) const
 {
 	std::filesystem::path directoryPath = std::filesystem::path(myLogFile).parent_path();
 	std::filesystem::create_directories(directoryPath);
-	std::fstream fileStream(myLogFile, std::ios::out | std::ios::app);
+	std::ofstream fileStream(myLogFile, std::ios::app);
 	if (fileStream)
 	{
 		fileStream << aString << std::endl;
 		fileStream.flush();
 	}
-	fileStream.close();
 }
 
 Logger Logger::Create(const std::string& aNamespace)
@@ -209,15 +208,15 @@ void Logger::LogException(const std::exception& anException, unsigned aLevel) co
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 
-		//try
-		//{
-		//	std::rethrow_if_nested(anException);
-		//}
-		//catch (const std::exception& nestedException)
-		//{
-		//	LogException(nestedException, aLevel + 1);
-		//}
-		//catch (...) {} // Catch all other cases.
+		try
+		{
+			std::rethrow_if_nested(anException);
+		}
+		catch (const std::exception& nestedException)
+		{
+			LogException(nestedException, aLevel + 1);
+		}
+		catch (...) {} // Catch all other cases.
 	}
 }
 

@@ -340,7 +340,7 @@ void MeshComponent::Deserialize(std::istream& aStream)
 	myTransform.Deserialize(aStream);
 
 	myElements = AssetManager::GetAsset <std::vector<MeshElement>>(path);
-	myPath = AssetManager::GetAsset <std::string*>(path);
+	myPath = AssetManager::GetAsset<const std::string*>(path);
 
 	for (auto& element : myElements)
 	{
@@ -482,6 +482,11 @@ void MeshComponent::CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot)
 		for (auto& path : AssetManager::GetAvailableTextures())
 		{
 			Texture* current = AssetManager::GetAsset<Texture*>(path);
+			if (current == nullptr)
+			{
+				continue;
+			}
+
 			const bool isSelected = aTexture == current;
 			if (ImGui::Selectable(Crimson::ToString(current->GetName()).c_str(), isSelected))
 			{

@@ -4,10 +4,12 @@
 #include "Shared/Globals.h"
 #include "Shared/NetMessage.h"
 #include <string>
+#include <format>
+#include "CrimsonUtilities/String/StringFunctions.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
-Client::Client() : myThread(nullptr), mySocket(), myIsRunning(false), myIsInitialized(false), myIsConnected(false), myServer()
+Client::Client() : myThread(nullptr), mySocket(), myIsRunning(false), myIsInitialized(false), myIsConnected(false), myServer(), myFailedMessageCount(0u)
 {}
 
 Client::~Client()
@@ -18,13 +20,7 @@ Client::~Client()
 		myThread->join();
 	}
 
-	if (myIsConnected)
-	{
-		NetMessage message;
-		message.type = MessageType::Disconnect;
-		sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
-
-	}
+	Disconnect();
 
 	if (myIsInitialized)
 	{
@@ -35,31 +31,37 @@ Client::~Client()
 
 void Client::Init()
 {
+	myLogger = Logger::Create("Network Client");
+	myLogger.SetPrintToFile(true, "Network Logs/" + Crimson::FileNameTimestamp() + ".txt");
 	myIsRunning = true;
-	// initialise winsock
+
+	// Initialise winsock
 	WSADATA ws;
-	printf("Initialising Winsock...");
+	myLogger.Log("Initialising Winsock...");
 	if (WSAStartup(MAKEWORD(2, 2), &ws) != 0)
 	{
-		printf("Failed. Error Code: %d", WSAGetLastError());
+		myLogger.Warn(std::format("Failed. Error Code: %d", WSAGetLastError()));
 	}
-	printf("Initialised.\n");
 
-	// create socket
-
-	if ((mySocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR) // <<< UDP socket
+	// Create UDP socket
+	myLogger.Log("Creating Socket...");
+	if ((mySocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
 	{
-		printf("socket() failed with error code: %d", WSAGetLastError());
+		myLogger.Warn(std::format("socket() failed with error code: %d", WSAGetLastError()));
 	}
-	myIsInitialized = true;
 
 	u_long ne = TRUE;
 	ioctlsocket(mySocket, FIONBIO, &ne);
+	myIsInitialized = true;
+	myLogger.Succ("Initialised.");
 
 	if (Connect())
 	{
-		myIsConnected = true;
-		myThread = new std::thread([this]() { this->Recieve(); });
+		myLogger.Succ("Connected to Server.");
+	}
+	else
+	{
+		myLogger.Warn("Failed to connect to Server.");
 	}
 }
 
@@ -76,64 +78,87 @@ void Client::Update()
 
 		if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			printf("sendto() failed with error code: %d", WSAGetLastError());
+			myLogger.Log(std::format("sendto() failed with error code: %d", WSAGetLastError()));
 		}
 	}
 }
 
 bool Client::Connect()
 {
-	printf("Enter IP: (Default: 127.0.0.1)\n");
-	std::string IPInput;
-	std::getline(std::cin, IPInput);
-	if (IPInput.empty())
-	{
-		IPInput = "127.0.0.1";
-	}
+	std::string IP = "127.0.0.1";
+	unsigned port = 27015;
 
-	printf("Enter Port: (Default: 27015)\n");
-	std::string port;
-	std::getline(std::cin, port);
-	if (port.empty())
-	{
-		port = "27015";
-	}
-
-	// setup address structure
+	// Setup address structure
 	memset((char*)&myServer, 0, sizeof(myServer));
 	myServer.sin_family = AF_INET;
-	myServer.sin_port = htons(stoi(port));
-	if (!inet_pton(myServer.sin_family, IPInput.c_str(), &myServer.sin_addr.S_un.S_addr))
+	myServer.sin_port = htons(port);
+	if (!inet_pton(myServer.sin_family, IP.c_str(), &myServer.sin_addr.S_un.S_addr))
 	{
-		printf("invalid IPv4 Address with error code: %d", WSAGetLastError());
+		myLogger.Warn(std::format("invalid IPv4 Address with error code: %d", WSAGetLastError()));
 		return false;
 	}
 
-	printf("Enter Username: \n");
-	std::string nameInput;
-	std::cin >> nameInput;
+	// Create connect message
+	std::string userName = "Default";
 
 	NetMessage message;
 	message.type = MessageType::Connect;
-	message.dataSize = static_cast<unsigned short>(nameInput.size() + 1);
-	strcpy_s(message.data, message.dataSize, nameInput.c_str());
+	message.dataSize = static_cast<unsigned short>(userName.size() + 1);
+	strcpy_s(message.data, message.dataSize, userName.c_str());
 
+	// Send Connect message to Server
 	if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 	{
-		printf("sendto() failed with error code: %d", WSAGetLastError());
+		myLogger.Warn(std::format("Connect: sendto() failed with error code: %d", WSAGetLastError()));
 		return false;
 	}
+
+	if (myThread == nullptr)
+	{
+		myThread = new std::thread([this]() { this->Recieve(); });
+	}
+	myIsConnected = true;
 	return true;
 }
 
-void Client::SendNetMessage(const NetMessage& aMessage)
+void Client::Disconnect()
 {
-	if (myIsConnected)
+	if (!myIsConnected)
 	{
-		if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		return;
+	}
+
+	NetMessage message;
+	message.type = MessageType::Disconnect;
+	sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
+	myIsConnected = false;
+}
+
+bool Client::SendNetMessage(const NetMessage& aMessage)
+{
+	if (!myIsConnected)
+	{
+		return;
+	}
+
+	if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
+	{
+		myLogger.Warn(std::format("SendNetMessage: sendto() failed with error code: %d", WSAGetLastError()));
+		++myFailedMessageCount;
+
+		if (myFailedMessageCount > 5u)
 		{
-			printf("sendto() failed with error code: %d", WSAGetLastError());
+			Disconnect();
+			myIsConnected = false;
+			myFailedMessageCount = 0u;
+			myLogger.Warn("Client has failed to send too many messages. Client is now disconnected!");
 		}
+		return false;
+	}
+	else
+	{
+		myFailedMessageCount = 0u;
+		return true;
 	}
 }
 

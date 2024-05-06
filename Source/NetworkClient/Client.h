@@ -4,6 +4,7 @@
 #include <WS2tcpip.h>
 #include <mutex>
 #include "Shared\NetMessage.h"
+#include "Logging/Logging.h"
 
 class Client
 {
@@ -14,7 +15,7 @@ public:
 	void Init();
 	void Update();
 
-	void SendNetMessage(const NetMessage& aMessage);
+	bool SendNetMessage(const NetMessage& aMessage);
 
 	std::vector<NetMessage> Flush();
 
@@ -24,14 +25,19 @@ public:
 
 private:
 	std::vector<NetMessage> myMessages;
+	Logger myLogger;
 	std::mutex myMutex;
-	std::thread* myThread;
 	sockaddr_in myServer;
 	SOCKET mySocket;
+	std::thread* myThread;
+
+	unsigned myFailedMessageCount;
+
 	bool myIsRunning;
 	bool myIsConnected;
 	bool myIsInitialized;
 
 	bool Connect();
+	void Disconnect();
 };
 
