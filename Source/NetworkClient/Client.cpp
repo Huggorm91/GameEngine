@@ -1,9 +1,7 @@
 #include "Client.h"
 #include <winsock2.h>
-#include <iostream>
 #include "Shared/Globals.h"
 #include "Shared/NetMessage.h"
-#include <string>
 #include <format>
 #include "CrimsonUtilities/String/StringFunctions.h"
 
@@ -33,14 +31,13 @@ void Client::Init()
 {
 	myLogger = Logger::Create("Network Client");
 	myLogger.SetPrintToFile(true, "Network Logs/" + Crimson::FileNameTimestamp() + ".txt");
-	myIsRunning = true;
 
 	// Initialise winsock
-	WSADATA ws;
 	myLogger.Log("Initialising Winsock...");
-	if (WSAStartup(MAKEWORD(2, 2), &ws) != 0)
+	if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
 	{
 		myLogger.Warn(std::format("Failed. Error Code: %d", WSAGetLastError()));
+		return;
 	}
 
 	// Create UDP socket
@@ -48,12 +45,14 @@ void Client::Init()
 	if ((mySocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
 	{
 		myLogger.Warn(std::format("socket() failed with error code: %d", WSAGetLastError()));
+		return;
 	}
 
 	u_long ne = TRUE;
 	ioctlsocket(mySocket, FIONBIO, &ne);
 	myIsInitialized = true;
-	myLogger.Succ("Initialised.");
+	myLogger.Succ("Network client initialized!");
+	myIsRunning = true;
 
 	if (Connect())
 	{
@@ -68,7 +67,7 @@ void Client::Init()
 void Client::Update()
 {
 	std::string input;
-	std::getline(std::cin, input);
+	//std::getline(std::cin, input);
 	if (!input.empty())
 	{
 		NetMessage message;
@@ -138,7 +137,7 @@ bool Client::SendNetMessage(const NetMessage& aMessage)
 {
 	if (!myIsConnected)
 	{
-		return;
+		return false;
 	}
 
 	if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)

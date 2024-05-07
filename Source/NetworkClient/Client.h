@@ -1,4 +1,5 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #include <vector>
 #include <thread>
 #include <WS2tcpip.h>
@@ -25,6 +26,7 @@ public:
 
 private:
 	std::vector<NetMessage> myMessages;
+	WSADATA myWSA;
 	Logger myLogger;
 	std::mutex myMutex;
 	sockaddr_in myServer;
