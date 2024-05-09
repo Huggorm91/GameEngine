@@ -23,6 +23,7 @@ public:
 	void Recieve();
 
 	bool IsConnected() const;
+	bool Connect();
 
 private:
 	std::vector<NetMessage> myMessages;
@@ -39,7 +40,6 @@ private:
 	bool myIsConnected;
 	bool myIsInitialized;
 
-	bool Connect();
 	void Disconnect();
 };
 

@@ -4,10 +4,11 @@
 #include "Shared/NetMessage.h"
 #include <format>
 #include "CrimsonUtilities/String/StringFunctions.h"
+#include "CrimsonUtilities/Time/Timer.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
-Client::Client() : myThread(nullptr), mySocket(), myIsRunning(false), myIsInitialized(false), myIsConnected(false), myServer(), myFailedMessageCount(0u)
+Client::Client() : myWSA(), myThread(nullptr), mySocket(), myIsRunning(false), myIsInitialized(false), myIsConnected(false), myServer(), myFailedMessageCount(0u)
 {}
 
 Client::~Client()
@@ -36,7 +37,7 @@ void Client::Init()
 	myLogger.Log("Initialising Winsock...");
 	if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
 	{
-		myLogger.Warn(std::format("Failed. Error Code: %d", WSAGetLastError()));
+		myLogger.Warn(std::format("Failed. Error Code: {}", WSAGetLastError()));
 		return;
 	}
 
@@ -44,7 +45,7 @@ void Client::Init()
 	myLogger.Log("Creating Socket...");
 	if ((mySocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
 	{
-		myLogger.Warn(std::format("socket() failed with error code: %d", WSAGetLastError()));
+		myLogger.Warn(std::format("socket() failed with error code: {}", WSAGetLastError()));
 		return;
 	}
 
@@ -54,14 +55,7 @@ void Client::Init()
 	myLogger.Succ("Network client initialized!");
 	myIsRunning = true;
 
-	if (Connect())
-	{
-		myLogger.Succ("Connected to Server.");
-	}
-	else
-	{
-		myLogger.Warn("Failed to connect to Server.");
-	}
+	Connect();
 }
 
 void Client::Update()
@@ -77,13 +71,14 @@ void Client::Update()
 
 		if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			myLogger.Log(std::format("sendto() failed with error code: %d", WSAGetLastError()));
+			myLogger.Log(std::format("Update: sendto() failed with error code: {}", WSAGetLastError()));
 		}
 	}
 }
 
 bool Client::Connect()
 {
+	myLogger.Log("Attempting to connect to server...");
 	std::string IP = "127.0.0.1";
 	unsigned port = 27015;
 
@@ -93,7 +88,7 @@ bool Client::Connect()
 	myServer.sin_port = htons(port);
 	if (!inet_pton(myServer.sin_family, IP.c_str(), &myServer.sin_addr.S_un.S_addr))
 	{
-		myLogger.Warn(std::format("invalid IPv4 Address with error code: %d", WSAGetLastError()));
+		myLogger.Warn(std::format("Invalid IPv4 Address with error code: {}", WSAGetLastError()));
 		return false;
 	}
 
@@ -102,13 +97,41 @@ bool Client::Connect()
 
 	NetMessage message;
 	message.type = MessageType::Connect;
+	message.needReply = true;
 	message.dataSize = static_cast<unsigned short>(userName.size() + 1);
 	strcpy_s(message.data, message.dataSize, userName.c_str());
 
 	// Send Connect message to Server
 	if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 	{
-		myLogger.Warn(std::format("Connect: sendto() failed with error code: %d", WSAGetLastError()));
+		myLogger.Warn(std::format("Connect: sendto() failed with error code: {}", WSAGetLastError()));
+		return false;
+	}
+
+	// Wait for reply from server
+	NetMessage answer;
+	int slen = sizeof(sockaddr_in);
+	auto timer = Crimson::Timer::StartStopwatch();
+	while (Crimson::Timer::StopStopwatch(timer) < 3.0)
+	{
+		const auto result = recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen);
+		if (result != SOCKET_ERROR)
+		{
+			if (answer.type == MessageType::Confirmation)
+			{
+				myIsConnected = true;
+				break;
+			}
+		}
+	}
+
+	if (myIsConnected)
+	{
+		myLogger.Succ("Connected to Server.");
+	}
+	else
+	{
+		myLogger.Warn("Connection timed out. Could not connect to server.");
 		return false;
 	}
 
@@ -116,7 +139,6 @@ bool Client::Connect()
 	{
 		myThread = new std::thread([this]() { this->Recieve(); });
 	}
-	myIsConnected = true;
 	return true;
 }
 
@@ -142,7 +164,7 @@ bool Client::SendNetMessage(const NetMessage& aMessage)
 
 	if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 	{
-		myLogger.Warn(std::format("SendNetMessage: sendto() failed with error code: %d", WSAGetLastError()));
+		myLogger.Warn(std::format("SendNetMessage: sendto() failed with error code: {}", WSAGetLastError()));
 		++myFailedMessageCount;
 
 		if (myFailedMessageCount > 5u)
@@ -176,7 +198,7 @@ void Client::Recieve()
 	while (myIsRunning)
 	{
 		// Try to receive some data
-		if (recvfrom(mySocket, answer, globalBuffLength, 0, (sockaddr*)&myServer, &slen) != SOCKET_ERROR)
+		if (recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen) != SOCKET_ERROR)
 		{
 			std::unique_lock lock(myMutex);
 			myMessages.emplace_back(answer);

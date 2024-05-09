@@ -10,14 +10,16 @@
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
-#include "File/DirectoryFunctions.h"
+
+#include "NetworkClient/Client.h"
 
 #include "Time/Timer.h"
 #include "Input/InputMapper.h"
 #include "Json\jsonCpp\json.h"
+#include "File/DirectoryFunctions.h"
 
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), myNetworkClient(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
 , myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
@@ -62,6 +64,11 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	catch (...)
 	{
 		myLogger.Err("Failed to save current scene to: " + saveName);
+	}
+
+	if (myNetworkClient)
+	{
+		delete myNetworkClient;
 	}
 
 	// Leave console up to let user read information
@@ -159,6 +166,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
+	ConnectToServer();
+
 	HideSplashScreen();
 
 	return true;
@@ -211,11 +220,21 @@ int ModelViewer::Run()
 #endif // _DEBUG
 	}
 
+	Shutdown();
+
+	return 0;
+}
+
+void ModelViewer::Shutdown()
+{
+	if (myNetworkClient)
+	{
+		delete myNetworkClient;
+	}
+
 #ifndef _RETAIL
 	myImguiManager.Release();
 #endif // _RETAIL
-
-	return 0;
 }
 
 #ifndef _RETAIL
@@ -249,7 +268,7 @@ void ModelViewer::SetPlayMode(bool aState)
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
 			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*){}));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*) {}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
@@ -266,6 +285,21 @@ void ModelViewer::SetPlayMode(bool aState)
 		myPlayScene = Scene();
 		myPlayModeRedoCommands.clear();
 		myPlayModeUndoCommands.clear();
+	}
+}
+
+void ModelViewer::ConnectToServer()
+{
+	if (myNetworkClient == nullptr)
+	{
+		myNetworkClient = new Client();
+		myNetworkClient->Init();
+		return;
+	}
+
+	if (!myNetworkClient->IsConnected())
+	{
+		myNetworkClient->Connect();
 	}
 }
 
@@ -555,7 +589,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 			myUndoCommands.emplace_back(aCommand);
 		}
 		mySceneIsEdited = true;
-	}	
+	}
 	else
 	{
 		if (myPlayModeRedoCommands.size() > 0)
@@ -568,7 +602,7 @@ void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 			myPlayModeUndoCommands.emplace_back(aCommand);
 		}
 	}
-	
+
 }
 
 void ModelViewer::UndoCommand()
@@ -616,7 +650,7 @@ void ModelViewer::RedoCommand()
 			myPlayModeRedoCommands.pop_back();
 			mySceneIsEdited = true;
 		}
-	}	
+	}
 }
 
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent, Crimson::eKey aKey)

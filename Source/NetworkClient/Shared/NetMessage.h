@@ -1,9 +1,9 @@
 #pragma once
 #include "Globals.h"
 
-struct MessageType
+namespace MessageType
 {
-	enum Enum
+	enum Enum: short
 	{
 		Invalid,
 		Connect,
@@ -17,8 +17,8 @@ struct MessageType
 struct NetMessage
 {
 	MessageType::Enum type = MessageType::Invalid;
-	bool needReply;
 	unsigned short dataSize = 0;
+	bool needReply = false;
 	char data[globalBuffLength]{'\0'};
 
 	inline operator char* ()

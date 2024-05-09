@@ -8,6 +8,7 @@
 
 class SplashWindow;
 class GameObject;
+class Client;
 
 #ifndef _RETAIL
 #include "Editor/ImguiManager.h"
@@ -35,12 +36,15 @@ public:
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
+	void Shutdown();
 
 #ifndef _RETAIL
 	FORCEINLINE static ImguiManager& GetImguiManager() { return Get().myImguiManager; }
 	void SetDropFile(HDROP aHandle);
 
 	void SetPlayMode(bool aState);
+
+	void ConnectToServer();
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
 
@@ -92,12 +96,13 @@ private:
 	std::vector<std::shared_ptr<EditCommand>> myPlayModeRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myPlayModeUndoCommands;
 #endif // _RETAIL
-	HINSTANCE myModuleHandle{ nullptr };
-	HWND myMainWindowHandle{ nullptr };
+	HINSTANCE myModuleHandle;
+	HWND myMainWindowHandle;
 
-	SplashWindow* mySplashWindow{ nullptr };
+	SplashWindow* mySplashWindow;
+	Client* myNetworkClient;
 
-	const std::string mySettingsPath{"Settings/mw_settings.json"};
+	const std::string mySettingsPath;
 	ApplicationState myApplicationState;
 
 	Logger myLogger;

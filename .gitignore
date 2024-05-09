@@ -37,6 +37,8 @@ bld/
 [Bb]in/*.ini
 [Bb]in/Logs
 [Bb]in/Crashdump
+[Bb]in/Server Logs
+[Bb]in/Network Logs
 [Bb]in/README.txt
 Content
 */GraphicsEngine/Shaders/Include/
