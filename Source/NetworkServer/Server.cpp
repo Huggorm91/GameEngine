@@ -17,7 +17,7 @@ void Server::Init()
 	myLogger.Log("Initializing Winsock...");
 	if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
 	{
-		myLogger.Err(std::format("Failed. Error Code: %d\n", WSAGetLastError()));
+		myLogger.Err(std::format("Failed. Error Code: {}", WSAGetLastError()));
 		ErrorShutDown();
 	}
 
@@ -25,7 +25,7 @@ void Server::Init()
 	myLogger.Log("Creating socket...");
 	if ((myServerSocket = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
 	{
-		myLogger.Err(std::format("Could not create socket: %d\n", WSAGetLastError()));
+		myLogger.Err(std::format("Could not create socket: {}", WSAGetLastError()));
 		ErrorShutDown();
 	}
 
@@ -38,7 +38,7 @@ void Server::Init()
 	myLogger.Log("Binding socket...");
 	if (bind(myServerSocket, (sockaddr*)&myServerInfo, mySocketSize) == SOCKET_ERROR)
 	{
-		myLogger.Err(std::format("Bind failed with error code: %d\n", WSAGetLastError()));
+		myLogger.Err(std::format("Bind failed with error code: {}", WSAGetLastError()));
 		ErrorShutDown();
 	}
 
@@ -49,12 +49,28 @@ void Server::Init()
 void Server::Update()
 {
 	fflush(stdout);
+	ZeroMemory(&myClientInfo, sizeof(myClientInfo));
+	ZeroMemory(&myMessage, sizeof(myMessage));
 
 	// try to receive some data, this is a blocking call
 	if (recvfrom(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
 	{
-		myLogger.Err(std::format("recvfrom() failed with error code: %d\n", WSAGetLastError()));
-		ErrorShutDown();
+		auto error = WSAGetLastError();
+		myLogger.Err(std::format("recvfrom() failed with error code: {}", error));
+		if (error != 10054) // Client has disconnected
+		{
+			ErrorShutDown();
+		}
+		else
+		{
+			PSTR clientIP = new char[16];
+			inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, clientIP, 16);
+			auto port = ntohs(myClientInfo.sin_port);
+			myLogger.Warn(std::format("Client: {}:{} has been disconnected!", clientIP, port));
+			std::string identifier = std::string(clientIP) + ':' + std::to_string(port);
+			myClients.erase(identifier);
+		}
+		return;
 	}
 
 	// print details of the client/peer and the data received
@@ -67,7 +83,7 @@ void Server::Update()
 	Client client;
 	client.socket = myClientInfo;
 	client.ip = clientIP;
-	client.port = ntohs(myClientInfo.sin_port);
+	client.port = port;
 
 	std::string userName = client.username;
 
@@ -79,8 +95,10 @@ void Server::Update()
 	{
 		client.username = myMessage.data;
 		myClients.emplace(identifier, client);
-		myLogger.Log(std::format("New connection from: %s\tUsername: %s\n", identifier.c_str(), client.username.c_str()));
-		sendto(myServerSocket, "Successfully joined server.", static_cast<int>(strlen("Successfully joined server.")), 0, (sockaddr*)&client.socket, sizeof(sockaddr_in));
+		myLogger.Log(std::format("New connection from: {}\tUsername: {}", identifier.c_str(), client.username.c_str()));
+		NetMessage message;
+		message.type = MessageType::Confirmation;
+		sendto(myServerSocket, message, sizeof(myMessage), 0, (sockaddr*)&client.socket, sizeof(sockaddr_in));
 		break;
 	}
 	case MessageType::Disconnect:
@@ -89,11 +107,11 @@ void Server::Update()
 		{
 			userName = iter->second.username;
 			myClients.erase(iter);
-			myLogger.Log(std::format("Disconnect from: %s\tUsername: %s\n", identifier.c_str(), userName.c_str()));
+			myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", identifier.c_str(), userName.c_str()));
 		}
 		else
 		{
-			myLogger.Log(std::format("Unknown user disconnected: %s:%d\n", client.ip.c_str(), client.port));
+			myLogger.Log(std::format("Unknown user disconnected: {}:{}", client.ip.c_str(), client.port));
 		}
 		break;
 	}
@@ -102,11 +120,11 @@ void Server::Update()
 		if (auto iter = myClients.find(identifier); iter != myClients.end())
 		{
 			userName = iter->second.username;
-			myLogger.Log(std::format("%s: %s\n", userName.c_str(), myMessage.data));
+			myLogger.Log(std::format("{}: {}", userName.c_str(), myMessage.data));
 		}
 		else
 		{
-			myLogger.Log(std::format("Unknown user: %s:%d\nTried to send message: %s\n", client.ip.c_str(), client.port, myMessage.data));
+			myLogger.Log(std::format("Unknown user: {}:{}\nTried to send message: {}", client.ip.c_str(), client.port, myMessage.data));
 		}
 		break;
 	}
@@ -114,19 +132,34 @@ void Server::Update()
 		break;
 	}
 
-	for (auto& [iter, name] : myClients)
+	for (auto& [identifier, entry] : myClients)
 	{
-		if (client == name)
+		if (client == entry)
 		{
 			continue;
 		}
 
-		if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&name.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&entry.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			myLogger.Err(std::format("sendto() failed with error code: %d\n", WSAGetLastError()));
-			ErrorShutDown();
+			myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
+			++entry.failedMessageCount;
+			if (entry.failedMessageCount > 5)
+			{
+				myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", identifier.c_str(), userName.c_str()));
+				myRemovedClients.emplace_back(identifier);
+			}
+		}
+		else
+		{
+			entry.failedMessageCount = 0;
 		}
 	}
+
+	for (auto& identifier : myRemovedClients)
+	{
+		myClients.erase(identifier);
+	}
+	myRemovedClients.clear();
 }
 
 bool Server::IsRunning() const
@@ -140,10 +173,12 @@ void Server::ShutDown()
 	// Disconnect all clients
 	closesocket(myServerSocket);
 	WSACleanup();
+	system("PAUSE");
 }
 
 void Server::ErrorShutDown()
 {
 	WSACleanup();
+	system("PAUSE");
 	exit(EXIT_FAILURE);
 }

@@ -10,6 +10,5 @@ int main()
 	}
 
 	server.ShutDown();
-
 	return 0;
 }

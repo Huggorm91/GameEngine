@@ -1,5 +1,8 @@
 #pragma once
-#include "Client.h"
+#define WIN32_LEAN_AND_MEAN
+#include <WS2tcpip.h>
+#include "Shared\NetMessage.h"
+#include "Logging/Logging.h"
 #include <unordered_map>
 
 class Server
@@ -22,6 +25,7 @@ private:
 		std::string username;
 		std::string ip;
 		unsigned short port = 0;
+		unsigned short failedMessageCount = 0;
 
 		inline bool operator==(const Client& aClient) const
 		{
@@ -30,6 +34,7 @@ private:
 	};
 
 	std::unordered_map<std::string, Client> myClients;
+	std::vector<std::string> myRemovedClients;
 	NetMessage myMessage;
 	WSADATA myWSA;
 	Logger myLogger;
