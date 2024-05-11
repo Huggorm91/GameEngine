@@ -6,6 +6,15 @@
 
 namespace Network
 {
+	Server::Server() : myCurrentIP(nullptr)
+	{
+	}
+
+	Server::~Server()
+	{
+		delete myCurrentIP;
+	}
+
 	void Server::Init()
 	{
 		myLogger = Logger::Create("Network Server");
@@ -45,6 +54,7 @@ namespace Network
 		}
 
 		myIsRunning = true;
+		myCurrentIP = new char[16];
 		myLogger.Succ("Server initialized!");
 	}
 
@@ -53,6 +63,7 @@ namespace Network
 		fflush(stdout);
 		ZeroMemory(&myClientInfo, sizeof(myClientInfo));
 		ZeroMemory(&myMessage, sizeof(myMessage));
+		ZeroMemory(myCurrentIP, 16);
 
 		// try to receive some data, this is a blocking call
 		if (recvfrom(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
@@ -65,29 +76,24 @@ namespace Network
 			}
 			else
 			{
-				PSTR clientIP = new char[16];
-				inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, clientIP, 16);
+				inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, myCurrentIP, 16);
 				auto port = ntohs(myClientInfo.sin_port);
-				myLogger.Warn(std::format("Client: {}:{} has been disconnected!", clientIP, port));
-				std::string identifier = std::string(clientIP) + ':' + std::to_string(port);
-				myClients.erase(identifier);
+				myLogger.Warn(std::format("Client: {}:{} has been disconnected!", myCurrentIP, port));
+				myClients.erase(GetIdentifier(myCurrentIP, port));
 			}
 			return;
 		}
 
 		// print details of the client/peer and the data received
-		PSTR clientIP = new char[16];
-		inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, clientIP, 16);
-		auto port = ntohs(myClientInfo.sin_port);
+		inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, myCurrentIP, 16);
+		const unsigned short port = ntohs(myClientInfo.sin_port);
 
-		std::string identifier = std::string(clientIP) + ':' + std::to_string(port);
+		const std::string identifier = GetIdentifier(myCurrentIP, port);
 
 		ClientInfo client;
 		client.socket = myClientInfo;
-		client.ip = clientIP;
+		client.ip = myCurrentIP;
 		client.port = port;
-
-		std::string userName = client.username;
 
 		switch (myMessage.type)
 		{
@@ -95,39 +101,17 @@ namespace Network
 			break;
 		case MessageType::Connect:
 		{
-			client.username = myMessage.data;
-			myClients.emplace(identifier, client);
-			myLogger.Log(std::format("New connection from: {}\tUsername: {}", identifier.c_str(), client.username.c_str()));
-			NetMessage message;
-			message.type = MessageType::Confirmation;
-			sendto(myServerSocket, message, sizeof(myMessage), 0, (sockaddr*)&client.socket, sizeof(sockaddr_in));
+			HandleConnect(client, identifier);
 			break;
 		}
 		case MessageType::Disconnect:
 		{
-			if (auto iter = myClients.find(identifier); iter != myClients.end())
-			{
-				userName = iter->second.username;
-				myClients.erase(iter);
-				myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", identifier.c_str(), userName.c_str()));
-			}
-			else
-			{
-				myLogger.Log(std::format("Unknown user disconnected: {}:{}", client.ip.c_str(), client.port));
-			}
+			HandleDisconnect(client, identifier);
 			break;
 		}
 		case MessageType::Message:
 		{
-			if (auto iter = myClients.find(identifier); iter != myClients.end())
-			{
-				userName = iter->second.username;
-				myLogger.Log(std::format("{}: {}", userName.c_str(), myMessage.data));
-			}
-			else
-			{
-				myLogger.Log(std::format("Unknown user: {}:{}\nTried to send message: {}", client.ip.c_str(), client.port, myMessage.data));
-			}
+			HandleMessage(client, identifier);
 			break;
 		}
 		default:
@@ -147,7 +131,7 @@ namespace Network
 				++entry.failedMessageCount;
 				if (entry.failedMessageCount > 5)
 				{
-					myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", id.c_str(), userName.c_str()));
+					myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", id.c_str(), entry.username.c_str()));
 					myRemovedClients.emplace_back(id);
 				}
 			}
@@ -184,4 +168,70 @@ namespace Network
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
+
+	void Server::HandleConnect(ClientInfo& outClient, const std::string& anIdentifier)
+	{
+		//outClient.username = myMessage.data;
+		outClient.username = "Client" + std::to_string(outClient.port);
+
+		myClients.emplace(anIdentifier, outClient);
+		myLogger.Log(std::format("New connection from: {}\tUsername: {}", anIdentifier.c_str(), outClient.username.c_str()));
+
+		SetMessageData(std::format("{} has joined the server.", outClient.username.c_str()));
+
+		NetMessage message;
+		message.type = MessageType::Confirmation;
+		sendto(myServerSocket, message, sizeof(message), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+	}
+
+	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
+	{
+		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
+		{
+			SetMessageData(std::format("{} has disconnected.", iter->second.username.c_str()));
+			myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier.c_str(), iter->second.username.c_str()));
+			myClients.erase(iter);
+		}
+		else
+		{
+			SetMessageData(std::format("UnknownUser{} has disconnected.", aClient.port));
+			myLogger.Log(std::format("Unknown user disconnected: {}:{}", aClient.ip.c_str(), aClient.port));
+		}
+	}
+
+	void Server::HandleConfirmation()
+	{
+	}
+
+	void Server::HandlePing()
+	{
+	}
+
+	void Server::HandleMessage(const ClientInfo& aClient, const std::string& anIdentifier)
+	{
+		std::string message;
+		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
+		{
+			SetMessageData(std::format("{}: {}", iter->second.username.c_str(), myMessage.data));
+			myLogger.Log(std::format("Message from: {}: {}", iter->second.username.c_str(), myMessage.data));
+		}
+		else
+		{
+			SetMessageData(std::format("UnknownUser{}: {}", aClient.port, myMessage.data));
+			myLogger.Log(std::format("Unknown user: {}:{}\nTried to send message: {}", aClient.ip.c_str(), aClient.port, myMessage.data));
+		}
+	}
+
+	void Server::SetMessageData(const std::string& aMessage)
+	{
+		ZeroMemory(myMessage.data, globalBuffLength);
+		myMessage.dataSize = static_cast<unsigned short>(aMessage.size() + 1);
+		strcpy_s(myMessage.data, myMessage.dataSize, aMessage.c_str());
+	}
+
+	std::string Server::GetIdentifier(char* anIP, unsigned short aPort)
+	{
+		return std::string(anIP) + ':' + std::to_string(aPort);
+	}
+
 }

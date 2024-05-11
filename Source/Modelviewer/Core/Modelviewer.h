@@ -8,7 +8,7 @@
 
 class SplashWindow;
 class GameObject;
-namespace Network { class Client; }
+namespace Network { class MessageHandler; }
 
 #ifndef _RETAIL
 #include "Editor/ImguiManager.h"
@@ -43,8 +43,6 @@ public:
 	void SetDropFile(HDROP aHandle);
 
 	void SetPlayMode(bool aState);
-
-	void ConnectToServer();
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
 
@@ -100,7 +98,7 @@ private:
 	HWND myMainWindowHandle;
 
 	SplashWindow* mySplashWindow;
-	Network::Client* myNetworkClient;
+	Network::MessageHandler* myMessageHandler;
 
 	const std::string mySettingsPath;
 	ApplicationState myApplicationState;

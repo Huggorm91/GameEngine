@@ -10,8 +10,8 @@ namespace Network
 	class Server
 	{
 	public:
-		Server() = default;
-		~Server() = default;
+		Server();
+		~Server();
 
 		void Init();
 		void Update();
@@ -43,11 +43,22 @@ namespace Network
 		sockaddr_in myClientInfo;
 		sockaddr_in myServerInfo;
 		SOCKET myServerSocket;
+		PSTR myCurrentIP;
 
 		int mySocketSize;
 
 		bool myIsRunning;
 
 		void ErrorShutDown();
+
+		void HandleConnect(ClientInfo& outClient, const std::string& anIdentifier);
+		void HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier);
+		void HandleConfirmation();
+		void HandlePing();
+		void HandleMessage(const ClientInfo& aClient, const std::string& anIdentifier);
+
+		void SetMessageData(const std::string& aMessage);
+
+		std::string GetIdentifier(char* anIP, unsigned short aPort);
 	};
 }

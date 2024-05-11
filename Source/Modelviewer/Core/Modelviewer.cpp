@@ -11,7 +11,7 @@
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
 
-#include "NetworkClient/Client.h"
+#include "NetworkClient/MessageHandler.h"
 
 #include "Time/Timer.h"
 #include "Input/InputMapper.h"
@@ -19,7 +19,7 @@
 #include "File/DirectoryFunctions.h"
 
 
-ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), myNetworkClient(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
+ModelViewer::ModelViewer() : myModuleHandle(nullptr), myMainWindowHandle(nullptr), mySplashWindow(nullptr), myMessageHandler(nullptr), mySettingsPath("Settings/mw_settings.json"), myApplicationState(), myLogger(), myCamera(), myScene()
 #ifndef _RETAIL
 , myDebugMode(GraphicsEngine::DebugMode::Default), myLightMode(GraphicsEngine::LightMode::Default), myRenderMode(GraphicsEngine::RenderMode::Mesh), myImguiManager()
 , myIsInPlayMode(false), myIsMaximized(false), myPlayScene(), myPlayScenePointers(), mySceneIsEdited(false)
@@ -66,9 +66,9 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 		myLogger.Err("Failed to save current scene to: " + saveName);
 	}
 
-	if (myNetworkClient)
+	if (myMessageHandler)
 	{
-		delete myNetworkClient;
+		delete myMessageHandler;
 	}
 
 	// Leave console up to let user read information
@@ -166,7 +166,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
 
-	ConnectToServer();
+	myMessageHandler = new Network::MessageHandler();
+	myMessageHandler->Init();
 
 	HideSplashScreen();
 
@@ -227,9 +228,9 @@ int ModelViewer::Run()
 
 void ModelViewer::Shutdown()
 {
-	if (myNetworkClient)
+	if (myMessageHandler)
 	{
-		delete myNetworkClient;
+		delete myMessageHandler;
 	}
 
 #ifndef _RETAIL
@@ -285,21 +286,6 @@ void ModelViewer::SetPlayMode(bool aState)
 		myPlayScene = Scene();
 		myPlayModeRedoCommands.clear();
 		myPlayModeUndoCommands.clear();
-	}
-}
-
-void ModelViewer::ConnectToServer()
-{
-	if (myNetworkClient == nullptr)
-	{
-		myNetworkClient = new Network::Client();
-		myNetworkClient->Init();
-		return;
-	}
-
-	if (!myNetworkClient->IsConnected())
-	{
-		myNetworkClient->Connect();
 	}
 }
 
