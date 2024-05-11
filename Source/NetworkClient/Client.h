@@ -4,42 +4,44 @@
 #include <thread>
 #include <WS2tcpip.h>
 #include <mutex>
-#include "Shared\NetMessage.h"
+#include "NetworkShared/NetMessage.h"
 #include "Logging/Logging.h"
 
-class Client
+namespace Network
 {
-public:
-	Client();
-	~Client();
+	class Client
+	{
+	public:
+		Client();
+		~Client();
 
-	void Init();
-	void Update();
+		void Init();
+		void Update();
 
-	bool SendNetMessage(const NetMessage& aMessage);
+		bool SendNetMessage(const NetMessage& aMessage);
 
-	std::vector<NetMessage> Flush();
+		std::vector<NetMessage> Flush();
 
-	void Recieve();
+		void Recieve();
 
-	bool IsConnected() const;
-	bool Connect();
+		bool IsConnected() const;
+		bool Connect();
 
-private:
-	std::vector<NetMessage> myMessages;
-	WSADATA myWSA;
-	Logger myLogger;
-	std::mutex myMutex;
-	sockaddr_in myServer;
-	SOCKET mySocket;
-	std::thread* myThread;
+	private:
+		std::vector<NetMessage> myMessages;
+		WSADATA myWSA;
+		Logger myLogger;
+		std::mutex myMutex;
+		sockaddr_in myServer;
+		SOCKET mySocket;
+		std::thread* myThread;
 
-	unsigned myFailedMessageCount;
+		unsigned myFailedMessageCount;
 
-	bool myIsRunning;
-	bool myIsConnected;
-	bool myIsInitialized;
+		bool myIsRunning;
+		bool myIsConnected;
+		bool myIsInitialized;
 
-	void Disconnect();
-};
-
+		void Disconnect();
+	};
+}

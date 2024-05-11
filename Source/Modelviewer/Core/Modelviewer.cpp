@@ -292,7 +292,7 @@ void ModelViewer::ConnectToServer()
 {
 	if (myNetworkClient == nullptr)
 	{
-		myNetworkClient = new Client();
+		myNetworkClient = new Network::Client();
 		myNetworkClient->Init();
 		return;
 	}

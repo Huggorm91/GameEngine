@@ -8,13 +8,13 @@
 
 class SplashWindow;
 class GameObject;
-class Client;
+namespace Network { class Client; }
 
 #ifndef _RETAIL
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
 
-class ModelViewer: public Crimson::InputObserver
+class ModelViewer : public Crimson::InputObserver
 {
 #else
 class ModelViewer
@@ -100,7 +100,7 @@ private:
 	HWND myMainWindowHandle;
 
 	SplashWindow* mySplashWindow;
-	Client* myNetworkClient;
+	Network::Client* myNetworkClient;
 
 	const std::string mySettingsPath;
 	ApplicationState myApplicationState;

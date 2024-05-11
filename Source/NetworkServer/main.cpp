@@ -2,7 +2,7 @@
 
 int main()
 {
-	Server server;
+	Network::Server server;
 	server.Init();
 	while (server.IsRunning())
 	{
