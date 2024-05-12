@@ -33,6 +33,9 @@ public:
 	FORCEINLINE static Logger& GetLogger() {
 		return Get().myLogger;
 	}
+	FORCEINLINE static Network::MessageHandler& GetMessageHandler() {
+		return *Get().myMessageHandler;
+	}
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();

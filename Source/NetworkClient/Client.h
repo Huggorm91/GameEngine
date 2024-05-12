@@ -16,7 +16,6 @@ namespace Network
 		~Client();
 
 		void Init();
-		void Update();
 
 		bool SendNetMessage(const NetMessage& aMessage);
 

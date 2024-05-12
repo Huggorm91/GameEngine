@@ -10,6 +10,8 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
+#include "NetworkClient/MessageHandler.h"
+
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_stdlib.h"
 #include "ImGui/imgui_impl_win32.h"
@@ -126,6 +128,8 @@ void ImguiManager::Update()
 
 	CreatePrefabWindow();
 	CreateNewObjectWindow();
+
+	CreateChatWindow();
 
 	CreatePopUp();
 	CreateOverwriteFilePopUp();
@@ -451,6 +455,37 @@ void ImguiManager::CreateMenubar()
 					myModelViewer->SaveScene(path, true);
 				}
 			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Network"))
+		{
+			const bool connected = myModelViewer->GetMessageHandler().IsConnected();
+			if (connected)
+			{
+				ImGui::Text("Status: Connected");
+				ImGui::BeginDisabled();
+			}
+			else
+			{
+				ImGui::Text("Status: Disconnected");
+			}
+			
+
+			if (ImGui::MenuItem("Connect"))
+			{
+				myModelViewer->GetMessageHandler().Connect();
+			}
+
+			if (connected)
+			{
+				ImGui::EndDisabled();
+			}
+
+			if (ImGui::MenuItem("Open Chat"))
+			{
+				myIsShowingChat = true;
+			}
+			
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -1131,6 +1166,30 @@ void ImguiManager::CreateNewObjectWindow()
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
+}
+
+void ImguiManager::CreateChatWindow()
+{
+	if (!myIsShowingChat)
+	{
+		return;
+	}
+
+	if (ImGui::Begin("Chat", &myIsShowingChat))
+	{
+		std::string input;
+		if (ImGui::InputText("Message", &input, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			myModelViewer->GetMessageHandler().SendChatMessage(input);
+		}
+		ImGui::Separator();
+		const auto& history = myModelViewer->GetMessageHandler().GetChatHistory();
+		for (auto iter = history.crbegin(); iter != history.crend(); iter++)
+		{
+			ImGui::Text(iter->c_str());
 		}
 	}
 	ImGui::End();

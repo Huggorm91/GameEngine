@@ -520,6 +520,8 @@ void ModelViewer::Update()
 	myImguiManager.Update();
 #endif // _RETAIL
 
+	myMessageHandler->Update();
+
 	myCamera.Update();
 	UpdateScene();
 

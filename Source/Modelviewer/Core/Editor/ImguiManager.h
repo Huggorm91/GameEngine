@@ -42,6 +42,7 @@ private:
 
 	bool myIsShowingPrefabWindow;
 	bool myIsShowingNewObjectWindow;
+	bool myIsShowingChat;
 
 	bool myShouldOpenOverwritePopUp;
 	bool myOverwriteAppliedToAll;
@@ -124,6 +125,8 @@ private:
 
 	void CreatePrefabWindow();
 	void CreateNewObjectWindow();
+
+	void CreateChatWindow();
 
 	void CreateOverwriteFilePopUp();
 

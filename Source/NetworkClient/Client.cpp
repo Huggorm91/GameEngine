@@ -58,24 +58,6 @@ namespace Network
 		Connect();
 	}
 
-	void Client::Update()
-	{
-		std::string input;
-		//std::getline(std::cin, input);
-		if (!input.empty())
-		{
-			NetMessage message;
-			message.type = MessageType::Message;
-			message.dataSize = static_cast<unsigned short>(input.size() + 1);
-			strcpy_s(message.data, message.dataSize, input.c_str());
-
-			if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
-			{
-				myLogger.Log(std::format("Update: sendto() failed with error code: {}", WSAGetLastError()));
-			}
-		}
-	}
-
 	bool Client::Connect()
 	{
 		myLogger.Log("Attempting to connect to server...");
