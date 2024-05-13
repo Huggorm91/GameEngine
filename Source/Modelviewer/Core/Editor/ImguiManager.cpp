@@ -1181,10 +1181,23 @@ void ImguiManager::CreateChatWindow()
 	if (ImGui::Begin("Chat", &myIsShowingChat))
 	{
 		std::string input;
+		const bool connected = myModelViewer->GetMessageHandler().IsConnected();
+		if (!connected)
+		{
+			input = "offline";
+			ImGui::BeginDisabled();
+		}
+
 		if (ImGui::InputText("Message", &input, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			myModelViewer->GetMessageHandler().SendChatMessage(input);
 		}
+
+		if (!connected)
+		{
+			ImGui::EndDisabled();
+		}
+		
 		ImGui::Separator();
 		const auto& history = myModelViewer->GetMessageHandler().GetChatHistory();
 		for (auto iter = history.crbegin(); iter != history.crend(); iter++)

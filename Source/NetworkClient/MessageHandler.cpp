@@ -29,8 +29,21 @@ void Network::MessageHandler::Update()
 	{
 		switch (message.type)
 		{
-		case MessageType::Connect:
 		case MessageType::Disconnect:
+		{
+			if (message.dataSize == 0)
+			{
+				myClient->myIsConnected = false;
+				myClient->myLogger.Warn("Server has shut down.");
+				myMessages.emplace_back(message);
+			}
+			else
+			{
+				myChatHistory.emplace_back(message.data);
+			}
+			break;
+		}
+		case MessageType::Connect:
 		case MessageType::Message:
 		{
 			myChatHistory.emplace_back(message.data);

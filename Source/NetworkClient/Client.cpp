@@ -8,7 +8,7 @@
 
 namespace Network
 {
-	Client::Client() : myWSA(), myThread(nullptr), mySocket(), myIsRunning(false), myIsInitialized(false), myIsConnected(false), myServer(), myFailedMessageCount(0u)
+	Client::Client() : myWSA(), myServer(), mySocket(), myThread(nullptr), myFailedMessageCount(0u), myIsRunning(false),myIsConnected(false), myIsInitialized(false), myServerDisconnected(false)
 	{}
 
 	Client::~Client()
@@ -109,6 +109,7 @@ namespace Network
 
 		if (myIsConnected)
 		{
+			myServerDisconnected = false;
 			myLogger.Succ("Connected to Server.");
 		}
 		else
@@ -141,6 +142,13 @@ namespace Network
 	{
 		if (!myIsConnected)
 		{
+			return false;
+		}
+
+		if (myServerDisconnected)
+		{
+			myIsConnected = false;
+			myLogger.Warn("Connection to server has been lost!");
 			return false;
 		}
 
@@ -177,6 +185,7 @@ namespace Network
 	{
 		NetMessage answer;
 		int slen = sizeof(sockaddr_in);
+		int error = 0;
 		while (myIsRunning)
 		{
 			// Try to receive some data
@@ -184,6 +193,14 @@ namespace Network
 			{
 				std::unique_lock lock(myMutex);
 				myMessages.emplace_back(answer);
+			}
+			else
+			{
+				error = WSAGetLastError();
+				if (error == 10054) // Server has disconnected
+				{
+					myServerDisconnected = true;
+				}				
 			}
 		}
 	}

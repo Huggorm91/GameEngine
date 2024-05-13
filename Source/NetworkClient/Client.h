@@ -11,6 +11,7 @@ namespace Network
 {
 	class Client
 	{
+		friend class MessageHandler;
 	public:
 		Client();
 		~Client();
@@ -25,6 +26,7 @@ namespace Network
 
 		bool IsConnected() const;
 		bool Connect();
+		void Disconnect();
 
 	private:
 		std::vector<NetMessage> myMessages;
@@ -40,7 +42,6 @@ namespace Network
 		bool myIsRunning;
 		bool myIsConnected;
 		bool myIsInitialized;
-
-		void Disconnect();
+		bool myServerDisconnected;
 	};
 }

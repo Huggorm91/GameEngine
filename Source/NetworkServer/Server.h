@@ -58,6 +58,7 @@ namespace Network
 		void HandleMessage(const ClientInfo& aClient, const std::string& anIdentifier);
 
 		void SetMessageData(const std::string& aMessage);
+		void SendMessageToClients(ClientInfo* aCurrentClient);
 
 		std::string GetIdentifier(char* anIP, unsigned short aPort);
 	};

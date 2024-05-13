@@ -6,12 +6,12 @@
 
 namespace Network
 {
-	Server::Server() : myCurrentIP(nullptr)
-	{
-	}
+	Server::Server() : myWSA(), myClientInfo(), myServerInfo(), myServerSocket(), myCurrentIP(nullptr), mySocketSize(sizeof(sockaddr_in)), myIsRunning(false)
+	{}
 
 	Server::~Server()
 	{
+		ShutDown();
 		delete myCurrentIP;
 	}
 
@@ -19,8 +19,6 @@ namespace Network
 	{
 		myLogger = Logger::Create("Network Server");
 		myLogger.SetPrintToFile(true, "Server Logs/" + Crimson::FileNameTimestamp() + ".txt");
-		myIsRunning = true;
-		mySocketSize = sizeof(sockaddr_in);
 
 		system("title Crimson Server");
 
@@ -70,12 +68,13 @@ namespace Network
 		{
 			auto error = WSAGetLastError();
 			myLogger.Err(std::format("recvfrom() failed with error code: {}", error));
-			if (error != 10054) // Client has disconnected
+			if (error != 10054)
 			{
 				ErrorShutDown();
 			}
 			else
 			{
+				// Client has disconnected
 				inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, myCurrentIP, 16);
 				auto port = ntohs(myClientInfo.sin_port);
 				myLogger.Warn(std::format("Client: {}:{} has been disconnected!", myCurrentIP, port));
@@ -118,28 +117,7 @@ namespace Network
 			break;
 		}
 
-		for (auto& [id, entry] : myClients)
-		{
-			if (client == entry)
-			{
-				continue;
-			}
-
-			if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&entry.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
-			{
-				myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
-				++entry.failedMessageCount;
-				if (entry.failedMessageCount > 5)
-				{
-					myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", id.c_str(), entry.username.c_str()));
-					myRemovedClients.emplace_back(id);
-				}
-			}
-			else
-			{
-				entry.failedMessageCount = 0;
-			}
-		}
+		SendMessageToClients(&client);
 
 		for (auto& id : myRemovedClients)
 		{
@@ -155,11 +133,16 @@ namespace Network
 
 	void Server::ShutDown()
 	{
-		// TODO:
-		// Disconnect all clients
+		// Send message to clients to inform them the server has been turned off
+		myMessage.type = MessageType::Disconnect;
+		myMessage.dataSize = 0;
+		ZeroMemory(myMessage.data, globalBuffLength);
+		myMessage.needReply = false;
+		SendMessageToClients(nullptr);
+
+		// Cleanup
 		closesocket(myServerSocket);
 		WSACleanup();
-		system("PAUSE");
 	}
 
 	void Server::ErrorShutDown()
@@ -227,6 +210,32 @@ namespace Network
 		ZeroMemory(myMessage.data, globalBuffLength);
 		myMessage.dataSize = static_cast<unsigned short>(aMessage.size() + 1);
 		strcpy_s(myMessage.data, myMessage.dataSize, aMessage.c_str());
+	}
+
+	void Server::SendMessageToClients(ClientInfo* aCurrentClient)
+	{
+		for (auto& [id, entry] : myClients)
+		{
+			if (aCurrentClient && *aCurrentClient == entry)
+			{
+				continue;
+			}
+
+			if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&entry.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+			{
+				myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
+				++entry.failedMessageCount;
+				if (entry.failedMessageCount > 5)
+				{
+					myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", id.c_str(), entry.username.c_str()));
+					myRemovedClients.emplace_back(id);
+				}
+			}
+			else
+			{
+				entry.failedMessageCount = 0;
+			}
+		}
 	}
 
 	std::string Server::GetIdentifier(char* anIP, unsigned short aPort)
