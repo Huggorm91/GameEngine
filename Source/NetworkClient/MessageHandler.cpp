@@ -1,6 +1,7 @@
 #include "MessageHandler.h"
 #include <assert.h>
 #include "Client.h"
+#include "NetworkShared/MessageFunctions.h"
 
 Network::MessageHandler::MessageHandler() : myClient(nullptr)
 {
@@ -44,7 +45,7 @@ void Network::MessageHandler::Update()
 			break;
 		}
 		case MessageType::Connect:
-		case MessageType::Message:
+		case MessageType::Chat:
 		{
 			myChatHistory.emplace_back(message.data);
 			break;
@@ -79,12 +80,7 @@ void Network::MessageHandler::SendChatMessage(const std::string& aMessage)
 	}
 	assert(myClient && "Not initialized!");
 
-	NetMessage message;
-	message.type = MessageType::Message;
-	message.dataSize = static_cast<unsigned short>(aMessage.size() + 1);
-	strcpy_s(message.data, message.dataSize, aMessage.c_str());
-
-	myClient->SendNetMessage(message);
+	myClient->SendNetMessage(CreateChatMessage(aMessage));
 	myChatHistory.emplace_back(GetSelfHeader() + aMessage);
 }
 

@@ -21,9 +21,12 @@
     <ClInclude Include="NetMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MessageFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetMessage.cpp">
+    <ClCompile Include="MessageFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

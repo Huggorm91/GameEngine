@@ -26,6 +26,17 @@
     <ClInclude Include="Client.h" />
     <ClInclude Include="MessageHandler.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
+      <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Logging\Logging.vcxproj">
+      <Project>{b4a6c56f-a9ee-4b80-a31d-3db075f0854b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\NetworkShared\NetworkShared.vcxproj">
+      <Project>{b2c977b4-3467-46b7-bc80-c2e0aba5e11b}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

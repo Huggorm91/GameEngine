@@ -11,8 +11,11 @@ namespace Network
 			Connect,
 			Disconnect,
 			Confirmation,
+			Chat,
 			Ping,
-			Message
+			MoveGameObject,
+			CreateGameObject,
+			DeleteGameObject
 		};
 	};
 
@@ -20,6 +23,8 @@ namespace Network
 	{
 		MessageType::Enum type = MessageType::Invalid;
 		unsigned short dataSize = 0;
+		unsigned short packetIndex = 0;
+		unsigned short totalPackets = 1;
 		bool needReply = false;
 		char data[globalBuffLength]{ '\0' };
 

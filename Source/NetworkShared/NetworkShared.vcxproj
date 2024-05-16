@@ -20,10 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="MessageFunctions.h" />
     <ClInclude Include="NetMessage.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetMessage.cpp" />
+    <ClCompile Include="MessageFunctions.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
+      <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -131,6 +137,7 @@
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -151,6 +158,7 @@
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>

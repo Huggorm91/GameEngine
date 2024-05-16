@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "CrimsonUtilities/String/StringFunctions.h"
+#include "NetworkShared/MessageFunctions.h"
 #include <format>
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -108,9 +109,9 @@ namespace Network
 			HandleDisconnect(client, identifier);
 			break;
 		}
-		case MessageType::Message:
+		case MessageType::Chat:
 		{
-			HandleMessage(client, identifier);
+			HandleChat(client, identifier);
 			break;
 		}
 		default:
@@ -134,10 +135,7 @@ namespace Network
 	void Server::ShutDown()
 	{
 		// Send message to clients to inform them the server has been turned off
-		myMessage.type = MessageType::Disconnect;
-		myMessage.dataSize = 0;
-		ZeroMemory(myMessage.data, globalBuffLength);
-		myMessage.needReply = false;
+		myMessage = CreateDisconnectMessage();
 		SendMessageToClients(nullptr);
 
 		// Cleanup
@@ -147,6 +145,10 @@ namespace Network
 
 	void Server::ErrorShutDown()
 	{
+		if (myIsRunning)
+		{
+			closesocket(myServerSocket);
+		}
 		WSACleanup();
 		system("PAUSE");
 		exit(EXIT_FAILURE);
@@ -162,9 +164,7 @@ namespace Network
 
 		SetMessageData(std::format("{} has joined the server.", outClient.username.c_str()));
 
-		NetMessage message;
-		message.type = MessageType::Confirmation;
-		sendto(myServerSocket, message, sizeof(message), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+		sendto(myServerSocket, CreateConfirmationMessage(), sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
 	}
 
 	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
@@ -190,13 +190,13 @@ namespace Network
 	{
 	}
 
-	void Server::HandleMessage(const ClientInfo& aClient, const std::string& anIdentifier)
+	void Server::HandleChat(const ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		std::string message;
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
 			SetMessageData(std::format("{}: {}", iter->second.username.c_str(), myMessage.data));
-			myLogger.Log(std::format("Message from: {}: {}", iter->second.username.c_str(), myMessage.data));
+			myLogger.Log(std::format("Message from: {}", myMessage.data));
 		}
 		else
 		{

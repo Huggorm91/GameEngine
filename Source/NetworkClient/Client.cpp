@@ -3,6 +3,7 @@
 #include <format>
 #include "CrimsonUtilities/String/StringFunctions.h"
 #include "CrimsonUtilities/Time/Timer.h"
+#include "NetworkShared/MessageFunctions.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -77,14 +78,8 @@ namespace Network
 		// Create connect message
 		std::string userName = "Default";
 
-		NetMessage message;
-		message.type = MessageType::Connect;
-		message.needReply = true;
-		message.dataSize = static_cast<unsigned short>(userName.size() + 1);
-		strcpy_s(message.data, message.dataSize, userName.c_str());
-
 		// Send Connect message to Server
-		if (sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		if (sendto(mySocket, CreateConnectMessage(true, userName), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			myLogger.Warn(std::format("Connect: sendto() failed with error code: {}", WSAGetLastError()));
 			return false;
@@ -132,9 +127,7 @@ namespace Network
 			return;
 		}
 
-		NetMessage message;
-		message.type = MessageType::Disconnect;
-		sendto(mySocket, message, sizeof(message), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
+		sendto(mySocket, CreateDisconnectMessage(), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
 		myIsConnected = false;
 	}
 

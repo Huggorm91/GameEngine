@@ -23,7 +23,7 @@ namespace Network
 	private:
 		struct ClientInfo
 		{
-			sockaddr_in socket;
+			sockaddr_in socket {};
 			std::string username;
 			std::string ip;
 			unsigned short port = 0;
@@ -55,7 +55,7 @@ namespace Network
 		void HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier);
 		void HandleConfirmation();
 		void HandlePing();
-		void HandleMessage(const ClientInfo& aClient, const std::string& anIdentifier);
+		void HandleChat(const ClientInfo& aClient, const std::string& anIdentifier);
 
 		void SetMessageData(const std::string& aMessage);
 		void SendMessageToClients(ClientInfo* aCurrentClient);
