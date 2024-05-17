@@ -7,3 +7,4 @@
 #include "Components/Light/SpotlightComponent.h"
 #include "Components/Debugging/DebugDrawComponent.h"
 #include "Components/Camera/PerspectiveCameraComponent.h"
+#include "Components/Network/NetworkComponent.h"

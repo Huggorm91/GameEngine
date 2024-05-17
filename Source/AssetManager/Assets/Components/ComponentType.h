@@ -14,6 +14,7 @@ enum class ComponentType
 	DebugDraw,
 	PerspectiveCamera,
 	ParticleEmitter,
+	Network,
 	Count
 };
 

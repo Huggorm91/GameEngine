@@ -62,6 +62,12 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 		aParent.AddComponent(component);
 		break;
 	}
+	case ComponentType::Network: 
+	{ 
+		const NetworkComponent& component = *dynamic_cast<const NetworkComponent*>(aComponent); 
+		aParent.AddComponent(component); 
+		break; 
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()));
@@ -112,6 +118,11 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 	{
 		aParent.AddComponent<ParticleEmitterComponent>();
 		break;
+	}
+	case ComponentType::Network: 
+	{ 
+		aParent.AddComponent<NetworkComponent>();
+		break; 
 	}
 	default:
 	{
@@ -164,6 +175,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	{
 		aParent.AddComponent(ParticleEmitterComponent(aJson));
 		break;
+	}
+	case ComponentType::Network: 
+	{ 
+		aParent.AddComponent(NetworkComponent(aJson));
+		break; 
 	}
 	default:
 	{
@@ -227,6 +243,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		emitter.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::Network: 
+	{ 
+		auto& network = aParent.AddComponent<NetworkComponent>();
+		network.Deserialize(aStream);
+		break; 
+	}
 	case ComponentType::Count:
 		break;
 	default:
@@ -270,6 +292,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::ParticleEmitter:
 	{
 		return "ParticleEmitter";
+	}
+	case ComponentType::Network: 
+	{
+		return "Network";
 	}
 	default:
 	{
