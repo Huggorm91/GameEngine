@@ -12,7 +12,7 @@
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : 
+GameObject::GameObject() :
 	myComponents(1000u),
 	myIsActive(true),
 	myID(++localIDCount),
@@ -290,7 +290,7 @@ void GameObject::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponen
 	}
 }
 
-void GameObject::OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent * aCollider)
+void GameObject::OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
 {
 	for (auto& [type, index] : myIndexList)
 	{
@@ -298,7 +298,7 @@ void GameObject::OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent
 	}
 }
 
-void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent * aCollider)
+void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
 {
 	for (auto& [type, index] : myIndexList)
 	{
@@ -306,7 +306,7 @@ void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent
 	}
 }
 
-void GameObject::OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+void GameObject::OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger)
 {
 	for (auto& [type, index] : myIndexList)
 	{
@@ -314,7 +314,7 @@ void GameObject::OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent 
 	}
 }
 
-void GameObject::OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+void GameObject::OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger)
 {
 	for (auto& [type, index] : myIndexList)
 	{
@@ -322,7 +322,7 @@ void GameObject::OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent *
 	}
 }
 
-void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger)
 {
 	for (auto& [type, index] : myIndexList)
 	{
