@@ -586,7 +586,10 @@ bool GameObject::HasParent() const
 void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
+
+#ifdef EDITOR
 	myImguiText = aName;
+#endif // EDITOR
 
 	ModelViewer::GetImguiManager().ChangeIndexName(this, aName);
 }
@@ -618,6 +621,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 		std::string id = "ID: " + std::to_string(myID);
 		ImGui::Text(id.c_str());
 		ImGui::Checkbox("Active", &myIsActive);
+#ifdef EDITOR
 		if (ImGui::InputText("Name", &myImguiText, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 #ifndef _RETAIL
@@ -626,6 +630,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			myName = myImguiText;
 #endif // !_RETAIL
 		}
+#endif // EDITOR
 		::CreateImGuiComponents(myTransform);
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
