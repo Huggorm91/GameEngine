@@ -171,7 +171,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 #ifndef _RETAIL
 	AssetManager::PreLoadAssets();
-	myImguiManager.Init(true);
+	myImguiManager.Init(false);
 
 	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
 
