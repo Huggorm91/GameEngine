@@ -4,9 +4,10 @@
 
 namespace Crimson
 {
-	constexpr auto Pi = 3.1415926535897932384626433832795;
-	constexpr double Pi2 = 6.283185307179586476925286766559;
-	constexpr double PiInverse = 0.31830988618379067153776752674503;
+	constexpr double Pi = 3.1415926535897932384626433832795;
+	constexpr double Pi2 = Pi * 2.; // Pi * 2
+	constexpr double PiInverse = 1. / Pi; // 1 / Pi
+	constexpr double PiHalf = Pi / 2.; // Pi / 2
 	constexpr float FloatTolerance = 0.0000001f;
 	constexpr double DoubleTolerance = 0.000000000001;
 
@@ -106,7 +107,7 @@ namespace Crimson
 		return !(aFirst < aSecond) && !(aSecond < aFirst);
 	}
 
-	inline bool CloseEnough(const float& a, const float& b, const float& epsilon = std::numeric_limits<float>::epsilon()) 
+	inline bool GimbalCheck(float a, float b, float epsilon = std::numeric_limits<float>::epsilon())
 	{
 		return (epsilon > Abs(a - b));
 	}

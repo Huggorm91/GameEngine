@@ -1,45 +1,49 @@
 #pragma once
 #include "MeshComponent.h"
-#include "../../Animation.h"	
-#include "../ComponentParts/Skeleton.h"
+#include "..\..\Animation\Animation.h"	
+#include "..\..\Animation\Skeleton.h"
 
-class AnimatedMeshComponent: public MeshComponent
-{
+BEGIN_COMPONENT(AnimatedMeshComponent, MeshComponent)
 public:
-	enum class AnimationState
-	{
-		PlayOnce,
-		Looping,
-		Stopped
-	};
-
 	AnimatedMeshComponent();
-	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, const std::string* aPath, Skeleton* aSkeleton);
+	AnimatedMeshComponent(ComponentType aType);
+	AnimatedMeshComponent(const Json::Value& aJson);
+	AnimatedMeshComponent(const TGA::FBX::Mesh& aMesh, std::vector<MeshElement>& anElementList, Skeleton* aSkeleton);
 	AnimatedMeshComponent(const AnimatedMeshComponent& aMeshComponent);
 	AnimatedMeshComponent(AnimatedMeshComponent&& aMeshComponent) = default;
-	~AnimatedMeshComponent() = default;
-	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent) = default;
+	virtual ~AnimatedMeshComponent() = default;
+	AnimatedMeshComponent& operator=(const AnimatedMeshComponent& aComponent);
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
+	virtual void UpdateNoRender();
+
 	void Render() override;
 
-	void Init(const Json::Value& aJson) override;
-	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath, Skeleton* aSkeleton);
+	void Init(GameObject* aParent) override;
+	void Init(std::vector<MeshElement>& anElementList, const std::string& aName, Skeleton* aSkeleton);
 
-	void SetLooping(bool aIsLooping);
-	void ToogleLooping();
+	virtual void SetLooping(bool aIsLooping);
+	virtual void ToogleLooping();
 	bool IsLooping() const;
 
-	void SetAnimation(const Animation& anAnimation);
-	void StartAnimation();
-	void StopAnimation();
-	void PauseAnimation();
+	virtual void SetPlayInReverse(bool aShouldPlayInReverse);
+
+	virtual void SetTargetFPS(float aFPS);
+
+	virtual void SetAnimation(const std::shared_ptr<AnimationBase>& anAnimation);
+	bool HasAnimation() const;
+
+	virtual void StartAnimation();
+	virtual void StopAnimation();
+	virtual void PauseAnimation();
+
+	void ResetBoneCache();
 
 	bool HasSkeleton() const;
 	void SetSkeleton(Skeleton* aSkeleton);
 	const Skeleton& GetSkeleton() const;
-	const std::array<Crimson::Matrix4x4f, 128>& GetBoneTransforms() const;
+	const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& GetBoneTransforms() const;
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 
@@ -47,21 +51,9 @@ public:
 	void Deserialize(std::istream& aStream) override;
 
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const AnimatedMeshComponent* GetTypePointer() const override;
 
-private:
-	std::array<Crimson::Matrix4x4f, 128> myBoneTransformCache;
+protected:
+	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransformCache;
+	std::shared_ptr<AnimationBase> myAnimation;
 	Skeleton* mySkeleton;
-
-	Animation myAnimation;
-	float myAnimationTimer;
-	unsigned int myCurrentFrame;
-	AnimationState myAnimationState;
-	bool myIsLooping;
-
-	void UpdateCache();
-	void UpdateHeirarchy(unsigned int anIndex, const Crimson::Matrix4x4f& aParentMatrix);
-	const Crimson::Matrix4x4f& GetLocalTransform(const Bone& aBone, const AnimationFrame& aFrame) const;
 };
-

@@ -1,11 +1,8 @@
 #pragma once
 #include "../Component.h"
-#include "ParticleEmitter.h"
+#include "GraphicsEngine/Drawer/ParticleEmitter.h"
 
-class ParticleEmitterComponent : public Component
-{
-	// TODO:
-	// 4. Add 'case ComponentType::Example: { break; }' to switch in LoadComponent() in ComponentType.cpp, and implement Constructor(Json::Value) and/or Init(Json::Value)
+BEGIN_COMPONENT(ParticleEmitterComponent)
 public:
 	ParticleEmitterComponent();
 	ParticleEmitterComponent(const ParticleEmitterComponent& aComponent) = default;
@@ -17,18 +14,17 @@ public:
 	ParticleEmitterComponent& operator=(ParticleEmitterComponent&& aComponent) noexcept = default;
 
 	void Init(GameObject* aParent) override;
+
 	void Update() override;
+	void Render() override;
+
+	void SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter);
 
 	void TransformHasChanged() const override;
 
-	void AddEmitter();
-
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const ParticleEmitterComponent* GetTypePointer() const override;
 
 private:
-	Transform myTransform;
-	std::vector<ParticleEmitter> myEmitters;
+	std::shared_ptr<ParticleEmitter> myEmitter;
 };

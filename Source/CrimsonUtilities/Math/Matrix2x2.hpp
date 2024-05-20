@@ -9,7 +9,7 @@ namespace Crimson
 	class Matrix2x2
 	{
 	public:
-		static const Matrix2x2<T> Null;
+		static const Matrix2x2<T> Identity;
 
 		// Creates the identity matrix.
 		Matrix2x2<T>();
@@ -55,7 +55,7 @@ namespace Crimson
 		std::array<std::array<T, 2>, 2> myValues;
 	};
 
-	template<typename T> const Matrix2x2<T> Matrix2x2<T>::Null{};
+	template<typename T> const Matrix2x2<T> Matrix2x2<T>::Identity{};
 
 	typedef Matrix2x2<float> Matrix2x2f;
 	typedef Matrix2x2<int>  Matrix2x2i;

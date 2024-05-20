@@ -80,6 +80,7 @@ void Network::MessageHandler::SendNetMessage(const NetMessage& aMessage) const
 
 void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, unsigned anID)
 {
+	aTransform; anID;
 }
 
 void Network::MessageHandler::SendChatMessage(const std::string& aMessage)

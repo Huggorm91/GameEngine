@@ -47,6 +47,7 @@ public:
 
 	void Init();
 
+	void UpdateFilePaths();
 	const std::unordered_set<std::string>& GetScenelist();
 
 	Scene GetScene(const std::string& aPath, bool aShouldLogErrors);

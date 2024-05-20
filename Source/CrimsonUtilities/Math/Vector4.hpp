@@ -54,8 +54,6 @@ namespace Crimson
 		inline Vector4<T> Clamp(T aMin, T aMax);
 		inline Vector4<T> Clamp(const Vector4<T>& aMin, const Vector4<T>& aMax);
 
-		inline static Vector4<T> Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage);
-
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
 
@@ -90,26 +88,32 @@ namespace Crimson
 		Json::Value ToJsonColor() const;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T> const Vector4<T> Vector4<T>::Null{};
-	template<typename T> const Vector4<T> Vector4<T>::NullPosition{T(), T(), T(), T(1)};
-	template<typename T> const Vector4<T> Vector4<T>::Up{T(), T(1), T(), T()};
-	template<typename T> const Vector4<T> Vector4<T>::Right{T(1), T(), T(), T()};
-	template<typename T> const Vector4<T> Vector4<T>::Forward{T(), T(), T(1), T()};
+	template<typename T> const Vector4<T> Vector4<T>::NullPosition{ T(), T(), T(), T(1) };
+	template<typename T> const Vector4<T> Vector4<T>::Up{ T(), T(1), T(), T() };
+	template<typename T> const Vector4<T> Vector4<T>::Right{ T(1), T(), T(), T() };
+	template<typename T> const Vector4<T> Vector4<T>::Forward{ T(), T(), T(1), T() };
 
 	typedef Vector4<float> Vector4f;
 	typedef Vector4<unsigned int> Vector4ui;
 	typedef Vector4<int>  Vector4i;
 
-	template <typename T> Vector4<T> operator+(const T& aScalar, const Vector4<T>& aVector) {
+	template <typename T> Vector4<T> operator+(const T& aScalar, const Vector4<T>& aVector)
+	{
 		return aVector + aScalar;
 	}
-	template <typename T> Vector4<T> operator-(const T& aScalar, const Vector4<T>& aVector) {
+	template <typename T> Vector4<T> operator-(const T& aScalar, const Vector4<T>& aVector)
+	{
 		return aVector - aScalar;
 	}
-	template <typename T> Vector4<T> operator*(const T& aScalar, const Vector4<T>& aVector) {
+	template <typename T> Vector4<T> operator*(const T& aScalar, const Vector4<T>& aVector)
+	{
 		return aVector * aScalar;
 	}
-	template <typename T> Vector4<T> operator/(const T& aScalar, const Vector4<T>& aVector) {
+	template <typename T> Vector4<T> operator/(const T& aScalar, const Vector4<T>& aVector)
+	{
 		return aVector / aScalar;
 	}
 
@@ -134,42 +138,63 @@ namespace Crimson
 		return static_cast<Vector4<double>>(aRadian) * globalRadianToDegreeMultiplier;
 	}
 
+	template<typename T>
+	inline Vector4<T> Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		return Vector4<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
+						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
+						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage),
+						  Crimson::Lerp(aFrom.w, aTo.w, aPercentage));
+	}
+
+	// Cheaper less accurate Slerp, Uses aFrom's w as result w
+	template<typename T>
+	inline Vector4<T> Nlerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		return Vector4<T>(Nlerp(Vector3<T>(aFrom), Vector3<T>(aTo), aPercentage), aFrom.w);
+	}
+
+	// Uses aFrom's w as result w
+	template<typename T>
+	inline Vector4<T> Slerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
+	{
+		float dot = aFrom.Dot(aTo);
+		Clamp(dot, -1.0f, 1.0f);
+		float theta = acosf(dot) * aPercentage;
+		Vector3<T> relativeVec = aTo - aFrom * dot;
+		relativeVec.Normalize();
+		return Vector4((aFrom * cosf(theta)) + (relativeVec * sinf(theta)), aFrom.w);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
 	inline Vector4<T>::Vector4() : x(), y(), z(), w()
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const T& aScalar) : x(aScalar), y(aScalar), z(aScalar), w(aScalar)
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector4<T>::Vector4(const T& aX, const T& aY, const T& aZ, const T& aW) : x(aX), y(aY), z(aZ), w(aW)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const Vector2<T>& aVector2, const T& aZ, const T& aW) : x(aVector2.x), y(aVector2.y), z(aZ), w(aW)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const Vector2<T>& aVector2XY, const Vector2<T>& aVector2ZW) : x(aVector2XY.x), y(aVector2XY.y), z(aVector2ZW.x), w(aVector2ZW.y)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const Vector3<T>& aVector3, const T& aW) : x(aVector3.x), y(aVector3.y), z(aVector3.z), w(aW)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector4<T>::Vector4(const std::array<T, 4>& anArray) : x(anArray[0]), y(anArray[1]), z(anArray[2]), w(anArray[3])
-	{
-	}
+	{}
 
 	template<typename T>
 	template<class U>
@@ -285,15 +310,6 @@ namespace Crimson
 						  Crimson::Clamp(y, aMin.y, aMax.y),
 						  Crimson::Clamp(z, aMin.z, aMax.z),
 						  Crimson::Clamp(w, aMin.w, aMax.w));
-	}
-
-	template<typename T>
-	inline Vector4<T> Vector4<T>::Lerp(const Vector4<T>& aFrom, const Vector4<T>& aTo, float aPercentage)
-	{
-		return Vector4<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
-						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage),
-						  Crimson::Lerp(aFrom.w, aTo.w, aPercentage));
 	}
 
 	template<typename T>

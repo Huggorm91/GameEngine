@@ -48,20 +48,6 @@ DirectionallightComponent& DirectionallightComponent::operator=(const Directiona
 	return *this;
 }
 
-void DirectionallightComponent::Init(const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aColor, float anIntensity, bool aCastShadows)
-{
-	myLightDirection = aDirection.GetNormalized();
-	myInvertedLightDirection = -myLightDirection;
-	myColor = aColor;
-	myIntensity = anIntensity;
-	myCastShadows = aCastShadows;
-
-	if (myCastShadows && myShadowMap == nullptr)
-	{
-		CreateShadowMap();
-	}
-}
-
 void DirectionallightComponent::Update()
 {
 	Render();
@@ -187,16 +173,6 @@ Json::Value DirectionallightComponent::ToJson() const
 	result["Intensity"] = myIntensity;
 	result["CastShadows"] = myCastShadows;
 	return result;
-}
-
-inline std::string DirectionallightComponent::ToString() const
-{
-	return "Directionallight";
-}
-
-const DirectionallightComponent* DirectionallightComponent::GetTypePointer() const
-{
-	return this;
 }
 
 void DirectionallightComponent::CreateShadowMap()

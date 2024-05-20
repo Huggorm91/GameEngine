@@ -1,6 +1,7 @@
 #ifndef SHADERFUNCTIONS_HLSLI
 #define SHADERFUNCTIONS_HLSLI
 #include "../ConstantBuffers/LightBuffer.hlsli"
+#include "../ConstantBuffers/ObjectBuffer.hlsli"
 static const float PI = 3.1415926535f;
 static const float PI2 = 6.28318530718f;
 static const float PI_INVERSE = 0.31830988618379067153776752674503f; // 1/PI
@@ -16,13 +17,13 @@ float3 Pow2(float3 aValue)
 }
 
 #pragma warning(disable : 0048)
-float4x4 GetSkinMatrix(float4 boneWeights, uint4 boneIDs, float4x4 boneTransforms[128])
+float4x4 GetSkinMatrix(float4 boneWeights, uint4 boneIDs)
 {
     float4x4 skinMatrix = 0;
-    skinMatrix += boneWeights.x * boneTransforms[boneIDs.x];
-    skinMatrix += boneWeights.y * boneTransforms[boneIDs.y];
-    skinMatrix += boneWeights.z * boneTransforms[boneIDs.z];
-    skinMatrix += boneWeights.w * boneTransforms[boneIDs.w];
+    skinMatrix += boneWeights.x * OB_BoneTransforms[boneIDs.x];
+    skinMatrix += boneWeights.y * OB_BoneTransforms[boneIDs.y];
+    skinMatrix += boneWeights.z * OB_BoneTransforms[boneIDs.z];
+    skinMatrix += boneWeights.w * OB_BoneTransforms[boneIDs.w];
     return skinMatrix;
 }
 #pragma warning(default : 0048)
@@ -99,6 +100,17 @@ float3 SpherlcalToCartesian(float2 aSphericalCoordinate)
     sincos(aSphericalCoordinate.x * PI, sinCosTheta.x, sinCosTheta.y);
     sinCosPhi = float2(sqrt(1.0 - aSphericalCoordinate.y * aSphericalCoordinate.y), aSphericalCoordinate.y);
     return float3(sinCosTheta.y * sinCosPhi.x, sinCosTheta.x * sinCosPhi.x, sinCosPhi.y);
+}
+
+float3 GetPixelNormal(float3 aNormalMap, float3x3 aTBN, float aNormalStrength)
+{
+    float3 result = float3(aNormalMap.xy, 0);
+    result = 2 * result - 1;
+    result.z = sqrt(1 - saturate(result.x * result.x + result.y * result.y));
+    result = normalize(result);
+    result.xy *= aNormalStrength;
+    result = mul(result, aTBN);
+    return result;
 }
 
 #endif // SHADERFUNCTIONS_HLSLI

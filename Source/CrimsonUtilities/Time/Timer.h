@@ -13,8 +13,14 @@ namespace Crimson
 		static void Init();
 		static void Update();
 
+		static void SetTimeScale(float aScale);
+		static float GetTimeScale();
+
 		static float GetDeltaTime();
 		static double GetTotalTime();
+
+		static float GetUnscaledDeltaTime();
+		static double GetUnscaledTotalTime();
 
 		static std::chrono::high_resolution_clock::time_point StartStopwatch();
 		static double StopStopwatch(const std::chrono::high_resolution_clock::time_point& aTimePoint);
@@ -24,9 +30,12 @@ namespace Crimson
 	private:
 		static std::chrono::high_resolution_clock::time_point myOldTime;
 		static std::chrono::high_resolution_clock::time_point myCurrentTime;
-		static std::chrono::duration<float> myDeltatime;
 		static std::chrono::duration<double> myTotalTime;
+		static std::chrono::duration<float> myDeltatime;
+		static double myScaledTotalTime;
+		static float myScaledDeltaTime;
+		static float myTimeScale;
 
-		Timer();
+		Timer() = default;
 	};
 }

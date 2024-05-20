@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "NetworkComponent.h"
-#include "Modelviewer/Core/Modelviewer.h"
+#include "Modelviewer/Modelviewer.h"
 #include "NetworkClient/MessageHandler.h"
 
 NetworkComponent::NetworkComponent() : Component(ComponentType::Network)
@@ -15,7 +15,7 @@ void NetworkComponent::Update()
 {
 	if (myRaisedFlags[eTransformHasChanged])
 	{
-		ModelViewer::Get().GetMessageHandler().
+		ModelViewer::Get().GetMessageHandler().SendTransformChanged(*GetParentTransform(), myParent->GetID());
 	}
 	myRaisedFlags.reset();
 }
@@ -24,7 +24,7 @@ void NetworkComponent::TransformHasChanged() const
 {
 	if (mySyncFlags[eSyncTransform])
 	{
-		myRaisedFlags[eTransformHasChanged];
+		const_cast<std::bitset<eStateCount>&>(myRaisedFlags)[eTransformHasChanged] = true;
 	}
 }
 
@@ -33,14 +33,4 @@ Json::Value NetworkComponent::ToJson() const
 	Json::Value result = Component::ToJson();
 	result["SyncFlags"] = mySyncFlags.to_ullong();
 	return result;
-}
-
-inline std::string NetworkComponent::ToString() const
-{
-	return "NetworkComponent";
-}
-
-inline const NetworkComponent* NetworkComponent::GetTypePointer() const
-{
-	return this;
 }

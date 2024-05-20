@@ -54,8 +54,6 @@ namespace Crimson
 		inline Vector3<T> Clamp(T aMin, T aMax);
 		inline Vector3<T> Clamp(const Vector3<T>& aMin, const Vector3<T>& aMax);
 
-		inline static Vector3<T> Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage);
-
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
 
@@ -90,10 +88,12 @@ namespace Crimson
 		Json::Value ToJsonColor() const;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T> const Vector3<T> Vector3<T>::Null{};
-	template<typename T> const Vector3<T> Vector3<T>::Up{T(), T(1), T()};
-	template<typename T> const Vector3<T> Vector3<T>::Right{T(1), T(), T()};
-	template<typename T> const Vector3<T> Vector3<T>::Forward{T(), T(), T(1)};
+	template<typename T> const Vector3<T> Vector3<T>::Up{ T(), T(1), T() };
+	template<typename T> const Vector3<T> Vector3<T>::Right{ T(1), T(), T() };
+	template<typename T> const Vector3<T> Vector3<T>::Forward{ T(), T(), T(1) };
 
 	typedef Vector3<float> Vector3f;
 	typedef Vector3<unsigned int> Vector3ui;
@@ -120,43 +120,70 @@ namespace Crimson
 		return static_cast<Vector3<double>>(aRadian) * globalRadianToDegreeMultiplier;
 	}
 
-	template <typename T> Vector3<T> operator+(const T& aScalar, const Vector3<T>& aVector) {
+	template<typename T>
+	inline Vector3<T> Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		return Vector3<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
+						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
+						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage));
+	}
+
+	// Cheaper less accurate Slerp
+	template<typename T>
+	inline Vector3<T> Nlerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		return Lerp(aFrom, aTo, aPercentage).NormalizeNoAssert();
+	}
+
+	template<typename T>
+	inline Vector3<T> Slerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
+	{
+		float dot = aFrom.Dot(aTo);
+		Clamp(dot, -1.0f, 1.0f);
+		float theta = acosf(dot) * aPercentage;
+		Vector3<T> relativeVec = aTo - aFrom * dot;
+		relativeVec.Normalize();
+		return (aFrom * cosf(theta)) + (relativeVec * sinf(theta));
+	}
+
+	template <typename T> Vector3<T> operator+(const T& aScalar, const Vector3<T>& aVector)
+	{
 		return aVector + aScalar;
 	}
-	template <typename T> Vector3<T> operator-(const T& aScalar, const Vector3<T>& aVector) {
+	template <typename T> Vector3<T> operator-(const T& aScalar, const Vector3<T>& aVector)
+	{
 		return aVector - aScalar;
 	}
-	template <typename T> Vector3<T> operator*(const T& aScalar, const Vector3<T>& aVector) {
+	template <typename T> Vector3<T> operator*(const T& aScalar, const Vector3<T>& aVector)
+	{
 		return aVector * aScalar;
 	}
-	template <typename T> Vector3<T> operator/(const T& aScalar, const Vector3<T>& aVector) {
+	template <typename T> Vector3<T> operator/(const T& aScalar, const Vector3<T>& aVector)
+	{
 		return aVector / aScalar;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	inline Vector3<T>::Vector3() : x(), y(), z()
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector3<T>::Vector3(const T& aScalar) : x(aScalar), y(aScalar), z(aScalar)
-	{
-	}
+	{}
 
 	template <typename T>
 	inline Vector3<T>::Vector3(const T& aX, const T& aY, const T& aZ) : x(aX), y(aY), z(aZ)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector3<T>::Vector3(const Vector2<T>& aVector2, const T& aZ) : x(aVector2.x), y(aVector2.y), z(aZ)
-	{
-	}
+	{}
 
 	template<typename T>
 	inline Vector3<T>::Vector3(const std::array<T, 3>& anArray) : x(anArray[0]), y(anArray[1]), z(anArray[2])
-	{
-	}
+	{}
 
 	template<typename T>
 	template<class U>
@@ -279,14 +306,6 @@ namespace Crimson
 		return Vector3<T>(Crimson::Clamp(x, aMin.x, aMax.x),
 						  Crimson::Clamp(y, aMin.y, aMax.y),
 						  Crimson::Clamp(z, aMin.z, aMax.z));
-	}
-
-	template<typename T>
-	inline Vector3<T> Vector3<T>::Lerp(const Vector3<T>& aFrom, const Vector3<T>& aTo, float aPercentage)
-	{
-		return Vector3<T>(Crimson::Lerp(aFrom.x, aTo.x, aPercentage),
-						  Crimson::Lerp(aFrom.y, aTo.y, aPercentage),
-						  Crimson::Lerp(aFrom.z, aTo.z, aPercentage));
 	}
 
 	template<typename T>

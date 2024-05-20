@@ -1,6 +1,9 @@
 #pragma once
+#include "Container/MemoryBlock.h"
 #include "Components/Component.h"
-#include "Components/Transform.h"
+#include "Math/Transform.h"
+
+#include "Components/Light/DirectionallightComponent.h"
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
@@ -19,8 +22,11 @@ public:
 	GameObject& operator=(const GameObject& aGameObject);
 	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
+	bool operator==(const GameObject& aGameObject);
+
 	void Update();
 	void Render();
+	void DebugDraw();
 
 	template<class T>
 	T& AddComponent();
@@ -33,7 +39,6 @@ public:
 	const T& GetComponent() const;
 	template<class T>
 	T& GetComponent();
-
 	template<class T>
 	const T* GetComponent(unsigned anID) const;
 	template<class T>
@@ -55,8 +60,16 @@ public:
 	template<class T>
 	bool HasComponent() const;
 
+	void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
+	void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
+	void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
+
+	void OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
+	void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
+	void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
+
 	void SetPosition(const Crimson::Vector3f& aPosition);
-	void SetRotation(const Crimson::Vector3f& aRotation);
+	void SetRotation(const Crimson::Vector3f& aDegree);
 	void SetScale(const Crimson::Vector3f& aScale);
 
 	const Transform& GetTransform() const;
@@ -66,6 +79,9 @@ public:
 	void SetActive(bool aIsActive);
 	void ToogleActive();
 	bool IsActive() const;
+
+	void SetActiveComponents(bool aIsActive);
+	void ToogleActiveComponents();
 
 	bool HasChild() const;
 	bool HasParent() const;
@@ -80,9 +96,11 @@ public:
 	const std::vector<GameObject*>& GetChildren() const;
 	std::vector<GameObject*>& GetChildren();
 
-
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
+
+	// returns "{Name}: {ID}"
+	std::string ToString() const;
 
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
@@ -106,31 +124,38 @@ public:
 	static unsigned GetIDCount() { return localIDCount; }
 
 private:
-#ifndef _RETAIL
+#ifdef EDITOR
 	friend class PrefabManager;
 	GameObject(unsigned anID);
-#endif // !_RETAIL
+#endif // EDITOR
 	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
+
 	static unsigned localIDCount;
 
 	bool myIsActive;
 	const unsigned myID;
-	unsigned myCount;
 
 	GameObject* myParent;
 
 	std::string myName;
+#ifdef EDITOR
 	std::string myImguiText;
+#endif // EDITOR
+
 	Transform myTransform;
 
-#ifndef _RETAIL
-	std::vector<const Component*> myDebugPointers;
-#endif // !_RETAIL
-
 	std::vector<GameObject*> myChildren;
-	std::unordered_multimap<const std::type_info*, unsigned> myIndexList;
-	Crimson::Blackboard<unsigned> myComponents;
+
+#ifndef _RETAIL
+	std::vector<Component*> myDebugPointers;
+#endif // !_RETAIL
+	std::unordered_multimap<std::type_index, size_t> myIndexList;
+	Crimson::MemoryBlock myComponents;
+
+	Component* AllocateComponent(const Component* aComponent);
+	template<class T>
+	T& AddComponentInternal(const size_t& anIndex);
 
 	void SetParent(GameObject* anObject);
 
@@ -149,57 +174,45 @@ private:
 template<class T>
 inline T& GameObject::AddComponent()
 {
-	myComponents.SetValue(myCount, T());
-	myIndexList.emplace(&typeid(T), myCount);
-	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifndef _RETAIL
-	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // !_RETAIL
-	return myComponents.ChangeValue<T>(myCount++);
+	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
+	auto index = myComponents.AddValue(T());
+	return AddComponentInternal<T>(index);
 }
 
 template<class T>
 inline T& GameObject::AddComponent(const T& aComponent)
 {
-	myComponents.SetValue(myCount, aComponent);
-	myIndexList.emplace(&typeid(aComponent), myCount);
-	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifndef _RETAIL
-	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // !_RETAIL
-	return myComponents.ChangeValue<T>(myCount++);
+	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
+	auto index = myComponents.AddValue(aComponent);
+	return AddComponentInternal<T>(index);
 }
 
 template<class T>
 inline T& GameObject::AddComponent(T&& aComponent)
 {
-	myComponents.SetValue(myCount, std::move(aComponent));
-	myIndexList.emplace(&typeid(aComponent), myCount);
-	myComponents.ChangeValueUnsafe<Component>(myCount)->Init(this);
-#ifndef _RETAIL
-	myDebugPointers.emplace_back(&myComponents.GetValue<T>(myCount));
-#endif // !_RETAIL
-	return myComponents.ChangeValue<T>(myCount++);
+	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
+	auto index = myComponents.AddValue(std::move(aComponent));
+	return AddComponentInternal<T>(index);
 }
 
 template<class T>
 inline const T& GameObject::GetComponent() const
 {
-	auto iter = myIndexList.equal_range(&typeid(T));
+	auto iter = myIndexList.equal_range(typeid(T));
 	return myComponents.GetValue<T>(iter.first->second);
 }
 
 template<class T>
 inline T& GameObject::GetComponent()
 {
-	auto iter = myIndexList.equal_range(&typeid(T));
-	return myComponents.ChangeValue<T>(iter.first->second);
+	auto iter = myIndexList.equal_range(typeid(T));
+	return myComponents.GetValue<T>(iter.first->second);
 }
 
 template<class T>
 inline const T* GameObject::GetComponent(unsigned anID) const
 {
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
 		if (const T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
@@ -213,10 +226,10 @@ inline const T* GameObject::GetComponent(unsigned anID) const
 template<class T>
 inline T* GameObject::GetComponent(unsigned anID)
 {
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
-		if (T& component = myComponents.ChangeValue<T>(iter->second); component.GetComponentID() == anID)
+		if (T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
 		{
 			return &component;
 		}
@@ -228,7 +241,7 @@ template<class T>
 inline std::vector<const T*> GameObject::GetComponents() const
 {
 	std::vector<const T*> result;
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
 		result.emplace_back(&myComponents.GetValue<T>(iter->second));
@@ -240,10 +253,10 @@ template<class T>
 inline std::vector<T*> GameObject::GetComponents()
 {
 	std::vector<T*> result;
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
-		result.emplace_back(&myComponents.ChangeValue<T>(iter->second));
+		result.emplace_back(&myComponents.GetValue<T>(iter->second));
 	}
 	return result;
 }
@@ -251,11 +264,14 @@ inline std::vector<T*> GameObject::GetComponents()
 template<class T>
 inline bool GameObject::RemoveComponent(unsigned anID)
 {
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
-		if (const T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
+		if (T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
 		{
+#ifdef GAME
+			component.~T();
+#endif // GAME
 			myIndexList.erase(iter);
 			return true;
 		}
@@ -266,11 +282,14 @@ inline bool GameObject::RemoveComponent(unsigned anID)
 template<class T>
 inline bool GameObject::RemoveComponent(const T* aComponent)
 {
-	auto range = myIndexList.equal_range(&typeid(T));
+	auto range = myIndexList.equal_range(typeid(T));
 	for (auto iter = range.first; iter != range.second; iter++)
 	{
-		if (const T* component = &myComponents.GetValue<T>(iter->second); component == aComponent)
+		if (T* component = &myComponents.GetValue<T>(iter->second); component == aComponent)
 		{
+#ifdef GAME
+			component->~T();
+#endif // GAME
 			myIndexList.erase(iter);
 			return true;
 		}
@@ -281,6 +300,19 @@ inline bool GameObject::RemoveComponent(const T* aComponent)
 template<class T>
 inline bool GameObject::HasComponent() const
 {
-	auto iter = myIndexList.find(&typeid(T));
+	auto iter = myIndexList.find(typeid(T));
 	return iter != myIndexList.end();
+}
+
+template<class T>
+inline T& GameObject::AddComponentInternal(const size_t& anIndex)
+{
+	myIndexList.emplace(typeid(T), anIndex);
+
+	T& component = myComponents.GetValue<T>(anIndex);
+	component.Init(this);
+#ifndef _RETAIL
+	myDebugPointers.emplace_back(&component);
+#endif // !_RETAIL
+	return component;
 }

@@ -44,6 +44,10 @@ Settings::Settings(const Json::Value& aJson, const std::string& anAssetPath)
 	EnvironmentPS = AddExtensionIfMissing(path + aJson["EnvironmentPSShader"].asString(), shaderExtension);
 	PointlightPS = AddExtensionIfMissing(path + aJson["PointlightPSShader"].asString(), shaderExtension);
 	SpotlightPS = AddExtensionIfMissing(path + aJson["SpotlightPSShader"].asString(), shaderExtension);
+
+	DefaultParticleVS = AddExtensionIfMissing(path + aJson["DefaultParticleVS"].asString(), shaderExtension);
+	DefaultParticleGS = AddExtensionIfMissing(path + aJson["DefaultParticleGS"].asString(), shaderExtension);
+	DefaultParticlePS = AddExtensionIfMissing(path + aJson["DefaultParticlePS"].asString(), shaderExtension);
 }
 
 Settings::operator Json::Value() const
@@ -104,6 +108,18 @@ Settings::operator Json::Value() const
 	lastSlash = SpotlightPS.find_last_of('/') + 1;
 	json["SpotlightPSShader"] = SpotlightPS.substr(lastSlash);
 	json["SpotlightPSShader"].setComment(comment, Json::commentAfterOnSameLine);
+
+	lastSlash = DefaultParticleVS.find_last_of('/') + 1;
+	json["DefaultParticleVS"] = DefaultParticleVS.substr(lastSlash);
+	json["DefaultParticleVS"].setComment(comment, Json::commentAfterOnSameLine);
+
+	lastSlash = DefaultParticleGS.find_last_of('/') + 1;
+	json["DefaultParticleGS"] = DefaultParticleGS.substr(lastSlash);
+	json["DefaultParticleGS"].setComment(comment, Json::commentAfterOnSameLine);
+
+	lastSlash = DefaultParticlePS.find_last_of('/') + 1;
+	json["DefaultParticlePS"] = DefaultParticlePS.substr(lastSlash);
+	json["DefaultParticlePS"].setComment(comment, Json::commentAfterOnSameLine);
 
 	return json;
 }

@@ -89,11 +89,11 @@ float3 GetPblAmbientlight(LightData someData, float anOcclusion, float3 aDiffuse
     const uint cubeMips = GetNumMips(EnvironmentCubeMap) -1;
     
     const float3 reflection = reflect(-someData.v, someData.pixelNormal);
-    const float2 lut = LUTTexture.Sample(LUTSampler, float2(someData.nDotV, someData.roughness)).rg;
     const float3 cubeMap = EnvironmentCubeMap.SampleLevel(DefaultSampler, reflection, cubeMips * someData.roughness).rgb;
+    const float2 lut = LUTTexture.Sample(LUTSampler, float2(someData.nDotV, someData.roughness)).rg;
 
-    const float3 kD = aDiffuseColor * EnvironmentCubeMap.SampleLevel(DefaultSampler, someData.pixelNormal, cubeMips).rgb;
     const float3 kS = cubeMap * (someData.specularColor * lut.x + lut.y);
+    const float3 kD = aDiffuseColor * EnvironmentCubeMap.SampleLevel(DefaultSampler, someData.pixelNormal, cubeMips).rgb;
     
     return (kD + kS) * anOcclusion * LB_AmbientlightIntensity;
 }

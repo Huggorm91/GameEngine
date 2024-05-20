@@ -38,6 +38,10 @@ struct Settings
 	std::string PointlightPS;
 	std::string SpotlightPS;
 
+	std::string DefaultParticleVS{};
+	std::string DefaultParticleGS{};
+	std::string DefaultParticlePS{};
+
 	Crimson::Vector4f BackgroundColor;
 	int ToneMap{};
 

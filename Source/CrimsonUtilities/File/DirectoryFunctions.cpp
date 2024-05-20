@@ -140,7 +140,7 @@ namespace Crimson
 
 		for (auto& file : fs::recursive_directory_iterator(aPath))
 		{
-			if (file.path().has_extension() && file.path().extension().string() == anExtension)
+			if (file.path().has_extension() && ToLower(file.path().extension().string()) == anExtension)
 			{
 				const std::string& relativePath = fs::relative(file.path(), dirPath).string();
 				result.emplace(relativePath);

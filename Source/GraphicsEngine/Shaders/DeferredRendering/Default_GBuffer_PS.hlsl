@@ -20,13 +20,9 @@ GBufferOutput main(DefaultVertexToPixel input)
                 result.Albedo = GetAlphaBlendColor(result.Albedo, MB_AlbedoColor);
                 //result.Color = GetAdditiveBlendColor(input.Color[0], textureColor);
 
-                float3 pixelNormal = NormalTexture.Sample(DefaultSampler, scaledUV).rgb;
-                pixelNormal.xy = 2 * pixelNormal.xy - 1;
-                pixelNormal.z = sqrt(1 - saturate(pixelNormal.x * pixelNormal.x + pixelNormal.y * pixelNormal.y));
-                pixelNormal.xy *= MB_NormalStrength;
-                pixelNormal = normalize(mul(pixelNormal, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS)));
+                float3 normalMap = NormalTexture.Sample(DefaultSampler, scaledUV).rgb;
     
-                result.Normal.xyz = pixelNormal;
+                result.Normal.xyz = GetPixelNormal(normalMap, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS), MB_NormalStrength);
                 result.Normal.w = 0;
                 result.VertexNormal.xyz = input.NormalWS;
                 result.VertexNormal.w = 0;
@@ -57,13 +53,8 @@ GBufferOutput main(DefaultVertexToPixel input)
             }
         case 2: // PixelNormal
         {
-                const float3x3 tbn = float3x3(input.TangentWS, input.BinormalWS, input.NormalWS);
-
-                float3 pixelNormal = NormalTexture.Sample(DefaultSampler, input.UVs[0]).rgb;
-                pixelNormal.xy = 2 * pixelNormal.xy - 1;
-                pixelNormal.z = sqrt(1 - saturate(pixelNormal.x * pixelNormal.x + pixelNormal.y * pixelNormal.y));
-                pixelNormal.xy *= MB_NormalStrength;
-                pixelNormal = normalize(mul(pixelNormal, tbn));
+                float3 normalMap = NormalTexture.Sample(DefaultSampler, input.UVs[0]).rgb;
+                float3 pixelNormal = GetPixelNormal(normalMap, float3x3(input.TangentWS, input.BinormalWS, input.NormalWS), MB_NormalStrength);
 
                 result.Albedo.rgb = (pixelNormal + 1.f) * 0.5f;
                 result.Albedo.w = 1;

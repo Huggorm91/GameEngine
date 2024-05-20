@@ -13,6 +13,8 @@ public:
 
 	void Init();
 
+	void UpdateFilePaths();
+
 	Material* GetMaterial(const std::string& aPath, bool aShouldLogErrors);
 
 	Material* CreateMaterial(const Material& anAsset, const std::string& anIdentifier);

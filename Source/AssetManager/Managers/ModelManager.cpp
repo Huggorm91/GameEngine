@@ -9,8 +9,7 @@ using namespace Crimson;
 
 void ModelManager::Init()
 {
-
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
 }
 
 void ModelManager::GeneratePrimitives()
@@ -20,7 +19,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("cube", std::vector<MeshData>{ CreateCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Cube", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "cube");
 		model.MarkAsPrefab();
 	}
 
@@ -29,7 +28,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("sphere", std::vector<MeshData>{ CreateSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Sphere", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "sphere");
 		model.MarkAsPrefab();
 	}
 
@@ -38,7 +37,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("pyramid", std::vector<MeshData>{ CreatePyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Pyramid", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "pyramid");
 		model.MarkAsPrefab();
 	}
 
@@ -47,7 +46,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedcube", std::vector<MeshData>{ CreateInvertedCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedCube", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "invertedcube");
 		model.MarkAsPrefab();
 	}
 
@@ -56,7 +55,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedsphere", std::vector<MeshData>{ CreateInvertedSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedSphere", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "invertedsphere");
 		model.MarkAsPrefab();
 	}
 
@@ -65,7 +64,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedpyramid", std::vector<MeshData>{ CreateInvertedPyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "InvertedPyramid", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "invertedpyramid");
 		model.MarkAsPrefab();
 	}
 
@@ -74,7 +73,7 @@ void ModelManager::GeneratePrimitives()
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("plane", std::vector<MeshData>{ CreatePlaneMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
-		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "Plane", & modelIter.first->first);
+		mesh.Init(std::vector<MeshElement>{ MeshElement(elementIter.first->second.back()) }, "plane");
 		model.MarkAsPrefab();
 	}
 
@@ -84,6 +83,16 @@ void ModelManager::GeneratePrimitives()
 		model.AddComponent<AnimatedMeshComponent>();
 		model.MarkAsPrefab();
 	}
+}
+
+void ModelManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
+}
+
+const std::unordered_set<std::string>& ModelManager::GetModellist()
+{
+	return myFilePaths;
 }
 
 GameObject* ModelManager::GetModel(const std::string& aPath, bool aShouldLogErrors)
@@ -102,6 +111,10 @@ GameObject* ModelManager::GetModel(const std::string& aPath, bool aShouldLogErro
 			{
 				return &iter->second;
 			}
+		}
+		else if (iter = myModels.find(path); iter != myModels.end())
+		{
+			return &iter->second;
 		}
 		else
 		{
@@ -217,6 +230,28 @@ std::vector<MeshElement> ModelManager::GetMeshElements(const std::string& aPath,
 	return std::vector<MeshElement>();
 }
 
+BoxSphereBounds ModelManager::GetMeshBounds(const std::string& aPath, bool aShouldLogErrors)
+{
+	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
+	{
+		if (model->HasComponent<MeshComponent>())
+		{
+			return model->GetComponent<MeshComponent>().GetBounds();
+		}
+		else
+		{
+			return model->GetComponent<AnimatedMeshComponent>().GetBounds();
+		}
+	}
+
+	if (aShouldLogErrors)
+	{
+		AMLogger.Warn("ModelManager: Could not find any Mesh bounds: " + aPath);
+	}
+
+	return BoxSphereBounds();
+}
+
 const std::string* ModelManager::GetMeshPathPointer(const std::string& aPath)
 {
 	if (auto iter = myMeshData.find(aPath); iter != myMeshData.end())
@@ -310,11 +345,11 @@ GameObject* ModelManager::LoadModel(const std::string& aPath, bool aShouldLogErr
 		{
 			auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
 			skeletonIter.first->second.SetPath(&skeletonIter.first->first);
-			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &modelIter.first->first, &skeletonIter.first->second));
+			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &skeletonIter.first->second));
 		}
 		else
 		{
-			model.AddComponent(MeshComponent(tgaMesh, elements, &modelIter.first->first));
+			model.AddComponent(MeshComponent(tgaMesh, elements));
 		}
 		model.MarkAsPrefab();
 		return &model;
@@ -404,7 +439,7 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 		{
 			auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
 			skeletonIter.first->second.SetPath(&skeletonIter.first->first);
-			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &modelIter.first->first, &skeletonIter.first->second));
+			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &skeletonIter.first->second));
 			model.MarkAsPrefab();
 			return &skeletonIter.first->second;
 		}

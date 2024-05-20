@@ -1,16 +1,16 @@
 #pragma once
 #include "../Component.h"
-#include "../Transform.h"
 #include "../ComponentParts/MeshElement.h"
+#include "Math/Transform.h"
 #include "GraphicsEngine/Rendering/Color.h"
 #include "GraphicsEngine/Rendering/Texture.h"
 
-class MeshComponent : public Component
-{
+BEGIN_COMPONENT(MeshComponent)
 public:
 	MeshComponent();
 	MeshComponent(ComponentType aType);
-	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, const std::string* aPath, ComponentType aType = ComponentType::Mesh);
+	MeshComponent(const Json::Value& aJson);
+	MeshComponent(const TGA::FBX::Mesh& aMesh, const std::vector<MeshElement>& anElementList, ComponentType aType = ComponentType::Mesh);
 	MeshComponent(const MeshComponent& aMeshComponent);
 	MeshComponent(MeshComponent&& aMeshComponent) noexcept;
 	virtual ~MeshComponent() = default;
@@ -21,8 +21,9 @@ public:
 	void Render() override;
 
 	void Init(GameObject* aParent) override;
-	void Init(const Json::Value& aJson) override;
-	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName, const std::string* aPath);
+	void Init(const std::vector<MeshElement>& anElementList, const std::string& aName);
+
+	void SetMesh(const MeshComponent& aMesh);
 
 	void SetOffsetPosition(const Crimson::Vector3f& aPosition);
 	void SetOffsetRotation(const Crimson::Vector3f& aRotation);
@@ -30,6 +31,8 @@ public:
 
 	const Crimson::Matrix4x4f& GetTransform() const;
 	const Crimson::Vector4f& GetWorldPosition() const;
+
+	const BoxSphereBounds& GetBounds() const;
 
 	const std::vector<MeshElement>& GetElements() const;
 	std::vector<MeshElement>& GetElements();
@@ -58,15 +61,12 @@ public:
 	void Deserialize(std::istream& aStream) override;
 
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const MeshComponent* GetTypePointer() const override;
 
 protected:
 	bool myIsDeferred;
 	bool myRenderShadow;
 	Crimson::Vector4f myColor;
 	BoxSphereBounds myBoxSphereBounds;
-	const std::string* myPath;
 	std::string myName;
 	std::vector<MeshElement> myElements;
 	Transform myTransform;

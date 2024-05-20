@@ -1,21 +1,3 @@
-Håll in höger musknapp för att aktivera kameraförflyttning.
+This is a Game engine and Editor created during my time studuing at The Game Assembly, Malmö Sweden.
 
-WASD för att flytta längs x- & z-axlarna
-Ctrl och Spacebar för att flytta längs y-axeln
-Shift ökar hastigheten
-Q & E roterar kameran runt y-axeln
-Musen roterar kameran runt x- & y-axlarna
-
-F1 startar PlayMode
-
-F5 ändrar debug-läge
-F6 ändrar ljus-läge
-F7 ändrar render-läge
-F8 återställer allt till standardläge
-
-Ctrl + Z ångra senaste redigeringen
-Ctrl + Y gör om senaste ångrade redigeringen
-
-Del raderar det valda objektet
-
-Håll in Ctrl för att markera flera objekt i scen-listan
+The code in this engine is of varying quality since it was created as I learned how to code, and I have not had time to fix a lot of old mistakes made early in development.

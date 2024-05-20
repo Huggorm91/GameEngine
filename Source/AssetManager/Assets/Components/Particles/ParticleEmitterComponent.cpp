@@ -1,59 +1,79 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitterComponent.h"
+#include "Time/Timer.h"
+#include "Emitters/BurstEmitter.h"
+#include "Emitters/StreamEmitter.h"
 
-ParticleEmitterComponent::ParticleEmitterComponent(): Component(ComponentType::ParticleEmitter), myTransform(), myEmitters()
+ParticleEmitterComponent::ParticleEmitterComponent() : Component(ComponentType::ParticleEmitter), myEmitter()
+{}
+
+ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson) : Component(aJson), myEmitter()
 {
+	// Lazy solution due to time constraints. Should be reworked
+	ParticleEmitter::EmitterType type = static_cast<ParticleEmitter::EmitterType>(aJson["Emitter"]["Type"].asInt());
+	switch (type)
+	{
+	case ParticleEmitter::EmitterType::Burst:
+	{
+		myEmitter = std::make_shared<BurstEmitter>(aJson["Emitter"]);
+		break;
+	}
+	case ParticleEmitter::EmitterType::Stream:
+	{
+		myEmitter = std::make_shared<StreamEmitter>(aJson["Emitter"]);
+		break;
+	}
+	default:
+		break;
+	}
+
+	myEmitter->InitAfterJsonLoad();
 }
 
-ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value&)
+void ParticleEmitterComponent::Init(GameObject* aParent)
 {
-	assert(!"Not Implemented");
-}
-
-void ParticleEmitterComponent::Init(GameObject*)
-{
-	assert(!"Not Implemented");
+	Component::Init(aParent);
+	if (myEmitter)
+	{
+		myEmitter->SetParentTransform(*GetParentTransform());
+	}
 }
 
 void ParticleEmitterComponent::Update()
 {
-	assert(!"Not Implemented");
+	Render();
+}
+
+void ParticleEmitterComponent::Render()
+{
+	if (!myIsActive)
+	{
+		return;
+	}
+
+	myEmitter->Update(Crimson::Timer::GetDeltaTime());
+}
+
+void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter)
+{
+	myEmitter = anEmitter;
+	myEmitter->SetParentTransform(*GetParentTransform());
 }
 
 void ParticleEmitterComponent::TransformHasChanged() const
 {
-	assert(!"Not Implemented");
+	myEmitter->SetParentTransform(*const_cast<Transform*>(GetParentTransform()));
 }
 
-void ParticleEmitterComponent::AddEmitter()
+void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
-	myEmitters.emplace_back(ParticleEmitter(static_cast<unsigned>(myEmitters.size())));
-}
-
-void ParticleEmitterComponent::CreateImGuiComponents(const std::string&)
-{
-	assert(!"Not Implemented");
+	Component::CreateImGuiComponents(aWindowName);
+	myEmitter->CreateImGuiElements();
 }
 
 Json::Value ParticleEmitterComponent::ToJson() const
 {
-	Json::Value result;
-	result["Transform"] = myTransform.ToJson();
-	result["Emitters"] = Json::arrayValue;
-	int index = 0;
-	for (auto& emitter : myEmitters)
-	{
-		result["Emitters"][index] = emitter.ToJson();
-	}
+	Json::Value result = Component::ToJson();
+	result["Emitter"] = myEmitter->ToJson();
 	return result;
-}
-
-inline std::string ParticleEmitterComponent::ToString() const
-{
-	return "ParticleEmitter";
-}
-
-const ParticleEmitterComponent* ParticleEmitterComponent::GetTypePointer() const
-{
-	return this;
 }

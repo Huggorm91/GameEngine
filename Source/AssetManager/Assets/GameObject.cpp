@@ -4,35 +4,49 @@
 #include "Prefab.h"
 
 #ifndef _RETAIL
-#include "ModelViewer/Core/ModelViewer.h"
-#include "Modelviewer/Core/Commands/EditCmd_ChangeGameObjectName.h"
+#include "ModelViewer/ModelViewer.h"
+#include "Modelviewer/Commands/EditCmd_ChangeGameObjectName.h"
+#include "ImguiTransform.h"
 #endif // !_RETAIL
 
 
 unsigned int GameObject::localIDCount = 0;
 
-GameObject::GameObject() : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(++localIDCount), myName("GameObject"), myImguiText(myName), myParent(nullptr), myChildren()
-#ifndef _RETAIL
-, myDebugPointers()
-#endif // !_RETAIL
+GameObject::GameObject() : 
+	myComponents(1000u),
+	myIsActive(true),
+	myID(++localIDCount),
+	myName("GameObject"),
+	myParent(nullptr)
+#ifdef EDITOR
+	, myImguiText(myName)
+#endif // EDITOR
 {
 }
 
-#ifndef _RETAIL
-GameObject::GameObject(unsigned anID) : myComponents(1000), myIndexList(), myCount(0), myTransform(), myIsActive(true), myID(anID), myName("GameObject"), myImguiText(myName), myDebugPointers(), myParent(nullptr), myChildren()
+#ifdef EDITOR
+GameObject::GameObject(unsigned anID) :
+	myComponents(1000u),
+	myIsActive(true),
+	myID(anID),
+	myName("GameObject"),
+	myParent(nullptr),
+	myImguiText(myName)
 {
 }
-#endif // !_RETAIL
+#endif // EDITOR
 
 GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 {
 	if (aPrefab.myTemplate)
 	{
-		const Component* pointer = nullptr;
-		for (auto [type, index] : aPrefab.myTemplate->myIndexList)
+		for (auto& [type, index] : aPrefab.myTemplate->myIndexList)
 		{
-			pointer = aPrefab.myTemplate->myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
-			::AddComponent(pointer, *this);
+			const Component* oldComponent = &aPrefab.myTemplate->myComponents.GetValue<Component>(index);
+			Component* newComponent = AllocateComponent(oldComponent);
+
+			oldComponent->CopyTo(newComponent);
+			newComponent->Init(this);
 		}
 	}
 	else
@@ -41,40 +55,66 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 	}
 }
 
-GameObject::GameObject(const GameObject& aGameObject) : myComponents(), myIndexList(), myTransform(aGameObject.myTransform), myCount(), myIsActive(aGameObject.myIsActive), myID(++localIDCount), myName(aGameObject.myName),
-myImguiText(myName), myParent(), myChildren()
-#ifndef _RETAIL
-, myDebugPointers()
-#endif // !_RETAIL
+GameObject::GameObject(const GameObject& aGameObject) :
+	myComponents(aGameObject.myComponents.GetSize()),
+	myTransform(aGameObject.myTransform),
+	myIsActive(aGameObject.myIsActive),
+	myID(++localIDCount),
+	myName(aGameObject.myName),
+	myParent(aGameObject.myParent),
+	myChildren(aGameObject.myChildren)
+#ifdef EDITOR
+	, myImguiText(myName)
+#endif // EDITOR
 {
-	const Component* pointer = nullptr;
-	for (auto [type, index] : aGameObject.myIndexList)
+	for (auto& [type, index] : aGameObject.myIndexList)
 	{
-		pointer = aGameObject.myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
-		::AddComponent(pointer, *this);
+		const Component* oldComponent = &aGameObject.myComponents.GetValue<Component>(index);
+		Component* newComponent = AllocateComponent(oldComponent);
+
+		oldComponent->CopyTo(newComponent);
+		newComponent->Init(this);
 	}
 }
 
-GameObject::GameObject(GameObject&& aGameObject) noexcept : myComponents(aGameObject.myComponents), myIndexList(aGameObject.myIndexList), myTransform(aGameObject.myTransform), myCount(aGameObject.myCount), myIsActive(aGameObject.myIsActive),
-myID(aGameObject.myID), myName(aGameObject.myName), myImguiText(myName), myParent(aGameObject.myParent), myChildren(aGameObject.myChildren)
-#ifndef _RETAIL
-, myDebugPointers()
-#endif // !_RETAIL
+GameObject::GameObject(GameObject&& aGameObject) noexcept :
+	myComponents(aGameObject.myComponents.GetSize()),
+	myTransform(aGameObject.myTransform),
+	myIsActive(aGameObject.myIsActive),
+	myID(aGameObject.myID),
+	myName(aGameObject.myName),
+	myParent(aGameObject.myParent),
+	myChildren(aGameObject.myChildren)
+#ifdef EDITOR
+	, myImguiText(myName)
+#endif // EDITOR
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : aGameObject.myIndexList)
 	{
-		myComponents.ChangeValueUnsafe<Component>(index)->Init(this);
-#ifndef _RETAIL
-		myDebugPointers.emplace_back(myComponents.GetValueUnsafe<Component>(index));
-#endif // !_RETAIL
+		Component* oldComponent = &aGameObject.myComponents.GetValue<Component>(index);
+		Component* newComponent = AllocateComponent(oldComponent);
+
+		oldComponent->MoveTo(newComponent);
+		newComponent->Init(this);
 	}
 }
 
-GameObject::GameObject(const Json::Value& aJson) : myComponents(1000), myIndexList(), myCount(0), myTransform(aJson["Transform"]), myIsActive(aJson["IsActive"].asBool()), myID(aJson["ID"].asUInt()), myName(aJson["Name"].asString()), myImguiText(myName), myParent(nullptr), myChildren()
-#ifndef _RETAIL
-, myDebugPointers()
-#endif // !_RETAIL
+GameObject::GameObject(const Json::Value& aJson) :
+	myComponents(aJson["MemorySize"].asLargestUInt()),
+	myTransform(aJson["Transform"]),
+	myIsActive(aJson["IsActive"].asBool()),
+	myID(aJson["ID"].asUInt()),
+	myName(aJson["Name"].asString()),
+	myParent(nullptr)
+#ifdef EDITOR
+	, myImguiText(myName)
+#endif // EDITOR
 {
+	if (myID > localIDCount)
+	{
+		localIDCount = myID;
+	}
+
 	for (auto& jsonComponent : aJson["Components"])
 	{
 		LoadComponent(jsonComponent, *this);
@@ -89,23 +129,28 @@ GameObject::~GameObject()
 		child->myTransform.RemoveParent();
 	}
 	RemoveFromParent();
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).~Component();
+	}
 }
 
 GameObject& GameObject::operator=(const Prefab& aPrefab)
 {
 	if (aPrefab.myTemplate)
 	{
-		myCount = 0;
 		myComponents.Clear();
 		myIndexList.clear();
 #ifndef _RETAIL
 		myDebugPointers.clear();
 #endif // !_RETAIL
-		const Component* pointer = nullptr;
-		for (auto [type, index] : aPrefab.myTemplate->myIndexList)
+		for (auto& [type, index] : aPrefab.myTemplate->myIndexList)
 		{
-			pointer = aPrefab.myTemplate->myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
-			::AddComponent(pointer, *this);
+			const Component* oldComponent = &aPrefab.myTemplate->myComponents.GetValue<Component>(index);
+			Component* newComponent = AllocateComponent(oldComponent);
+
+			oldComponent->CopyTo(newComponent);
+			newComponent->Init(this);
 		}
 	}
 	else
@@ -117,52 +162,68 @@ GameObject& GameObject::operator=(const Prefab& aPrefab)
 
 GameObject& GameObject::operator=(const GameObject& aGameObject)
 {
-	myCount = 0;
 	myComponents.Clear();
 	myIndexList.clear();
+	myComponents.Resize(aGameObject.myComponents.GetSize());
 #ifndef _RETAIL
 	myDebugPointers.clear();
 #endif // !_RETAIL
+
+#ifdef EDITOR
+	myImguiText = aGameObject.myName;
+#endif // EDITOR
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
-	myImguiText = myName;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 
-	const Component* pointer = nullptr;
-	for (auto [type, index] : aGameObject.myIndexList)
+	for (auto& [type, index] : aGameObject.myIndexList)
 	{
-		pointer = aGameObject.myComponents.GetValueUnsafe<Component>(index)->GetTypePointer();
-		::AddComponent(pointer, *this);
+		const Component* oldComponent = &aGameObject.myComponents.GetValue<Component>(index);
+		Component* newComponent = AllocateComponent(oldComponent);
+
+		oldComponent->CopyTo(newComponent);
+		newComponent->Init(this);
 	}
+
 	return *this;
 }
 
 GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 {
+	myComponents.Clear();
+	myIndexList.clear();
+	myComponents.Resize(aGameObject.myComponents.GetSize());
 #ifndef _RETAIL
 	myDebugPointers.clear();
 #endif // !_RETAIL
-	myCount = aGameObject.myCount;
-	myComponents = aGameObject.myComponents;
-	myIndexList = aGameObject.myIndexList;
+
+#ifdef EDITOR
+	myImguiText = aGameObject.myName;
+#endif // EDITOR
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
-	myImguiText = myName;
 	const_cast<unsigned&>(myID) = aGameObject.myID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : aGameObject.myIndexList)
 	{
-		myComponents.ChangeValueUnsafe<Component>(index)->Init(this);
-#ifndef _RETAIL
-		myDebugPointers.emplace_back(myComponents.GetValueUnsafe<Component>(index));
-#endif // !_RETAIL
+		Component* oldComponent = &aGameObject.myComponents.GetValue<Component>(index);
+		Component* newComponent = AllocateComponent(oldComponent);
+
+		oldComponent->MoveTo(newComponent);
+		newComponent->Init(this);
 	}
+
 	return *this;
+}
+
+bool GameObject::operator==(const GameObject& aGameObject)
+{
+	return myID == aGameObject.myID;
 }
 
 void GameObject::Update()
@@ -176,7 +237,7 @@ void GameObject::Update()
 
 		for (auto [type, index] : myIndexList)
 		{
-			myComponents.ChangeValueUnsafe<Component>(index)->Update();
+			myComponents.GetValue<Component>(index).Update();
 		}
 	}
 }
@@ -192,7 +253,7 @@ void GameObject::Render()
 
 		for (auto [type, index] : myIndexList)
 		{
-			myComponents.ChangeValueUnsafe<Component>(index)->Render();
+			myComponents.GetValue<Component>(index).Render();
 		}
 	}
 }
@@ -201,7 +262,7 @@ const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
 	for (auto [type, index] : myIndexList)
 	{
-		if (const Component* component = myComponents.GetValueUnsafe<Component>(index); component->GetComponentID() == anID)
+		if (const Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
 			return component;
 		}
@@ -213,12 +274,60 @@ Component* GameObject::GetComponentPointer(unsigned anID)
 {
 	for (auto [type, index] : myIndexList)
 	{
-		if (Component* component = myComponents.ChangeValueUnsafe<Component>(index); component->GetComponentID() == anID)
+		if (Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
 			return component;
 		}
 	}
 	return nullptr;
+}
+
+void GameObject::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnCollisionEnter(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent * aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnCollisionStay(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent * aCollider)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnCollisionExit(aLayer, aCollider);
+	}
+}
+
+void GameObject::OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnTriggerEnter(aLayer, aTrigger);
+	}
+}
+
+void GameObject::OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnTriggerStay(aLayer, aTrigger);
+	}
+}
+
+void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent * aTrigger)
+{
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).OnTriggerExit(aLayer, aTrigger);
+	}
 }
 
 void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
@@ -228,7 +337,7 @@ void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 
 void GameObject::SetRotation(const Crimson::Vector3f& aRotation)
 {
-	myTransform.SetRotation(aRotation);
+	myTransform.SetRotationDegree(aRotation);
 }
 
 void GameObject::SetScale(const Crimson::Vector3f& aScale)
@@ -247,7 +356,7 @@ const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 	{
 		for (auto [type, index] : myIndexList)
 		{
-			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
 	}
 	return myTransform.GetTransformMatrix();
@@ -259,7 +368,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 	{
 		for (auto [type, index] : myIndexList)
 		{
-			myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
 	}
 	return myTransform.GetWorldPosition();
@@ -278,6 +387,36 @@ void GameObject::ToogleActive()
 bool GameObject::IsActive() const
 {
 	return myIsActive;
+}
+
+void GameObject::SetActiveComponents(bool aIsActive)
+{
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).SetActive(aIsActive);
+	}
+}
+
+void GameObject::ToogleActiveComponents()
+{
+	for (auto [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).ToogleActive();
+	}
+}
+
+Component* GameObject::AllocateComponent(const Component* aComponent)
+{
+	// Allocate memory for the component
+	auto newIndex = myComponents.Allocate(aComponent->SizeOf());
+
+	// Save references to new component
+	myIndexList.emplace(aComponent->TypeId(), newIndex);
+#ifndef _RETAIL
+	myDebugPointers.emplace_back(&myComponents.GetValue<Component>(newIndex));
+#endif // !_RETAIL
+
+	return &myComponents.GetValue<Component>(newIndex);
 }
 
 void GameObject::SetParent(GameObject* anObject)
@@ -320,7 +459,7 @@ void GameObject::TransformHasChanged()
 
 	for (auto [type, index] : myIndexList)
 	{
-		myComponents.GetValueUnsafe<Component>(index)->TransformHasChanged();
+		myComponents.GetValue<Component>(index).TransformHasChanged();
 	}
 
 	for (auto& child : myChildren)
@@ -448,6 +587,8 @@ void GameObject::SetName(const std::string& aName)
 {
 	myName = aName;
 	myImguiText = aName;
+
+	ModelViewer::GetImguiManager().ChangeIndexName(this, aName);
 }
 
 const std::string& GameObject::GetName() const
@@ -455,9 +596,14 @@ const std::string& GameObject::GetName() const
 	return myName;
 }
 
+std::string GameObject::ToString() const
+{
+	return myName + ": " + std::to_string(myID);
+}
+
 unsigned int GameObject::GetComponentCount() const
 {
-	return myCount;
+	return static_cast<unsigned>(myIndexList.size());
 }
 
 unsigned int GameObject::GetID() const
@@ -480,14 +626,14 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			myName = myImguiText;
 #endif // !_RETAIL
 		}
-		myTransform.CreateImGuiComponents(aWindowName);
+		::CreateImGuiComponents(myTransform);
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Component* component = nullptr;
 			std::string text;
 			for (auto [type, index] : myIndexList)
 			{
-				component = myComponents.ChangeValueUnsafe<Component>(index);
+				component = &myComponents.GetValue<Component>(index);
 				text = component->ToString() + " " + std::to_string(component->GetComponentID());
 				ImGui::SetNextItemOpen(true, ImGuiCond_::ImGuiCond_Appearing);
 				if (ImGui::TreeNode(text.c_str(), component->ToString().c_str()))
@@ -522,7 +668,7 @@ Json::Value GameObject::ToJson() const
 	unsigned i = 0;
 	for (auto [type, index] : myIndexList)
 	{
-		component = myComponents.GetValueUnsafe<Component>(index);
+		component = &myComponents.GetValue<Component>(index);
 		result["Components"][i] = component->ToJson();
 		result["Components"][i].setComment("// " + component->ToString(), Json::commentBefore);
 		++i;
@@ -545,7 +691,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 	GameObjectData data;
 	data.ID = myID;
 	data.ParentID = myParent ? myParent->myID : 0u;
-	data.ComponentCount = myCount;
+	data.ComponentCount = static_cast<unsigned>(myIndexList.size());
 	data.IsActive = myIsActive;
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
 	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
@@ -554,7 +700,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 
 	for (auto [compType, index] : myIndexList)
 	{
-		myComponents.GetValueUnsafe<Component>(index)->Serialize(aStream);
+		myComponents.GetValue<Component>(index).Serialize(aStream);
 	}
 }
 
@@ -589,7 +735,7 @@ void GameObject::MarkAsPrefab()
 	}
 	for (auto [type, index] : myIndexList)
 	{
-		myComponents.ChangeValueUnsafe<Component>(index)->MarkAsPrefabComponent();
+		myComponents.GetValue<Component>(index).MarkAsPrefabComponent();
 	}
 }
 
@@ -612,7 +758,7 @@ void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
 
 	for (auto [type, index] : myIndexList)
 	{
-		myComponents.ChangeValueUnsafe<Component>(index)->CopyID(anObject.myComponents.GetValueUnsafe<Component>(index), aDecrementIDCount);
+		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index), aDecrementIDCount);
 	}
 }
 

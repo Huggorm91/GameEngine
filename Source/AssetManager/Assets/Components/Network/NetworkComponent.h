@@ -2,8 +2,7 @@
 #include "../Component.h"
 #include <bitset>
 
-class NetworkComponent : public Component
-{
+BEGIN_COMPONENT(NetworkComponent)
 public:
 	NetworkComponent();
 	NetworkComponent(const NetworkComponent& aComponent) = default;
@@ -20,8 +19,6 @@ public:
 
 	// void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	inline const NetworkComponent* GetTypePointer() const override;
 
 private:
 	enum SyncFlags

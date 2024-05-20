@@ -14,12 +14,13 @@ public:
 	const Crimson::Vector4f& GetWorldPosition() const;
 
 private:
-	std::array<Crimson::Matrix4x4f, 128> myBoneTransforms;
+	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransforms;
 	std::vector<MeshElement> myMeshElements;
 	Crimson::Matrix4x4f myTransformMatrix;
 	Crimson::Vector4f myWorldPosition;
 	Crimson::Vector4f myColor;
 	unsigned myID;
+	unsigned myBoneCount;
 	bool myHasBones;
 #ifdef _DEBUG
 	std::string myMeshName;

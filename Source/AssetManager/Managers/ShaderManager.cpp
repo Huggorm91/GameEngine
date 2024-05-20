@@ -6,7 +6,12 @@ using namespace Crimson;
 
 void ShaderManager::Init()
 {
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
+}
+
+void ShaderManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
 }
 
 Shader* ShaderManager::GetShader(const std::string& aPath, bool aShouldLogErrors)

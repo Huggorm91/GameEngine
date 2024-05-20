@@ -12,6 +12,8 @@ public:
 	void Init();
 	void LoadAllTextures();
 
+	void UpdateFilePaths();
+
 	Texture GetUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const;
 	Texture* GetTexture(const std::string& aPath, bool aShouldLogErrors);
 	const std::unordered_set<std::string>& GetTexturelist() const;

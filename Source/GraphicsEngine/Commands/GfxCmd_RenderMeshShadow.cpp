@@ -35,6 +35,7 @@ void GfxCmd_RenderMeshShadow::SetObjectBuffer()
 {
 	ObjectBuffer& buffer = GetObjectBuffer();
 	buffer.Data.Transform = myTransformMatrix;
+	buffer.Data.TransformInverse = myTransformMatrix.GetInverse().GetTranspose();
 	buffer.Data.HasBones = myHasBones;
 	if (myHasBones)
 	{

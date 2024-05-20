@@ -107,10 +107,10 @@ namespace Crimson
 			{
 				if (aTo - aFrom + 1 < 32) // Using insertionsort when size is small
 				{
-					for (int i = aFrom + 1; i <= aTo; i++)
+					for (size_t i = aFrom + 1; i <= aTo; i++)
 					{
 						T comparison = aVector[i];
-						int index = i;
+						size_t index = i;
 						while (index > aFrom && comparison < aVector[index - 1])
 						{
 							aVector[index] = aVector[index - 1];

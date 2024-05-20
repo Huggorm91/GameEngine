@@ -9,6 +9,9 @@
 	<Type Name="Crimson::Vector4&lt;*&gt;">
 		<DisplayString>{{ x = {x}  y = {y}  z = {z}  w = {w} }}</DisplayString>
 	</Type>
+	<Type Name="Crimson::Quaternion&lt;*&gt;">
+		<DisplayString>{{ w = {w}  x = {x}  y = {y}  z = {z} }}</DisplayString>
+	</Type>
 	<Type Name="Crimson::Matrix2x2&lt;*&gt;">
 		<DisplayString>Matrix2x2</DisplayString>
 		<Expand>

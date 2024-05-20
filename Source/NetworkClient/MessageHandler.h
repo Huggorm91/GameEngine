@@ -3,10 +3,11 @@
 #include <string>
 #include "NetworkShared/NetMessage.h"
 
+class Transform;
+
 namespace Network
 {
 	class Client;
-	class Transform;
 
 	class MessageHandler
 	{

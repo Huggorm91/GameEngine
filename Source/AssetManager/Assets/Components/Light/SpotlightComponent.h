@@ -3,8 +3,7 @@
 #include "Math/Matrix4x4.hpp"
 #include "GraphicsEngine/Rendering/Texture.h"
 
-class SpotlightComponent : public Component
-{
+BEGIN_COMPONENT(SpotlightComponent)
 public:
 	SpotlightComponent();
 	SpotlightComponent(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition = Crimson::Vector3f::Null, const Crimson::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
@@ -15,7 +14,6 @@ public:
 	SpotlightComponent& operator=(const SpotlightComponent& aLight);
 	SpotlightComponent& operator=(SpotlightComponent&& aLight) = default;
 
-	void Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition = Crimson::Vector3f::Null, const Crimson::Vector3f& aColor = { 1.f, 1.f, 1.f }, bool aCastShadows = true);
 	void Update() override;
 	void Render() override;
 
@@ -46,8 +44,6 @@ public:
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const SpotlightComponent* GetTypePointer() const override;
 
 private:
 #ifndef _RETAIL

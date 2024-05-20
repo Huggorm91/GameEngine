@@ -51,6 +51,17 @@ void AssetManager::PreLoadAssets()
 	myTextureManager.LoadAllTextures();
 }
 
+void AssetManager::UpdateFilepaths()
+{
+	myModelManager.UpdateFilePaths();
+	myAnimationManager.UpdateFilePaths();
+	myTextureManager.UpdateFilePaths();
+	myShaderManager.UpdateFilePaths();
+	myMaterialManager.UpdateFilePaths();
+	//myPrefabManager.UpdateFilePaths();
+	mySceneManager.UpdateFilePaths();
+}
+
 void AssetManager::RestartImporter()
 {
 	TGA::FBX::Importer::InitImporter();
