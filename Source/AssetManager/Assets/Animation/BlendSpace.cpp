@@ -101,11 +101,11 @@ bool BlendSpace::UpdateRootMotion(float aTimeSinceLastUpdate)
 	return false;
 }
 
-AnimationTransform BlendSpace::GetRootMotion(float aPercentage)
+QuaternionTransform BlendSpace::GetRootMotion(float aPercentage)
 {
 	assert(!"Not Implemented!");
 	aPercentage;
-	return AnimationTransform();
+	return QuaternionTransform();
 }
 
 void BlendSpace::Init(BoneCache& aBoneCache, const Skeleton* aSkeleton)
@@ -380,7 +380,7 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones)
 					const unsigned index = aSkeleton->GetBoneIndex(boneName);
 					const auto& bone = aSkeleton->GetBone(index);
 
-					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
+					const auto& interpolatedTransform = QuaternionTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
 					if (myFlags[eIsAdditive])
 					{
 						outBones[index] *= interpolatedTransform.GetAsMatrix();
@@ -429,7 +429,7 @@ void BlendSpace::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones,
 					const unsigned index = aSkeleton->GetBoneIndex(boneName);
 					const auto& bone = aSkeleton->GetBone(index);
 
-					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
+					const auto& interpolatedTransform = QuaternionTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
 					if (myFlags[eIsAdditive])
 					{
 						outBones[index] *= interpolatedTransform.GetAsMatrix();
@@ -478,7 +478,7 @@ void BlendSpace::UpdateBoneCacheMixedFPS(const Skeleton* aSkeleton, BoneCache& o
 					const unsigned index = aSkeleton->GetBoneIndex(boneName);
 					const auto& bone = aSkeleton->GetBone(index);
 
-					const auto& interpolatedTransform = AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
+					const auto& interpolatedTransform = QuaternionTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue);
 					if (myFlags[eIsAdditive])
 					{
 						outBones[index] *= interpolatedTransform.GetAsMatrix();
@@ -499,11 +499,11 @@ void BlendSpace::UpdateBoneCacheMixedFPS(const Skeleton* aSkeleton, BoneCache& o
 	previous->animation->UpdateBoneCache(aSkeleton, outBones, previous->timer / previous->animation->GetFrameDelta());
 }
 
-std::unordered_map<std::string, AnimationTransform> BlendSpace::GetAdditiveTransforms() const
+std::unordered_map<std::string, QuaternionTransform> BlendSpace::GetAdditiveTransforms() const
 {
 	if (myAnimations.empty())
 	{
-		return std::unordered_map<std::string, AnimationTransform>();
+		return std::unordered_map<std::string, QuaternionTransform>();
 	}
 
 	if (myHasMatchingFPS)
@@ -523,11 +523,11 @@ std::unordered_map<std::string, AnimationTransform> BlendSpace::GetAdditiveTrans
 	}
 }
 
-std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransforms() const
+std::unordered_map<std::string, QuaternionTransform> BlendSpace::GetFrameTransforms() const
 {
 	if (myAnimations.empty())
 	{
-		return std::unordered_map<std::string, AnimationTransform>();
+		return std::unordered_map<std::string, QuaternionTransform>();
 	}
 
 	const BlendData* previous = nullptr;
@@ -546,12 +546,12 @@ std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransfor
 				const auto& higherTransforms = data.animation->GetFrameTransforms();
 				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
 
-				std::unordered_map<std::string, AnimationTransform> result;
+				std::unordered_map<std::string, QuaternionTransform> result;
 				result.reserve(higherTransforms.size());
 
 				for (auto& [boneName, transform] : lowerTransforms)
 				{
-					result.emplace(boneName, AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
+					result.emplace(boneName, QuaternionTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
 				}
 				return result;
 			}
@@ -564,11 +564,11 @@ std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransfor
 	return previous->animation->GetFrameTransforms();
 }
 
-std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransforms(float anInterpolationValue) const
+std::unordered_map<std::string, QuaternionTransform> BlendSpace::GetFrameTransforms(float anInterpolationValue) const
 {
 	if (myAnimations.empty())
 	{
-		return std::unordered_map<std::string, AnimationTransform>();
+		return std::unordered_map<std::string, QuaternionTransform>();
 	}
 
 	const BlendData* previous = nullptr;
@@ -587,12 +587,12 @@ std::unordered_map<std::string, AnimationTransform> BlendSpace::GetFrameTransfor
 				const auto& higherTransforms = data.animation->GetFrameTransforms(anInterpolationValue);
 				const float interpolationValue = (myBlendValue - previous->blendValue) / (data.blendValue - previous->blendValue);
 
-				std::unordered_map<std::string, AnimationTransform> result;
+				std::unordered_map<std::string, QuaternionTransform> result;
 				result.reserve(higherTransforms.size());
 
 				for (auto& [boneName, transform] : lowerTransforms)
 				{
-					result.emplace(boneName, AnimationTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
+					result.emplace(boneName, QuaternionTransform::Interpolate(transform, higherTransforms.at(boneName), interpolationValue));
 				}
 				return result;
 			}
@@ -788,13 +788,13 @@ void BlendSpace::UpdateAnimations()
 	}
 }
 
-void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
+void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	assert(!"Not Implemented!");
 	outTransforms; anIndex; aFrame; aParentTransform;
 }
 
-void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
+void BlendSpace::GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	assert(!"Not Implemented!");
 	outTransforms; anIndex; aCurrentFrame; anInterpolationFrame; anInterpolationValue; aParentTransform;

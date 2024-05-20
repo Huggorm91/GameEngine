@@ -5,7 +5,11 @@ Skeleton::Skeleton(const TGA::FBX::Skeleton& aSkeleton): myName(aSkeleton.Name),
 {
 	for (auto& bone : aSkeleton.Bones)
 	{
-		myBones.emplace_back(bone);
+		auto& newBone = myBones.emplace_back(bone);
+		if (newBone.parent >= 0)
+		{
+			newBone.localBindPoseInverse = myBones[newBone.parent].bindPoseInverse.GetInverse() * newBone.bindPoseInverse;
+		}
 	}
 
 	for (auto& [key, value] : aSkeleton.Sockets)

@@ -1,9 +1,12 @@
 #pragma once
 #include "../Components/ComponentParts/TgaImporterConversions.h"
+#include "Math/QuaternionTransform.h"
 
 struct Bone
 {
 	Crimson::Matrix4x4f bindPoseInverse;
+	Crimson::Matrix4x4f localBindPoseInverse;
+	QuaternionTransform bindPose;
 	std::vector<unsigned int> children;
 	std::string namespaceName;
 	std::string name;

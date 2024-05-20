@@ -48,5 +48,7 @@ private:
 	float myAnimationDelta;
 	float myAnimationTimer;
 
-	Crimson::Matrix4x4f CalculateAdditiveBoneCache(const std::unordered_map<std::string, AnimationTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& aBindPose);
+	Crimson::Matrix4x4f CalculateAdditiveBoneCache(const std::unordered_map<std::string, QuaternionTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& aBindPose);
+
+	void GetAdditiveTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, const std::unordered_map<std::string, QuaternionTransform>& someTransforms, unsigned anIndex, QuaternionTransform aParentTransform) const;
 };

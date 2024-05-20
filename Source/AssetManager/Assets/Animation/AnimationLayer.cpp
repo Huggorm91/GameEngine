@@ -15,9 +15,9 @@ bool AnimationLayer::UpdateRootMotion(float)
 	return false;
 }
 
-AnimationTransform AnimationLayer::GetRootMotion(float)
+QuaternionTransform AnimationLayer::GetRootMotion(float)
 {
-	return AnimationTransform();
+	return QuaternionTransform();
 }
 
 void AnimationLayer::Init(const Json::Value& aJson)
@@ -63,9 +63,9 @@ void AnimationLayer::UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBo
 	}
 }
 
-std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms() const
+std::unordered_map<std::string, QuaternionTransform> AnimationLayer::GetFrameTransforms() const
 {
-	std::unordered_map<std::string, AnimationTransform> result;
+	std::unordered_map<std::string, QuaternionTransform> result;
 	const auto& bone = mySkeleton->GetBone(myBoneIndex);
 	if (bone.parent >= 0)
 	{
@@ -78,9 +78,9 @@ std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTran
 	return result;
 }
 
-std::unordered_map<std::string, AnimationTransform> AnimationLayer::GetFrameTransforms(float anInterpolationValue) const
+std::unordered_map<std::string, QuaternionTransform> AnimationLayer::GetFrameTransforms(float anInterpolationValue) const
 {
-	std::unordered_map<std::string, AnimationTransform> result;
+	std::unordered_map<std::string, QuaternionTransform> result;
 	const auto& next = myFlags[eIsReversing] ? GetPreviousFrame() : GetNextFrame();
 	const auto& bone = mySkeleton->GetBone(myBoneIndex);
 	if (bone.parent >= 0)
@@ -106,7 +106,7 @@ Json::Value AnimationLayer::ToJson() const
 	return result;
 }
 
-void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
+void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	const auto& bone = mySkeleton->GetBone(anIndex);
 	const std::string* name = &bone.namespaceName;
@@ -123,7 +123,7 @@ void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, 
 	}
 }
 
-void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
+void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const
 {
 	const auto& bone = mySkeleton->GetBone(anIndex);
 	const std::string* name = &bone.namespaceName;
@@ -132,7 +132,7 @@ void AnimationLayer::GetFrameTransformsInternal(std::unordered_map<std::string, 
 		name = &bone.name;
 	}
 
-	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
+	const auto& interpolatedTransform = QuaternionTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
 	const auto& matrix = interpolatedTransform.GetAsMatrix() * aParentTransform;
 	outTransforms.emplace(*name, matrix);
 	

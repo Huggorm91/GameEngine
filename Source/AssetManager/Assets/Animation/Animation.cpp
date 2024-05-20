@@ -81,8 +81,8 @@ bool Animation::UpdateRootMotion(float aTimeSinceLastUpdate)
 		return false;
 	}
 
-	const AnimationTransform& transform = GetRootMotion(aTimeSinceLastUpdate / myData->frameDelta);
-	if (transform != AnimationTransform())
+	const QuaternionTransform& transform = GetRootMotion(aTimeSinceLastUpdate / myData->frameDelta);
+	if (transform != QuaternionTransform())
 	{
 		myRootMotionTransform->AddToPosition(transform.position);
 		myRootMotionTransform->AddToRotationRadian(transform.rotation.GetAsEuler());
@@ -91,7 +91,7 @@ bool Animation::UpdateRootMotion(float aTimeSinceLastUpdate)
 	return false;
 }
 
-AnimationTransform Animation::GetRootMotion(float aPercentage)
+QuaternionTransform Animation::GetRootMotion(float aPercentage)
 {
 	assert(mySkeleton && myRootMotionTransform && "Animation not configured correctly to use root motion!");
 	const std::string* boneName = &mySkeleton->GetBone(0).namespaceName;
@@ -121,10 +121,10 @@ AnimationTransform Animation::GetRootMotion(float aPercentage)
 		}
 	}
 
-	const auto& previousTransform = previousFrame ? previousFrame->localTransforms.at(*boneName) : AnimationTransform();
+	const auto& previousTransform = previousFrame ? previousFrame->localTransforms.at(*boneName) : QuaternionTransform();
 	const auto& rootTransform = myData->frames[myCurrentFrame].localTransforms.at(*boneName);
 
-	auto transform = AnimationTransform::Interpolate(previousTransform, rootTransform, aPercentage);
+	auto transform = QuaternionTransform::Interpolate(previousTransform, rootTransform, aPercentage);
 	transform.Subtract(previousTransform);
 	return transform;
 }
@@ -410,32 +410,95 @@ const AnimationData& Animation::GetData() const
 	return *myData;
 }
 
-std::unordered_map<std::string, AnimationTransform> Animation::GetAdditiveTransforms() const
+std::unordered_map<std::string, QuaternionTransform> Animation::GetAdditiveTransforms() const
 {
-	if (myInterpolationTimer <= Crimson::FloatTolerance)
+	std::unordered_map<std::string, QuaternionTransform> result;
+	auto transforms = myData->frames[myCurrentFrame].localTransformMatrices;
+	const std::string* boneName = nullptr;
+	for (auto& bone : mySkeleton->GetBones())
 	{
-		return GetFrameTransforms();
+		if (myFlags[eIsUsingNamespace])
+		{
+			boneName = &bone.namespaceName;
+		}
+		else
+		{
+			boneName = &bone.name;
+		}
+
+		if (auto iter = transforms.find(*boneName); iter != transforms.end())
+		{
+			result.emplace(iter->first, bone.localBindPoseInverse * iter->second);
+		}
+	}
+	return result;
+	/*if (myInterpolationTimer <= Crimson::FloatTolerance)
+	{
+		auto transforms = myData->frames[myCurrentFrame].localTransformMatrices;
+		const std::string* boneName = nullptr;
+		for (auto& bone : mySkeleton->GetBones())
+		{
+			if (myFlags[eIsUsingNamespace])
+			{
+				boneName = &bone.namespaceName;
+			}
+			else
+			{
+				boneName = &bone.name;
+			}
+
+			if (auto iter = transforms.find(*boneName); iter != transforms.end())
+			{
+				result.emplace(iter->first, iter->second * bone.localBindPoseInverse);
+			}
+		}
+		return result;
 	}
 	else
 	{
-		return GetFrameTransforms(myAnimationTimer / myData->frameDelta);
-	}
+
+		const auto& current = myData->frames[myCurrentFrame];
+		const auto& next = myFlags[eIsReversing] ? GetPreviousFrame() : GetNextFrame();
+		result.reserve(current.globalTransforms.size());
+
+		const float interpolationValue = myAnimationTimer / myData->frameDelta;
+		const std::string* boneName = nullptr;
+		for (auto& bone : mySkeleton->GetBones())
+		{
+			if (myFlags[eIsUsingNamespace])
+			{
+				boneName = &bone.namespaceName;
+			}
+			else
+			{
+				boneName = &bone.name;
+			}
+
+			if (auto iter = current.globalTransforms.find(*boneName); iter != current.globalTransforms.end())
+			{
+				QuaternionTransform transform = QuaternionTransform::Interpolate(iter->second, next.globalTransforms.at(iter->first), interpolationValue);
+				transform.Subtract(bone.bindPose);
+				result.emplace(iter->first, transform);
+			}
+		}
+		return result;
+	}*/
 }
 
-std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms() const
+std::unordered_map<std::string, QuaternionTransform> Animation::GetFrameTransforms() const
 {
 	return myData->frames[myCurrentFrame].globalTransforms;
 }
 
-std::unordered_map<std::string, AnimationTransform> Animation::GetFrameTransforms(float anInterpolationValue) const
+std::unordered_map<std::string, QuaternionTransform> Animation::GetFrameTransforms(float anInterpolationValue) const
 {
-	std::unordered_map<std::string, AnimationTransform> result;
+	std::unordered_map<std::string, QuaternionTransform> result;
 	const auto& current = myData->frames[myCurrentFrame];
 	const auto& next = myFlags[eIsReversing] ? GetPreviousFrame() : GetNextFrame();
 	result.reserve(current.globalTransforms.size());
 	for (auto& [bone, transform] : current.globalTransforms)
 	{
-		result.emplace(bone, AnimationTransform::Interpolate(transform, next.globalTransforms.at(bone), anInterpolationValue));
+		result.emplace(bone, QuaternionTransform::Interpolate(transform, next.globalTransforms.at(bone), anInterpolationValue));
 	}
 	return result;
 }
@@ -460,15 +523,7 @@ void Animation::UpdateBoneCacheGlobal(const Skeleton* aSkeleton, BoneCache& outB
 		boneName = &bone.name;
 	}
 
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform *= myData->frames[myCurrentFrame].globalTransformMatrices.at(*boneName);
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(*boneName);
-	}
+	outBones[anIndex] = bone.bindPoseInverse * myData->frames[myCurrentFrame].globalTransformMatrices.at(*boneName);
 
 	for (auto& childIndex : bone.children)
 	{
@@ -485,16 +540,8 @@ void Animation::UpdateBoneCacheGlobal(const Skeleton* aSkeleton, BoneCache& outB
 		boneName = &bone.name;
 	}
 
-	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.globalTransforms.at(*boneName), anInterpolationFrame.globalTransforms.at(*boneName), anInterpolationValue);
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform = interpolatedTransform.GetAsMatrix() * outTransform;
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
-	}
+	const auto& interpolatedTransform = QuaternionTransform::Interpolate(aCurrentFrame.globalTransforms.at(*boneName), anInterpolationFrame.globalTransforms.at(*boneName), anInterpolationValue);
+	outBones[anIndex] = bone.bindPoseInverse * interpolatedTransform.GetAsMatrix();
 
 	for (auto& childIndex : bone.children)
 	{
@@ -512,15 +559,7 @@ void Animation::UpdateBoneCacheLocal(const Skeleton* aSkeleton, BoneCache& outBo
 	}
 
 	const auto& matrix = aFrame.localTransformMatrices.at(*name) * aParentTransform;
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform = matrix * outTransform;
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * matrix;
-	}
+	outBones[anIndex] = bone.bindPoseInverse * matrix;
 
 	for (auto& childIndex : bone.children)
 	{
@@ -537,17 +576,9 @@ void Animation::UpdateBoneCacheLocal(const Skeleton* aSkeleton, BoneCache& outBo
 		name = &bone.name;
 	}
 
-	const auto& interpolatedTransform = AnimationTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
+	const auto& interpolatedTransform = QuaternionTransform::Interpolate(aCurrentFrame.localTransforms.at(*name), anInterpolationFrame.localTransforms.at(*name), anInterpolationValue);
 	const auto& matrix = interpolatedTransform.GetAsMatrix() * aParentTransform;
-	if (myFlags[eIsAdditive])
-	{
-		auto& outTransform = outBones[anIndex];
-		outTransform = matrix * outTransform;
-	}
-	else
-	{
-		outBones[anIndex] = bone.bindPoseInverse * matrix;
-	}
+	outBones[anIndex] = bone.bindPoseInverse * matrix;
 
 	for (auto& childIndex : bone.children)
 	{

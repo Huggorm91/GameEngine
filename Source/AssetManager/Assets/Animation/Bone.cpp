@@ -1,5 +1,11 @@
 #include "AssetManager.pch.h"
 #include "Bone.h"
 
-Bone::Bone(const TGA::FBX::Skeleton::Bone& aBone) : parent(aBone.ParentIdx), namespaceName(aBone.NamespaceName), name(aBone.Name), children(aBone.Children), bindPoseInverse(ConvertTransposedMatrix(aBone.BindPoseInverse))
+Bone::Bone(const TGA::FBX::Skeleton::Bone& aBone) : 
+	bindPoseInverse(ConvertTransposedMatrix(aBone.BindPoseInverse)),
+	bindPose(bindPoseInverse.GetInverse()),
+	children(aBone.Children), 
+	namespaceName(aBone.NamespaceName), 
+	name(aBone.Name), 
+	parent(aBone.ParentIdx) 
 {}

@@ -367,7 +367,7 @@ namespace Crimson
 	template<typename T>
 	inline Quaternion<T> Quaternion<T>::operator*(const Quaternion<T>& aQuaternion) const
 	{
-		Quaternion<T> result = *this;
+		Quaternion<T> result;
 		result.w = (w * aQuaternion.w) - (x * aQuaternion.x) - (y * aQuaternion.y) - (z * aQuaternion.z);
 		result.x = (w * aQuaternion.x) + (x * aQuaternion.w) + (y * aQuaternion.z) - (z * aQuaternion.y);
 		result.y = (w * aQuaternion.y) + (y * aQuaternion.w) + (z * aQuaternion.x) - (x * aQuaternion.z);

@@ -12,7 +12,7 @@ public:
 	// AnimationLayer never alters transform, use Animation instead
 	bool UpdateRootMotion(float aTimeSinceLastUpdate) override;
 	// Will always return no motion, use Animation instead
-	AnimationTransform GetRootMotion(float aPercentage) override;
+	QuaternionTransform GetRootMotion(float aPercentage) override;
 
 	using Animation::Init;
 	void Init(const Json::Value& aJson) override;
@@ -24,8 +24,8 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const override;
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 
-	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
-	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
+	std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms() const override;
+	std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms(float anInterpolationValue) const override;
 
 	std::shared_ptr<AnimationBase> GetAsSharedPtr() const override;
 
@@ -34,7 +34,7 @@ public:
 private:
 	unsigned myBoneIndex;
 
-	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const;
-	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame,float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const;
+	void GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const;
+	void GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame,float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const;
 };
 

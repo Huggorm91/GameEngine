@@ -1,43 +1,18 @@
 #pragma once
 #include "../Components/ComponentParts/TgaImporterConversions.h"
 #include "GraphicsEngine/GraphicsEngineDefines.h"
-#include "Math/Quaternion.hpp"
-#include "Math/Transform.h"
+#include "Math/QuaternionTransform.h"
 #include <bitset>
 
 class Skeleton;
-
-class AnimationTransform
-{
-public:
-	Crimson::Vector3f position;
-	Crimson::QuatF rotation;
-
-	AnimationTransform() = default;
-	AnimationTransform(const Crimson::Matrix4x4f& aMatrix);
-	AnimationTransform(const Crimson::Vector3f& aPosition, const Crimson::QuatF& aRotation);
-
-	void Serialize(std::ostream& aStream) const;
-	void Deserialize(std::istream& aStream);
-
-	Crimson::Matrix4x4f GetAsMatrix() const;
-	static AnimationTransform Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage);
-
-	void Add(const AnimationTransform& aTransform);
-	void Subtract(const AnimationTransform& aTransform);
-
-	inline bool operator==(const AnimationTransform& aTranform) const
-	{
-		return position == aTranform.position && rotation == aTranform.rotation;
-	}
-};
+class Transform;
 
 struct AnimationFrame
 {
 	std::unordered_map<std::string, Crimson::Matrix4x4f> globalTransformMatrices;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> localTransformMatrices;
-	std::unordered_map<std::string, AnimationTransform> globalTransforms;
-	std::unordered_map<std::string, AnimationTransform> localTransforms;
+	std::unordered_map<std::string, QuaternionTransform> globalTransforms;
+	std::unordered_map<std::string, QuaternionTransform> localTransforms;
 	std::unordered_map<std::string, Crimson::Matrix4x4f> socketTransforms;
 	std::unordered_map<std::string, bool> triggeredEvents;
 
@@ -101,7 +76,7 @@ public:
 
 	/// <param name="aPercentage">The amount of the total motion from the current frame to get, from 0.f to 1.f</param>
 	/// <returns>The interpolated motion</returns>
-	virtual AnimationTransform GetRootMotion(float aPercentage) = 0;
+	virtual QuaternionTransform GetRootMotion(float aPercentage) = 0;
 
 	void StartAnimation();
 	void StopAnimation();
@@ -141,10 +116,10 @@ public:
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones) const = 0;
 	virtual void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const = 0;
 
-	virtual std::unordered_map<std::string, AnimationTransform> GetAdditiveTransforms() const = 0;
+	virtual std::unordered_map<std::string, QuaternionTransform> GetAdditiveTransforms() const = 0;
 
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const = 0;
-	virtual std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const = 0;
+	virtual std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms() const = 0;
+	virtual std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms(float anInterpolationValue) const = 0;
 
 	virtual bool IsValid() const = 0;
 	virtual bool HasData() const = 0;

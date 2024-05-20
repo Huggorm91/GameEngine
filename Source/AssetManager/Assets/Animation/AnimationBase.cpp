@@ -2,52 +2,6 @@
 #include "AnimationBase.h"
 #include "AssetManager.h"
 
-AnimationTransform::AnimationTransform(const Crimson::Matrix4x4f& aMatrix) :
-	position(aMatrix.GetTranslation()), 
-	rotation(Crimson::QuatF(aMatrix).GetNormalized())
-{}
-
-AnimationTransform::AnimationTransform(const Crimson::Vector3f& aPosition, const Crimson::QuatF& aRotation) :
-	position(aPosition), 
-	rotation(aRotation)
-{}
-
-void AnimationTransform::Serialize(std::ostream& aStream) const
-{
-	position.Serialize(aStream);
-	rotation.Serialize(aStream);
-}
-
-void AnimationTransform::Deserialize(std::istream& aStream)
-{
-	position.Deserialize(aStream);
-	rotation.Deserialize(aStream);
-}
-
-Crimson::Matrix4x4f AnimationTransform::GetAsMatrix() const
-{
-	Crimson::Matrix4x4f result = rotation.GetAsMatrix3x3();
-	result *= Crimson::Matrix4x4f::CreateTranslationMatrix(position);
-	return result;
-}
-
-AnimationTransform AnimationTransform::Interpolate(const AnimationTransform& aFrom, const AnimationTransform& aTo, float aPercentage)
-{
-	return AnimationTransform(Lerp(aFrom.position, aTo.position, aPercentage), Nlerp(aFrom.rotation, aTo.rotation, aPercentage));
-}
-
-void AnimationTransform::Add(const AnimationTransform& aTransform)
-{
-	position += aTransform.position;
-	rotation *= aTransform.rotation;
-}
-
-void AnimationTransform::Subtract(const AnimationTransform& aTransform)
-{
-	position -= aTransform.position;
-	rotation *= aTransform.rotation.GetInverse();
-}
-
 AnimationFrame::AnimationFrame(const TGA::FBX::Animation::Frame& aFrame) : triggeredEvents(aFrame.TriggeredEvents)
 {
 	globalTransformMatrices.reserve(aFrame.GlobalTransforms.size());
@@ -84,7 +38,7 @@ AnimationFrame::AnimationFrame(std::istream& aStream)
 	{
 		std::string name;
 		std::getline(aStream, name, '\0');
-		AnimationTransform transform;
+		QuaternionTransform transform;
 		transform.Deserialize(aStream);
 
 		globalTransforms.emplace(name, transform);
@@ -99,7 +53,7 @@ AnimationFrame::AnimationFrame(std::istream& aStream)
 	{
 		std::string name;
 		std::getline(aStream, name, '\0');
-		AnimationTransform transform;
+		QuaternionTransform transform;
 		transform.Deserialize(aStream);
 
 		localTransforms.emplace(name, transform);

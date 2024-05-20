@@ -19,7 +19,7 @@ public:
 
 	/// <param name="aPercentage">The amount of the total motion from the current frame to get, from 0.f to 1.f</param>
 	/// <returns>The interpolated motion</returns>
-	AnimationTransform GetRootMotion(float aPercentage) override;
+	QuaternionTransform GetRootMotion(float aPercentage) override;
 
 	void Init(BoneCache& aBoneCache, const Skeleton* aSkeleton) override;
 	void Init(const Json::Value& aJson) override;
@@ -54,9 +54,9 @@ public:
 	void UpdateBoneCache(const Skeleton* aSkeleton, BoneCache& outBones, float anInterpolationValue) const override;
 	void UpdateBoneCacheMixedFPS(const Skeleton* aSkeleton, BoneCache& outBones) const;
 
-	std::unordered_map<std::string, AnimationTransform> GetAdditiveTransforms() const override;
-	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms() const override;
-	std::unordered_map<std::string, AnimationTransform> GetFrameTransforms(float anInterpolationValue) const override;
+	std::unordered_map<std::string, QuaternionTransform> GetAdditiveTransforms() const override;
+	std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms() const override;
+	std::unordered_map<std::string, QuaternionTransform> GetFrameTransforms(float anInterpolationValue) const override;
 
 	bool IsEndOfLoop() const override;
 
@@ -109,7 +109,7 @@ private:
 
 	void UpdateAnimations();
 
-	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const;
-	void GetFrameTransformsInternal(std::unordered_map<std::string, AnimationTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const;
+	void GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aFrame, const Crimson::Matrix4x4f& aParentTransform) const;
+	void GetFrameTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, unsigned anIndex, const AnimationFrame& aCurrentFrame, const AnimationFrame& anInterpolationFrame, float anInterpolationValue, const Crimson::Matrix4x4f& aParentTransform) const;
 };
 

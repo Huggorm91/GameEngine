@@ -60,20 +60,24 @@ void AnimationControllerComponent::UpdateNoRender()
 		{
 			myAnimationTimer = 0.f;
 
+			ResetBoneCache();
+
 			auto resultTransforms = myAnimation->GetAdditiveTransforms();
 			for (auto& animation : myAdditiveAnimations)
 			{
 				animation->Update();
 				auto currentTransforms = animation->GetAdditiveTransforms();
 
-				if (resultTransforms.size() < currentTransforms.size())
+				GetAdditiveTransformsInternal(resultTransforms, currentTransforms, 0, QuaternionTransform());
+
+				/*if (resultTransforms.size() < currentTransforms.size())
 				{
 					resultTransforms.reserve(currentTransforms.size());
 					for (auto& [boneName, transform] : currentTransforms)
 					{
 						if (auto iter = resultTransforms.find(boneName); iter != resultTransforms.end())
 						{
-							iter->second = AnimationTransform::Interpolate(iter->second, transform, 0.5f);
+							iter->second.Add(transform);
 						}
 						else
 						{
@@ -87,10 +91,10 @@ void AnimationControllerComponent::UpdateNoRender()
 					{
 						if (auto iter = currentTransforms.find(boneName); iter != currentTransforms.end())
 						{
-							transform = AnimationTransform::Interpolate(iter->second, transform, 0.5f);
+							transform.Add(iter->second);
 						}
 					}
-				}
+				}*/
 			}
 
 			unsigned index = 0;
@@ -144,7 +148,7 @@ void AnimationControllerComponent::SetAnimation(const std::shared_ptr<AnimationB
 		else
 		{
 			myAnimation->SetTargetFrameDelta(myAnimationDelta);
-		}		
+		}
 	}
 }
 
@@ -266,14 +270,48 @@ Json::Value AnimationControllerComponent::ToJson() const
 	return result;
 }
 
-Crimson::Matrix4x4f AnimationControllerComponent::CalculateAdditiveBoneCache(const std::unordered_map<std::string, AnimationTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& aBindPose)
+Crimson::Matrix4x4f AnimationControllerComponent::CalculateAdditiveBoneCache(const std::unordered_map<std::string, QuaternionTransform>& someTransforms, const std::string& aBoneName, const Crimson::Matrix4x4f& /*aBindPose*/)
 {
 	if (auto iter = someTransforms.find(aBoneName); iter != someTransforms.end())
 	{
-		return aBindPose * iter->second.GetAsMatrix();
+		return /*aBindPose * */iter->second.GetAsMatrix();
 	}
 	else
 	{
 		return Crimson::Matrix4x4f::Identity;
+	}
+}
+
+void AnimationControllerComponent::GetAdditiveTransformsInternal(std::unordered_map<std::string, QuaternionTransform>& outTransforms, const std::unordered_map<std::string, QuaternionTransform>& someTransforms, unsigned anIndex, QuaternionTransform aParentTransform) const
+{
+	auto& bone = mySkeleton->GetBone(anIndex);
+	const std::string* name = &bone.namespaceName;
+	if (!myAnimation->IsUsingNamespace())
+	{
+		name = &bone.name;
+	}
+
+	auto outIter = outTransforms.find(*name);
+	auto someIter = someTransforms.find(*name);
+	if (outIter != outTransforms.end() && someIter != someTransforms.end())
+	{
+		QuaternionTransform localDelta = outIter->second;
+		localDelta.Add(someIter->second);
+		aParentTransform.Add(localDelta);
+	}
+	else if (outIter != outTransforms.end())
+	{
+		aParentTransform.Add(outIter->second);
+		outIter->second = aParentTransform;
+	}
+	else
+	{
+		aParentTransform.Add(someIter->second);
+		outTransforms.emplace(*name, aParentTransform);
+	}
+
+	for (auto& childIndex : bone.children)
+	{
+		GetAdditiveTransformsInternal(outTransforms, someTransforms, childIndex, aParentTransform);
 	}
 }
