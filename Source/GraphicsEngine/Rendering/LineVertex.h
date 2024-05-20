@@ -8,7 +8,6 @@ struct LineVertex
 {
 	Crimson::Vector4f myPosition;
 	Crimson::Vector4f myColor;
-	float myThickness;
 
 	LineVertex();
 	LineVertex(float aX, float aY, float aZ, float aR, float aG, float aB);

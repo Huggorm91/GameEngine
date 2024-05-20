@@ -6,7 +6,6 @@ struct DefaultVertexInput
 {
     float4 Position : POSITION;
     float4 Color : COLOR;
-    float Thickness : THICKNESS;
 };
 
 struct DefaultVertexToPixel

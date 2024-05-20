@@ -49,20 +49,6 @@ PointlightComponent& PointlightComponent::operator=(const PointlightComponent& a
 	return *this;
 }
 
-void PointlightComponent::Init(float aRadius, float anIntensity, const Crimson::Vector3f& aColor, const Crimson::Vector3f& aPosition, bool aCastShadows)
-{
-	myRadius = aRadius;
-	myIntensity = anIntensity;
-	myPosition = aPosition;
-	myColor = aColor;
-	myCastShadows = aCastShadows;
-
-	if (myCastShadows && myShadowMap == nullptr)
-	{
-		CreateShadowMap();
-	}
-}
-
 void PointlightComponent::Update()
 {
 	Render();
@@ -186,16 +172,6 @@ Json::Value PointlightComponent::ToJson() const
 	result["Intensity"] = myIntensity;
 	result["CastShadows"] = myCastShadows;
 	return result;
-}
-
-inline std::string PointlightComponent::ToString() const
-{
-	return "Pointlight";
-}
-
-const PointlightComponent* PointlightComponent::GetTypePointer() const
-{
-	return this;
 }
 
 void PointlightComponent::CreateShadowMap()

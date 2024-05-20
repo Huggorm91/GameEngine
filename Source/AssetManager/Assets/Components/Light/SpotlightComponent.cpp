@@ -70,26 +70,6 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 	return *this;
 }
 
-void SpotlightComponent::Init(float aRange, float anIntensity, float anInnerAngle, float anOuterAngle, const Crimson::Vector3f& aDirection, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aColor, bool aCastShadows)
-{
-	myRange = aRange;
-	myIntensity = anIntensity;
-	myInnerAngle = Crimson::DegreeToRadian(anInnerAngle);
-	myOuterAngle = Crimson::DegreeToRadian(anOuterAngle);
-	myPosition = aPosition;
-	myLightDirection = aDirection.GetNormalized();
-	myColor = aColor;
-	myCastShadows = aCastShadows;
-#ifndef _RETAIL
-	myEditDirection = myLightDirection;
-#endif // !_RETAIL
-
-	if (myCastShadows && myShadowMap == nullptr)
-	{
-		CreateShadowMap();
-	}
-}
-
 void SpotlightComponent::Update()
 {
 	Render();
@@ -176,16 +156,6 @@ Json::Value SpotlightComponent::ToJson() const
 	result["OuterAngle"] = myOuterAngle;
 	result["CastShadows"] = myCastShadows;
 	return result;
-}
-
-inline std::string SpotlightComponent::ToString() const
-{
-	return "Spotlight";
-}
-
-const SpotlightComponent* SpotlightComponent::GetTypePointer() const
-{
-	return this;
 }
 
 void SpotlightComponent::CreateShadowMap()

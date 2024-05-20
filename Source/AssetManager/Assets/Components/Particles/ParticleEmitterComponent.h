@@ -2,8 +2,7 @@
 #include "../Component.h"
 #include "GraphicsEngine/Drawer/ParticleEmitter.h"
 
-class ParticleEmitterComponent : public Component
-{
+BEGIN_COMPONENT(ParticleEmitterComponent)
 public:
 	ParticleEmitterComponent();
 	ParticleEmitterComponent(const ParticleEmitterComponent& aComponent) = default;
@@ -25,8 +24,6 @@ public:
 
 	void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const ParticleEmitterComponent* GetTypePointer() const override;
 
 private:
 	std::shared_ptr<ParticleEmitter> myEmitter;

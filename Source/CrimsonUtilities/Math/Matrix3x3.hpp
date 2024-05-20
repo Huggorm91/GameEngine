@@ -17,7 +17,7 @@ namespace Crimson
 		T m32;
 		T m33;
 
-		static const Matrix3x3 Null;
+		static const Matrix3x3 Identity;
 
 		// Creates the identity matrix.
 		Matrix3x3<T>();
@@ -47,6 +47,12 @@ namespace Crimson
 		// Assumes aTransform is made up of nothing but rotations and translations.
 		inline Matrix3x3<T> GetInverse2D() const;
 		inline Matrix3x3<T> GetTranspose() const;
+
+		inline Matrix3x3<T> GetMatrixUnscaled() const;
+
+		// Returns the Matrix Angles in Radians
+		inline Vector3<T> GetRotation() const;
+		inline Vector3<T> GetScale() const;
 
 		inline Vector3<T> GetForward() const;
 		inline Vector3<T> GetUp() const;
@@ -85,7 +91,9 @@ namespace Crimson
 		inline bool operator!=(const Matrix3x3<T>& aMatrix) const;
 	};
 
-	template<typename T> const Matrix3x3<T> Matrix3x3<T>::Null{};
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T> const Matrix3x3<T> Matrix3x3<T>::Identity{};
 
 	typedef Matrix3x3<float> Matrix3x3f;
 	typedef Matrix3x3<int>  Matrix3x3i;
@@ -224,6 +232,78 @@ namespace Crimson
 	}
 
 	template<typename T>
+	inline Matrix3x3<T> Matrix3x3<T>::GetMatrixUnscaled() const
+	{
+		Vector3<float> scale = GetScale();
+
+		Matrix3x3<T> resultMat = *this;
+
+		Vector3<T> scaleDividers(1 / scale.x, 1 / scale.y, 1 / scale.z);
+		resultMat.m11 *= scaleDividers.x;
+		resultMat.m12 *= scaleDividers.x;
+		resultMat.m13 *= scaleDividers.x;
+
+		resultMat.m21 *= scaleDividers.y;
+		resultMat.m22 *= scaleDividers.y;
+		resultMat.m23 *= scaleDividers.y;
+
+		resultMat.m31 *= scaleDividers.z;
+		resultMat.m32 *= scaleDividers.z;
+		resultMat.m33 *= scaleDividers.z;
+
+		return resultMat;
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::GetRotation() const
+	{
+		//https://stackoverflow.com/a/18436193
+		// X and Y flipped for some reason, probably different rotational order
+
+		if (GimbalCheck(static_cast<float>((*this)(1, 3)), -1.0f))
+		{
+			float x = 0; //gimbal lock, value of x doesn't matter
+			float y = PiHalf;
+			float z = x + atan2((*this)(2, 1), (*this)(3, 1));
+			return { y, x, z };
+		}
+		else if (GimbalCheck(static_cast<float>((*this)(1, 3)), 1.0f))
+		{
+			float x = 0;
+			float y = -PiHalf;
+			float z = -x + atan2(-(*this)(2, 1), -(*this)(3, 1));
+			return { y, x, z };
+		}
+		else
+		{	//two solutions exist
+			float x1 = -asin((*this)(1, 3));
+			float y1 = atan2((*this)(2, 3) / cos(x1), (*this)(3, 3) / cos(x1));
+			float z1 = atan2((*this)(1, 2) / cos(x1), (*this)(1, 1) / cos(x1));
+
+			float x2 = Pi - x1;
+			float y2 = atan2((*this)(2, 3) / cos(x2), (*this)(3, 3) / cos(x2));
+			float z2 = atan2((*this)(1, 2) / cos(x2), (*this)(1, 1) / cos(x2));
+
+			//choose one solution to return
+			//for example the "shortest" rotation
+			if ((std::abs(x1) + std::abs(y1) + std::abs(z1)) <= (std::abs(x2) + std::abs(y2) + std::abs(z2)))
+			{
+				return { y1, x1, z1 };
+			}
+			else
+			{
+				return { y2, x2, z2 };
+			}
+		}
+	}
+
+	template<typename T>
+	inline Vector3<T> Matrix3x3<T>::GetScale() const
+	{
+		return Vector3<T>(Vector3<T>(m11, m12, m13).Length(), Vector3<T>(m21, m22, m23).Length(), Vector3<T>(m31, m32, m33).Length());
+	}
+
+	template<typename T>
 	inline Vector3<T> Matrix3x3<T>::GetForward() const
 	{
 		return Vector3<T>(m13, m23, m33).GetNormalized();
@@ -268,13 +348,13 @@ namespace Crimson
 	template <class T>
 	inline Vector3<T> Matrix3x3<T>::GetEulerAngles() const
 	{
-		if (CloseEnough(static_cast<float>((*this)(1, 3)), -1.0f)) {
+		if (GimbalCheck(static_cast<float>((*this)(1, 3)), -1.0f)) {
 			float x = 0;
 			float y = Pi / 2;
 			float z = x + atan2((*this)(2, 1), (*this)(3, 1));
 			return { y, x, z };
 		}
-		else if (CloseEnough(static_cast<float>((*this)(1, 3)), 1.0f)) {
+		else if (GimbalCheck(static_cast<float>((*this)(1, 3)), 1.0f)) {
 			float x = 0;
 			float y = -Pi / 2;
 			float z = -x + atan2(-(*this)(2, 1), -(*this)(3, 1));

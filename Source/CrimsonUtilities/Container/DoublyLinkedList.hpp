@@ -1,4 +1,5 @@
 #pragma once
+
 namespace Crimson
 {
 	template <class T> class DoublyLinkedListNode;

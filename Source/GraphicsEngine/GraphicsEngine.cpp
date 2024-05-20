@@ -7,12 +7,22 @@
 #include "Math/Sort.hpp"
 #include "File/DirectoryFunctions.h"
 
-GraphicsEngine::GraphicsEngine() :myWindowHandle(), myDefaultSampler(), myShadowSampler(), myLUTSampler(), myWorldRadius(1.f), myWindowSize{ 0,0 }, myWorldMax(), myWorldMin(), myWorldCenter(), myBackgroundColor(),
-myRenderCommands(&myFirstCommandlist), myUpdateCommands(&mySecondCommandlist), myDirectionalShadowMap(nullptr), myPointShadowMap{ nullptr }, mySpotShadowMap{ nullptr }, myDefaultMaterial(), myFrameBuffer(),
-myObjectBuffer(), myLightBuffer(), myMaterialBuffer(), myLineDrawer(), myFirstCommandlist(), mySecondCommandlist(), myTextures(), myShaders(), myIsUsingBloom(true),
-myAssetPath("Settings\\EngineAssets\\"), mySettingsPath("Settings\\ge_settings.json")
+GraphicsEngine::GraphicsEngine() :
+	myWindowHandle(),
+	myWorldRadius(1.f),
+	myWindowSize{ 0,0 },
+	myRenderCommands(&myFirstCommandlist),
+	myUpdateCommands(&mySecondCommandlist),
+	myDirectionalShadowMap(nullptr),
+	myPointShadowMap{ nullptr },
+	mySpotShadowMap{ nullptr },
+	myIsUsingBloom(true),
+	myAssetPath("Settings\\EngineAssets\\"),
+	mySettingsPath("Settings\\ge_settings.json")
 #ifndef _RETAIL
-, myDebugMode(DebugMode::Default), myLightMode(LightMode::Default), myRenderMode(RenderMode::Mesh), myGrid()
+	, myDebugMode(DebugMode::Default),
+	myLightMode(LightMode::Default),
+	myRenderMode(RenderMode::Mesh)
 #endif // !_RETAIL	
 {}
 
@@ -173,6 +183,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			GELogger.Err("Failed to initialize LineDrawer!");
 			return false;
 		}
+		myLineDrawer.SetUsingDepthBuffer(true);
 
 		if (!myParticleDrawer.Init())
 		{
@@ -181,7 +192,7 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 		}
 
 #ifndef _RETAIL
-		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 10000000.f, true);
+		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 100000.f, true);
 	}
 	catch (const std::exception& e)
 	{
@@ -498,6 +509,11 @@ GraphicsEngine::RenderMode GraphicsEngine::SetRenderMode(RenderMode aMode)
 GraphicsEngine::RenderMode GraphicsEngine::NextRenderMode()
 {
 	return SetRenderMode(static_cast<RenderMode>(static_cast<int>(myRenderMode) + 1));
+}
+
+void GraphicsEngine::SetDrawGridLines(bool aShouldDraw)
+{
+	myGrid.SetActive(aShouldDraw);
 }
 #endif // _RETAIL
 
@@ -1040,9 +1056,23 @@ void GraphicsEngine::RenderFrame()
 	} // End: if (LightMode::IgnoreLight)
 
 #ifndef _RETAIL
-	RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+	if (myLineDrawer.IsUsingDepthBuffer())
+	{
+		RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
+	}
+	else
+	{
+		RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
+}
 #else
-	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
+	if (myLineDrawer.IsUsingDepthBuffer())
+	{
+		RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
+	}
+	else
+	{
+		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
+	}
 #endif // !_RETAIL
 
 	RHI::BeginEvent(L"Line Drawer");
@@ -1155,10 +1185,10 @@ bool GraphicsEngine::CreateShadowSampler()
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-	desc.BorderColor[0] = 0.f;
-	desc.BorderColor[1] = 0.f;
-	desc.BorderColor[2] = 0.f;
-	desc.BorderColor[3] = 0.f;
+	desc.BorderColor[0] = 1.f;
+	desc.BorderColor[1] = 1.f;
+	desc.BorderColor[2] = 1.f;
+	desc.BorderColor[3] = 1.f;
 	desc.MipLODBias = 0.f;
 	desc.MaxAnisotropy = 1;
 	desc.MinLOD = 0;

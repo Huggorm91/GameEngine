@@ -121,8 +121,8 @@ void BurstEmitter::UpdateParticles(float aDeltaTime)
 			{
 				currentLerp = lerpValue;
 				speed = Crimson::Lerp(myData.StartSpeed, myData.EndSpeed, lerpValue) * aDeltaTime;
-				color = Crimson::Vector4f::Lerp(myData.StartColor, myData.EndColor, lerpValue);
-				size = Crimson::Vector3f::Lerp(myData.StartSize, myData.EndSize, lerpValue);
+				color = Crimson::Lerp(myData.StartColor, myData.EndColor, lerpValue);
+				size = Crimson::Lerp(myData.StartSize, myData.EndSize, lerpValue);
 			}
 
 			particle->myColor = color;

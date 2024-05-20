@@ -72,6 +72,7 @@ void Logger::SetPrintToFile(bool bNewValue, const std::string& aFileName)
 
 void Logger::Log(const std::string& aString) const
 {
+#ifndef _RETAIL
 	if(isInitialized)
 	{
 		if (shouldPrintToFile)
@@ -96,10 +97,14 @@ void Logger::Log(const std::string& aString) const
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 	}
+#else
+	aString;
+#endif // !_RETAIL
 }
 
 void Logger::Warn(const std::string& aString) const
 {
+#ifndef _RETAIL
 	if (isInitialized)
 	{
 		if (shouldPrintToFile)
@@ -124,10 +129,14 @@ void Logger::Warn(const std::string& aString) const
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 	}
+#else
+	aString;
+#endif // !_RETAIL
 }
 
 void Logger::Err(const std::string& aString) const
 {
+#ifndef _RETAIL
 	if (isInitialized)
 	{
 		if (shouldPrintToFile)
@@ -152,10 +161,14 @@ void Logger::Err(const std::string& aString) const
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 	}
+#else
+	aString;
+#endif // !_RETAIL
 }
 
 void Logger::Succ(const std::string& aString) const
 {
+#ifndef _RETAIL
 	if (isInitialized)
 	{
 		if (shouldPrintToFile)
@@ -180,10 +193,14 @@ void Logger::Succ(const std::string& aString) const
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 	}
+#else
+	aString;
+#endif // !_RETAIL
 }
 
 void Logger::LogException(const std::exception& anException, unsigned aLevel) const
 {
+#ifndef _RETAIL
 	if (isInitialized)
 	{
 		if (shouldPrintToFile)
@@ -219,6 +236,9 @@ void Logger::LogException(const std::exception& anException, unsigned aLevel) co
 		//}
 		//catch (...) {} // Catch all other cases.
 	}
+#else
+	anException; aLevel;
+#endif // !_RETAIL
 }
 
 void Logger::NewLine() const

@@ -6,7 +6,7 @@ using namespace Crimson;
 
 void TextureManager::Init()
 {
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
+	UpdateFilePaths();
 }
 
 void TextureManager::LoadAllTextures()
@@ -15,6 +15,11 @@ void TextureManager::LoadAllTextures()
 	{
 		LoadTexture(path, true);
 	}
+}
+
+void TextureManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
 }
 
 Texture TextureManager::GetUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const

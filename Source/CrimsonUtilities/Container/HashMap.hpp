@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "../Hash.hpp"
-#include "../Math.hpp"
+#include "../Hash/Hash.hpp"
+#include "../Math/Math.hpp"
 
 namespace Crimson
 {
@@ -48,11 +48,7 @@ namespace Crimson
 	template<class Key, class Value>
 	inline HashMap<Key, Value>::HashMap(int aCapacity) : myData(), myCount(0)
 	{
-		myData.reserve(aCapacity);
-		for (int i = 0; i < aCapacity; i++)
-		{
-			myData.emplace_back(Entry<Key, Value>());
-		}
+		myData.resize(aCapacity);
 	}
 
 	template<class Key, class Value>
@@ -145,13 +141,13 @@ namespace Crimson
 	template<class Key, class Value>
 	inline HashMap<Key, Value>::Entry<Key, Value>* HashMap<Key, Value>::FindKey(const Key& aKey)
 	{
-		return const_cast<Entry<Key, Value>*>(const_cast<const HashMap*>(this)->FindKey(aKey));;
+		return const_cast<Entry<Key, Value>*>(const_cast<const HashMap*>(this)->FindKey(aKey));
 	}
 
 	template<class Key, class Value>
 	inline HashMap<Key, Value>::Entry<Key, Value>* HashMap<Key, Value>::FindInsertionPoint(const Key& aKey)
 	{
-		int size = myData.size();
+		const int size = myData.size();
 		if (size <= 0)
 		{
 			return nullptr;
@@ -184,12 +180,7 @@ namespace Crimson
 		size_t newSize = myData.size() *2;
 		myCount = 0;
 		myData.clear();
-		myData.reserve(newSize);
-
-		for (int i = 0; i < newSize; i++)
-		{
-			myData.emplace_back(Entry<Key, Value>());
-		}
+		myData.resize(newSize);
 
 		for (auto& entry : temp)
 		{

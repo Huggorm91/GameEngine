@@ -11,6 +11,8 @@ public:
 
 	void Init();
 
+	void UpdateFilePaths();
+
 	Shader* GetShader(const std::string& aPath, bool aShouldLogErrors);
 
 	static inline const char* GetExtension(){ return ".cso"; }

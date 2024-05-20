@@ -4,16 +4,16 @@
 #include "AssetManager/AssetManager.h"
 
 LineHandle::LineHandle(unsigned anID) : myID(anID)
-{
-}
+{}
 
 LineHandle::LineHandle() : myID(UINT_MAX)
-{
-}
+{}
 
 LineHandle::LineHandle(const LineHandle& aHandle) : myID(aHandle.myID)
-{
-}
+{}
+
+LineHandle::LineHandle(LineHandle&& aHandle) noexcept : myID(aHandle.myID)
+{}
 
 LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 {
@@ -21,7 +21,7 @@ LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 	return *this;
 }
 
-LineHandle& LineHandle::operator=(LineHandle&& aHandle)
+LineHandle& LineHandle::operator=(LineHandle&& aHandle) noexcept
 {
 	const_cast<unsigned&>(myID) = aHandle.myID;
 	return *this;
@@ -66,13 +66,42 @@ void LineHandle::UpdateTransform(const Crimson::Matrix4x4f& aTransform) const
 	GraphicsEngine::Get().GetLineDrawer().UpdatePrimitiveTransform(*this, aTransform);
 }
 
+void LineHandle::UpdateColor(const Crimson::Vector4f& aColor) const
+{
+	GraphicsEngine::Get().GetLineDrawer().UpdatePrimitiveColor(*this, aColor);
+}
+
+void LineHandle::Delete() const
+{
+	GraphicsEngine::Get().GetLineDrawer().DeleteHandle(*this);
+}
+
 LineHandle LineDrawer::GetNewHandle()
 {
 	myLines.emplace(myCounter, LinePrimitive());
 	return myCounter++;
 }
 
-void LineDrawer::UpdatePrimitiveTransform(const LineHandle& aHandle, const Crimson::Matrix4x4f& aTransform)
+void LineDrawer::UpdatePrimitiveColor(LineHandle aHandle, const Crimson::Vector4f& aColor)
+{
+	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
+	{
+		if (iter->second.myIsUI)
+		{
+			myUIIsDirty = true;
+		}
+		else
+		{
+			myIsDirty = true;
+		}
+		for (auto& vertex : iter->second.myVertices)
+		{
+			vertex.myColor = aColor;
+		}
+	}
+}
+
+void LineDrawer::UpdatePrimitiveTransform(LineHandle aHandle, const Crimson::Matrix4x4f& aTransform)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -88,7 +117,7 @@ void LineDrawer::UpdatePrimitiveTransform(const LineHandle& aHandle, const Crims
 	}
 }
 
-void LineDrawer::ActivateHandle(const LineHandle& aHandle)
+void LineDrawer::ActivateHandle(LineHandle aHandle)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -105,7 +134,7 @@ void LineDrawer::ActivateHandle(const LineHandle& aHandle)
 	}
 }
 
-void LineDrawer::DeactivateHandle(const LineHandle& aHandle)
+void LineDrawer::DeactivateHandle(LineHandle aHandle)
 {
 	if (auto iter = myActiveLines.find(aHandle.myID); iter != myActiveLines.end())
 	{
@@ -119,7 +148,7 @@ void LineDrawer::DeactivateHandle(const LineHandle& aHandle)
 	}
 }
 
-void LineDrawer::DeleteHandle(const LineHandle& aHandle)
+void LineDrawer::DeleteHandle(LineHandle aHandle)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -128,12 +157,12 @@ void LineDrawer::DeleteHandle(const LineHandle& aHandle)
 	}
 }
 
-bool LineDrawer::IsValid(const LineHandle& aHandle) const
+bool LineDrawer::IsValid(LineHandle aHandle) const
 {
 	return myLines.find(aHandle.myID) != myLines.end();
 }
 
-bool LineDrawer::IsActive(const LineHandle& aHandle) const
+bool LineDrawer::IsActive(LineHandle aHandle) const
 {
 	if (myActiveLines.find(aHandle.myID) != myActiveLines.end())
 	{
@@ -143,6 +172,16 @@ bool LineDrawer::IsActive(const LineHandle& aHandle) const
 	{
 		return myActiveUILines.find(aHandle.myID) != myActiveUILines.end();
 	}
+}
+
+void LineDrawer::SetUsingDepthBuffer(bool aState)
+{
+	myIsUsingDepthBuffer = aState;
+}
+
+bool LineDrawer::IsUsingDepthBuffer() const
+{
+	return myIsUsingDepthBuffer;
 }
 
 bool LineDrawer::Init()
@@ -269,6 +308,64 @@ LineHandle LineDrawer::AddAxisLines(const Crimson::Vector3f& aCenter, float aLin
 	}
 }
 
+LineHandle LineDrawer::AddCube(const Crimson::Vector3f& aCenter, const Crimson::Vector3f& anExtent, const Crimson::Vector4f& aColor, const Crimson::Matrix4x4f& aTransform, bool aIsUI, LineHandle* aHandle)
+{
+	LinePrimitive primitive;
+	primitive.myIsUI = aIsUI;
+	primitive.myTransform = aTransform;
+
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, anExtent.y, -anExtent.z }, aColor);	// upRiFr 0
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, anExtent.y, anExtent.z }, aColor);	// upRiBa 1
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, anExtent.y, -anExtent.z }, aColor);	// upLeFr 2
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, anExtent.y, anExtent.z }, aColor);	// upLeBa 3
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, -anExtent.y, -anExtent.z }, aColor);	// doRiFr 4
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ anExtent.x, -anExtent.y, anExtent.z }, aColor);	// doRiBa 5
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, -anExtent.y, -anExtent.z }, aColor);// doLeFr 6
+	primitive.myVertices.emplace_back(aCenter + Crimson::Vector3f{ -anExtent.x, -anExtent.y, anExtent.z }, aColor);	// doLeBa 7
+
+	// Lines from up right front corner
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(0);
+	primitive.myIndices.emplace_back(4);
+
+	// Lines from down left front corner
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(4);
+	primitive.myIndices.emplace_back(6);
+	primitive.myIndices.emplace_back(7);
+
+	// Lines from up left back corner
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(2);
+	primitive.myIndices.emplace_back(3);
+	primitive.myIndices.emplace_back(7);
+
+	// Lines from down right back corner
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(1);
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(4);
+	primitive.myIndices.emplace_back(5);
+	primitive.myIndices.emplace_back(7);
+
+	if (aHandle)
+	{
+		UpdatePrimitive(primitive, *aHandle);
+		return aHandle->myID;
+	}
+	else
+	{
+		return LineHandle(AddPrimitive(primitive));
+	}
+}
+
 unsigned LineDrawer::AddPrimitive(const LinePrimitive& aPrimitive)
 {
 	myLines.emplace(myCounter, aPrimitive);
@@ -286,7 +383,7 @@ unsigned LineDrawer::AddPrimitive(const LinePrimitive& aPrimitive)
 	return myCounter++;
 }
 
-void LineDrawer::UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle)
+void LineDrawer::UpdatePrimitive(const LinePrimitive& aPrimitive, LineHandle aHandle)
 {
 	auto& primitive = myLines.at(aHandle.myID);
 	bool isActive = IsActive(aHandle);

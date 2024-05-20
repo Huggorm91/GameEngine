@@ -564,7 +564,7 @@ void Crimson::InputMapper::AddMouseEvents()
 		eInputEvent event = static_cast<eInputEvent>(index);
 		if (event == eInputEvent::MouseMove)
 		{
-			if (myRawMouseMovement != Vector2<int>::Null)
+			if (myRawMouseMovement != Vector2f::Null)
 			{
 				myEvents.emplace(event, eKey::None);
 			}

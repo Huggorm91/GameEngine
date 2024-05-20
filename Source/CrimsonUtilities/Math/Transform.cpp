@@ -2,36 +2,61 @@
 #include "Conversions.hpp"
 #include "Json/JsonVector.hpp"
 
-Transform::Transform() : myPosition(), myRotation(), myScale(1.f, 1.f, 1.f), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
-{
-}
+Transform::Transform() :
+	myScale(1.f, 1.f, 1.f),
+	myHasChangedInternal(false),
+	myHasChangedThisFrame(false),
+	myParent(nullptr)
+{}
 
-Transform::Transform(const Json::Value& aJson) : myPosition(aJson["Position"]), myRotation(aJson["Rotation"]), myScale(aJson["Scale"]), myHasChanged(true), myTransform(), myParent(nullptr), myWorldPosition()
-{
-}
+Transform::Transform(const Json::Value& aJson) :
+	myPosition(aJson["Position"]),
+	myRotation(Crimson::DegreeToRadian(Crimson::Vector3f(aJson["Rotation"]))),
+	myScale(aJson["Scale"]),
+	myHasChangedInternal(true),
+	myHasChangedThisFrame(false),
+	myParent(nullptr)
+{}
 
 Transform::Transform(const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aRotation, const Crimson::Vector3f& aScale) :
-	myPosition(aPosition), myRotation(aRotation), myScale(aScale), myHasChanged(false), myTransform(), myParent(nullptr), myWorldPosition()
+	myPosition(aPosition),
+	myRotation(aRotation),
+	myScale(aScale),
+	myHasChangedInternal(false),
+	myHasChangedThisFrame(false),
+	myParent(nullptr)
 {
 	UpdateTransform();
 }
 
-Transform::Transform(const Transform& aTransform) : myPosition(aTransform.myPosition), myRotation(aTransform.myRotation), myScale(aTransform.myScale), myHasChanged(aTransform.myHasChanged),
-myTransform(aTransform.myTransform), myParent(nullptr), myWorldPosition(aTransform.myWorldPosition)
-{
-}
+Transform::Transform(const Transform& aTransform) :
+	myPosition(aTransform.myPosition),
+	myRotation(aTransform.myRotation),
+	myScale(aTransform.myScale),
+	myHasChangedInternal(aTransform.myHasChangedInternal),
+	myHasChangedThisFrame(aTransform.myHasChangedThisFrame),
+	myTransform(aTransform.myTransform),
+	myParent(nullptr),
+	myWorldPosition(aTransform.myWorldPosition)
+{}
 
-Transform::Transform(Transform&& aTransform) noexcept : myPosition(aTransform.myPosition), myRotation(aTransform.myRotation), myScale(aTransform.myScale), myHasChanged(aTransform.myHasChanged),
-myTransform(aTransform.myTransform), myParent(nullptr), myWorldPosition(aTransform.myWorldPosition)
-{
-}
+Transform::Transform(Transform&& aTransform) noexcept :
+	myPosition(aTransform.myPosition),
+	myRotation(aTransform.myRotation),
+	myScale(aTransform.myScale),
+	myHasChangedInternal(aTransform.myHasChangedInternal),
+	myHasChangedThisFrame(aTransform.myHasChangedThisFrame),
+	myTransform(aTransform.myTransform),
+	myParent(nullptr),
+	myWorldPosition(aTransform.myWorldPosition)
+{}
 
 Transform& Transform::operator=(const Transform& aTransform)
 {
 	myPosition = aTransform.myPosition;
 	myRotation = aTransform.myRotation;
 	myScale = aTransform.myScale;
-	myHasChanged = aTransform.myHasChanged;
+	myHasChangedInternal = aTransform.myHasChangedInternal;
 	myTransform = aTransform.myTransform;
 	myParent = nullptr;
 	myWorldPosition = aTransform.myWorldPosition;
@@ -43,7 +68,7 @@ Transform& Transform::operator=(Transform&& aTransform) noexcept
 	myPosition = aTransform.myPosition;
 	myRotation = aTransform.myRotation;
 	myScale = aTransform.myScale;
-	myHasChanged = aTransform.myHasChanged;
+	myHasChangedInternal = aTransform.myHasChangedInternal;
 	myTransform = aTransform.myTransform;
 	myParent = nullptr;
 	myWorldPosition = aTransform.myWorldPosition;
@@ -55,7 +80,8 @@ Transform& Transform::operator+=(const Transform& aTransform)
 	myPosition += aTransform.myPosition;
 	myRotation += aTransform.myRotation;
 	myScale *= aTransform.myScale;
-	myHasChanged = true;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
 	return *this;
 }
 
@@ -64,7 +90,8 @@ Transform& Transform::operator-=(const Transform& aTransform)
 	myPosition -= aTransform.myPosition;
 	myRotation -= aTransform.myRotation;
 	myScale /= aTransform.myScale;
-	myHasChanged = true;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
 	return *this;
 }
 
@@ -82,10 +109,25 @@ Transform Transform::operator-(const Transform& aTransform) const
 	return result;
 }
 
+void Transform::SetMatrix(const Crimson::Matrix4x4f& aMatrix)
+{
+	myTransform = aMatrix;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
 void Transform::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myPosition = aPosition;
-	myHasChanged = true;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
+void Transform::AddToPosition(const Crimson::Vector3f& aChange)
+{
+	myPosition += aChange;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
 }
 
 const Crimson::Vector3f& Transform::GetPosition() const
@@ -93,21 +135,56 @@ const Crimson::Vector3f& Transform::GetPosition() const
 	return myPosition;
 }
 
-void Transform::SetRotation(const Crimson::Vector3f& aRotation)
+void Transform::SetRotationRadian(const Crimson::Vector3f& aRotation)
 {
 	myRotation = aRotation;
-	myHasChanged = true;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
 }
 
-const Crimson::Vector3f& Transform::GetRotation() const
+void Transform::SetRotationDegree(const Crimson::Vector3f& aRotation)
+{
+	myRotation = DegreeToRadian(aRotation);
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
+void Transform::AddToRotationRadian(const Crimson::Vector3f& aChange)
+{
+	myRotation += aChange;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
+void Transform::AddToRotationDegree(const Crimson::Vector3f& aChange)
+{
+	myRotation += DegreeToRadian(aChange);
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
+const Crimson::Vector3f& Transform::GetRotationRadian() const
 {
 	return myRotation;
+}
+
+Crimson::Vector3f Transform::GetRotationDegree() const
+{
+	return RadianToDegree(myRotation);
 }
 
 void Transform::SetScale(const Crimson::Vector3f& aScale)
 {
 	myScale = aScale;
-	myHasChanged = true;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
+}
+
+void Transform::AddToScale(const Crimson::Vector3f& aChange)
+{
+	myScale += aChange;
+	myHasChangedThisFrame = true;
+	myHasChangedInternal = true;
 }
 
 const Crimson::Vector3f& Transform::GetScale() const
@@ -117,7 +194,7 @@ const Crimson::Vector3f& Transform::GetScale() const
 
 const Crimson::Vector4f& Transform::GetWorldPosition() const
 {
-	if (myHasChanged)
+	if (myHasChangedInternal)
 	{
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
@@ -126,11 +203,16 @@ const Crimson::Vector4f& Transform::GetWorldPosition() const
 
 const Crimson::Matrix4x4f& Transform::GetTransformMatrix() const
 {
-	if (myHasChanged || (myParent && myParent->myHasChanged))
+	if (myHasChangedInternal || (myParent && myParent->myHasChangedInternal))
 	{
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
 	return myTransform;
+}
+
+const Crimson::Matrix4x4f Transform::GetLocalTransformMatrix() const
+{
+	return GetTransform();
 }
 
 const Transform* Transform::GetParent() const
@@ -145,12 +227,13 @@ Transform* Transform::GetParent()
 
 void Transform::SetHasChanged(bool aState)
 {
-	myHasChanged = aState;
+	myHasChangedInternal = aState;
+	myHasChangedThisFrame = aState;
 }
 
 bool Transform::HasChanged() const
 {
-	return myHasChanged;
+	return myHasChangedInternal || myHasChangedThisFrame;
 }
 
 void Transform::SetParent(Transform* aParent)
@@ -165,49 +248,28 @@ void Transform::RemoveParent()
 	UpdateTransform();
 }
 
-void Transform::Update()
+void Transform::Update(const bool aForceUpdate)
 {
-	if (myHasChanged || (myParent && myParent->myHasChanged))
+	myHasChangedThisFrame = false;
+
+	if (myHasChangedInternal || (myParent && myParent->myHasChangedInternal) || aForceUpdate)
 	{
+		myHasChangedThisFrame = true;
 		const_cast<Transform*>(this)->UpdateTransform();
 	}
-}
-
-Json::Value Transform::ToJson() const
-{
-	Json::Value result;
-	result["Position"] = static_cast<Json::Value>(myPosition);
-	result["Rotation"] = static_cast<Json::Value>(myRotation);
-	result["Scale"] = static_cast<Json::Value>(myScale);
-	return result;
-}
-
-void Transform::Serialize(std::ostream& aStream) const
-{
-	myPosition.Serialize(aStream);
-	myRotation.Serialize(aStream);
-	myScale.Serialize(aStream);
-}
-
-void Transform::Deserialize(std::istream& aStream)
-{
-	myPosition.Deserialize(aStream);
-	myRotation.Deserialize(aStream);
-	myScale.Deserialize(aStream);
-	UpdateTransform();
 }
 
 void Transform::UpdateTransform()
 {
 	myTransform = GetTotalTransform();
-	myWorldPosition = myTransform * Crimson::Vector4f{ 0.f, 0.f, 0.f, 1.f };
-	myHasChanged = false;
+	myWorldPosition = myTransform.GetTranslation();
+	myHasChangedInternal = false;
 }
 
 Crimson::Matrix4x4f Transform::GetTransform() const
 {
 	return Crimson::Matrix4x4f::CreateScaleMatrix(myScale) *
-		Crimson::Matrix4x4f::CreateRotationMatrix(Crimson::DegreeToRadian(myRotation)) *
+		Crimson::Matrix4x4f::CreateRotationMatrix(myRotation) *
 		Crimson::Matrix4x4f::CreateTranslationMatrix(myPosition);
 }
 
@@ -257,4 +319,69 @@ Crimson::Vector3f Transform::GetTotalScale() const
 	{
 		return myScale;
 	}
+}
+
+void Transform::SetForwardVector(const Crimson::Vector3f& aDirection)
+{
+	Crimson::Vector3f forward = aDirection.GetNormalized();
+
+	float angleY = atan2(forward.x, forward.z);
+	float angleX = -asin(forward.y);
+
+	SetRotationRadian({ angleX, angleY, 0 });
+}
+
+Crimson::Vector3f Transform::GetForwardVector() const
+{
+	Crimson::Vector4f forward4 = { 0, 0, 1, 0 };
+
+	return Crimson::Vector3f(forward4 * myTransform);
+}
+
+Crimson::Vector3f Transform::GetRightVector() const
+{
+	Crimson::Vector4f right4 = { 1, 0, 0, 0 };
+
+	return Crimson::Vector3f(right4 * myTransform);
+}
+
+void Transform::SetUpVector(const Crimson::Vector3f& aDirection)
+{
+	Crimson::Vector3f forward = aDirection.GetNormalized();
+
+	float angleY = atan2(forward.x, forward.z);
+	float angleX = -asin(forward.y) + 90.f;
+
+	SetRotationRadian({ angleX, angleY, 0 });
+}
+
+Crimson::Vector3f Transform::GetUpVector() const
+{
+	Crimson::Vector4f up4 = { 0, 1, 0, 0 };
+
+	return Crimson::Vector3f(up4 * myTransform);
+}
+
+Json::Value Transform::ToJson() const
+{
+	Json::Value result;
+	result["Position"] = static_cast<Json::Value>(myPosition);
+	result["Rotation"] = static_cast<Json::Value>(myRotation);
+	result["Scale"] = static_cast<Json::Value>(myScale);
+	return result;
+}
+
+void Transform::Serialize(std::ostream& aStream) const
+{
+	myPosition.Serialize(aStream);
+	myRotation.Serialize(aStream);
+	myScale.Serialize(aStream);
+}
+
+void Transform::Deserialize(std::istream& aStream)
+{
+	myPosition.Deserialize(aStream);
+	myRotation.Deserialize(aStream);
+	myScale.Deserialize(aStream);
+	UpdateTransform();
 }

@@ -2,8 +2,7 @@
 #include "../Component.h"
 #include "Math/Matrix4x4.hpp"
 
-class PerspectiveCameraComponent : public Component
-{
+BEGIN_COMPONENT(PerspectiveCameraComponent)
 public:
 	PerspectiveCameraComponent();
 	PerspectiveCameraComponent(float aFoVDegree, float aNearPlane, float aFarPlane, bool anIsVerticalFoV = false);
@@ -36,8 +35,6 @@ public:
 	void TransformHasChanged() const override;
 
 	Json::Value ToJson() const override;
-	inline std::string ToString() const override;
-	const PerspectiveCameraComponent* GetTypePointer() const override;
 
 	const Crimson::Matrix4x4f& GetView() const;
 	const Crimson::Matrix4x4f& GetProjection() const;
@@ -46,7 +43,7 @@ private:
 	Crimson::Matrix4x4f myView;
 	Crimson::Matrix4x4f myProjection;
 	Crimson::Vector3f myWorldPosition;
-	
+
 	Crimson::Vector3f myPosition;
 	Crimson::Vector3f myRotation;
 

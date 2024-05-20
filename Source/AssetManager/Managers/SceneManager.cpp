@@ -4,8 +4,13 @@
 
 void SceneManager::Init()
 {
-	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension());
-	auto binaries = Crimson::GetAllFilepathsInDirectory(GetPath(), GetBinaryExtension());
+	UpdateFilePaths();
+}
+
+void SceneManager::UpdateFilePaths()
+{
+	myFilePaths = Crimson::GetAllFilepathsInDirectory(GetPath(), GetExtension(), true);
+	auto binaries = Crimson::GetAllFilepathsInDirectory(GetPath(), GetBinaryExtension(), true);
 	for (auto& binary : binaries)
 	{
 		myFilePaths.emplace(binary);

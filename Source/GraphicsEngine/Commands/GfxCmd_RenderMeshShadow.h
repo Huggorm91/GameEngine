@@ -14,7 +14,7 @@ public:
 	const Crimson::Vector3f& GetWorldPosition() const;
 
 private:
-	std::array<Crimson::Matrix4x4f, 128> myBoneTransforms;
+	std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT> myBoneTransforms;
 	std::vector<MeshElement> myMeshElements;
 	Crimson::Matrix4x4f myTransformMatrix;
 	Crimson::Vector3f myWorldPosition;

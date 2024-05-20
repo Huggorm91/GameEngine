@@ -2,7 +2,7 @@
 #include "GfxCmd_RenderMesh.h"
 
 GfxCmd_RenderMesh::GfxCmd_RenderMesh(const MeshComponent& aMesh, bool aIsDeferred) : GraphicsCommand(aIsDeferred ? RenderStage::Deferred : RenderStage::Forward), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), 
-myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(false), myBoneTransforms(), myID(aMesh.GetParentID())
+myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(false), myBoneTransforms(), myID(aMesh.GetParentID()), myBoneCount(0u)
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG
@@ -10,7 +10,7 @@ myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones
 }
 
 GfxCmd_RenderMesh::GfxCmd_RenderMesh(const AnimatedMeshComponent& aMesh, bool aIsDeferred) : GraphicsCommand(aIsDeferred ? RenderStage::Deferred : RenderStage::Forward), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), 
-myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms()), myID(aMesh.GetParentID())
+myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(true), myBoneTransforms(aMesh.GetBoneTransforms()), myID(aMesh.GetParentID()), myBoneCount(aMesh.GetSkeleton().GetBoneCount())
 #ifdef _DEBUG
 , myMeshName(aMesh.GetName())
 #endif // _DEBUG
@@ -42,7 +42,7 @@ void GfxCmd_RenderMesh::SetObjectBuffer()
 	buffer.Data.HasBones = myHasBones;
 	if (myHasBones)
 	{
-		std::copy(myBoneTransforms.begin(), myBoneTransforms.end(), buffer.Data.BoneTransforms);
+		std::copy_n(myBoneTransforms.begin(), myBoneCount, buffer.Data.BoneTransforms);
 	}
 
 	RHI::UpdateConstantBufferData(buffer);

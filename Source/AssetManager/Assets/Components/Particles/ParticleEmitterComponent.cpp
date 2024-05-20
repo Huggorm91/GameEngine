@@ -77,13 +77,3 @@ Json::Value ParticleEmitterComponent::ToJson() const
 	result["Emitter"] = myEmitter->ToJson();
 	return result;
 }
-
-inline std::string ParticleEmitterComponent::ToString() const
-{
-	return "ParticleEmitter";
-}
-
-const ParticleEmitterComponent* ParticleEmitterComponent::GetTypePointer() const
-{
-	return this;
-}
