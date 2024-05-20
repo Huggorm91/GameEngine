@@ -14,9 +14,9 @@ public:
 	NetworkComponent& operator=(const NetworkComponent& aComponent) = default;
 	NetworkComponent& operator=(NetworkComponent&& aComponent) noexcept = default;
 
-	// void Update() override;
+	void Update() override;
 
-	// void TransformHasChanged() const override;
+	void TransformHasChanged() const override;
 
 	// void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;

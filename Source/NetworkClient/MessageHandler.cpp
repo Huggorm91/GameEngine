@@ -72,6 +72,16 @@ bool Network::MessageHandler::IsConnected() const
 	return myClient->IsConnected();
 }
 
+void Network::MessageHandler::SendNetMessage(const NetMessage& aMessage) const
+{
+	assert(myClient && "Not initialized!");
+	myClient->SendNetMessage(aMessage);
+}
+
+void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, unsigned anID)
+{
+}
+
 void Network::MessageHandler::SendChatMessage(const std::string& aMessage)
 {
 	if (aMessage.empty())

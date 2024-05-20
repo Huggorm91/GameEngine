@@ -6,6 +6,7 @@
 namespace Network
 {
 	class Client;
+	class Transform;
 
 	class MessageHandler
 	{
@@ -18,6 +19,10 @@ namespace Network
 
 		void Connect();
 		bool IsConnected() const;
+
+		void SendNetMessage(const NetMessage& aMessage) const;
+
+		void SendTransformChanged(const Transform& aTransform, unsigned anID);
 
 		void SendChatMessage(const std::string& aMessage);
 		constexpr std::string GetSelfHeader() const;
