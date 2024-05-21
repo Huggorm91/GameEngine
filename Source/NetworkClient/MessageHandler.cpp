@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "Client.h"
 #include "NetworkShared/MessageFunctions.h"
+#include "CrimsonUtilities/Math/Transform.h"
 
 Network::MessageHandler::MessageHandler() : myClient(nullptr)
 {
@@ -80,7 +81,8 @@ void Network::MessageHandler::SendNetMessage(const NetMessage& aMessage) const
 
 void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, unsigned anID)
 {
-	aTransform; anID;
+	assert(myClient && "Not initialized!");
+	myClient->SendNetMessage(CreateMoveGameObjectMessage(anID, aTransform.GetPosition(), aTransform.GetRotationRadian()));
 }
 
 void Network::MessageHandler::SendChatMessage(const std::string& aMessage)

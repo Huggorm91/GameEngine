@@ -17,7 +17,7 @@ namespace Network
 	NetMessage CreatePingMessage(bool aNeedReply);
 	NetMessage CreateChatMessage(const std::string& aMessage);
 
-	NetMessage CreateMoveGameObjectMessage(unsigned anID, const Crimson::Vector3<float>& aNewPosition);
+	NetMessage CreateMoveGameObjectMessage(unsigned anID, const Crimson::Vector3<float>& aPosition, const Crimson::Vector3<float>& aRotation);
 	NetMessage CreateCreateGameObjectMessage(unsigned anID);
 	NetMessage CreateDeleteGameObjectMessage(unsigned anID);
 }
