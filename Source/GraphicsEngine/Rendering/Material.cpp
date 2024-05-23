@@ -1,9 +1,9 @@
 #include "GraphicsEngine.pch.h"
 #include "Material.h"
 #include "../GraphicsEngine.h"
-#include "Json/JsonVector.hpp"
 #include "AssetManager/AssetManager.h"
-#include "File/DirectoryFunctions.h"
+#include "CrimsonUtilities/Json/JsonVector.hpp"
+#include "CrimsonUtilities/File/DirectoryFunctions.h"
 
 Material::Material() : myVertexShader(nullptr), myPixelShader(nullptr), myTextures(), myBuffer(), myName(), myAlbedoTexture(nullptr), myNormalTexture(nullptr), myMaterialTexture(nullptr), myFXTexture(nullptr)
 {

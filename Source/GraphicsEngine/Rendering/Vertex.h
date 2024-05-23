@@ -1,6 +1,6 @@
 #pragma once
-#include "Math/Vector4.hpp"
-#include <TgaFbxStructs.h>
+#include "CrimsonUtilities/Math/Vector4.hpp"
+#include "ThirdParty/FBXImporter/include/TgaFbxStructs.h"
 #include <wrl.h>
 using namespace Microsoft::WRL;
 

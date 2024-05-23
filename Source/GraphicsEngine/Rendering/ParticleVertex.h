@@ -1,6 +1,6 @@
 #pragma once
 #include "Color.h"
-#include "Math/Vector4.hpp"
+#include "CrimsonUtilities/Math/Vector4.hpp"
 #include <wrl.h>
 using namespace Microsoft::WRL;
 

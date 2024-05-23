@@ -1,7 +1,6 @@
 #include "AssetManager.pch.h"
 #include "AssetManager.h"
 #include <Importer.h>
-#include "File/DirectoryFunctions.h"
 
 bool AssetManager::myIsLoggingErrors = true;
 ModelManager AssetManager::myModelManager;

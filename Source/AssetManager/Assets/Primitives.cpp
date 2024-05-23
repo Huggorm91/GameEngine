@@ -1,8 +1,6 @@
 #include "AssetManager.pch.h"
 #include "Primitives.h"
 #include <math.h>
-#include "Math/Math.hpp"
-#include "Math/Matrix3x3.hpp"
 
 MeshData CreateCubeMesh(const float aSize)
 {

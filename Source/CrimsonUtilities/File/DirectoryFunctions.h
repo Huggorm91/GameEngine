@@ -1,6 +1,6 @@
 #pragma once
 #include <unordered_set>
-#include "String/StringFunctions.h"
+#include "CrimsonUtilities/String/StringFunctions.h"
 
 namespace Crimson
 {

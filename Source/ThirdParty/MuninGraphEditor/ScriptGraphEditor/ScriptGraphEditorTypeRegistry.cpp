@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+﻿#include "MuninGraphEditor.pch.h"
 #include "ScriptGraphEditorTypeRegistry.h"
 
 ScriptGraphEditorType::ScriptGraphEditorType(const RegisteredType* aType): myType(aType)

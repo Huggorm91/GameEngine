@@ -1,7 +1,7 @@
 #pragma once
 #include "../Components/ComponentParts/TgaImporterConversions.h"
 #include "GraphicsEngine/GraphicsEngineDefines.h"
-#include "Math/QuaternionTransform.h"
+#include "CrimsonUtilities/Math/QuaternionTransform.h"
 #include <bitset>
 
 class Skeleton;

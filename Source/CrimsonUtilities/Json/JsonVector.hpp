@@ -1,6 +1,6 @@
 #pragma once
 #include "jsonCpp/json.h"
-#include "Math/Vector4.hpp"
+#include "CrimsonUtilities/Math/Vector4.hpp"
 
 namespace Crimson
 {

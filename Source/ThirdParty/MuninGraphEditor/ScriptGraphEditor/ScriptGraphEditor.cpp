@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+﻿#include "MuninGraphEditor.pch.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <d3d11.h>
@@ -15,7 +15,7 @@
 #include "Textures/Texture_Function_Icon.h"
 #include "Textures/Texture_NodeGradient.h"
 #include "Textures/Texture_NodeHeader.h"
-#include "File/FileSelectors.h"
+#include "CrimsonUtilities/File/FileSelectors.h"
 
 constexpr std::string_view ScriptGraphEditor_TriggerEntryPointDialogName(ICON_FA_PLAY "  Events");
 constexpr std::string_view ScriptGraphEditor_EditVariablesDialogName( ICON_FA_CODE "  Variables");

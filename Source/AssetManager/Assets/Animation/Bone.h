@@ -1,6 +1,6 @@
 #pragma once
 #include "../Components/ComponentParts/TgaImporterConversions.h"
-#include "Math/QuaternionTransform.h"
+#include "CrimsonUtilities/Math/QuaternionTransform.h"
 
 struct Bone
 {

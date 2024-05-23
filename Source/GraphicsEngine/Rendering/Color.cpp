@@ -1,8 +1,8 @@
 #include "GraphicsEngine.pch.h"
 #include "Color.h"
-#include "Json/JsonVector.hpp"
-#include "ImGui/imgui.h"
-#include "ImGui/misc/cpp/imgui_stdlib.h"
+#include "CrimsonUtilities/Json/JsonVector.hpp"
+#include "ThirdParty/ImGui/imgui.h"
+#include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
 
 std::unordered_map<std::string, Crimson::Vector4f> ColorManager::myColors{};
 

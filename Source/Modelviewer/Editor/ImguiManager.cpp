@@ -16,9 +16,9 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "File\FileSelectors.h"
-#include "Input/InputMapper.h"
-#include "Time/Timer.h"
+#include "CrimsonUtilities/File/FileSelectors.h"
+#include "CrimsonUtilities/Input/InputMapper.h"
+#include "CrimsonUtilities/Time/Timer.h"
 
 #include "AssetManager/Assets/ImguiTransform.h"
 

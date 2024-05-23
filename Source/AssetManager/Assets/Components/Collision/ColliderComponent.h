@@ -3,7 +3,7 @@
 #include "ColliderForwards.h"
 #include "EnumCollisions.h"
 #include <bitset>
-#include "Math\Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 
 BEGIN_COMPONENT_ABSTRACT(ColliderComponent)
 public:

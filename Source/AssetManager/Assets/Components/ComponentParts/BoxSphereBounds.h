@@ -1,6 +1,6 @@
 #pragma once
-#include "Math/Vector3.hpp"
-#include <TgaFbxStructs.h>
+#include "CrimsonUtilities/Math/Vector3.hpp"
+#include "ThirdParty/FBXImporter/include/TgaFbxStructs.h"
 
 class BoxSphereBounds
 {

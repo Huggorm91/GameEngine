@@ -1,6 +1,6 @@
 #pragma once
 #include "EditCommand.h"
-#include "Math/Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 
 class EditCmd_ChangeTransform : public EditCommand
 {

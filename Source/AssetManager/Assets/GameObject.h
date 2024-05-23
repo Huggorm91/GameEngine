@@ -1,9 +1,7 @@
 #pragma once
-#include "Container/MemoryBlock.h"
 #include "Components/Component.h"
-#include "Math/Transform.h"
-
-#include "Components/Light/DirectionallightComponent.h"
+#include "CrimsonUtilities/Container/MemoryBlock.h"
+#include "CrimsonUtilities/Math/Transform.h"
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);

@@ -3,8 +3,8 @@
 #include "Windows.h"
 #include "resource.h"
 #include "Modelviewer.h"
-#include "Input/InputHandler.h"
-#include "Time/Timer.h"
+#include "CrimsonUtilities/Input/InputHandler.h"
+#include "CrimsonUtilities/Time/Timer.h"
 
 Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);

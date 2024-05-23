@@ -1,6 +1,5 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitterComponent.h"
-#include "Time/Timer.h"
 #include "Emitters/BurstEmitter.h"
 #include "Emitters/StreamEmitter.h"
 

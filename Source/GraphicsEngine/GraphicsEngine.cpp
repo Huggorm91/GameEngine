@@ -3,9 +3,9 @@
 #include <fstream>
 #include "Rendering/Vertex.h"
 #include "Commands/Light/LitCmd_ResetLightBuffer.h"
-#include "Json/jsonCpp/json.h"
-#include "Math/Sort.hpp"
-#include "File/DirectoryFunctions.h"
+#include "CrimsonUtilities/Json/jsonCpp/json.h"
+#include "CrimsonUtilities/Math/Sort.hpp"
+#include "CrimsonUtilities/File/DirectoryFunctions.h"
 
 GraphicsEngine::GraphicsEngine() :
 	myWindowHandle(),

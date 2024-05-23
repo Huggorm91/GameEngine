@@ -25,7 +25,7 @@ using namespace Microsoft::WRL;
 
 #include "Logging/Logging.h"
 #include "AssetManager/AssetManager.h"
-#include "File/DirectoryFunctions.h"
+#include "CrimsonUtilities/File/DirectoryFunctions.h"
 
 #ifndef _RETAIL
 #define IMGUI_DEFINE_MATH_OPERATORS

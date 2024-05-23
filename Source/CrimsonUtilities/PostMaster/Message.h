@@ -1,7 +1,7 @@
 #pragma once
 #include <variant>
 #include <string>
-#include "Math/Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 #include "EnumMessageTypes.h"
 
 namespace Crimson

@@ -1,6 +1,5 @@
 #include "AssetManager.pch.h"
 #include "AnimationControllerComponent.h"
-#include "Time/Timer.h"
 
 AnimationControllerComponent::AnimationControllerComponent() :
 	AnimatedMeshComponent(ComponentType::AnimationController),

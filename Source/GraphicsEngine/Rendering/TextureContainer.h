@@ -1,6 +1,6 @@
 #pragma once
 #include "Texture.h"
-#include "Math/Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 
 struct TextureContainer
 {

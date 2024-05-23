@@ -165,9 +165,6 @@
     <ClInclude Include="Assets\Components\Collision\SphereColliderComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Managers\CollisionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Assets\Components\Network\NetworkComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -306,9 +303,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Collision\SphereColliderComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Managers\CollisionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Network\NetworkComponent.cpp">

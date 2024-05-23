@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "BurstEmitter.h"
-#include "Math/Matrix3x3.hpp"
+#include "CrimsonUtilities/Math/Matrix3x3.hpp"
 
 BurstEmitter::BurstEmitter() :
 	ParticleEmitter(EmitterType::Burst),

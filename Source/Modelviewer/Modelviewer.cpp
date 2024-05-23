@@ -12,13 +12,12 @@
 #include "AssetManager/Assets/Binary.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
-#include "File/DirectoryFunctions.h"
 
 #include "NetworkClient/MessageHandler.h"
 
-#include "Time/Timer.h"
-#include "Input/InputMapper.h"
-#include "Json\jsonCpp\json.h"
+#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Input/InputMapper.h"
+#include "CrimsonUtilities/Json/jsonCpp/json.h"
 
 
 ModelViewer::ModelViewer() :

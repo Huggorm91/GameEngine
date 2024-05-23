@@ -3,8 +3,8 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "AssetManager/AssetManager.h"
 #include "ParticleDrawer.h"
-#include "ImGui/imgui.h"
-#include "ImGui/misc/cpp/imgui_stdlib.h"
+#include "ThirdParty/ImGui/imgui.h"
+#include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
 #include "AssetManager/Assets/ImguiTransform.h"
 
 ParticleEmitter::ParticleEmitter(EmitterType aType) :

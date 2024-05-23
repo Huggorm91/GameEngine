@@ -1,6 +1,6 @@
 #pragma once
 #include "../Component.h"
-#include "Math/Matrix4x4.hpp"
+#include "CrimsonUtilities/Math/Matrix4x4.hpp"
 
 BEGIN_COMPONENT(PerspectiveCameraComponent)
 public:

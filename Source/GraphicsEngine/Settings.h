@@ -1,5 +1,5 @@
 #pragma once
-#include "String/StringFunctions.h"
+#include "CrimsonUtilities/String/StringFunctions.h"
 namespace Json{
 	class Value;
 }

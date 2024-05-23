@@ -4,10 +4,10 @@
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 #include "AssetManager/Assets/ImguiTransform.h"
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "File/FileSelectors.h"
+#include "CrimsonUtilities/File/FileSelectors.h"
+#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Math/Sort.hpp"
 #include "Modelviewer.h"
-#include "Time/Timer.h"
-#include "Math/Sort.hpp"
 
 SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),

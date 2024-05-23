@@ -18,7 +18,7 @@
     <ClInclude Include="MuninGraphEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="MuninGraphEditor.pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphEditor\GraphEditorBase.h">
@@ -77,7 +77,7 @@
     <ClCompile Include="MuninGraphEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="MuninGraphEditor.pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphEditor\GraphEditorBase.cpp">

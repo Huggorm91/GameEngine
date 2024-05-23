@@ -1,4 +1,4 @@
-#include "Server.h"
+#include "NetworkServer/Server.h"
 
 inline Network::Server* globalServer = nullptr;
 

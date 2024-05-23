@@ -1,6 +1,6 @@
 #pragma once
 #include "../Component.h"
-#include "Math/Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 #include "GraphicsEngine/Rendering/Texture.h"
 
 BEGIN_COMPONENT(DirectionallightComponent)

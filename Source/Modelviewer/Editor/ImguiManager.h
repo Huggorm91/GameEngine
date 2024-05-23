@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
 #include <shellapi.h>
-#include "Input/InputObserver.hpp"
+#include "CrimsonUtilities/Input/InputObserver.hpp"
 #include "Core/AssetTypes.h"
 #include <unordered_set>
 

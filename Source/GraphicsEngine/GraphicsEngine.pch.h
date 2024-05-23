@@ -23,9 +23,9 @@
 using namespace Microsoft::WRL;
 
 #include "InterOp/RHI.h"
-#include "Math/Matrix4x4.hpp"
-#include "File/DirectoryFunctions.h"
 #include "Logging/Logging.h"
+#include "CrimsonUtilities/Math/Matrix4x4.hpp"
+#include "CrimsonUtilities/File/DirectoryFunctions.h"
 
 inline Logger GELogger;
 #endif //GRAPHICSENGINE_PCH

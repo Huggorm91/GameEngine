@@ -1,7 +1,7 @@
 #pragma once
 #include "../Rendering/Buffers/ParticleBuffer.h"
 #include "../Rendering/ParticleVertex.h"
-#include "Math/Transform.h"
+#include "CrimsonUtilities/Math/Transform.h"
 #include "EmitterData.h"
 
 class Texture;

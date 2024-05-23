@@ -1,6 +1,6 @@
 #pragma once
 #include "../Component.h"
-#include "Input/InputObserver.hpp"
+#include "CrimsonUtilities/Input/InputObserver.hpp"
 
 BEGIN_COMPONENT_MULTI_INHERITANCE(EditorCameraControllerComponent, Component, public Crimson::InputObserver)
 public:

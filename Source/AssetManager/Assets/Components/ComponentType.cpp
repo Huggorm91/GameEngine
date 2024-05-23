@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "ComponentType.h"
-#include "Json/JsonVector.hpp"
+#include "CrimsonUtilities/Json/JsonVector.hpp"
 #include "ComponentInclude.h"
 #include "AssetManager/AssetManager.h"
 

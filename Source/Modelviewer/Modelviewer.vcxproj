@@ -154,7 +154,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -179,7 +179,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -205,7 +205,7 @@
       <PreprocessorDefinitions>GAME;NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -232,7 +232,7 @@
       <PreprocessorDefinitions>EDITOR;NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -259,7 +259,7 @@
       <PreprocessorDefinitions>GAME;NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -286,7 +286,7 @@
       <PreprocessorDefinitions>EDITOR;NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
@@ -373,11 +373,17 @@
     <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
       <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\GameplayEngine\GameplayEngine.vcxproj">
+      <Project>{2c8d5a02-ac1e-4436-8a66-97d6e5b2535d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\GraphicsEngine\GraphicsEngine.vcxproj">
       <Project>{4a14b5d4-9d37-4a37-9d3b-d7b2bac7b312}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{b4a6c56f-a9ee-4b80-a31d-3db075f0854b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\NetworkShared\NetworkShared.vcxproj">
+      <Project>{b2c977b4-3467-46b7-bc80-c2e0aba5e11b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\ImGuiNodeEditor\ImGuiNodeEditor.vcxproj">
       <Project>{a4912cdb-df6b-46c5-8b09-4d3ddb85f985}</Project>
