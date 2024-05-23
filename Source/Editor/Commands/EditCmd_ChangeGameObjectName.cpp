@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "EditCmd_ChangeGameObjectName.h"
 #include "../Modelviewer.h"
 

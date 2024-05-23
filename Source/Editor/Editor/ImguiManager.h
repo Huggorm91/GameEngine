@@ -3,7 +3,8 @@
 #include "Windows.h"
 #include <shellapi.h>
 #include "CrimsonUtilities/Input/InputObserver.hpp"
-#include "Core/AssetTypes.h"
+#include "Editor/Core/AssetTypes.h"
+#include "ThirdParty/ImGui/imgui.h"
 #include <unordered_set>
 
 class Texture;

@@ -170,7 +170,7 @@ public:
 			{
 				RegisteredType type = typeDecl();
 				std::string typeName(type.GetFriendlyName());
-				std::ranges::transform(typeName, typeName.begin(), tolower);
+				std::ranges::transform(typeName, typeName.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 				myFriendlyNameToType.emplace(typeName, type.GetType());
 				myDeclaredTypes.emplace(type.GetType(), std::move(type));				
 			}
@@ -198,7 +198,7 @@ public:
 	const RegisteredType* Resolve(const std::string& aFriendlyName) const
 	{
 		std::string lowerCase = aFriendlyName;
-		std::ranges::transform(lowerCase, lowerCase.begin(), tolower);
+		std::ranges::transform(lowerCase, lowerCase.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 		if (const auto it = myFriendlyNameToType.find(lowerCase); it != myFriendlyNameToType.end())
 		{
 			return &myDeclaredTypes.find(it->second)->second;

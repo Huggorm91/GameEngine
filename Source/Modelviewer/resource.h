@@ -12,8 +12,6 @@
 #define IDI_SMALL                       108
 #define IDC_MODELVIEWER                 109
 #define IDR_MAINFRAME                   128
-#define IDB_BITMAP1                     130
-#define IDB_SPLASHLOGO                  130
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

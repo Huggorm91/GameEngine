@@ -24,111 +24,15 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Modelviewer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Windows\SplashWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\ApplicationState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCommand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_ChangeComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_ChangeTransform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_AddComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_RemoveComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_ChangeValue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\ImguiManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\AssetTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_ChangeMultipleGameObjects.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_AddGameObjects.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_RemoveGameObjects.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_ChangeGameObjectName.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_AddGameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\EditCmd_RemoveGameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ModelViewer.pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\SkeletonEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Modelviewer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Windows\SplashWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\ApplicationState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCommand.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_ChangeTransform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Editor\ImguiManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\AssetTypes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_ChangeMultipleGameObjects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_AddGameObjects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_RemoveGameObjects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_ChangeGameObjectName.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_AddGameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\EditCmd_RemoveGameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ModelViewer.pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Editor\SkeletonEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -142,9 +46,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Modelviewer.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="TGPSplash.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

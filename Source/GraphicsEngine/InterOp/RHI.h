@@ -4,6 +4,7 @@
 #include "d3d11shader.h"
 #include "d3dcompiler.h"
 #include "ShaderInfo.h"
+#include <array>
 
 #pragma comment(lib, "d3dcompiler.lib")
 

@@ -20,7 +20,7 @@ struct ScriptGraphEditorSettings : public GraphEditorSettingsBase
 
 	struct NodeTypeSettings
 	{
-		unsigned Type;
+		unsigned Type = 0;
 		ComPtr<ID3D11ShaderResourceView> Icon;
 		GraphColor Color;
 		// Only has an effect on Variable nodes.

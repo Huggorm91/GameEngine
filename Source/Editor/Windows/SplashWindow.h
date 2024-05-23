@@ -16,8 +16,6 @@ class SplashWindow
 
 	bool bIsRunning = true;
 
-	void MessagePump();
-
 	void CreateAndShowWindow();
 
 public:

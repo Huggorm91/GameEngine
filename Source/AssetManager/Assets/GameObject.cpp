@@ -4,8 +4,8 @@
 #include "Prefab.h"
 
 #ifndef _RETAIL
-#include "ModelViewer/ModelViewer.h"
-#include "Modelviewer/Commands/EditCmd_ChangeGameObjectName.h"
+#include "Editor/ModelViewer.h"
+#include "Editor/Commands/EditCmd_ChangeGameObjectName.h"
 #include "ImguiTransform.h"
 #endif // !_RETAIL
 

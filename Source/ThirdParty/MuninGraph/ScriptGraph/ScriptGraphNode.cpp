@@ -118,13 +118,19 @@ const ScriptGraphPin& ScriptGraphNode::GetDataSourcePin(size_t aPinId, bool& out
 	return pin;
 }
 
-#ifndef NOEDITOR
+#ifndef GAME
 void ScriptGraphNode::OnUserChangedPinValue([[maybe_unused]] ScriptGraphSchema* aSchema, [[maybe_unused]] size_t aPinId)
-{  }
+{
+	aSchema; aPinId;
+}
 
 void ScriptGraphNode::OnUserAddedPin([[maybe_unused]] ScriptGraphSchema* aSchema, [[maybe_unused]] size_t aPinId)
-{  }
+{
+	aSchema; aPinId;
+}
 
 void ScriptGraphNode::OnUserRemovedPin(ScriptGraphSchema* aSchema, size_t aPinId)
-{  }
+{
+	aSchema; aPinId;
+}
 #endif

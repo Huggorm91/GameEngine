@@ -634,7 +634,7 @@ std::vector<GraphEditorStateBase::ContextSearchInfo::SearchMenuItem> ScriptGraph
 {
 	std::vector<GraphEditorStateBase::ContextSearchInfo::SearchMenuItem> results = GraphEditorBase::HandleContextMenuSearch(aSearchQuery);
 	std::string queryCopy(aSearchQuery);
-	std::ranges::transform(queryCopy, queryCopy.begin(), tolower);
+	std::ranges::transform(queryCopy, queryCopy.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 	const RegisteredNodeClass& getterNodeClass = MuninGraph::Get().GetNodeClass(typeid(SGNode_GetVariable));
 	const RegisteredNodeClass& setterNodeClass = MuninGraph::Get().GetNodeClass(typeid(SGNode_SetVariable));
@@ -944,7 +944,6 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 		}
 		ImGui::EndDisabled();
 
-		const float x = ImGui::GetCursorPosX();
 		ImGuiWindow* window = GImGui->CurrentWindow;
 		;
 		ImGui::SetCursorPosX(window->ContentRegionRect.GetWidth() - 100);

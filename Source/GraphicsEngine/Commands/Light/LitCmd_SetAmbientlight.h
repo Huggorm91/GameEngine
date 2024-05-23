@@ -1,6 +1,7 @@
 #pragma once
 #include "LightCommand.h"
-#include "Rendering/Texture.h"
+
+class Texture;
 
 class LitCmd_SetAmbientlight : public LightCommand
 {

@@ -7,7 +7,7 @@ DebugDrawComponent::DebugDrawComponent() : Component(ComponentType::DebugDraw)
 #ifndef _RETAIL
 	, myHandle(GraphicsEngine::Get().GetLineDrawer().GetNewHandle())
 #else
-	myHandle()
+	, myHandle()
 #endif // !_RETAIL	
 {
 }

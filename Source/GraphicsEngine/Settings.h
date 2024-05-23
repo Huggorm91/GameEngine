@@ -1,5 +1,7 @@
 #pragma once
 #include "CrimsonUtilities/String/StringFunctions.h"
+#include "CrimsonUtilities/Math/Vector4.hpp"
+
 namespace Json{
 	class Value;
 }

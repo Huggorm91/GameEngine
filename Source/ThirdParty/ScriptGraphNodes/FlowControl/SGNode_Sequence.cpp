@@ -13,7 +13,7 @@ SGNode_Sequence::SGNode_Sequence()
 	CreateExecPin("Then 0", PinDirection::Output);
 }
 
-NodeResult SGNode_Sequence::Enter(size_t anEntryPinId, NodeEntryType aEntryType)
+NodeResult SGNode_Sequence::Enter(size_t /*anEntryPinId*/, NodeEntryType aEntryType)
 {
 	ClearError();
 	if(aEntryType == NodeEntryType::New)
@@ -32,7 +32,7 @@ NodeResult SGNode_Sequence::Enter(size_t anEntryPinId, NodeEntryType aEntryType)
 }
 
 #ifndef NOEDITOR
-void SGNode_Sequence::OnUserAddedPin(ScriptGraphSchema* aSchema, size_t aPinId)
+void SGNode_Sequence::OnUserAddedPin(ScriptGraphSchema* /*aSchema*/, size_t /*aPinId*/)
 {
 	RefreshExitPins();
 	for(size_t i = 0; i < myExitPins.size(); i++)
@@ -46,7 +46,7 @@ void SGNode_Sequence::OnUserAddedPin(ScriptGraphSchema* aSchema, size_t aPinId)
 	}
 }
 
-void SGNode_Sequence::OnUserRemovedPin(ScriptGraphSchema* aSchema, size_t aPinId)
+void SGNode_Sequence::OnUserRemovedPin(ScriptGraphSchema* /*aSchema*/, size_t /*aPinId*/)
 {
 	RefreshExitPins();
 	for(size_t i = 0; i < myExitPins.size(); i++)

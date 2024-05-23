@@ -23,8 +23,8 @@
 #include <wrl.h>
 using namespace Microsoft::WRL;
 
-#include "ImGui/imgui.h"
-#include "ImGui/misc/cpp/imgui_stdlib.h"
+#include "ThirdParty/ImGui/imgui.h"
+#include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
 
 #include "CrimsonUtilities/Time/Timer.h"
 #include "CrimsonUtilities/Math/Matrix3x3.hpp"

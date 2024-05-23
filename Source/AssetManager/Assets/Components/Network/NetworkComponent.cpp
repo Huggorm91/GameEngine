@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "NetworkComponent.h"
-#include "Modelviewer/Modelviewer.h"
+#include "Editor/Modelviewer.h"
 #include "NetworkClient/MessageHandler.h"
 
 NetworkComponent::NetworkComponent() : Component(ComponentType::Network)

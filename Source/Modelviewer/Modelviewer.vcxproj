@@ -87,78 +87,60 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Editor|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Retail Game|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Retail Editor|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\ExeSettings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)..\Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Editor|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)..\Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\Mine;$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\Mine;$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Retail Game|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\Mine;$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Retail Editor|x64'">
     <IncludePath>$(SolutionDir)ThirdParty\FBXImporter\Include\;$(SolutionDir);$(ProjectDir);$(SolutionDir)\Mine;$(SolutionDir)\GraphicsEngine;$(SolutionDir)\AssetManager;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <LibraryPath>$(SolutionDir)Lib\$(Configuration)\;$(SolutionDir)ThirdParty\FBXImporter\Lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GAME;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -173,17 +155,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Editor|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>EDITOR;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -198,18 +174,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GAME;NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -225,18 +195,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>EDITOR;NDEBUG;_RELEASE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -252,18 +216,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Retail Game|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GAME;NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -279,18 +237,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Retail Editor|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>EDITOR;NDEBUG;_RETAIL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\ImGui;$(SolutionDir)ThirdParty\MuninGraphEditor\;$(SolutionDir)ThirdParty\MuninGraph\;$(SolutionDir)ThirdParty\ImGuiNodeEditor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>Modelviewer.pch.h</PrecompiledHeaderFile>
-      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -305,42 +257,12 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Commands\EditCmd_AddGameObject.h" />
-    <ClInclude Include="Commands\EditCmd_RemoveGameObject.h" />
-    <ClInclude Include="Core\AssetTypes.h" />
-    <ClInclude Include="Modelviewer.h" />
-    <ClInclude Include="Core\ApplicationState.h" />
-    <ClInclude Include="Commands\EditCommand.h" />
-    <ClInclude Include="Commands\EditCmd_ChangeComponent.h" />
-    <ClInclude Include="Commands\EditCmd_ChangeTransform.h" />
-    <ClInclude Include="Commands\EditCmd_AddComponent.h" />
-    <ClInclude Include="Commands\EditCmd_RemoveComponent.h" />
-    <ClInclude Include="Commands\EditCmd_ChangeValue.h" />
-    <ClInclude Include="Editor\ImguiManager.h" />
-    <ClInclude Include="Commands\EditCmd_AddGameObjects.h" />
-    <ClInclude Include="Commands\EditCmd_ChangeMultipleGameObjects.h" />
-    <ClInclude Include="Commands\EditCmd_RemoveGameObjects.h" />
-    <ClInclude Include="Commands\EditCmd_ChangeGameObjectName.h" />
     <ClInclude Include="ModelViewer.pch.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Editor\SkeletonEditor.h" />
-    <ClInclude Include="Windows\SplashWindow.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\ApplicationState.cpp" />
-    <ClCompile Include="Commands\EditCmd_AddGameObject.cpp" />
-    <ClCompile Include="Commands\EditCmd_RemoveGameObject.cpp" />
-    <ClCompile Include="Commands\EditCommand.cpp" />
-    <ClCompile Include="Commands\EditCmd_ChangeTransform.cpp" />
-    <ClCompile Include="Core\AssetTypes.cpp" />
-    <ClCompile Include="Editor\ImguiManager.cpp" />
-    <ClCompile Include="Commands\EditCmd_AddGameObjects.cpp" />
-    <ClCompile Include="Commands\EditCmd_ChangeMultipleGameObjects.cpp" />
-    <ClCompile Include="Commands\EditCmd_RemoveGameObjects.cpp" />
-    <ClCompile Include="Commands\EditCmd_ChangeGameObjectName.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Modelviewer.cpp" />
     <ClCompile Include="ModelViewer.pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Editor|x64'">Create</PrecompiledHeader>
@@ -355,8 +277,6 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">false</IncludeInUnityFile>
     </ClCompile>
-    <ClCompile Include="Editor\SkeletonEditor.cpp" />
-    <ClCompile Include="Windows\SplashWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Modelviewer.rc" />
@@ -364,7 +284,6 @@
   <ItemGroup>
     <Image Include="Modelviewer.ico" />
     <Image Include="small.ico" />
-    <Image Include="TGPSplash.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AssetManager\AssetManager.vcxproj">
@@ -372,6 +291,9 @@
     </ProjectReference>
     <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">
       <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Editor\Editor.vcxproj">
+      <Project>{6d9b8c68-e2cc-430a-8f1b-ee93a0b34499}</Project>
     </ProjectReference>
     <ProjectReference Include="..\GameplayEngine\GameplayEngine.vcxproj">
       <Project>{2c8d5a02-ac1e-4436-8a66-97d6e5b2535d}</Project>

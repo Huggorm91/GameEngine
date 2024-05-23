@@ -1,9 +1,9 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "SplashWindow.h"
 
 #include <thread>
 
-#include "resource.h"
+#include "../resource.h"
 
 LRESULT CALLBACK SplashWinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

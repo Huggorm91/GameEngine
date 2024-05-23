@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">    
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir);$(SolutionDir);</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>$(ProjectName).pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

@@ -9,12 +9,12 @@ ScriptGraphEditorType::~ScriptGraphEditorType()
 	myType = nullptr;
 }
 
-bool ScriptGraphEditorType::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
+bool ScriptGraphEditorType::TypeEditWidget(std::string_view /*aUniqueName*/, const TypedDataContainer& /*aDataContainer*/) const
 {
 	return false;
 }
 
-std::string ScriptGraphEditorType::ToString([[maybe_unused]] const TypedDataContainer& aDataContainer) const
+std::string ScriptGraphEditorType::ToString([[maybe_unused]] const TypedDataContainer& /*aDataContainer*/) const
 {
 	return "";
 }

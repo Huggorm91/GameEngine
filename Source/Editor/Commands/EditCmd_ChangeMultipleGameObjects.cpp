@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "EditCmd_ChangeMultipleGameObjects.h"
 
 EditCmd_ChangeMultipleGameObjects::EditCmd_ChangeMultipleGameObjects(const Crimson::Vector3f& aChange, TransformType aType, Transform* anEditorTransform) : myType(aType), myEditorTransform(anEditorTransform), myChange(aChange), myObjects(GetSelectedObjects())

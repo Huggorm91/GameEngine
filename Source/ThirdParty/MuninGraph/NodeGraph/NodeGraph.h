@@ -106,6 +106,7 @@ template <typename NodeClass, typename NodePinClass, typename NodeEdgeClass, typ
 bool NodeGraphInternal<NodeClass, NodePinClass, NodeEdgeClass, NodeGraphSchemaClass>::Serialize(
 	std::vector<uint8_t>& outResult)
 {
+	outResult;
 	throw std::runtime_error("This myGraph has not implemented Serialize!");
 }
 
@@ -113,6 +114,7 @@ template <typename NodeClass, typename NodePinClass, typename NodeEdgeClass, typ
 bool NodeGraphInternal<NodeClass, NodePinClass, NodeEdgeClass, NodeGraphSchemaClass>::Deserialize(
 	const std::vector<uint8_t>& inData)
 {
+	inData;
 	throw std::runtime_error("This myGraph has not implemented Deserialize!");
 }
 

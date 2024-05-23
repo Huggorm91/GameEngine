@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "AssetTypes.h"
 #include "../Modelviewer.h"
 

@@ -42,7 +42,6 @@ public:
 			for(const auto& typeReg : myStaticRegistrations)
 			{
 				auto type = typeReg();
-				const RegisteredType* regType = type->GetType();
 				const auto typeRef = myEditorTypes.emplace(type->GetTypeInfo(), std::move(type));
 				myEditorTypeNames.emplace_back(typeRef.first->second->GetType()->GetFriendlyName());
 				myEditorTypeNameToTypeIndex.emplace(typeRef.first->second->GetType()->GetFriendlyName(), typeRef.first->second->GetType()->GetType());

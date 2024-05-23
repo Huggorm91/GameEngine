@@ -1,9 +1,8 @@
 #include "AssetManager.pch.h"
 #include "ImguiTransform.h"
-#include "ModelViewer/ModelViewer.h"
-#include "ImGui/imgui.h"
-#include "ModelViewer/Commands/EditCmd_ChangeTransform.h"
-#include "ModelViewer/Commands/EditCmd_ChangeMultipleGameObjects.h"
+#include "Editor/ModelViewer.h"
+#include "Editor/Commands/EditCmd_ChangeTransform.h"
+#include "Editor/Commands/EditCmd_ChangeMultipleGameObjects.h"
 
 void CreateImGuiComponents(Transform& aTransform)
 {

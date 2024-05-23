@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "EditCmd_ChangeTransform.h"
 #include "../Modelviewer.h"
 

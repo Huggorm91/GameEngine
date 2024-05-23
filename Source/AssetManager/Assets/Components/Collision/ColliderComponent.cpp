@@ -1,7 +1,6 @@
 #include "AssetManager.pch.h"
 #include "ColliderComponent.h"
 #include "GameplayEngine/Managers/CollisionManager.h"
-#include "ImGui\imgui.h"
 #include "Assets\GameObject.h"
 
 std::array<Crimson::Vector3f, CollisionLayer::Count> CreateDefaultColors()

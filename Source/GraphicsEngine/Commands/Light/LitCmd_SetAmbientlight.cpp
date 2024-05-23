@@ -1,6 +1,7 @@
 #include "GraphicsEngine.pch.h"
 #include "LitCmd_SetAmbientlight.h"
 #include "AssetManager/AssetManager.h"
+#include "Rendering/Texture.h"
 
 LitCmd_SetAmbientlight::LitCmd_SetAmbientlight(const Texture* aCubemap, float anIntensity) : myCubemap(aCubemap), myIntensity(anIntensity)
 {

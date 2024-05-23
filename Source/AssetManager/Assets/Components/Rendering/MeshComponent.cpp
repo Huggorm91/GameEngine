@@ -8,8 +8,8 @@
 
 #ifndef _RETAIL
 #include "AssetManager.h"
-#include "ModelViewer/ModelViewer.h"
-#include "ModelViewer/Commands/EditCmd_ChangeValue.h"
+#include "Editor/ModelViewer.h"
+#include "Editor/Commands/EditCmd_ChangeValue.h"
 #include "../../ImguiTransform.h"
 #endif // !_RETAIL
 

@@ -4,8 +4,8 @@
 // However, files listed here are ALL re-compiled if any one of them is updated between builds.
 // Do not add files here that you will be updating frequently as this negates the performance advantage.
 
-#ifndef PCH_H
-#define PCH_H
+#ifndef GAMEPLAYENGINE_PCH_H
+#define GAMEPLAYENGINE_PCH_H
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #define NOMINMAX
@@ -28,4 +28,4 @@ using namespace Microsoft::WRL;
 #include "CrimsonUtilities/Json/JsonVector.hpp"
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 
-#endif //PCH_H
+#endif //GAMEPLAYENGINE_PCH_H

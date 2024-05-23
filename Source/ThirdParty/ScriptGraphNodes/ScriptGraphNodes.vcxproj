@@ -38,62 +38,38 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\LibSettings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\LibSettings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Source\Scripting\MuninGraph\;$(SolutionDir)Source\Scripting\ImGui\;$(ProjectDir);$(IncludePath)</IncludePath>
-    <CustomBuildAfterTargets>PreBuildEvent</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Source\Scripting\MuninGraph\;$(SolutionDir)Source\Scripting\ImGui\;$(ProjectDir);$(IncludePath)</IncludePath>
-    <CustomBuildAfterTargets>PreBuildEvent</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>PreBuildEvent</CustomBuildBeforeTargets>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-      <Outputs>
-      </Outputs>
-      <Message>
-      </Message>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -102,13 +78,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-      <Outputs>
-      </Outputs>
-      <Message />
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Events\SGNode_Tick.h" />

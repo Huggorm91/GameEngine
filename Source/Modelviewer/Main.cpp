@@ -2,7 +2,7 @@
 #include "Modelviewer.pch.h"
 #include "Windows.h"
 #include "resource.h"
-#include "Modelviewer.h"
+#include "Editor/Modelviewer.h"
 #include "CrimsonUtilities/Input/InputHandler.h"
 #include "CrimsonUtilities/Time/Timer.h"
 

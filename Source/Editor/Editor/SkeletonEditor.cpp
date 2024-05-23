@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "SkeletonEditor.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
@@ -7,7 +7,7 @@
 #include "CrimsonUtilities/File/FileSelectors.h"
 #include "CrimsonUtilities/Time/Timer.h"
 #include "CrimsonUtilities/Math/Sort.hpp"
-#include "Modelviewer.h"
+#include "../Modelviewer.h"
 
 SkeletonEditor::SkeletonEditor() :
 	myIsActive(false),

@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "Editor.pch.h"
 #include "EditCmd_AddGameObjects.h"
 
 EditCmd_AddGameObjects::EditCmd_AddGameObjects(): myObjects(GetSelectedObjects())

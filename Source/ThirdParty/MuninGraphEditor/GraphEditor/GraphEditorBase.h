@@ -34,7 +34,7 @@ struct GraphEditorSettingsBase
 struct GraphEditorContextMenuItem
 {
 	std::string Title;
-	const RegisteredNodeClass* Value;
+	const RegisteredNodeClass* Value = nullptr;
 	std::string Tag;
 };
 
@@ -159,8 +159,8 @@ protected:
 
 		if(!caseSensitive)
 		{
-			std::ranges::transform(str1, str1.begin(), tolower);
-			std::ranges::transform(str2, str2.begin(), tolower);
+			std::ranges::transform(str1, str1.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+			std::ranges::transform(str2, str2.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 		}
 
 		if(str1 == str2)
@@ -718,7 +718,7 @@ GraphEditorMethod(void)::RenderNode(const std::shared_ptr<GraphNodeClass>& aNode
 	ImNodeEd::PopStyleVar();	
 }
 
-GraphEditorMethod(void)::RenderNodeHeader(const std::shared_ptr<GraphNodeClass>& aNode, const ImVec2& aNodeHeaderRect)
+GraphEditorMethod(void)::RenderNodeHeader(const std::shared_ptr<GraphNodeClass>& aNode, const ImVec2& /*aNodeHeaderRect*/)
 {
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 2.0f);
@@ -727,7 +727,7 @@ GraphEditorMethod(void)::RenderNodeHeader(const std::shared_ptr<GraphNodeClass>&
 	ImGui::PopFont();
 }
 
-GraphEditorMethod(void)::RenderNodeStyle(const std::shared_ptr<GraphNodeClass>& aNode, const ImRect& aNodeHeaderRect, const ImRect& aNodeBodyRect)
+GraphEditorMethod(void)::RenderNodeStyle(const std::shared_ptr<GraphNodeClass>& /*aNode*/, const ImRect& /*aNodeHeaderRect*/, const ImRect& /*aNodeBodyRect*/)
 {
 	// No styling by default.
 }
