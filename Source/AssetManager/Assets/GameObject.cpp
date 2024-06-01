@@ -265,6 +265,22 @@ void GameObject::Render()
 	}
 }
 
+void GameObject::DebugDraw()
+{
+	if (myIsActive)
+	{
+		if (myTransform.HasChanged())
+		{
+			TransformHasChanged();
+		}
+
+		for (auto& [type, index] : myIndexList)
+		{
+			myComponents.GetValue<Component>(index).DebugDraw();
+		}
+	}
+}
+
 const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
 	for (auto [type, index] : myIndexList)
