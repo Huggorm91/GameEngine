@@ -11,13 +11,13 @@
 
 
 unsigned int GameObject::ourIDCount = 0;
-inline static UUIDv4::UUIDGenerator<std::mt19937_64> globalUUIDGenerator;
+inline static UUIDv4::UUIDGenerator<std::mt19937_64> localUUIDGenerator;
 
 GameObject::GameObject() :
 	myComponents(1000u),
 	myIsActive(true),
 	myID(++ourIDCount),
-	myUUID(globalUUIDGenerator.getUUID()),
+	myUUID(localUUIDGenerator.getUUID()),
 	myName("GameObject"),
 	myParent(nullptr)
 #ifdef EDITOR
@@ -31,7 +31,7 @@ GameObject::GameObject(unsigned anID) :
 	myComponents(1000u),
 	myIsActive(true),
 	myID(anID),
-	myUUID(globalUUIDGenerator.getUUID()),
+	myUUID(localUUIDGenerator.getUUID()),
 	myName("GameObject"),
 	myParent(nullptr),
 	myImguiText(myName)
@@ -63,7 +63,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
 	myID(++ourIDCount),
-	myUUID(globalUUIDGenerator.getUUID()),
+	myUUID(localUUIDGenerator.getUUID()),
 	myName(aGameObject.myName),
 	myParent(aGameObject.myParent),
 	myChildren(aGameObject.myChildren)
@@ -109,7 +109,7 @@ GameObject::GameObject(const Json::Value& aJson) :
 	myTransform(aJson["Transform"]),
 	myIsActive(aJson["IsActive"].asBool()),
 	myID(aJson["ID"].asUInt()),
-	myUUID(aJson["UUID"].isNull() ? globalUUIDGenerator.getUUID().bytes() : aJson["UUID"].asString()),
+	myUUID(aJson["UUID"].isNull() ? localUUIDGenerator.getUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
 	myParent(nullptr)
 #ifdef EDITOR
