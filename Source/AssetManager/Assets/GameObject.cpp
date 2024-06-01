@@ -11,11 +11,13 @@
 
 
 unsigned int GameObject::localIDCount = 0;
+inline static UUIDv4::UUIDGenerator<std::mt19937_64> globalUUIDGenerator;
 
 GameObject::GameObject() :
 	myComponents(1000u),
 	myIsActive(true),
 	myID(++localIDCount),
+	myUUID(globalUUIDGenerator.getUUID()),
 	myName("GameObject"),
 	myParent(nullptr)
 #ifdef EDITOR
@@ -29,6 +31,7 @@ GameObject::GameObject(unsigned anID) :
 	myComponents(1000u),
 	myIsActive(true),
 	myID(anID),
+	myUUID(globalUUIDGenerator.getUUID()),
 	myName("GameObject"),
 	myParent(nullptr),
 	myImguiText(myName)
@@ -60,6 +63,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
 	myID(++localIDCount),
+	myUUID(globalUUIDGenerator.getUUID()),
 	myName(aGameObject.myName),
 	myParent(aGameObject.myParent),
 	myChildren(aGameObject.myChildren)
@@ -82,6 +86,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
 	myID(aGameObject.myID),
+	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
 	myParent(aGameObject.myParent),
 	myChildren(aGameObject.myChildren)
@@ -104,6 +109,7 @@ GameObject::GameObject(const Json::Value& aJson) :
 	myTransform(aJson["Transform"]),
 	myIsActive(aJson["IsActive"].asBool()),
 	myID(aJson["ID"].asUInt()),
+	myUUID(aJson["UUID"].isNull() ? globalUUIDGenerator.getUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
 	myParent(nullptr)
 #ifdef EDITOR
@@ -206,6 +212,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
 	const_cast<unsigned&>(myID) = aGameObject.myID;
+	const_cast<UUIDv4::UUID&>(myUUID) = aGameObject.myUUID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 
@@ -656,6 +663,7 @@ Json::Value GameObject::ToJson() const
 	Json::Value result;
 	result["IsActive"] = myIsActive;
 	result["ID"] = myID;
+	result["UUID"] = myUUID.bytes();
 	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();
 

@@ -2,6 +2,9 @@
 #include "Components/Component.h"
 #include "CrimsonUtilities/Container/MemoryBlock.h"
 #include "CrimsonUtilities/Math/Transform.h"
+#pragma warning (push,0)
+#include "CrimsonUtilities/UUID/uuid_v4.h"
+#pragma warning (pop)
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
@@ -136,6 +139,7 @@ private:
 
 	GameObject* myParent;
 
+	const UUIDv4::UUID myUUID;
 	std::string myName;
 #ifdef EDITOR
 	std::string myImguiText;

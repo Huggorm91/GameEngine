@@ -99,6 +99,8 @@
     <ClInclude Include="Math\Vector3.hpp" />
     <ClInclude Include="Math\Vector4.hpp" />
     <ClInclude Include="Input\XBoxController.h" />
+    <ClInclude Include="UUID\endianness.h" />
+    <ClInclude Include="UUID\uuid_v4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Container\MemoryBlock.cpp" />
