@@ -10,13 +10,13 @@
 #endif // !_RETAIL
 
 
-unsigned int GameObject::localIDCount = 0;
+unsigned int GameObject::ourIDCount = 0;
 inline static UUIDv4::UUIDGenerator<std::mt19937_64> globalUUIDGenerator;
 
 GameObject::GameObject() :
 	myComponents(1000u),
 	myIsActive(true),
-	myID(++localIDCount),
+	myID(++ourIDCount),
 	myUUID(globalUUIDGenerator.getUUID()),
 	myName("GameObject"),
 	myParent(nullptr)
@@ -62,7 +62,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myComponents(aGameObject.myComponents.GetSize()),
 	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
-	myID(++localIDCount),
+	myID(++ourIDCount),
 	myUUID(globalUUIDGenerator.getUUID()),
 	myName(aGameObject.myName),
 	myParent(aGameObject.myParent),
@@ -116,9 +116,9 @@ GameObject::GameObject(const Json::Value& aJson) :
 	, myImguiText(myName)
 #endif // EDITOR
 {
-	if (myID > localIDCount)
+	if (myID > ourIDCount)
 	{
-		localIDCount = myID;
+		ourIDCount = myID;
 	}
 
 	for (auto& jsonComponent : aJson["Components"])
@@ -230,7 +230,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 
 bool GameObject::operator==(const GameObject& aGameObject)
 {
-	return myID == aGameObject.myID;
+	return myUUID == aGameObject.myUUID;
 }
 
 void GameObject::Update()
@@ -242,7 +242,7 @@ void GameObject::Update()
 			TransformHasChanged();
 		}
 
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).Update();
 		}
@@ -258,7 +258,7 @@ void GameObject::Render()
 			TransformHasChanged();
 		}
 
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).Render();
 		}
@@ -283,7 +283,7 @@ void GameObject::DebugDraw()
 
 const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		if (const Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
@@ -295,7 +295,7 @@ const Component* GameObject::GetComponentPointer(unsigned anID) const
 
 Component* GameObject::GetComponentPointer(unsigned anID)
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		if (Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
@@ -377,7 +377,7 @@ const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
@@ -389,7 +389,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
@@ -414,7 +414,7 @@ bool GameObject::IsActive() const
 
 void GameObject::SetActiveComponents(bool aIsActive)
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).SetActive(aIsActive);
 	}
@@ -422,7 +422,7 @@ void GameObject::SetActiveComponents(bool aIsActive)
 
 void GameObject::ToogleActiveComponents()
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).ToogleActive();
 	}
@@ -480,7 +480,7 @@ void GameObject::TransformHasChanged()
 {
 	myTransform.Update();
 
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).TransformHasChanged();
 	}
@@ -659,7 +659,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 		{
 			Component* component = nullptr;
 			std::string text;
-			for (auto [type, index] : myIndexList)
+			for (auto& [type, index] : myIndexList)
 			{
 				component = &myComponents.GetValue<Component>(index);
 				text = component->ToString() + " " + std::to_string(component->GetComponentID());
@@ -695,7 +695,7 @@ Json::Value GameObject::ToJson() const
 	result["Components"] = Json::arrayValue;
 	const Component* component = nullptr;
 	unsigned i = 0;
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		component = &myComponents.GetValue<Component>(index);
 		result["Components"][i] = component->ToJson();
@@ -717,7 +717,7 @@ struct GameObjectData
 void GameObject::Serialize(std::ostream& aStream) const
 {
 	Binary::eType type = Binary::GameObject;
-	GameObjectData data;
+	GameObjectData data{};
 	data.ID = myID;
 	data.ParentID = myParent ? myParent->myID : 0u;
 	data.ComponentCount = static_cast<unsigned>(myIndexList.size());
@@ -727,7 +727,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);
 
-	for (auto [compType, index] : myIndexList)
+	for (auto& [compType, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).Serialize(aStream);
 	}
@@ -735,7 +735,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 
 unsigned GameObject::Deserialize(std::istream& aStream)
 {
-	GameObjectData data;
+	GameObjectData data{};
 	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
 	const_cast<unsigned&>(myID) = data.ID;
 	myIsActive = data.IsActive;
@@ -744,7 +744,7 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 
 	for (unsigned i = 0; i < data.ComponentCount; i++)
 	{
-		Binary::eType type;
+		Binary::eType type = Binary::Unknown;
 		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
 		if (type != Binary::Component)
 		{
@@ -760,9 +760,9 @@ void GameObject::MarkAsPrefab()
 	if (myID != 0)
 	{
 		const_cast<unsigned&>(myID) = 0;
-		localIDCount--;
+		ourIDCount--;
 	}
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).MarkAsPrefabComponent();
 	}
@@ -773,7 +773,7 @@ void GameObject::MarkAsPrefab(unsigned anID)
 	if (myID != anID)
 	{
 		const_cast<unsigned&>(myID) = anID;
-		localIDCount--;
+		ourIDCount--;
 	}
 }
 
@@ -781,11 +781,12 @@ void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
 {
 	if (aDecrementIDCount)
 	{
-		localIDCount--;
+		ourIDCount--;
 	}
 	const_cast<unsigned&>(myID) = anObject.myID;
+	const_cast<UUIDv4::UUID&>(myUUID) = anObject.myUUID;
 
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index), aDecrementIDCount);
 	}
@@ -798,5 +799,5 @@ unsigned GameObject::GetParentID(const Json::Value& aJson)
 
 void SetGameObjectIDCount(unsigned aValue)
 {
-	GameObject::localIDCount = aValue;
+	GameObject::ourIDCount = aValue;
 }

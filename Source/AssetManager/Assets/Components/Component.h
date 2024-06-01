@@ -79,8 +79,8 @@ public:
 	void MarkAsPrefabComponent(unsigned anID = 0);
 	void CopyID(const Component* aComponent, bool aDecrementIDCount = false);
 
-	static void SetIDCount(unsigned aValue) { localIDCount = aValue; }
-	static unsigned GetIDCount() { return localIDCount; }
+	static void SetIDCount(unsigned aValue) { ourIDCount = aValue; }
+	static unsigned GetIDCount() { return ourIDCount; }
 
 protected:
 	GameObject* myParent;
@@ -88,7 +88,7 @@ protected:
 	const unsigned myID;
 	bool myIsActive;
 
-	static unsigned localIDCount;
+	static unsigned ourIDCount;
 
 	const Transform* GetParentTransform() const;
 	Transform* GetParentTransform();

@@ -122,7 +122,7 @@ public:
 	void CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount = false);
 
 	static unsigned GetParentID(const Json::Value& aJson);
-	static unsigned GetIDCount() { return localIDCount; }
+	static unsigned GetIDCount() { return ourIDCount; }
 
 private:
 #ifdef EDITOR
@@ -132,7 +132,7 @@ private:
 	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
 
-	static unsigned localIDCount;
+	static unsigned ourIDCount;
 
 	bool myIsActive;
 	const unsigned myID;

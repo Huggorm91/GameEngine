@@ -2,15 +2,15 @@
 #include "Component.h"
 #include "../GameObject.h"
 
-unsigned int Component::localIDCount = 0;
+unsigned int Component::ourIDCount = 0;
 
-Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentType::Unknown), myID(++localIDCount)
+Component::Component() : myParent(nullptr), myIsActive(true), myType(ComponentType::Unknown), myID(++ourIDCount)
 {}
 
-Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType), myID(++localIDCount)
+Component::Component(ComponentType aType) : myParent(nullptr), myIsActive(true), myType(aType), myID(++ourIDCount)
 {}
 
-Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(++localIDCount)
+Component::Component(const Component& aComponent) : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(++ourIDCount)
 {}
 
 Component::Component(Component&& aComponent) noexcept : myParent(aComponent.myParent), myIsActive(aComponent.myIsActive), myType(aComponent.myType), myID(aComponent.myID)
@@ -128,7 +128,7 @@ void Component::MarkAsPrefabComponent(unsigned anID)
 	if (myID != anID)
 	{
 		const_cast<unsigned&>(myID) = anID;
-		localIDCount--;
+		ourIDCount--;
 	}
 }
 
@@ -136,7 +136,7 @@ void Component::CopyID(const Component* aComponent, bool aDecrementIDCount)
 {
 	if (aDecrementIDCount)
 	{
-		localIDCount--;
+		ourIDCount--;
 	}
 	const_cast<unsigned&>(myID) = aComponent->myID;
 }
