@@ -92,6 +92,12 @@ void AddComponent(const Component* aComponent, GameObject& aParent)
 		aParent.AddComponent(component); 
 		break;
 	}
+	case ComponentType::Script:
+	{
+		const ScriptComponent& component = *dynamic_cast<const ScriptComponent*>(aComponent); 
+		aParent.AddComponent(component); 
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
@@ -166,6 +172,11 @@ void AddComponent(const ComponentType aType, GameObject& aParent)
 	case ComponentType::Health:
 	{
 		aParent.AddComponent<HealthComponent>();
+		break;
+	}
+	case ComponentType::Script:
+	{
+		aParent.AddComponent<ScriptComponent>();
 		break;
 	}
 	default:
@@ -243,6 +254,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	case ComponentType::Health:
 	{
 		aParent.AddComponent(HealthComponent(aJson));
+		break;
+	}
+	case ComponentType::Script:
+	{
+		aParent.AddComponent(ScriptComponent(aJson));
 		break;
 	}
 	default:
@@ -337,6 +353,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		health.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::Script:
+	{
+		auto& health = aParent.AddComponent<ScriptComponent>();
+		health.Deserialize(aStream);
+		break;
+	}
 	default:
 		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + aParent.GetIDString());
 		break;
@@ -398,6 +420,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::Health:
 	{
 		return "Health";
+	}
+	case ComponentType::Script:
+	{
+		return "Script";
 	}
 	default:
 	{

@@ -12,3 +12,4 @@
 #include "Components/Collision/RayColliderComponent.h"
 #include "Components/Collision/CapsuleColliderComponent.h"
 #include "Components/Gameplay/HealthComponent.h"
+#include "Components/Scripting/ScriptComponent.h"

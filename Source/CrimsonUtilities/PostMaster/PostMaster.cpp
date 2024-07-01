@@ -10,7 +10,7 @@ void Crimson::PostMaster::Subscribe(Observer* anObserver, const eMessageType aTy
 	else
 	{
 		std::unique_lock lock(mySecondaryMutex);
-		myAddList.emplace_back(std::pair(eMessageType::Count, anObserver));
+		myAddList.emplace_back(std::pair(aType, anObserver));
 	}
 }
 
@@ -77,34 +77,31 @@ void Crimson::PostMaster::AddMessage(const Message& aMessage)
 void Crimson::PostMaster::SendInstantMessage(const Message& aMessage)
 {
 	std::shared_lock lock(myMutex);
+	if (mySecondaryMutex.try_lock())
+	{
+		for (auto& [type, observer] : myAddList)
+		{
+			if (type == aMessage.GetMessageType())
+			{
+				observer->RecieveMessage(aMessage);
+			}
+		}
+		mySecondaryMutex.unlock();
+	}
 	SendMessageToSubscribers(aMessage);
 }
 
 void Crimson::PostMaster::SendSavedMessages()
 {
 	std::shared_lock lock(myMutex);
-	for (auto& message : myMessages)
-	{
-		SendMessageToSubscribers(message);
-	}
-	myMessages.clear();
-
 	if (!mySecondaryMessages.empty() || !myDeleteList.empty() || !myAddList.empty())
 	{
 		std::unique_lock lock2(mySecondaryMutex);
 
 		if (!mySecondaryMessages.empty())
 		{
-			myMessages.swap(mySecondaryMessages);
-		}
-		
-		if (!myDeleteList.empty())
-		{
-			for (auto& [type, observer] : myDeleteList)
-			{
-				RemoveSubscriber(type, observer);
-			}
-			myDeleteList.clear();
+			myMessages.insert(myMessages.end(), mySecondaryMessages.begin(), mySecondaryMessages.end());
+			mySecondaryMessages.clear();
 		}
 
 		if (!myAddList.empty())
@@ -115,7 +112,22 @@ void Crimson::PostMaster::SendSavedMessages()
 			}
 			myAddList.clear();
 		}
+
+		if (!myDeleteList.empty())
+		{
+			for (auto& [type, observer] : myDeleteList)
+			{
+				RemoveSubscriber(type, observer);
+			}
+			myDeleteList.clear();
+		}
 	}
+
+	for (auto& message : myMessages)
+	{
+		SendMessageToSubscribers(message);
+	}
+	myMessages.clear();
 }
 
 void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) const
@@ -129,7 +141,7 @@ void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) cons
 
 void Crimson::PostMaster::RemoveSubscriber(const eMessageType& aMessageType, Observer* anObserver)
 {
-	if (aMessageType == eMessageType::Count) 
+	if (aMessageType == eMessageType::Count)
 	{
 		// Remove from all types
 		auto iterator = myObservers.begin();

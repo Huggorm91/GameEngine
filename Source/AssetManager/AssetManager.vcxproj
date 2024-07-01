@@ -184,7 +184,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>AssetManager.pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\DearImGui\;$(SolutionDir)ThirdParty\FBXImporter\include</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AddCodeBeforeSourceInclude>#pragma message ("$$unity_id$$_$$file_number$$-$$file_name$$")</AddCodeBeforeSourceInclude>
     </ClCompile>
@@ -306,6 +306,8 @@
     <ClInclude Include="Assets\Components\Particles\ParticleEmitterComponent.h" />
     <ClInclude Include="Assets\Components\Particles\ParticleEmitter.h" />
     <ClInclude Include="Managers\SceneManager.h" />
+    <ClInclude Include="Assets\Components\Scripting\ScriptComponent.h" />
+    <ClInclude Include="Managers\ScriptManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets\Components\Collision\BoxColliderComponent.cpp" />
@@ -359,6 +361,8 @@
     <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Assets\Components\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
+    <ClCompile Include="Assets\Components\Scripting\ScriptComponent.cpp" />
+    <ClCompile Include="Managers\ScriptManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">

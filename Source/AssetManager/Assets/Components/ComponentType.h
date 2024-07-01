@@ -19,6 +19,7 @@ enum class ComponentType
 	RayCollider,
 	CapsuleCollider,
 	Health,
+	Script,
 	Count
 };
 
