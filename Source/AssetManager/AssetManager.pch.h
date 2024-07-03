@@ -26,9 +26,15 @@ using namespace Microsoft::WRL;
 #include "ImGui/imgui.h"
 #include "ImGui/misc/cpp/imgui_stdlib.h"
 
+#pragma warning(push, 1)
+#pragma warning(disable:4244)
+#include "ThirdParty/MuninGraph/MuninGraph.h"
+#pragma warning(pop)
+
 #include "Math/Matrix4x4.hpp"
 #include "Json/JsonVector.hpp"
 #include "File/DirectoryFunctions.h"
+#include "Time/Timer.h"
 
 #include "Logging/Logging.h"
 inline Logger AMLogger;

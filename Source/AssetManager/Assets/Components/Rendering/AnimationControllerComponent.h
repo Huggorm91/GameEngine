@@ -40,7 +40,7 @@ public:
 
 	void UpdateBoneCache();
 
-	void CreateImGuiComponents(const std::string& aWindowName) override;
+	void CreateImGuiComponents() override;
 	Json::Value ToJson() const override;
 
 private:

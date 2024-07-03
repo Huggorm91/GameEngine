@@ -153,9 +153,9 @@ void PointlightComponent::Deserialize(std::istream& aStream)
 	}
 }
 
-void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)
+void PointlightComponent::CreateImGuiComponents()
 {
-	Component::CreateImGuiComponents(aWindowName);
+	Component::CreateImGuiComponents();
 	ImGui::Checkbox("Cast Shadow", &myCastShadows);
 	ImGui::DragFloat("Intensity", &myIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::ColorEdit3("Color", &myColor.x);

@@ -22,7 +22,7 @@ public:
 
 	void TransformHasChanged() const override;
 
-	void CreateImGuiComponents(const std::string& aWindowName) override;
+	void CreateImGuiComponents() override;
 	Json::Value ToJson() const override;
 
 private:

@@ -25,7 +25,7 @@ NodeResult SGNode_Sequence::Enter(size_t anEntryPinId, NodeEntryType aEntryType)
 	if(myIndex < myExitPins.size())
 	{
 		const ScriptGraphPin& exitPin = GetPin(myExitPins[myIndex]);
-		ExecPin(exitPin.GetLabel(), myIndex == myExitPins.size() - 1 ? NodeResultState::Finished : NodeResultState::InProgress);
+		return ExecPin(exitPin.GetLabel(), myIndex++ == myExitPins.size() - 1 ? NodeResultState::Finished : NodeResultState::InProgress);
 	}
 
 	return Error("Sequence ran out of Pins! This should not happen.");

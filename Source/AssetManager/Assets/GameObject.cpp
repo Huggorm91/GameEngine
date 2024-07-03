@@ -614,7 +614,7 @@ unsigned int GameObject::GetID() const
 	return myID;
 }
 
-void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
+void GameObject::CreateImGuiWindowContent()
 {
 	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -643,7 +643,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 				ImGui::SetNextItemOpen(true, ImGuiCond_::ImGuiCond_Appearing);
 				if (ImGui::TreeNode(text.c_str(), component->ToString().c_str()))
 				{
-					component->CreateImGuiComponents(aWindowName);
+					component->CreateImGuiComponents();
 					ImGui::TreePop();
 				}
 			}

@@ -55,7 +55,7 @@ public:
 	const std::string& GetName() const;
 
 	void TransformHasChanged() const override;
-	void CreateImGuiComponents(const std::string& aWindowName) override;
+	void CreateImGuiComponents() override;
 
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;

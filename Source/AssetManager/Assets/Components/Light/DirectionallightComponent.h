@@ -34,7 +34,7 @@ public:
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;
 
-	void CreateImGuiComponents(const std::string& aWindowName) override;
+	void CreateImGuiComponents() override;
 	Json::Value ToJson() const override;
 
 private:

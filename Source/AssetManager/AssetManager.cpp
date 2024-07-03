@@ -11,6 +11,7 @@ ShaderManager AssetManager::myShaderManager;
 MaterialManager AssetManager::myMaterialManager;
 PrefabManager AssetManager::myPrefabManager;
 SceneManager AssetManager::mySceneManager;
+ScriptManager AssetManager::myScriptManager;
 
 void AssetManager::Init()
 {
@@ -30,6 +31,7 @@ void AssetManager::Init()
 		myMaterialManager.Init();
 		myPrefabManager.Init();
 		mySceneManager.Init();
+		myScriptManager.Init();
 
 #ifdef _DEBUG
 	}
@@ -60,6 +62,7 @@ void AssetManager::UpdateFilepaths()
 	myMaterialManager.UpdateFilePaths();
 	//myPrefabManager.UpdateFilePaths();
 	mySceneManager.UpdateFilePaths();
+	myScriptManager.UpdateFilePaths();
 }
 
 void AssetManager::RestartImporter()

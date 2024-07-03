@@ -58,7 +58,7 @@ public:
 
 	virtual void TransformHasChanged() const{}
 
-	virtual void CreateImGuiComponents(const std::string& aWindowName);
+	virtual void CreateImGuiComponents();
 
 	inline std::string ToString() const { return ComponentTypeToString(myType); }
 	virtual Json::Value ToJson() const;

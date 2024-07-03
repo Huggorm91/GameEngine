@@ -259,9 +259,9 @@ void AnimationControllerComponent::UpdateBoneCache()
 	}
 }
 
-void AnimationControllerComponent::CreateImGuiComponents(const std::string& aWindowName)
+void AnimationControllerComponent::CreateImGuiComponents()
 {
-	MeshComponent::CreateImGuiComponents(aWindowName);
+	MeshComponent::CreateImGuiComponents();
 }
 
 Json::Value AnimationControllerComponent::ToJson() const

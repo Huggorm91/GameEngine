@@ -316,6 +316,7 @@ GraphEditorMethod(void)::HandleImNodeCreateNode()
 				if (ImNodeEd::AcceptNewItem())
 				{
 					mySchema->CreateEdge(startLinkId.Get(), endLinkId.Get());
+					mySchema->AddToUndo();
 				}
 			}
 		}
@@ -344,6 +345,7 @@ GraphEditorMethod(void)::HandleImNodeDeleteNode()
 				mySchema->RemoveNode(deletedNodeId.Get());
 			}
 		}
+		mySchema->AddToUndo();
 	}
 	ImNodeEd::EndDelete();
 }

@@ -164,6 +164,8 @@ public:
 		outZ = myPosition[2];
 	}
 
+	FORCEINLINE bool IsUnique() const { return myFlags & GraphNodeFlag_Unique; }
+
 private:
 
 	std::unordered_map<size_t, NodePinClass> myPins;

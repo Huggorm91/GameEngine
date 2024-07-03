@@ -62,6 +62,13 @@ class ScriptGraphEditor : public GraphEditorBase<ScriptGraph, ScriptGraphNode, S
 {
 public:
 	ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, ScriptGraphEditorState* aState, ScriptGraph* aGraph);
+	void EnableUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack);
+
+	void CopySelectedNodes(std::vector<uint8_t>& outResult);
+	void PasteNodes(const std::vector<uint8_t>& inData);
+
+	void Undo();
+	void Redo();
 
 	std::vector<uint8_t> TEMP_SAVE_LOAD_dataBlock;
 

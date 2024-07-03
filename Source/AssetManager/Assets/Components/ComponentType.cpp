@@ -64,6 +64,14 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	{
 		return &aParent.AddComponent<CapsuleColliderComponent>();
 	}
+	case ComponentType::Health:
+	{
+		return &aParent.AddComponent<HealthComponent>();
+	}
+	case ComponentType::Script:
+	{
+		return &aParent.AddComponent<ScriptComponent>();
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
@@ -144,6 +152,16 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	case ComponentType::CapsuleCollider:
 	{
 		aParent.AddComponent(CapsuleColliderComponent(aJson));
+		break;
+	}
+	case ComponentType::Health:
+	{
+		aParent.AddComponent(HealthComponent(aJson));
+		break;
+	}
+	case ComponentType::Script:
+	{
+		aParent.AddComponent(ScriptComponent(aJson));
 		break;
 	}
 	default:
@@ -243,6 +261,18 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		collider.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::Health:
+	{
+		auto& health = aParent.AddComponent<HealthComponent>();
+		health.Deserialize(aStream);
+		break;
+	}
+	case ComponentType::Script:
+	{
+		auto& script = aParent.AddComponent<ScriptComponent>();
+		script.Deserialize(aStream);
+		break;
+	}
 	case ComponentType::Count:
 		break;
 	default:
@@ -310,6 +340,14 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::CapsuleCollider:
 	{
 		return "CapsuleCollider";
+	}
+	case ComponentType::Health:
+	{
+		return "Health";
+	}
+	case ComponentType::Script:
+	{
+		return "Script";
 	}
 	default:
 	{

@@ -15,8 +15,8 @@ public:
 
 	Shader* GetShader(const std::string& aPath, bool aShouldLogErrors);
 
-	static inline const char* GetExtension(){ return ".cso"; }
-	static inline const char* GetPath()
+	consteval static inline const char* GetExtension(){ return ".cso"; }
+	consteval static inline const char* GetPath()
 	{ 
 #ifdef _DEBUG
 		return "..\\Content\\Shaders\\Debug\\";
@@ -26,8 +26,8 @@ public:
 		return "..\\Content\\Shaders\\Retail\\";
 #endif // _DEBUG 
 	}
-	static inline const wchar_t* GetExtensionW(){ return L".cso"; }
-	static inline const wchar_t* GetPathW()
+	consteval static inline const wchar_t* GetExtensionW(){ return L".cso"; }
+	consteval static inline const wchar_t* GetPathW()
 	{ 
 #ifdef _DEBUG
 		return L"..\\Content\\Shaders\\Debug\\";

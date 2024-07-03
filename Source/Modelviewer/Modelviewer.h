@@ -113,6 +113,11 @@ private:
 	ImguiManager myImguiManager;
 	SkeletonEditor mySkeletonEditor;
 
+	std::vector<uint8_t> myCopiedScriptNodes;
+
+	std::vector<std::vector<uint8_t>> myScriptGraphRedoCommands;
+	std::vector<std::vector<uint8_t>> myScriptGraphUndoCommands;
+
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
 

@@ -18,3 +18,7 @@
 #include "Collision/SphereColliderComponent.h"
 #include "Collision/RayColliderComponent.h"
 #include "Collision/CapsuleColliderComponent.h"
+
+#include "Gameplay/HealthComponent.h"
+
+#include "Script/ScriptComponent.h"

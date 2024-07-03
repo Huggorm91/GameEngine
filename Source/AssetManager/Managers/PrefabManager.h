@@ -20,10 +20,10 @@ public:
 	void SavePrefab(const std::string& aPath, const GameObject& aPrefab);
 	void SaveAllPrefabs() const;
 
-	static inline const char* GetExtension(){ return ".prfb"; }
-	static inline const char* GetPath(){ return "..\\Content\\Prefabs\\"; }
-	static inline const wchar_t* GetExtensionW(){ return L".prfb"; }
-	static inline const wchar_t* GetPathW(){ return L"..\\Content\\Prefabs\\"; }
+	consteval static inline const char* GetExtension(){ return ".prfb"; }
+	consteval static inline const char* GetPath(){ return "..\\Content\\Prefabs\\"; }
+	consteval static inline const wchar_t* GetExtensionW(){ return L".prfb"; }
+	consteval static inline const wchar_t* GetPathW(){ return L"..\\Content\\Prefabs\\"; }
 
 private:
 	std::unordered_map<std::string, GameObject> myPrefabs;

@@ -116,7 +116,7 @@ Material* MaterialManager::LoadMaterial(const std::string& aPath, bool aShouldLo
 	}
 	fileStream.close();
 
-	auto iter = myMaterials.emplace(path, json);
+	auto iter = myMaterials.emplace(aPath, json);
 
 	return &iter.first->second;
 }

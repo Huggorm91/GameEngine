@@ -18,10 +18,10 @@ public:
 	Texture* GetTexture(const std::string& aPath, bool aShouldLogErrors);
 	const std::unordered_set<std::string>& GetTexturelist() const;
 
-	static inline const char* GetExtension(){ return ".dds"; }
-	static inline const char* GetPath(){ return "..\\Content\\Textures\\"; }
-	static inline const wchar_t* GetExtensionW(){ return L".dds"; }
-	static inline const wchar_t* GetPathW(){ return L"..\\Content\\Textures\\"; }
+	consteval static inline const char* GetExtension(){ return ".dds"; }
+	consteval static inline const char* GetPath(){ return "..\\Content\\Textures\\"; }
+	consteval static inline const wchar_t* GetExtensionW(){ return L".dds"; }
+	consteval static inline const wchar_t* GetPathW(){ return L"..\\Content\\Textures\\"; }
 
 private:
 	std::unordered_map<std::string, Texture> myTextures;

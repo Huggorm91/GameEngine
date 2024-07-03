@@ -37,10 +37,10 @@ public:
 	BoxSphereBounds GetMeshBounds(const std::string& aPath, bool aShouldLogErrors);
 	const std::string* GetMeshPathPointer(const std::string& aPath);
 
-	static inline const char* GetExtension(){ return ".fbx"; }
-	static inline const char* GetPath(){ return "..\\Content\\Models\\"; }
-	static inline const wchar_t* GetExtensionW(){ return L".fbx"; }
-	static inline const wchar_t* GetPathW(){ return L"..\\Content\\Models\\"; }
+	consteval static inline const char* GetExtension(){ return ".fbx"; }
+	consteval static inline const char* GetPath(){ return "..\\Content\\Models\\"; }
+	consteval static inline const wchar_t* GetExtensionW(){ return L".fbx"; }
+	consteval static inline const wchar_t* GetPathW(){ return L"..\\Content\\Models\\"; }
 
 private:
 	std::unordered_map<std::string, GameObject> myModels;

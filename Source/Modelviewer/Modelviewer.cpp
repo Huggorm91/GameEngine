@@ -175,8 +175,15 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Copy, Crimson::KeyBind{ Crimson::eKey::C, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Paste, Crimson::KeyBind{ Crimson::eKey::V, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Duplicate, Crimson::KeyBind{ Crimson::eKey::D, Crimson::eKey::Ctrl });
+
 	input.Attach(this, Crimson::eInputAction::Undo);
 	input.Attach(this, Crimson::eInputAction::Redo);
+	input.Attach(this, Crimson::eInputAction::Copy);
+	input.Attach(this, Crimson::eInputAction::Paste);
+	input.Attach(this, Crimson::eInputAction::Duplicate);
 
 	constexpr float fov = 90.f;
 	constexpr float nearPlane = 1.f;
@@ -193,6 +200,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myScriptGraphEditorState = std::make_shared<ScriptGraphEditorState>();
 	myScriptGraph = std::make_shared<ScriptGraph>();
 	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScriptGraph.get());
+	myScriptGraphEditor->EnableUndoRedo(&myScriptGraphUndoCommands, &myScriptGraphRedoCommands);
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
@@ -590,9 +598,9 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
-	//RHI::BeginEvent(L"NodeEditor Render");
-	//myScriptGraphEditor->Render();
-	//RHI::EndEvent();
+	RHI::BeginEvent(L"NodeEditor Render");
+	myScriptGraphEditor->Render();
+	RHI::EndEvent();
 
 	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
@@ -768,13 +776,43 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 		return;
 	}
 
-	if (anAction == Crimson::eInputAction::Undo)
+	switch (anAction)
 	{
-		UndoCommand();
+	case Crimson::eInputAction::Undo:
+	{
+		//UndoCommand();
+		myScriptGraphEditor->Undo();
+		break;
 	}
-	else if (anAction == Crimson::eInputAction::Redo)
+	case Crimson::eInputAction::Redo:
 	{
-		RedoCommand();
+		//RedoCommand();
+		myScriptGraphEditor->Redo();
+		break;
+	}
+	case Crimson::eInputAction::Copy:
+	{
+		myCopiedScriptNodes.clear();
+		myScriptGraphEditor->CopySelectedNodes(myCopiedScriptNodes);
+		break;
+	}
+	case Crimson::eInputAction::Paste:
+	{
+		if (!myCopiedScriptNodes.empty())
+		{
+			myScriptGraphEditor->PasteNodes(myCopiedScriptNodes);
+		}		
+		break;
+	}
+	case Crimson::eInputAction::Duplicate:
+	{
+		std::vector<uint8_t> copiedNodes;
+		myScriptGraphEditor->CopySelectedNodes(copiedNodes);
+		myScriptGraphEditor->PasteNodes(copiedNodes);
+		break;
+	}
+	default:
+		break;
 	}
 }
 #endif // _RETAIL

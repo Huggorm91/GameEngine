@@ -874,7 +874,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 		if (mySelectedObjects.size() == 1)
 		{
 			GameObject* selectedObject = *mySelectedObjects.begin();
-			selectedObject->CreateImGuiWindowContent("Selected GameObject");
+			selectedObject->CreateImGuiWindowContent();
 
 			ImGui::Separator();
 			if (ImGui::Button("Save As Prefab"))
@@ -1107,7 +1107,7 @@ void ImguiManager::CreateNewObjectWindow()
 		}
 
 		ImGui::Separator();
-		myNewObject->CreateImGuiWindowContent("New Object");
+		myNewObject->CreateImGuiWindowContent();
 		ImGui::Separator();
 
 		if (ImGui::Button("Add To Scene"))

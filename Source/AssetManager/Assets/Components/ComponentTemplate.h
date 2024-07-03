@@ -21,7 +21,7 @@ public:
 	ExampleComponent(); // Use base constructor: Component(ComponentType::Example)
 	ExampleComponent(const ExampleComponent& aComponent) = default;
 	ExampleComponent(ExampleComponent&& aComponent) noexcept = default;
-	ExampleComponent(const Json::Value& aJson);
+	ExampleComponent(const Json::Value& aJson); // Use base constructor: Component(aJson)
 	~ExampleComponent() = default;
 
 	ExampleComponent& operator=(const ExampleComponent& aComponent) = default;
@@ -29,6 +29,7 @@ public:
 
 	// void Init(GameObject* aParent) override;
 	// void Update() override;
+	// void Render() override;
 	// void DebugDraw() override;
 
 	// void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
@@ -44,8 +45,11 @@ public:
 
 	// void TransformHasChanged() const override;
 
-	void CreateImGuiComponents(const std::string& aWindowName) override;
-	Json::Value ToJson() const override;
+	// void CreateImGuiComponents() override;
+	// Json::Value ToJson() const override;
+
+	// void Serialize(std::ostream& aStream) const override;
+	// void Deserialize(std::istream& aStream) override;
 
 private:
 

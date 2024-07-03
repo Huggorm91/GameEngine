@@ -22,10 +22,10 @@ public:
 
 	void SaveMaterial(const Material* aMaterial, const std::string& aPath);
 
-	static inline const char* GetExtension(){ return ".mat"; }
-	static inline const char* GetPath(){ return "..\\Content\\Materials\\"; }
-	static inline const wchar_t* GetExtensionW(){ return L".mat"; }
-	static inline const wchar_t* GetPathW(){ return L"..\\Content\\Materials\\"; }
+	consteval static inline const char* GetExtension(){ return ".mat"; }
+	consteval static inline const char* GetPath(){ return "..\\Content\\Materials\\"; }
+	consteval static inline const wchar_t* GetExtensionW(){ return L".mat"; }
+	consteval static inline const wchar_t* GetPathW(){ return L"..\\Content\\Materials\\"; }
 
 private:
 	std::unordered_map<std::string, Material> myMaterials;

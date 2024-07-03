@@ -311,9 +311,9 @@ void MeshComponent::TransformHasChanged() const
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * Crimson::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * Crimson::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
 }
 
-void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
+void MeshComponent::CreateImGuiComponents()
 {
-	Component::CreateImGuiComponents(aWindowName);
+	Component::CreateImGuiComponents();
 	ImGui::Checkbox("Render Shadow", &myRenderShadow);
 
 	ImGui::ColorEdit4("Color", &myColor.x);

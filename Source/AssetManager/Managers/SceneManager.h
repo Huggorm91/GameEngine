@@ -56,13 +56,13 @@ public:
 	void SaveScene(const std::string& aPath, const Scene& aScene, bool anAsBinary);
 	void SaveScene(const std::string& aPath, const EditorScene& aScene, bool anAsBinary);
 
-	static inline const char* GetExtension(){ return ".scene"; }
-	static inline const char* GetBinaryExtension(){ return ".lvl"; }
-	static inline const char* GetPath(){ return "..\\Content\\Scenes\\"; }
+	consteval static inline const char* GetExtension(){ return ".scene"; }
+	consteval static inline const char* GetBinaryExtension(){ return ".lvl"; }
+	consteval static inline const char* GetPath(){ return "..\\Content\\Scenes\\"; }
 
-	static inline const wchar_t* GetExtensionW(){ return L".scene"; }
-	static inline const wchar_t* GetBinaryExtensionW(){ return L".lvl"; }
-	static inline const wchar_t* GetPathW(){ return L"..\\Content\\Scenes\\"; }
+	consteval static inline const wchar_t* GetExtensionW(){ return L".scene"; }
+	consteval static inline const wchar_t* GetBinaryExtensionW(){ return L".lvl"; }
+	consteval static inline const wchar_t* GetPathW(){ return L"..\\Content\\Scenes\\"; }
 
 private:
 	std::unordered_set<std::string> myFilePaths;

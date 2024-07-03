@@ -187,9 +187,9 @@ const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& AnimatedMeshComponent::Ge
 	return myBoneTransformCache;
 }
 
-void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
+void AnimatedMeshComponent::CreateImGuiComponents()
 {
-	MeshComponent::CreateImGuiComponents(aWindowName);
+	MeshComponent::CreateImGuiComponents();
 	if (myAnimation)
 	{
 		ImGui::InputText("Animation", const_cast<std::string*>(&myAnimation->GetPath()), ImGuiInputTextFlags_ReadOnly);

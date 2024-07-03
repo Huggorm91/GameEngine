@@ -86,7 +86,7 @@ bool Component::IsActive() const
 	return myIsActive;
 }
 
-void Component::CreateImGuiComponents(const std::string&)
+void Component::CreateImGuiComponents()
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
 	if (ImGui::Checkbox("Active", &myIsActive))

@@ -11,6 +11,8 @@
 #include "Nodes/EventNodes.h"
 #include "Nodes/VariableNodes.h"
 
+#include "Internal/json.hpp"
+
 std::shared_ptr<ScriptGraphNode> ScriptGraphSchema::CreateNode(const RegisteredNodeClass& aClass)
 {
 	std::shared_ptr<ScriptGraphNode> newNode = std::static_pointer_cast<ScriptGraphNode>(aClass.New());
@@ -87,7 +89,6 @@ bool ScriptGraphSchema::RemoveNode(size_t aNodeUID)
 	}
 
 	graph->myNodes.erase(aNodeUID);
-
 	return true;
 }
 
@@ -208,8 +209,282 @@ bool ScriptGraphSchema::RemoveEdge(size_t aEdgeId)
 	toPin.RemovePinEdge(aEdgeId);
 
 	it = graph->myEdges.erase(it);
-
 	return true;
+}
+
+void ScriptGraphSchema::CopySelectedNodes(std::vector<uint8_t>& outResult, const std::unordered_set<size_t>& someIds)
+{
+	std::unordered_set<size_t> copiedNodes;
+
+	using namespace nlohmann;
+	json graphJson;
+	graphJson["nodes"] = json::array();
+
+	for (const auto& [nodeId, node] : GetNodes())
+	{
+		// Check if node is selected and not unique
+		if (node->IsUnique() || someIds.find(nodeId) == someIds.end())
+		{
+			continue;
+		}
+		const auto& objectUIDNode = AsObjectUIDSharedPtr(node);
+
+		json nodeJson;
+		nodeJson["type"] = objectUIDNode->GetTypeName();
+		nodeJson["id"] = nodeId;
+		json nodePositionJson;
+		float X, Y, Z;
+		node->GetNodePosition(X, Y, Z);
+		nodePositionJson["X"] = X;
+		nodePositionJson["Y"] = Y;
+		nodePositionJson["Z"] = Z;
+		nodeJson["position"] = nodePositionJson;
+
+		const ScriptGraphNodeType nodeType = node->GetNodeType();
+		if (nodeType == ScriptGraphNodeType::Variable)
+		{
+			const std::shared_ptr<ScriptGraphVariableNode> varNodeBase = std::dynamic_pointer_cast<ScriptGraphVariableNode>(node);
+			nodeJson["variable"] = varNodeBase->GetVariable()->Name;
+		}
+
+		nodeJson["pins"] = json::array();
+
+		for (const auto& pin : node->GetPins() | std::views::values)
+		{
+			if (!pin.IsDynamicPin() && pin.GetPinType() == ScriptGraphPinType::Exec)
+				continue;
+
+			json pinJson;
+			pinJson["name"] = pin.GetLabel();
+			pinJson["dynamic"] = pin.IsDynamicPin();
+
+			if (pin.IsDynamicPin())
+			{
+				pinJson["type"] = pin.GetPinType() == ScriptGraphPinType::Exec ? true : false;
+				pinJson["direction"] = pin.GetPinDirection() == PinDirection::Input ? true : false;
+				if (pin.GetPinType() == ScriptGraphPinType::Data)
+				{
+					const RegisteredType* pinDataType = pin.GetPinDataType();
+					pinJson["data"] = pinDataType->GetFriendlyName();
+				}
+			}
+
+			if (pin.GetPinType() == ScriptGraphPinType::Data && pin.GetPinDirection() == PinDirection::Input)
+			{
+				std::vector<uint8_t> pinData;
+				pin.GetDataContainer().Serialize(pinData);
+				pinJson["value"] = std::move(pinData);
+			}
+
+			nodeJson["pins"].emplace_back(pinJson);
+		}
+
+		graphJson["nodes"].emplace_back(nodeJson);
+		copiedNodes.emplace(nodeId);
+	}
+
+	graphJson["edges"] = json::array();
+	ScriptGraph* graph = GetMutableGraph();
+	for (const auto& [edgeId, edge] : GetEdges())
+	{
+		const ScriptGraphPin& fromPin = graph->GetPinFromId(edge.FromId);
+		const ScriptGraphPin& toPin = graph->GetPinFromId(edge.ToId);
+		const auto fromNodeId = AsObjectUIDPtr(fromPin.GetOwner());
+		const auto toNodeId = AsObjectUIDPtr(toPin.GetOwner());
+
+		if (!copiedNodes.contains(fromNodeId->GetUID()) || !copiedNodes.contains(toNodeId->GetUID()))
+		{
+			continue;
+		}
+
+		json edgeJson;
+		edgeJson["id"] = edgeId;
+		edgeJson["sourcePin"] = fromPin.GetLabel();
+		edgeJson["sourceNode"] = fromNodeId->GetUID();
+		edgeJson["targetPin"] = toPin.GetLabel();
+		edgeJson["targetNode"] = toNodeId->GetUID();
+		graphJson["edges"].emplace_back(edgeJson);
+	}
+
+	outResult = json::to_bson(graphJson);
+}
+
+void ScriptGraphSchema::PasteNodes(const std::vector<uint8_t>& inData, std::unordered_set<size_t>& outIds, std::pair<float, float>& outMin, std::pair<float, float>& outMax)
+{
+	std::unordered_map<size_t, std::shared_ptr<ScriptGraphNode>> fileUIDToNode;
+
+	using namespace nlohmann;
+	json graphJson = json::from_bson(inData);
+
+	outMin.first = INFINITY;
+	outMin.second = INFINITY;
+
+	outMax.first = -INFINITY;
+	outMax.second = -INFINITY;
+
+	for (const json& nodeJson : graphJson["nodes"])
+	{
+		const RegisteredNodeClass& nodeClass = MuninGraph::Get().GetNodeClass(nodeJson["type"]);
+		auto newNode = AddNode(nodeClass.Type);
+
+		const float X = nodeJson["position"].at("X");
+		const float Y = nodeJson["position"].at("Y");
+		const float Z = nodeJson["position"].at("Z");
+		newNode->SetNodePosition(X, Y, Z);
+
+		if (X < outMin.first)
+		{
+			outMin.first = X;
+		}
+		if (X > outMax.first)
+		{
+			outMax.first = X;
+		}
+
+		if (Y < outMin.second)
+		{
+			outMin.second = Y;
+		}
+		if (Y > outMax.second)
+		{
+			outMax.second = Y;
+		}
+
+		const ScriptGraphNodeType nodeType = nodeClass.GetCDO<ScriptGraphNode>()->GetNodeType();
+		if (nodeType == ScriptGraphNodeType::Variable)
+		{
+			SetNodeVariable(newNode.get(), nodeJson["variable"]);
+		}
+
+		for (const auto& pinJson : nodeJson.at("pins"))
+		{
+			const std::string& pinName = pinJson.at("name");
+			const bool pinIsDynamic = pinJson.at("dynamic");
+
+			if (pinIsDynamic)
+			{
+				const bool isExec = pinJson.at("type");
+				const bool isInput = pinJson.at("direction");
+				if (isExec)
+				{
+					CreateDynamicExecPin(newNode.get(), pinName, isInput ? PinDirection::Input : PinDirection::Output);
+				}
+				else
+				{
+					const std::string pinDataTypeName = pinJson.at("data");
+					const RegisteredType* pinDataType = TypeRegistry::Get().Resolve(pinDataTypeName);
+					CreateDynamicDataPin(newNode.get(), pinName, isInput ? PinDirection::Input : PinDirection::Output, pinDataType->GetType());
+				}
+			}
+
+			if (pinJson.contains("value"))
+			{
+				const std::vector<uint8_t>& pinValue = pinJson.at("value");
+				if (const ScriptGraphPin& nodePin = newNode->GetPin(pinName))
+				{
+					nodePin.GetDataContainer().Deserialize(pinValue);
+				}
+			}
+		}
+
+		fileUIDToNode.emplace(nodeJson.at("id"), newNode);
+		outIds.emplace(AsObjectUIDSharedPtr(newNode)->GetUID());
+	}
+
+	if (graphJson.contains("edges"))
+	{
+		for (const json& edgeJson : graphJson["edges"])
+		{
+			const std::shared_ptr<ScriptGraphNode>& sourceNode = fileUIDToNode.at(edgeJson.at("sourceNode"));
+			const std::shared_ptr<ScriptGraphNode>& targetNode = fileUIDToNode.at(edgeJson.at("targetNode"));
+
+			const std::string& sourcePinName = edgeJson.at("sourcePin");
+			const ScriptGraphPin& sourcePin = sourceNode->GetPin(sourcePinName);
+
+			const std::string& targetPinName = edgeJson.at("targetPin");
+			const ScriptGraphPin& targetPin = targetNode->GetPin(targetPinName);
+
+			CreateEdge(sourcePin.GetUID(), targetPin.GetUID());
+		}
+	}
+}
+
+void ScriptGraphSchema::InitUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack)
+{
+	myUndoStack = anUndoStack;
+	myRedoStack = aRedoStack;
+
+	std::vector<uint8_t> graph;
+	GetMutableGraph()->Serialize(graph);
+	myUndoStack->emplace_back(graph);
+}
+
+void ScriptGraphSchema::AddToUndo()
+{
+	if (!myUndoStack || !myRedoStack)
+	{
+		return;
+	}
+
+	if (!myRedoStack->empty() && myHasUndone)
+	{
+		auto& graph = myRedoStack->back();
+		myUndoStack->emplace_back(graph);
+		myHasUndone = false;
+	}
+
+	myRedoStack->clear();
+	if (myUndoStack->size() >= 10)
+	{
+		myUndoStack->erase(myUndoStack->begin());
+	}
+	std::vector<uint8_t> graph;
+	GetMutableGraph()->Serialize(graph);
+	myUndoStack->emplace_back(graph);
+}
+
+void ScriptGraphSchema::Undo()
+{
+	assert(myUndoStack && myRedoStack && "Undo/Redo functionality not properly initialized!");
+	if (myUndoStack->empty())
+	{
+		return;
+	}
+
+	if (!myHasUndone)
+	{
+		auto& graph = myUndoStack->back();
+		myRedoStack->emplace_back(graph);
+		myUndoStack->pop_back();
+		myHasUndone = true;
+	}
+
+	auto& graph = myUndoStack->back();
+	myRedoStack->emplace_back(graph);
+	GetMutableGraph()->Deserialize(graph);
+	myUndoStack->pop_back();
+}
+
+void ScriptGraphSchema::Redo()
+{
+	assert(myUndoStack && myRedoStack && "Undo/Redo functionality not properly initialized!");
+	if (myRedoStack->empty())
+	{
+		return;
+	}
+
+	if (myHasUndone)
+	{
+		auto& graph = myRedoStack->back();
+		myUndoStack->emplace_back(graph);
+		myRedoStack->pop_back();
+		myHasUndone = false;
+	}
+
+	auto& graph = myRedoStack->back();
+	myUndoStack->emplace_back(graph);
+	GetMutableGraph()->Deserialize(graph);
+	myRedoStack->pop_back();
 }
 
 void ScriptGraphSchema::MarkDynamicPinForDelete(size_t aPinId)

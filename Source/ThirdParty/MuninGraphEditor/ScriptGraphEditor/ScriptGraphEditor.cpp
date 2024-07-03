@@ -103,6 +103,86 @@ ScriptGraphEditor::ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, Scrip
 	}
 }
 
+void ScriptGraphEditor::EnableUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack)
+{
+	mySchema->InitUndoRedo(anUndoStack, aRedoStack);
+}
+
+void ScriptGraphEditor::CopySelectedNodes(std::vector<uint8_t>& outResult)
+{
+	ImNodeEd::SetCurrentEditor(myEditorContext);
+
+	// Get selected nodes	
+	std::vector<ImNodeEd::NodeId> selectedNodes;
+	selectedNodes.resize(ImNodeEd::GetSelectedObjectCount());
+	int nodeCount = ImNodeEd::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+	selectedNodes.resize(nodeCount); // This was part of the official demo so im keeping it just in case
+
+	// Convert from ImNodeEd::NodeId to size_t
+	std::unordered_set<size_t> selectedIds;
+	selectedIds.reserve(selectedNodes.size());
+	for (auto& node : selectedNodes)
+	{
+		selectedIds.emplace(static_cast<size_t>(node));
+	}
+
+	mySchema->CopySelectedNodes(outResult, selectedIds);
+}
+
+void ScriptGraphEditor::PasteNodes(const std::vector<uint8_t>& inData)
+{
+	ImNodeEd::SetCurrentEditor(myEditorContext);
+	ImNodeEd::ClearSelection();
+
+	std::unordered_set<size_t> selectedIds;
+
+	std::pair<float,float> min, max;
+	mySchema->PasteNodes(inData, selectedIds, min, max);
+
+	if (!selectedIds.empty())
+	{
+		// Center nodes on mouseposition and select them
+		const ImVec2 mousePos = ImNodeEd::ScreenToCanvas(ImGui::GetMousePos());
+		float centerX = (min.first + max.first) * 0.5f;
+		float centerY = (min.second + max.second) * 0.5f;
+
+		float x, y, z;
+		ImVec2 position;
+		auto& nodes = mySchema->GetNodes();
+		for (auto& id : selectedIds)
+		{
+			auto& node = nodes.at(id);
+			node->GetNodePosition(x, y, z);
+			x = x - centerX + mousePos.x;
+			y = y - centerY + mousePos.y;
+			node->SetNodePosition(x, y, z);
+
+			position = { x,y };
+			ImNodeEd::SetNodePosition(id, position);
+			ImNodeEd::SelectNode(id, true);
+		}
+		mySchema->AddToUndo();
+	}	
+	
+	ImNodeEd::SetCurrentEditor(nullptr);
+}
+
+void ScriptGraphEditor::Undo()
+{
+	ImNodeEd::SetCurrentEditor(myEditorContext);
+	mySchema->Undo();
+	myEditorState->Layout.RefreshNodePositions = true;
+	ImNodeEd::SetCurrentEditor(nullptr);
+}
+
+void ScriptGraphEditor::Redo()
+{
+	ImNodeEd::SetCurrentEditor(myEditorContext);
+	mySchema->Redo();
+	myEditorState->Layout.RefreshNodePositions = true;
+	ImNodeEd::SetCurrentEditor(nullptr);
+}
+
 void ScriptGraphEditor::RenderEditorStyle()
 {
 	ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
@@ -562,14 +642,13 @@ void ScriptGraphEditor::RenderToolbar()
 			file.write(reinterpret_cast<const char*>(&size), sizeof(size));
 			file.write(reinterpret_cast<const char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
 			file.close();
-		}
-		
+		}		
 	}
 	ImGui::SameLine();
 	if(ImGui::Button(ICON_FA_FOLDER_OPEN "  Load"))
 	{
 		std::string path;
-		if (Crimson::ShowOpenFileSelector(path, { L"Blueprints", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
+		if (Crimson::ShowOpenFileSelector(path, { L"Script", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
 		{
 			TEMP_SAVE_LOAD_dataBlock.clear();
 
@@ -581,6 +660,7 @@ void ScriptGraphEditor::RenderToolbar()
 			file.close();
 			
 			myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
+			mySchema->AddToUndo();
 			myEditorState->Layout.RefreshNodePositions = true;
 		}
 	}
@@ -710,10 +790,14 @@ void ScriptGraphEditor::HandleBackgroundContextMenuItemClicked(const GraphEditor
 		const auto uidNewNode = AsObjectUIDSharedPtr(newNode);
 		ImNodeEd::SetNodePosition(uidNewNode->GetUID(), mousePos);
 
+		newNode->SetNodePosition(mousePos.x, mousePos.y, 0.f);
+
 		if(const std::shared_ptr<ScriptGraphVariableNode> varNode = std::dynamic_pointer_cast<ScriptGraphVariableNode>(newNode))
 		{
 			mySchema->SetNodeVariable(varNode.get(), aItem.Tag);
 		}
+
+		mySchema->AddToUndo();
 	}
 }
 

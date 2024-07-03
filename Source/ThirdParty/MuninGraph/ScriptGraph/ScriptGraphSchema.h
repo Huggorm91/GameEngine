@@ -4,6 +4,7 @@
 #include "ScriptGraphCommon.h"
 #include "NodeGraph/NodeGraphSchema.h"
 #include "Internal/MuninGraphCommon.h"
+#include <unordered_set>
 
 class TypedDataContainer;
 class ScriptGraphPin;
@@ -35,6 +36,14 @@ public:
 		const RegisteredNodeClass& nodeClass = MuninGraph::Get().GetNodeClass(nodeType);
 		return CreateNode(nodeClass);
 	}
+
+	void CopySelectedNodes(std::vector<uint8_t>& outResult, const std::unordered_set<size_t>& someIds);
+	void PasteNodes(const std::vector<uint8_t>& inData, std::unordered_set<size_t>& outIds, std::pair<float, float>& outMin, std::pair<float, float>& outMax);
+
+	void InitUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack);
+	void AddToUndo();
+	void Undo();
+	void Redo();
 
 	void MarkDynamicPinForDelete(size_t aPinId);
 	void CommitDynamicPinDeletes();
@@ -79,5 +88,8 @@ private:
 	ScriptGraphPin& GetMutablePin(size_t aPinId);
 	void CreateEdgeInternal(ScriptGraphPin& aSourcePin, ScriptGraphPin& aTargetPin) const;
 
+	bool myHasUndone = false;
+	std::vector<std::vector<uint8_t>>* myRedoStack = nullptr;
+	std::vector<std::vector<uint8_t>>* myUndoStack = nullptr;
 	std::vector<size_t> myPinsToDelete;
 };

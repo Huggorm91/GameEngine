@@ -105,7 +105,7 @@ public:
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
 
-	void CreateImGuiWindowContent(const std::string& aWindowName);
+	void CreateImGuiWindowContent();
 	Json::Value ToJson() const;
 
 	void Serialize(std::ostream& aStream) const;

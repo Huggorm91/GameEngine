@@ -6,6 +6,7 @@
 #include "Managers/ShaderManager.h"
 #include "Managers/PrefabManager.h"
 #include "Managers/SceneManager.h"
+#include "Managers/ScriptManager.h"
 
 class AssetManager
 {
@@ -45,6 +46,10 @@ public:
 
 	inline static void SaveAsset(const BlendSpace& anAsset, const std::string& aPath) { myAnimationManager.SaveBlendSpace(anAsset, aPath); }
 
+	inline static void SaveAsset(const Script::ScriptData& anAsset, const std::string& aPath) { myScriptManager.SaveScript(anAsset, aPath); }
+
+	inline static Script::ScriptData* ForceLoadAsset(const std::string& aPath) { myScriptManager.ForceLoadScript(aPath, myIsLoggingErrors); }
+
 	inline static Prefab GetPrefab(const std::string& anIdentifier) { return myPrefabManager.GetPrefab(anIdentifier, myIsLoggingErrors); }
 
 	inline static void CreatePrefab(const GameObject& anAsset, const std::string& anIdentifier) { myPrefabManager.CreatePrefab(anIdentifier, anAsset); }
@@ -63,6 +68,7 @@ public:
 	inline static const char* GetPrefabExtension() { return PrefabManager::GetExtension(); }
 	inline static const char* GetSceneExtension() { return SceneManager::GetExtension(); }
 	inline static const char* GetSceneBinaryExtension() { return SceneManager::GetBinaryExtension(); }
+	inline static const char* GetScriptExtension() { return ScriptManager::GetExtension(); }
 
 	inline static const char* GetModelPath() { return ModelManager::GetPath(); }
 	inline static const char* GetAnimationPath() { return AnimationManager::GetPath(); }
@@ -71,6 +77,7 @@ public:
 	inline static const char* GetShaderPath() { return ShaderManager::GetPath(); }
 	inline static const char* GetPrefabPath() { return PrefabManager::GetPath(); }
 	inline static const char* GetScenePath() { return SceneManager::GetPath(); }
+	inline static const char* GetScriptPath() { return ScriptManager::GetPath(); }
 
 	inline static const wchar_t* GetModelExtensionW() { return ModelManager::GetExtensionW(); }
 	inline static const wchar_t* GetAnimationExtensionW() { return AnimationManager::GetExtensionW(); }
@@ -96,6 +103,7 @@ public:
 	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetShaderlist(); }
 	inline static const std::unordered_set<std::string>& GetAvailablePrefabs() { return myPrefabManager.GetPrefablist(); }
 	inline static const std::unordered_set<std::string>& GetAvailableScenes() { return mySceneManager.GetScenelist(); }
+	inline static const std::unordered_set<std::string>& GetAvailableScripts() { return myScriptManager.GetScriptlist(); }
 
 	inline static void SetLogErrors(bool aState) { myIsLoggingErrors = aState; }
 
@@ -110,6 +118,7 @@ private:
 	static ShaderManager myShaderManager;
 	static PrefabManager myPrefabManager;
 	static SceneManager mySceneManager;
+	static ScriptManager myScriptManager;
 };
 
 /*******************************************************************************************************************************************************/
@@ -230,4 +239,10 @@ template<>
 inline Material AssetManager::GetAsset(const std::string& anIdentifier)
 {
 	return *myMaterialManager.GetMaterial(anIdentifier, myIsLoggingErrors);
+}
+
+template<>
+inline Script::ScriptData* AssetManager::GetAsset(const std::string& anIdentifier)
+{
+	return myScriptManager.GetScript(anIdentifier, myIsLoggingErrors);
 }
