@@ -12,12 +12,11 @@
 #include "AssetManager/Assets/Binary.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
-#include "File/DirectoryFunctions.h"
 
+#include "File/DirectoryFunctions.h"
 #include "Time/Timer.h"
 #include "Input/InputMapper.h"
 #include "Json\jsonCpp\json.h"
-
 
 ModelViewer::ModelViewer() :
 	myModuleHandle(nullptr),
@@ -53,7 +52,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 		consolePos.right = consolePos.right - consolePos.left;
 		consolePos.bottom = consolePos.bottom - consolePos.top;
 
-		RECT windowRect;
+		RECT windowRect{};
 		SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 
 		windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (consolePos.right * 0.5f));
@@ -119,7 +118,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myIsMaximized = myApplicationState.StartMaximized;
 
 	// Get center of screen
-	RECT windowRect;
+	RECT windowRect{};
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 	//GetClientRect(GetDesktopWindow(), &windowRect);
 
@@ -195,12 +194,9 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 	mySkeletonEditor.Init(fov, nearPlane, farPlane, myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity);
 
-	MuninGraph::Get().Initialize();
 	myScriptGraphEditorSettings = std::make_shared<ScriptGraphEditorSettings>(RHI::Device);
 	myScriptGraphEditorState = std::make_shared<ScriptGraphEditorState>();
-	myScriptGraph = std::make_shared<ScriptGraph>();
-	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScriptGraph.get());
-	myScriptGraphEditor->EnableUndoRedo(&myScriptGraphUndoCommands, &myScriptGraphRedoCommands);
+	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScene.scriptGraph.get());
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 #endif // _RETAIL
@@ -292,11 +288,11 @@ void ModelViewer::SetPlayMode(bool aState)
 			{
 				childlist.emplace(id, object->GetParent()->GetID());
 			}
-			auto copy = *object;
+			GameObject copy = *object;
 			copy.CopyIDsOf(*object, true);
 			myPlayScene.gameObjects.emplace(id, std::move(copy));
 			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.gameObjects.at(id), [](GameObject*)
-			{}));
+				{}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
@@ -323,7 +319,7 @@ void ModelViewer::SetIsSceneActive(bool aState)
 	GraphicsEngine::Get().SetDrawGridLines(aState);
 }
 
-void ModelViewer::RestoreDebugSettings()
+void ModelViewer::RestoreDebugSettings() const
 {
 	auto& engine = GraphicsEngine::Get();
 	engine.SetDebugMode(myDebugMode);
@@ -565,8 +561,12 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	}
 #endif // !_RETAIL
 	SetGameObjectIDCount(myScene.gameObjectIDCount);
+	SetScriptGraph(myScene.scriptGraph);
+
 	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.path, "../"));
 }
+
+#include "AssetManager/Assets/Components/Script/ScriptComponent.h"
 
 void ModelViewer::Init()
 {
@@ -598,9 +598,12 @@ void ModelViewer::Update()
 	engine.RenderFrame();
 
 #ifndef _RETAIL
-	RHI::BeginEvent(L"NodeEditor Render");
-	myScriptGraphEditor->Render();
-	RHI::EndEvent();
+	if (myScriptGraphEditor->HasGraph())
+	{
+		RHI::BeginEvent(L"NodeEditor Render");
+		myScriptGraphEditor->Render();
+		RHI::EndEvent();
+	}
 
 	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
@@ -716,6 +719,19 @@ void ModelViewer::RedoCommand()
 	}
 }
 
+void ModelViewer::SetScriptGraph(std::shared_ptr<ScriptGraph> aScriptGraph)
+{
+	if (aScriptGraph)
+	{
+		myScriptGraphEditor->SetGraph(aScriptGraph.get());
+		myScriptGraphEditor->EnableUndoRedo(&myScriptGraphUndoCommands, &myScriptGraphRedoCommands);
+	}
+	else
+	{
+		myScriptGraphEditor->SetGraph(nullptr);
+	}
+}
+
 void ModelViewer::ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
 	if (!myIsSceneActive)
@@ -781,34 +797,46 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 	case Crimson::eInputAction::Undo:
 	{
 		//UndoCommand();
+		if (myScriptGraphEditor->HasGraph())
+		{
 		myScriptGraphEditor->Undo();
+		}
 		break;
 	}
 	case Crimson::eInputAction::Redo:
 	{
 		//RedoCommand();
+		if (myScriptGraphEditor->HasGraph())
+		{
 		myScriptGraphEditor->Redo();
+		}
 		break;
 	}
 	case Crimson::eInputAction::Copy:
 	{
+		if (myScriptGraphEditor->HasGraph())
+		{
 		myCopiedScriptNodes.clear();
 		myScriptGraphEditor->CopySelectedNodes(myCopiedScriptNodes);
+		}
 		break;
 	}
 	case Crimson::eInputAction::Paste:
 	{
-		if (!myCopiedScriptNodes.empty())
+		if (myScriptGraphEditor->HasGraph() && !myCopiedScriptNodes.empty())
 		{
 			myScriptGraphEditor->PasteNodes(myCopiedScriptNodes);
-		}		
+		}
 		break;
 	}
 	case Crimson::eInputAction::Duplicate:
 	{
+		if (myScriptGraphEditor->HasGraph())
+		{
 		std::vector<uint8_t> copiedNodes;
 		myScriptGraphEditor->CopySelectedNodes(copiedNodes);
 		myScriptGraphEditor->PasteNodes(copiedNodes);
+		}
 		break;
 	}
 	default:

@@ -414,6 +414,9 @@ void ScriptGraphSchema::InitUndoRedo(std::vector<std::vector<uint8_t>>* anUndoSt
 	myUndoStack = anUndoStack;
 	myRedoStack = aRedoStack;
 
+	myUndoStack->clear();
+	myRedoStack->clear();
+
 	std::vector<uint8_t> graph;
 	GetMutableGraph()->Serialize(graph);
 	myUndoStack->emplace_back(graph);
@@ -485,11 +488,6 @@ void ScriptGraphSchema::Redo()
 	myUndoStack->emplace_back(graph);
 	GetMutableGraph()->Deserialize(graph);
 	myRedoStack->pop_back();
-}
-
-void ScriptGraphSchema::SetPath(const std::string& aPath)
-{
-	GetMutableGraph()->myPath = aPath;
 }
 
 void ScriptGraphSchema::MarkDynamicPinForDelete(size_t aPinId)

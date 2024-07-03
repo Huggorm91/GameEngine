@@ -36,7 +36,9 @@ public:
 	void UnbindErrorHandler();
 
 	FORCEINLINE void* GetOwner() const { return myOwner; }
+
 	FORCEINLINE const std::string& GetPath() const { return myPath; }
+	FORCEINLINE void SetPath(const std::string& aPath) { myPath = aPath; }
 
 protected:
 	void Reset() override;

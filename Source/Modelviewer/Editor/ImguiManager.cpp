@@ -20,6 +20,7 @@
 #include "Time/Timer.h"
 
 #include "AssetManager/Assets/ImguiTransform.h"
+#include "AssetManager/Assets/Components/Script/ScriptComponent.h"
 
 using namespace Crimson;
 
@@ -327,7 +328,7 @@ void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr
 	myMultiSelectionTransform = Transform();
 }
 
-std::string ImguiManager::GetDropFilePath(unsigned anIndex)
+std::string ImguiManager::GetDropFilePath(unsigned anIndex) const
 {
 	LPSTR fileName = new char[1024];
 	unsigned charCount = DragQueryFileA(myDropfile, anIndex, fileName, 1024);
@@ -357,7 +358,7 @@ bool ImguiManager::NextDropFile()
 	}
 }
 
-bool ImguiManager::IsLastDropFile()
+bool ImguiManager::IsLastDropFile() const
 {
 	return myDropFileCount == 0 || myDropFileSelection == myDropFileCount - 1;
 }
@@ -399,6 +400,14 @@ void ImguiManager::AddToSelection(GameObject* anObject)
 {
 	myMultiSelectionTransform = Transform();
 	mySelectedObjects.emplace(anObject);
+	if (mySelectedObjects.size() == 1 && anObject->HasComponent<ScriptComponent>())
+	{
+		myModelViewer->SetScriptGraph(anObject->GetComponent<ScriptComponent>().GetScriptGraph());
+	}
+	else
+	{
+		myModelViewer->SetScriptGraph(nullptr);
+	}
 }
 
 bool ImguiManager::IsSelected(const std::shared_ptr<GameObject>& anObject)
@@ -906,6 +915,7 @@ void ImguiManager::CreateSelectedObjectWindow()
 			{
 				myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObjects>());
 				mySelectedObjects.clear();
+				myModelViewer->SetScriptGraph(nullptr);
 			}
 		}
 		else if (mySelectedObjects.size() > 1)
@@ -931,6 +941,7 @@ void ImguiManager::CreateSceneContentWindow()
 		if (ImGui::IsItemClicked())
 		{
 			mySelectedObjects.clear();
+			myModelViewer->SetScriptGraph(myModelViewer->myScene.scriptGraph);
 		}
 
 		if (isOpen)

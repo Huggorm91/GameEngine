@@ -98,10 +98,10 @@ private:
 	std::unordered_map<std::string, unsigned> myImguiNameCounts;
 	std::unordered_map<unsigned, std::string> myImguiNameIndex;
 
-	std::string GetDropFilePath(unsigned anIndex);
+	std::string GetDropFilePath(unsigned anIndex) const;
 	// Returns true if another file exists
 	bool NextDropFile();
-	bool IsLastDropFile();
+	bool IsLastDropFile() const;
 	void CopyAllDropFiles(const std::string& aTargetFolder);
 
 	void AddToSelection(GameObject* anObject);

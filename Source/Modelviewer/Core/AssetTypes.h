@@ -14,7 +14,8 @@ namespace Assets
 		Prefab,
 		Shader,
 		Scene,
-		Folder
+		Folder,
+		Script
 	};
 
 	std::string GetAssetTypeName(eAssetType aType);

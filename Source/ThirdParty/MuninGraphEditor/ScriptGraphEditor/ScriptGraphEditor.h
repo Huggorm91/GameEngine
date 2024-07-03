@@ -58,20 +58,14 @@ struct ScriptGraphEditorState : public GraphEditorStateBase
 	std::vector<std::string> VisibleEditorTypes;
 };
 
-namespace ScriptGraphEditorAction
-{
-	enum Action
-	{
-		eNoAction,
-		eHasSaved,
-		eHasLoaded
-	};
-}
-
 class ScriptGraphEditor : public GraphEditorBase<ScriptGraph, ScriptGraphNode, ScriptGraphEdge, ScriptGraphPin, ScriptGraphSchema>
 {
 public:
 	ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, ScriptGraphEditorState* aState, ScriptGraph* aGraph);
+
+	void SetGraph(ScriptGraph* aGraph);
+	bool HasGraph() const;
+
 	void EnableUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack);
 
 	void CopySelectedNodes(std::vector<uint8_t>& outResult);
@@ -80,7 +74,6 @@ public:
 	void Undo();
 	void Redo();
 
-	ScriptGraphEditorAction::Action CurrentAction;
 	std::vector<uint8_t> TEMP_SAVE_LOAD_dataBlock;
 
 protected:

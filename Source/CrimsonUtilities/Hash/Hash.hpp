@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "External/SpookyHash/SpookyHashV2.h"
-#include "External/CityHash/city.h"
+#include "SpookyHash/SpookyHashV2.h"
+//#include "CityHash/city.h"
 #include <string>
 
 namespace Crimson

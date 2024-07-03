@@ -18,6 +18,8 @@ public:
 
 	void Init(GameObject* aParent) override;
 
+	std::shared_ptr<ScriptGraph> GetScriptGraph();
+
 	// void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
 	// void OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
 	// void OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
@@ -32,6 +34,6 @@ public:
 	Json::Value ToJson() const override;
 
 private:
-	std::shared_ptr<ScriptGraph>myScriptGraph;
+	std::shared_ptr<ScriptGraph> myScriptGraph;
 	std::string myScriptPath;
 };

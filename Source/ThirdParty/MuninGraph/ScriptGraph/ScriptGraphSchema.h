@@ -45,8 +45,6 @@ public:
 	void Undo();
 	void Redo();
 
-	void SetPath(const std::string& aPath);
-
 	void MarkDynamicPinForDelete(size_t aPinId);
 	void CommitDynamicPinDeletes();
 

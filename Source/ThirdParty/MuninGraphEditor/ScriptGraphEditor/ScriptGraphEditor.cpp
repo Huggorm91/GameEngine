@@ -103,6 +103,29 @@ ScriptGraphEditor::ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, Scrip
 	}
 }
 
+void ScriptGraphEditor::SetGraph(ScriptGraph* aGraph)
+{
+	myGraph = aGraph;
+	if (myGraph)
+	{
+		if (mySchema)
+		{
+			delete mySchema;
+		}
+		mySchema = new ScriptGraphSchema(myGraph);
+		myGraph->BindErrorHandler([this](const ScriptGraph* aGraph, size_t aNodeId, std::string_view aErrorMessage)
+			{
+				ReportError(std::forward<const ScriptGraph*>(aGraph), std::forward<size_t>(aNodeId), std::forward<std::string_view>(aErrorMessage));
+			});
+		myEditorState->Layout.RefreshNodePositions = true;
+	}	
+}
+
+bool ScriptGraphEditor::HasGraph() const
+{
+	return myGraph;
+}
+
 void ScriptGraphEditor::EnableUndoRedo(std::vector<std::vector<uint8_t>>* anUndoStack, std::vector<std::vector<uint8_t>>* aRedoStack)
 {
 	mySchema->InitUndoRedo(anUndoStack, aRedoStack);
@@ -619,8 +642,6 @@ void ScriptGraphEditor::RenderEdge(const ScriptGraphEdge& anEdge)
 
 void ScriptGraphEditor::RenderToolbar()
 {
-	CurrentAction = ScriptGraphEditorAction::eNoAction;
-
 	ImGui::SetNextItemWidth(50);
 	if(ImGui::Button(ICON_FA_PLAY "  Events"))
 	{
@@ -635,7 +656,7 @@ void ScriptGraphEditor::RenderToolbar()
 	if(ImGui::Button(ICON_FA_FLOPPY_DISK "  Save"))
 	{		
 		std::string path;
-		if (Crimson::ShowSaveFileSelector(path, L"Script", L"blp", { L"Blueprints", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
+		if (Crimson::ShowSaveFileSelector(path, L"Script", L"scrp", { L"Scripts", L"*.scrp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Scripts"))))
 		{
 			myGraph->Serialize(TEMP_SAVE_LOAD_dataBlock);
 
@@ -645,15 +666,14 @@ void ScriptGraphEditor::RenderToolbar()
 			file.write(reinterpret_cast<const char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
 			file.close();
 
-			mySchema->SetPath(path);
-			CurrentAction = ScriptGraphEditorAction::eHasSaved;
+			myGraph->SetPath(Crimson::MakeRelativeTo(path, "../Content/Scripts"));
 		}		
 	}
 	ImGui::SameLine();
 	if(ImGui::Button(ICON_FA_FOLDER_OPEN "  Load"))
 	{
 		std::string path;
-		if (Crimson::ShowOpenFileSelector(path, { L"Script", L"*.blp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Blueprints"))))
+		if (Crimson::ShowOpenFileSelector(path, { L"Script", L"*.scrp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Scripts"))))
 		{
 			TEMP_SAVE_LOAD_dataBlock.clear();
 
@@ -665,11 +685,9 @@ void ScriptGraphEditor::RenderToolbar()
 			file.close();
 			
 			myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
-			mySchema->SetPath(path);
+			myGraph->SetPath(Crimson::MakeRelativeTo(path, "../Content/Scripts"));
 			mySchema->AddToUndo();
 			myEditorState->Layout.RefreshNodePositions = true;
-
-			CurrentAction = ScriptGraphEditorAction::eHasLoaded;
 		}
 	}
 

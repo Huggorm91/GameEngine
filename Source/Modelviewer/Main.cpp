@@ -26,7 +26,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //constexpr SIZE windowSize = { 1920, 1080 };
     //constexpr LPCWSTR windowTitle = L"Modelviewer";
 
-    ModelViewer& MV = ModelViewer::Get();
 
     FILE* consoleOut;
     FILE* consoleErr;
@@ -84,6 +83,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
     }
     
+    MuninGraph::Get().Initialize();
+    ModelViewer& MV = ModelViewer::Get();
     MV.Initialize(hInstance, WinProc);
     return MV.Run();
 }

@@ -21,14 +21,21 @@ void ScriptComponent::Update()
 void ScriptComponent::Init(GameObject* aParent)
 {
 	Component::Init(aParent);
-	if (!myScriptGraph && !myScriptPath.empty())
+	myScriptGraph = std::make_shared<ScriptGraph>(ScriptGraph(myParent));
+	
+	if (!myScriptPath.empty())
 	{
-		if (auto data = AssetManager::GetAsset<Script::ScriptData*>(myScriptPath))
+		if (Script::ScriptData* data = AssetManager::GetAsset<Script::ScriptData*>(myScriptPath))
 		{
-			myScriptGraph = std::make_shared<ScriptGraph>(ScriptGraph(myParent));
 			myScriptGraph->Deserialize(*data);
+			myScriptGraph->SetPath(myScriptPath);
 		}
 	}
+}
+
+std::shared_ptr<ScriptGraph> ScriptComponent::GetScriptGraph()
+{
+	return myScriptGraph;
 }
 
 void ScriptComponent::CreateImGuiComponents()
@@ -56,7 +63,8 @@ void ScriptComponent::CreateImGuiComponents()
 			{
 				myScriptGraph = std::make_shared<ScriptGraph>(ScriptGraph(myParent));
 				myScriptGraph->Deserialize(*data);
-			}			
+				myScriptGraph->SetPath(myScriptPath);
+			}
 		}
 		ImGui::EndDragDropTarget();
 	}
@@ -65,6 +73,6 @@ void ScriptComponent::CreateImGuiComponents()
 Json::Value ScriptComponent::ToJson() const
 {
 	auto result = Component::ToJson();
-	result["ScriptPath"] = myScriptPath;
+	result["ScriptPath"] = myScriptGraph ? myScriptGraph->GetPath() : "";
 	return result;
 }

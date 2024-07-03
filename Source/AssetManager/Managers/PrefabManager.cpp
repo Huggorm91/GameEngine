@@ -12,7 +12,9 @@ void PrefabManager::Init()
 		myValidPaths.emplace(Crimson::RemoveStringPart(path, GetPath()));
 	}
 
+#ifdef EDITOR
 	myPrefabs.emplace("Empty", GameObject(0));
+#endif // EDITOR
 	myValidPaths.emplace("Empty");
 }
 
@@ -44,7 +46,9 @@ GameObject* PrefabManager::GetTemplate(const std::string& aPath, bool aShouldLog
 		else
 		{
 			myValidPaths.emplace(aPath);
+#ifdef EDITOR
 			myPrefabs.emplace(aPath, GameObject(0));
+#endif // EDITOR
 			return &myPrefabs.at(aPath);
 		}
 	}
@@ -69,7 +73,9 @@ void PrefabManager::CreatePrefab(const std::string& aPath, const GameObject& aPr
 			myUnloadedFilePaths.erase(pathIter);
 		}
 		myValidPaths.emplace(aPath);
+#ifdef EDITOR
 		myPrefabs.emplace(aPath, GameObject(0));
+#endif // EDITOR
 		myPrefabs.at(aPath) = aPrefab;
 	}
 }
@@ -92,7 +98,9 @@ void PrefabManager::SavePrefab(const std::string& aPath, const GameObject& aPref
 	else
 	{
 		myValidPaths.emplace(aPath);
+#ifdef EDITOR
 		myPrefabs.emplace(aPath, GameObject(0));
+#endif // EDITOR
 		prefabPtr = &myPrefabs.at(aPath);
 		*prefabPtr = aPrefab;
 	}

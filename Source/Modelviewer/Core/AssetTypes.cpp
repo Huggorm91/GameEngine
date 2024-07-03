@@ -26,6 +26,8 @@ std::string Assets::GetAssetTypeName(eAssetType aType)
 		return "Scene";
 	case Assets::eAssetType::Folder:
 		return "Folder";
+	case Assets::eAssetType::Script:
+		return "Script";
 	default:
 		break;
 	}
@@ -78,6 +80,8 @@ std::string Assets::GetAssetPath(eAssetType aType)
 		return AssetManager::GetScenePath();
 		break;
 	}
+	case Assets::eAssetType::Script:
+		return AssetManager::GetScriptPath();
 	default:
 		break;
 	}
@@ -160,6 +164,14 @@ bool Assets::IsType(eAssetType aType, std::string anAsset)
 		}
 		break;
 	}
+	case Assets::eAssetType::Script:
+	{
+		if (extension == AssetManager::GetScriptExtension())
+		{
+			return true;
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -213,6 +225,10 @@ std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anEx
 		result.emplace_back(eAssetType::Scene);
 	}
 
+	if (extension == AssetManager::GetScriptExtension())
+	{
+		result.emplace_back(eAssetType::Script);
+	}
 
 	if (result.size() == 0)
 	{

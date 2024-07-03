@@ -53,7 +53,7 @@ public:
 	void SetPlayMode(bool aState);
 	void SetIsSceneActive(bool aState);
 
-	void RestoreDebugSettings();
+	void RestoreDebugSettings() const;
 
 	void ActivateImGuiEditor();
 	void ActivateSkeletonEditor();
@@ -106,7 +106,6 @@ private:
 	GraphicsEngine::RenderMode myRenderMode;
 
 	std::shared_ptr<ScriptGraphEditor> myScriptGraphEditor;
-	std::shared_ptr<ScriptGraph>myScriptGraph;
 	std::shared_ptr<ScriptGraphEditorSettings> myScriptGraphEditorSettings;
 	std::shared_ptr<ScriptGraphEditorState> myScriptGraphEditorState;
 	
@@ -160,5 +159,7 @@ private:
 #ifndef _RETAIL
 	void UndoCommand();
 	void RedoCommand();
+
+	void SetScriptGraph(std::shared_ptr<ScriptGraph> aScriptGraph);
 #endif // _RETAIL
 };
