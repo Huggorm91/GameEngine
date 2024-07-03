@@ -280,7 +280,7 @@ namespace Crimson
 		ExSel = 0xF8,
 		EraseEOF = 0xF9,
 		Play = 0xFA,
-		ZOoom = 0xFB,
+		Zoom = 0xFB,
 		NoName = 0xFC,
 		PA1 = 0xFD,
 		OEM_Clear = 0xFE,
@@ -294,4 +294,863 @@ namespace Crimson
 		MouseScroll_Left = -8,
 		MouseScroll_Right = -9,
 	};
+
+	constexpr inline std::string KeyToString(eKey aKey)
+	{
+		switch (aKey)
+		{
+		case Crimson::eKey::None:
+		{
+			return "None";
+		}
+		case Crimson::eKey::Any:
+		{
+			return "Any";
+		}
+		case Crimson::eKey::MouseLeftButton:
+		{
+			return "LeftMouse";
+		}
+		case Crimson::eKey::MouseRightButton:
+		{
+			return "RightMouse";
+		}
+		case Crimson::eKey::Cancel:
+		{
+			return "Cancel";
+		}
+		case Crimson::eKey::MouseMiddleButton:
+		{
+			return "MiddleMouse";
+		}
+		case Crimson::eKey::MouseXButton1:
+		{
+			return "MouseX1";
+		}
+		case Crimson::eKey::MouseXButton2:
+		{
+			return "MouseX2";
+		}
+		case Crimson::eKey::BackSpace:
+		{
+			return "BackSpace";
+		}
+		case Crimson::eKey::Tab:
+		{
+			return "Tab";
+		}
+		case Crimson::eKey::Clear:
+		{
+			return "Clear";
+		}
+		case Crimson::eKey::Enter:
+		{
+			return "Enter";
+		}
+		case Crimson::eKey::Shift:
+		{
+			return "Shift";
+		}
+		case Crimson::eKey::Ctrl:
+		{
+			return "Ctrl";
+		}
+		case Crimson::eKey::Alt:
+		{
+			return "Alt";
+		}
+		case Crimson::eKey::Pause:
+		{
+			return "Pause";
+		}
+		case Crimson::eKey::CapsLock:
+		{
+			return "CapsLock";
+		}
+		case Crimson::eKey::Kana:
+		{
+			return "Kana";
+		}
+		case Crimson::eKey::ImeOn:
+		{
+			return "ImeOn";
+		}
+		case Crimson::eKey::Junja:
+		{
+			return "Junja";
+		}
+		case Crimson::eKey::Final:
+		{
+			return "Final";
+		}
+		case Crimson::eKey::Kanji:
+		{
+			return "Kanji";
+		}
+		case Crimson::eKey::ImeOff:
+		{
+			return "ImeOff";
+		}
+		case Crimson::eKey::Esc:
+		{
+			return "Esc";
+		}
+		case Crimson::eKey::Convert:
+		{
+			return "Convert";
+		}
+		case Crimson::eKey::NonConvert:
+		{
+			return "NonConvert";
+		}
+		case Crimson::eKey::Accept:
+		{
+			return "Accept";
+		}
+		case Crimson::eKey::ModeChange:
+		{
+			return "ModeChange";
+		}
+		case Crimson::eKey::SpaceBar:
+		{
+			return "Space";
+		}
+		case Crimson::eKey::PageUp:
+		{
+			return "PageUp";
+		}
+		case Crimson::eKey::PageDown:
+		{
+			return "PageDown";
+		}
+		case Crimson::eKey::End:
+		{
+			return "End";
+		}
+		case Crimson::eKey::Home:
+		{
+			return "Home";
+		}
+		case Crimson::eKey::Left:
+		{
+			return "Left";
+		}
+		case Crimson::eKey::Up:
+		{
+			return "Up";
+		}
+		case Crimson::eKey::Right:
+		{
+			return "Right";
+		}
+		case Crimson::eKey::Down:
+		{
+			return "Down";
+		}
+		case Crimson::eKey::Select:
+		{
+			return "Select";
+		}
+		case Crimson::eKey::Print:
+		{
+			return "Print";
+		}
+		case Crimson::eKey::Execute:
+		{
+			return "Execute";
+		}
+		case Crimson::eKey::PrintScreen:
+		{
+			return "PrintScreen";
+		}
+		case Crimson::eKey::Insert:
+		{
+			return "Insert";
+		}
+		case Crimson::eKey::Delete:
+		{
+			return "Delete";
+		}
+		case Crimson::eKey::Help:
+		{
+			return "Help";
+		}
+		case Crimson::eKey::Num0:
+		{
+			return "0";
+		}
+		case Crimson::eKey::Num1:
+		{
+			return "1";
+		}
+		case Crimson::eKey::Num2:
+		{
+			return "2";
+		}
+		case Crimson::eKey::Num3:
+		{
+			return "3";
+		}
+		case Crimson::eKey::Num4:
+		{
+			return "4";
+		}
+		case Crimson::eKey::Num5:
+		{
+			return "5";
+		}
+		case Crimson::eKey::Num6:
+		{
+			return "6";
+		}
+		case Crimson::eKey::Num7:
+		{
+			return "7";
+		}
+		case Crimson::eKey::Num8:
+		{
+			return "8";
+		}
+		case Crimson::eKey::Num9:
+		{
+			return "9";
+		}
+		case Crimson::eKey::A:
+		{
+			return "A";
+		}
+		case Crimson::eKey::B:
+		{
+			return "B";
+		}
+		case Crimson::eKey::C:
+		{
+			return "C";
+		}
+		case Crimson::eKey::D:
+		{
+			return "D";
+		}
+		case Crimson::eKey::E:
+		{
+			return "E";
+		}
+		case Crimson::eKey::F:
+		{
+			return "F";
+		}
+		case Crimson::eKey::G:
+		{
+			return "G";
+		}
+		case Crimson::eKey::H:
+		{
+			return "H";
+		}
+		case Crimson::eKey::I:
+		{
+			return "I";
+		}
+		case Crimson::eKey::J:
+		{
+			return "J";
+		}
+		case Crimson::eKey::K:
+		{
+			return "K";
+		}
+		case Crimson::eKey::L:
+		{
+			return "L";
+		}
+		case Crimson::eKey::M:
+		{
+			return "M";
+		}
+		case Crimson::eKey::N:
+		{
+			return "N";
+		}
+		case Crimson::eKey::O:
+		{
+			return "O";
+		}
+		case Crimson::eKey::P:
+		{
+			return "P";
+		}
+		case Crimson::eKey::Q:
+		{
+			return "Q";
+		}
+		case Crimson::eKey::R:
+		{
+			return "R";
+		}
+		case Crimson::eKey::S:
+		{
+			return "S";
+		}
+		case Crimson::eKey::T:
+		{
+			return "T";
+		}
+		case Crimson::eKey::U:
+		{
+			return "U";
+		}
+		case Crimson::eKey::V:
+		{
+			return "V";
+		}
+		case Crimson::eKey::W:
+		{
+			return "W";
+		}
+		case Crimson::eKey::X:
+		{
+			return "X";
+		}
+		case Crimson::eKey::Y:
+		{
+			return "Y";
+		}
+		case Crimson::eKey::Z:
+		{
+			return "Z";
+		}
+		case Crimson::eKey::LeftWindowsKey:
+		{
+			return "LeftWindows";
+		}
+		case Crimson::eKey::RightWindowsKey:
+		{
+			return "RightWindows";
+		}
+		case Crimson::eKey::Apps:
+		{
+			return "Apps";
+		}
+		case Crimson::eKey::Sleep:
+		{
+			return "Sleep";
+		}
+		case Crimson::eKey::NumPad0:
+		{
+			return "NumPad0";
+		}
+		case Crimson::eKey::NumPad1:
+		{
+			return "NumPad1";
+		}
+		case Crimson::eKey::NumPad2:
+		{
+			return "NumPad2";
+		}
+		case Crimson::eKey::NumPad3:
+		{
+			return "NumPad3";
+		}
+		case Crimson::eKey::NumPad4:
+		{
+			return "NumPad4";
+		}
+		case Crimson::eKey::NumPad5:
+		{
+			return "NumPad5";
+		}
+		case Crimson::eKey::NumPad6:
+		{
+			return "NumPad6";
+		}
+		case Crimson::eKey::NumPad7:
+		{
+			return "NumPad7";
+		}
+		case Crimson::eKey::NumPad8:
+		{
+			return "NumPad8";
+		}
+		case Crimson::eKey::NumPad9:
+		{
+			return "NumPad9";
+		}
+		case Crimson::eKey::Multiply:
+		{
+			return "*";
+		}
+		case Crimson::eKey::Plus:
+		{
+			return "+";
+		}
+		case Crimson::eKey::Separator:
+		{
+			return "Separator";
+		}
+		case Crimson::eKey::Minus:
+		{
+			return "-";
+		}
+		case Crimson::eKey::Decimal:
+		{
+			return ",";
+		}
+		case Crimson::eKey::Divide:
+		{
+			return "/";
+		}
+		case Crimson::eKey::F1:
+		{
+			return "F1";
+		}
+		case Crimson::eKey::F2:
+		{
+			return "F2";
+		}
+		case Crimson::eKey::F3:
+		{
+			return "F3";
+		}
+		case Crimson::eKey::F4:
+		{
+			return "F4";
+		}
+		case Crimson::eKey::F5:
+		{
+			return "F5";
+		}
+		case Crimson::eKey::F6:
+		{
+			return "F6";
+		}
+		case Crimson::eKey::F7:
+		{
+			return "F7";
+		}
+		case Crimson::eKey::F8:
+		{
+			return "F8";
+		}
+		case Crimson::eKey::F9:
+		{
+			return "F9";
+		}
+		case Crimson::eKey::F10:
+		{
+			return "F10";
+		}
+		case Crimson::eKey::F11:
+		{
+			return "F11";
+		}
+		case Crimson::eKey::F12:
+		{
+			return "F12";
+		}
+		case Crimson::eKey::F13:
+		{
+			return "F13";
+		}
+		case Crimson::eKey::F14:
+		{
+			return "F14";
+		}
+		case Crimson::eKey::F15:
+		{
+			return "F15";
+		}
+		case Crimson::eKey::F16:
+		{
+			return "F16";
+		}
+		case Crimson::eKey::F17:
+		{
+			return "F17";
+		}
+		case Crimson::eKey::F18:
+		{
+			return "F18";
+		}
+		case Crimson::eKey::F19:
+		{
+			return "F19";
+		}
+		case Crimson::eKey::F20:
+		{
+			return "F20";
+		}
+		case Crimson::eKey::F21:
+		{
+			return "F21";
+		}
+		case Crimson::eKey::F22:
+		{
+			return "F22";
+		}
+		case Crimson::eKey::F23:
+		{
+			return "F23";
+		}
+		case Crimson::eKey::F24:
+		{
+			return "F24";
+		}
+		case Crimson::eKey::NumLock:
+		{
+			return "NumLock";
+		}
+		case Crimson::eKey::ScrollLock:
+		{
+			return "ScrollLock";
+		}
+		case Crimson::eKey::OEM_FJ_Jisho:
+		{
+			return "FJ_Jisho";
+		}
+		case Crimson::eKey::OEM_FJ_Masshou:
+		{
+			return "FJ_Masshou";
+		}
+		case Crimson::eKey::OEM_FJ_Touroku:
+		{
+			return "FJ_Touroku";
+		}
+		case Crimson::eKey::OEM_FJ_Loya:
+		{
+			return "FJ_Loya";
+		}
+		case Crimson::eKey::OEM_FJ_Roya:
+		{
+			return "FJ_Roya";
+		}
+		case Crimson::eKey::LeftShift:
+		{
+			return "LeftShift";
+		}
+		case Crimson::eKey::RightShift:
+		{
+			return "RightShift";
+		}
+		case Crimson::eKey::LeftCtrl:
+		{
+			return "LeftCtrl";
+		}
+		case Crimson::eKey::RightCtrl:
+		{
+			return "RightCtrl";
+		}
+		case Crimson::eKey::LeftAlt:
+		{
+			return "LeftAlt";
+		}
+		case Crimson::eKey::RightAlt:
+		{
+			return "RightAlt";
+		}
+		case Crimson::eKey::BrowserBack:
+		{
+			return "BrowserBack";
+		}
+		case Crimson::eKey::BrowserForward:
+		{
+			return "BrowserForward";
+		}
+		case Crimson::eKey::BrowserRefresh:
+		{
+			return "BrowserRefresh";
+		}
+		case Crimson::eKey::BrowserStop:
+		{
+			return "BrowserStop";
+		}
+		case Crimson::eKey::BrowserSearch:
+		{
+			return "BrowserSearch";
+		}
+		case Crimson::eKey::BrowserFavorites:
+		{
+			return "BrowserFavorites";
+		}
+		case Crimson::eKey::BrowserHome:
+		{
+			return "BrowserHome";
+		}
+		case Crimson::eKey::VolumeMute:
+		{
+			return "VolumeMute";
+		}
+		case Crimson::eKey::VolumeDown:
+		{
+			return "VolumeDown";
+		}
+		case Crimson::eKey::VolumeUp:
+		{
+			return "VolumeUp";
+		}
+		case Crimson::eKey::MediaNextTrack:
+		{
+			return "MediaNextTrack";
+		}
+		case Crimson::eKey::MediaPrevTrack:
+		{
+			return "MediaPrevTrack";
+		}
+		case Crimson::eKey::MediaStop:
+		{
+			return "MediaStop";
+		}
+		case Crimson::eKey::MediaPlayPause:
+		{
+			return "MediaPlayPause";
+		}
+		case Crimson::eKey::LaunchMail:
+		{
+			return "LaunchMail";
+		}
+		case Crimson::eKey::LaunchMediaSelect:
+		{
+			return "LaunchMediaSelect";
+		}
+		case Crimson::eKey::LaunchApp1:
+		{
+			return "LaunchApp1";
+		}
+		case Crimson::eKey::LaunchApp2:
+		{
+			return "LaunchApp2";
+		}
+		case Crimson::eKey::OEM_1:
+		{
+			return "OEM_1";
+		}
+		case Crimson::eKey::OEM_Plus:
+		{
+			return "OEM_Plus";
+		}
+		case Crimson::eKey::OEM_Comma:
+		{
+			return "OEM_Comma";
+		}
+		case Crimson::eKey::OEM_Minus:
+		{
+			return "OEM_Minus";
+		}
+		case Crimson::eKey::OEM_Period:
+		{
+			return "OEM_Period";
+		}
+		case Crimson::eKey::OEM_2:
+		{
+			return "OEM_2";
+		}
+		case Crimson::eKey::OEM_3:
+		{
+			return "OEM_3";
+		}
+		case Crimson::eKey::Gamepad_A:
+		{
+			return "Gamepad_A";
+		}
+		case Crimson::eKey::Gamepad_B:
+		{
+			return "Gamepad_B";
+		}
+		case Crimson::eKey::Gamepad_X:
+		{
+			return "Gamepad_X";
+		}
+		case Crimson::eKey::Gamepad_Y:
+		{
+			return "Gamepad_Y";
+		}
+		case Crimson::eKey::Gamepad_RightShoulder:
+		{
+			return "Gamepad_RightShoulder";
+		}
+		case Crimson::eKey::Gamepad_LeftShoulder:
+		{
+			return "Gamepad_LeftShoulder";
+		}
+		case Crimson::eKey::Gamepad_LeftTrigger:
+		{
+			return "Gamepad_LeftTrigger";
+		}
+		case Crimson::eKey::Gamepad_RightTrigger:
+		{
+			return "Gamepad_RightTrigger";
+		}
+		case Crimson::eKey::Gamepad_DpadUp:
+		{
+			return "Gamepad_DpadUp";
+		}
+		case Crimson::eKey::Gamepad_DpadDown:
+		{
+			return "Gamepad_DpadDown";
+		}
+		case Crimson::eKey::Gamepad_DpadLeft:
+		{
+			return "Gamepad_DpadLeft";
+		}
+		case Crimson::eKey::Gamepad_DpadRight:
+		{
+			return "Gamepad_DpadRight";
+		}
+		case Crimson::eKey::Gamepad_Menu:
+		{
+			return "Gamepad_Menu";
+		}
+		case Crimson::eKey::Gamepad_View:
+		{
+			return "Gamepad_View";
+		}
+		case Crimson::eKey::Gamepad_LeftThumbStickButton:
+		{
+			return "Gamepad_LeftThumbStickButton";
+		}
+		case Crimson::eKey::Gamepad_RightThumbStickButton:
+		{
+			return "Gamepad_RightThumbStickButton";
+		}
+		case Crimson::eKey::OEM_4:
+		{
+			return "OEM_4";
+		}
+		case Crimson::eKey::OEM_5:
+		{
+			return "OEM_5";
+		}
+		case Crimson::eKey::OEM_6:
+		{
+			return "OEM_6";
+		}
+		case Crimson::eKey::OEM_7:
+		{
+			return "OEM_7";
+		}
+		case Crimson::eKey::OEM_8:
+		{
+			return "OEM_8";
+		}
+		case Crimson::eKey::OEM_AX:
+		{
+			return "OEM_AX";
+		}
+		case Crimson::eKey::OEM_102:
+		{
+			return "OEM_102";
+		}
+		case Crimson::eKey::ICO_Help:
+		{
+			return "ICO_Help";
+		}
+		case Crimson::eKey::ICO_00:
+		{
+			return "ICO_00";
+		}
+		case Crimson::eKey::ProcessKey:
+		{
+			return "ProcessKey";
+		}
+		case Crimson::eKey::ICO_Clear:
+		{
+			return "ICO_Clear";
+		}
+		case Crimson::eKey::Packet:
+		{
+			return "Packet";
+		}
+		case Crimson::eKey::OEM_Reset:
+		{
+			return "OEM_Reset";
+		}
+		case Crimson::eKey::OEM_Jump:
+		{
+			return "OEM_Jump";
+		}
+		case Crimson::eKey::OEM_PA1:
+		{
+			return "OEM_PA1";
+		}
+		case Crimson::eKey::OEM_PA2:
+		{
+			return "OEM_PA2";
+		}
+		case Crimson::eKey::OEM_PA3:
+		{
+			return "OEM_PA3";
+		}
+		case Crimson::eKey::OEM_WsCtrl:
+		{
+			return "OEM_WsCtrl";
+		}
+		case Crimson::eKey::OEM_CuSel:
+		{
+			return "OEM_CuSel";
+		}
+		case Crimson::eKey::OEM_Attn:
+		{
+			return "OEM_Attn";
+		}
+		case Crimson::eKey::OEM_Finish:
+		{
+			return "OEM_Finish";
+		}
+		case Crimson::eKey::OEM_Copy:
+		{
+			return "OEM_Copy";
+		}
+		case Crimson::eKey::OEM_Auto:
+		{
+			return "OEM_Auto";
+		}
+		case Crimson::eKey::OEM_Enlw:
+		{
+			return "OEM_Enlw";
+		}
+		case Crimson::eKey::OEM_BackTab:
+		{
+			return "OEM_BackTab";
+		}
+		case Crimson::eKey::Attn:
+		{
+			return "Attn";
+		}
+		case Crimson::eKey::CrSel:
+		{
+			return "CrSel";
+		}
+		case Crimson::eKey::ExSel:
+		{
+			return "ExSel";
+		}
+		case Crimson::eKey::EraseEOF:
+		{
+			return "EraseEOF";
+		}
+		case Crimson::eKey::Play:
+		{
+			return "Play";
+		}
+		case Crimson::eKey::Zoom:
+		{
+			return "Zoom";
+		}
+		case Crimson::eKey::NoName:
+		{
+			return "NoName";
+		}
+		case Crimson::eKey::PA1:
+		{
+			return "PA1";
+		}
+		case Crimson::eKey::OEM_Clear:
+		{
+			return "OEM_Clear";
+		}
+		default:
+		{
+			return "Unknown";
+		}
+		}
+	}
 }
