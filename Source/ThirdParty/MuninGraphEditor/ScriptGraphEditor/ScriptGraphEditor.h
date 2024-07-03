@@ -58,6 +58,16 @@ struct ScriptGraphEditorState : public GraphEditorStateBase
 	std::vector<std::string> VisibleEditorTypes;
 };
 
+namespace ScriptGraphEditorAction
+{
+	enum Action
+	{
+		eNoAction,
+		eHasSaved,
+		eHasLoaded
+	};
+}
+
 class ScriptGraphEditor : public GraphEditorBase<ScriptGraph, ScriptGraphNode, ScriptGraphEdge, ScriptGraphPin, ScriptGraphSchema>
 {
 public:
@@ -70,6 +80,7 @@ public:
 	void Undo();
 	void Redo();
 
+	ScriptGraphEditorAction::Action CurrentAction;
 	std::vector<uint8_t> TEMP_SAVE_LOAD_dataBlock;
 
 protected:

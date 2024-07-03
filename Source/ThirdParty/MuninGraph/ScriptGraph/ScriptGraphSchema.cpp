@@ -487,6 +487,11 @@ void ScriptGraphSchema::Redo()
 	myRedoStack->pop_back();
 }
 
+void ScriptGraphSchema::SetPath(const std::string& aPath)
+{
+	GetMutableGraph()->myPath = aPath;
+}
+
 void ScriptGraphSchema::MarkDynamicPinForDelete(size_t aPinId)
 {
 	myPinsToDelete.push_back(aPinId);

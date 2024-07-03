@@ -36,7 +36,7 @@ std::shared_ptr<GameObject>& EditCommand::AddGameObject(const std::shared_ptr<Ga
 	}	
 	
 	ModelViewer::Get().myImguiManager.AddGameObject(anObject.get());
-	return ModelViewer::Get().myScene.GameObjects.emplace(anObject->GetID(), anObject).first->second;
+	return ModelViewer::Get().myScene.gameObjects.emplace(anObject->GetID(), anObject).first->second;
 }
 
 bool EditCommand::RemoveGameObject(unsigned anID) const
@@ -86,7 +86,7 @@ std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>> Ed
 
 bool EditCommand::EraseObject(unsigned anID) const
 {
-	auto& gameObjects = ModelViewer::Get().myScene.GameObjects;
+	auto& gameObjects = ModelViewer::Get().myScene.gameObjects;
 	if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
 	{
 		auto& selectedObjects = ModelViewer::Get().myImguiManager.mySelectedObjects;

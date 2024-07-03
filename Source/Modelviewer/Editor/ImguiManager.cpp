@@ -436,7 +436,7 @@ void ImguiManager::CreateMenubar()
 			if (ImGui::MenuItem("Save Scene"))
 			{
 				std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneExtension(), true));
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneExtension(), true));
 				std::string path;
 				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
@@ -446,7 +446,7 @@ void ImguiManager::CreateMenubar()
 			if (ImGui::MenuItem("Save As Binary"))
 			{
 				std::wstring extension = std::wstring(AssetManager::GetSceneBinaryExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneBinaryExtension(), true));
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneBinaryExtension(), true));
 				std::string path;
 				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
@@ -920,7 +920,7 @@ void ImguiManager::CreateSceneContentWindow()
 {
 	if (ImGui::Begin("Scene"))
 	{
-		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.Name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
 
 		if (ImGui::BeginDragDropTarget())
 		{

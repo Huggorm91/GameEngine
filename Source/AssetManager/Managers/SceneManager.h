@@ -2,18 +2,20 @@
 #include "../Assets/GameObject.h"
 #include <unordered_set>
 
+class ScriptGraph;
+
 struct Scene
 {
-	unsigned GameObjectIDCount = 0;
-	std::string Name = "NewScene";
-	std::unordered_map<unsigned, GameObject> GameObjects;
+	unsigned gameObjectIDCount;
+	std::shared_ptr<ScriptGraph> scriptGraph;
+	std::string name;
+	std::unordered_map<unsigned, GameObject> gameObjects;
 
-	Scene() = default;
+	Scene();
 	Scene(const Json::Value& aJson);
 	Scene(const Scene&) = default;
 	Scene(Scene&&) = default;
 	~Scene() = default;
-	operator Json::Value() const;
 	Scene& operator=(const Scene&) = default;
 	Scene& operator=(Scene&&) = default;
 };
@@ -22,17 +24,17 @@ std::ostream& operator<<(std::ostream& aStream, const Scene& aScene);
 
 struct EditorScene
 {
-	unsigned GameObjectIDCount = 0;
-	std::string Name = "NewScene";
-	std::string Path{};
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> GameObjects;
+	unsigned gameObjectIDCount;
+	std::shared_ptr<ScriptGraph> scriptGraph;
+	std::string name;
+	std::string path;
+	std::unordered_map<unsigned, std::shared_ptr<GameObject>> gameObjects;
 
-	EditorScene() = default;
+	EditorScene();
 	EditorScene(const Json::Value& aJson);
 	EditorScene(const EditorScene&) = default;
 	EditorScene(EditorScene&&) = default;
 	~EditorScene() = default;
-	operator Json::Value() const;
 	EditorScene& operator=(const EditorScene&) = default;
 	EditorScene& operator=(EditorScene&&) = default;
 };

@@ -1,6 +1,7 @@
 #include "AssetManager.pch.h"
 #include "SceneManager.h"
 #include "File/DirectoryFunctions.h"
+#include "AssetManager.h"
 
 void SceneManager::Init()
 {
@@ -211,7 +212,7 @@ EditorScene SceneManager::LoadEditorScene(const std::string& aPath, bool aShould
 	fileStream.close();
 
 	EditorScene result = json;
-	result.Path = aPath;
+	result.path = aPath;
 	return result;
 }
 
@@ -230,7 +231,7 @@ EditorScene SceneManager::LoadBinaryEditorScene(const std::string& aPath, bool a
 			AMLogger.Err(e.what() + std::string(" Path: ") + aPath);
 			fileStream.close();
 			return result;
-		}		
+		}
 	}
 	else
 	{
@@ -243,7 +244,7 @@ EditorScene SceneManager::LoadBinaryEditorScene(const std::string& aPath, bool a
 	}
 	fileStream.close();
 
-	result.Path = aPath;
+	result.path = aPath;
 	return result;
 }
 
@@ -253,13 +254,14 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const Scene& aScene
 	if (fileStream)
 	{
 		Json::Value json;
-		json.setComment("// " + aScene.Name, Json::commentBefore);
-		json["SceneName"] = aScene.Name;
-		json["GameObjectIDCount"] = aScene.GameObjectIDCount;
+		json.setComment("// " + aScene.name, Json::commentBefore);
+		json["SceneName"] = aScene.name;
+		json["ScriptPath"] = aScene.scriptGraph->GetPath();
+		json["GameObjectIDCount"] = aScene.gameObjectIDCount;
 		json["GameObjects"] = Json::arrayValue;
 
 		int i = 0;
-		for (auto& [id, object] : aScene.GameObjects)
+		for (auto& [id, object] : aScene.gameObjects)
 		{
 			json["GameObjects"][i] = object.ToJson();
 			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(id), Json::commentBefore);
@@ -299,13 +301,14 @@ void SceneManager::SaveSceneToFile(const std::string& aPath, const EditorScene& 
 	if (fileStream)
 	{
 		Json::Value json;
-		json.setComment("// " + aScene.Name, Json::commentBefore);
-		json["SceneName"] = aScene.Name;
-		json["GameObjectIDCount"] = aScene.GameObjectIDCount;
+		json.setComment("// " + aScene.name, Json::commentBefore);
+		json["SceneName"] = aScene.name;
+		json["ScriptPath"] = aScene.scriptGraph->GetPath();
+		json["GameObjectIDCount"] = aScene.gameObjectIDCount;
 		json["GameObjects"] = Json::arrayValue;
 
 		int i = 0;
-		for (auto& [id, object] : aScene.GameObjects)
+		for (auto& [id, object] : aScene.gameObjects)
 		{
 			json["GameObjects"][i] = object->ToJson();
 			json["GameObjects"][i].setComment("// GameObject ID: " + std::to_string(id), Json::commentBefore);
@@ -339,7 +342,17 @@ void SceneManager::SaveSceneToBinary(const std::string& aPath, const EditorScene
 	fileStream.close();
 }
 
-inline Scene::Scene(const Json::Value& aJson) : GameObjectIDCount(aJson["GameObjectIDCount"].asUInt()), Name(aJson["SceneName"].asString()), GameObjects()
+Scene::Scene() :
+	gameObjectIDCount(0),
+	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	name("NewScene")
+{
+}
+
+inline Scene::Scene(const Json::Value& aJson) :
+	gameObjectIDCount(aJson["GameObjectIDCount"].asUInt()),
+	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	name(aJson["SceneName"].asString())
 {
 	std::unordered_map<unsigned, unsigned> childlist;
 	for (auto& json : aJson["GameObjects"])
@@ -350,16 +363,35 @@ inline Scene::Scene(const Json::Value& aJson) : GameObjectIDCount(aJson["GameObj
 		{
 			childlist.emplace(object.GetID(), parentID);
 		}
-		GameObjects.emplace(object.GetID(), object);
+		gameObjects.emplace(object.GetID(), object);
 	}
 
 	for (auto& [childID, parentID] : childlist)
 	{
-		GameObjects.at(parentID).AddChild(&GameObjects.at(childID));
+		gameObjects.at(parentID).AddChild(&gameObjects.at(childID));
+	}
+
+	std::string scriptPath = aJson["ScriptPath"].asString();
+	if (!scriptPath.empty())
+	{
+		if (auto data = AssetManager::GetAsset<Script::ScriptData*>(scriptPath))
+		{
+			scriptGraph->Deserialize(*data);
+		}
 	}
 }
 
-inline EditorScene::EditorScene(const Json::Value& aJson): GameObjectIDCount(aJson["GameObjectIDCount"].asUInt()), Name(aJson["SceneName"].asString()), Path(), GameObjects()
+EditorScene::EditorScene() :
+	gameObjectIDCount(0),
+	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	name("NewScene")
+{
+}
+
+inline EditorScene::EditorScene(const Json::Value& aJson) :
+	gameObjectIDCount(aJson["GameObjectIDCount"].asUInt()),
+	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	name(aJson["SceneName"].asString())
 {
 	std::unordered_map<unsigned, unsigned> childlist;
 	for (auto& json : aJson["GameObjects"])
@@ -370,13 +402,22 @@ inline EditorScene::EditorScene(const Json::Value& aJson): GameObjectIDCount(aJs
 		{
 			childlist.emplace(object->GetID(), parentID);
 		}
-		GameObjects.emplace(object->GetID(), object);
+		gameObjects.emplace(object->GetID(), object);
 	}
 
 	for (auto& [childID, parentID] : childlist)
 	{
-		GameObjects.at(parentID)->AddChild(GameObjects.at(childID).get());
+		gameObjects.at(parentID)->AddChild(gameObjects.at(childID).get());
 	}
+
+	std::string scriptPath = aJson["ScriptPath"].asString();
+	if (!scriptPath.empty())
+	{
+		if (auto data = AssetManager::GetAsset<Script::ScriptData*>(scriptPath))
+		{
+			scriptGraph->Deserialize(*data);
+		}
+	}	
 }
 
 std::istream& operator>>(std::istream& aStream, Scene& aScene)
@@ -388,12 +429,13 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 	{
 		throw std::runtime_error("SceneManager::LoadBinaryScene: Invalid Binary::Type when loading scene.");
 	}
-	std::getline(aStream, aScene.Name, '\0');
-	aStream.read(reinterpret_cast<char*>(&aScene.GameObjectIDCount), sizeof(aScene.GameObjectIDCount));
+	std::getline(aStream, aScene.name, '\0');
+	aStream.read(reinterpret_cast<char*>(&aScene.gameObjectIDCount), sizeof(aScene.gameObjectIDCount));
 
 	unsigned gameobjectCount = 0;
 	aStream.read(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
 
+	// Load GameObjects
 	std::unordered_map<unsigned, unsigned> childlist;
 	{
 		unsigned parentID = 0;
@@ -410,14 +452,26 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 			{
 				childlist.emplace(object.GetID(), parentID);
 			}
-			aScene.GameObjects.emplace(object.GetID(), std::move(object));
+			aScene.gameObjects.emplace(object.GetID(), std::move(object));
 		}
 	}
 
 	for (auto& [childID, parentID] : childlist)
 	{
-		aScene.GameObjects.at(parentID).AddChild(&aScene.GameObjects.at(childID));
+		aScene.gameObjects.at(parentID).AddChild(&aScene.gameObjects.at(childID));
 	}
+
+	// Load Script
+	std::string scriptPath;
+	std::getline(aStream, scriptPath, '\0');
+	if (!scriptPath.empty())
+	{
+		if (auto data = AssetManager::GetAsset<Script::ScriptData*>(scriptPath))
+		{
+			aScene.scriptGraph->Deserialize(*data);
+		}
+	}
+
 	return aStream;
 }
 
@@ -425,16 +479,18 @@ std::ostream& operator<<(std::ostream& aStream, const Scene& aScene)
 {
 	// save
 	Binary::eType type = Binary::Scene;
-	unsigned gameobjectCount = static_cast<unsigned>(aScene.GameObjects.size());
+	unsigned gameobjectCount = static_cast<unsigned>(aScene.gameObjects.size());
 
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
-	aStream.write(aScene.Name.c_str(), aScene.Name.size() + 1);
-	aStream.write(reinterpret_cast<const char*>(&aScene.GameObjectIDCount), sizeof(aScene.GameObjectIDCount));
+	aStream.write(aScene.name.c_str(), aScene.name.size() + 1);
+	aStream.write(reinterpret_cast<const char*>(&aScene.gameObjectIDCount), sizeof(aScene.gameObjectIDCount));
 	aStream.write(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
-	for (auto& object : aScene.GameObjects)
+	for (auto& object : aScene.gameObjects)
 	{
 		object.second.Serialize(aStream);
 	}
+	aStream.write(aScene.scriptGraph->GetPath().c_str(), aScene.scriptGraph->GetPath().size() + 1);
+
 	return aStream;
 }
 
@@ -447,12 +503,13 @@ std::istream& operator>>(std::istream& aStream, EditorScene& aScene)
 	{
 		throw std::runtime_error("SceneManager::LoadBinaryScene: Invalid Binary::Type when loading scene.");
 	}
-	std::getline(aStream, aScene.Name, '\0');
-	aStream.read(reinterpret_cast<char*>(&aScene.GameObjectIDCount), sizeof(aScene.GameObjectIDCount));
+	std::getline(aStream, aScene.name, '\0');
+	aStream.read(reinterpret_cast<char*>(&aScene.gameObjectIDCount), sizeof(aScene.gameObjectIDCount));
 
 	unsigned gameobjectCount = 0;
 	aStream.read(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
 
+	// Load GameObjects
 	std::unordered_map<unsigned, unsigned> childlist;
 	{
 		unsigned parentID = 0;
@@ -470,14 +527,26 @@ std::istream& operator>>(std::istream& aStream, EditorScene& aScene)
 			{
 				childlist.emplace(object->GetID(), parentID);
 			}
-			aScene.GameObjects.emplace(object->GetID(), object);
+			aScene.gameObjects.emplace(object->GetID(), object);
 		}
 	}
 
 	for (auto& [childID, parentID] : childlist)
 	{
-		aScene.GameObjects.at(parentID)->AddChild(aScene.GameObjects.at(childID).get());
+		aScene.gameObjects.at(parentID)->AddChild(aScene.gameObjects.at(childID).get());
 	}
+
+	// Load Script
+	std::string scriptPath;
+	std::getline(aStream, scriptPath, '\0');
+	if (!scriptPath.empty())
+	{
+		if (auto data = AssetManager::GetAsset<Script::ScriptData*>(scriptPath))
+		{
+			aScene.scriptGraph->Deserialize(*data);
+		}
+	}
+
 	return aStream;
 }
 
@@ -485,15 +554,17 @@ std::ostream& operator<<(std::ostream& aStream, const EditorScene& aScene)
 {
 	// save
 	Binary::eType type = Binary::Scene;
-	unsigned gameobjectCount = static_cast<unsigned>(aScene.GameObjects.size());
+	unsigned gameobjectCount = static_cast<unsigned>(aScene.gameObjects.size());
 
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
-	aStream.write(aScene.Name.c_str(), aScene.Name.size() + 1);
-	aStream.write(reinterpret_cast<const char*>(&aScene.GameObjectIDCount), sizeof(aScene.GameObjectIDCount));
+	aStream.write(aScene.name.c_str(), aScene.name.size() + 1);
+	aStream.write(reinterpret_cast<const char*>(&aScene.gameObjectIDCount), sizeof(aScene.gameObjectIDCount));
 	aStream.write(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
-	for (auto& object : aScene.GameObjects)
+	for (auto& object : aScene.gameObjects)
 	{
 		object.second->Serialize(aStream);
 	}
+	aStream.write(aScene.scriptGraph->GetPath().c_str(), aScene.scriptGraph->GetPath().size() + 1);
+
 	return aStream;
 }

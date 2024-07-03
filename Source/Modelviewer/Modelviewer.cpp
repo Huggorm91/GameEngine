@@ -71,7 +71,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	myLogger.LogException(anException);
 
 	// Save current scene if possible
-	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.Name;
+	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.name;
 	try
 	{
 		SaveScene("..\\" + saveName, false);
@@ -284,9 +284,9 @@ void ModelViewer::SetPlayMode(bool aState)
 	myIsInPlayMode = aState;
 	if (myIsInPlayMode)
 	{
-		myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
+		myPlayScene.gameObjects.reserve(myScene.gameObjects.size());
 		std::unordered_map<unsigned, unsigned> childlist;
-		for (auto& [id, object] : myScene.GameObjects)
+		for (auto& [id, object] : myScene.gameObjects)
 		{
 			if (object->HasParent())
 			{
@@ -294,21 +294,21 @@ void ModelViewer::SetPlayMode(bool aState)
 			}
 			auto copy = *object;
 			copy.CopyIDsOf(*object, true);
-			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*)
+			myPlayScene.gameObjects.emplace(id, std::move(copy));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.gameObjects.at(id), [](GameObject*)
 			{}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
 		{
-			myPlayScene.GameObjects.at(parentID).AddChild(&myPlayScene.GameObjects.at(childID));
+			myPlayScene.gameObjects.at(parentID).AddChild(&myPlayScene.gameObjects.at(childID));
 		}
 
 		myImguiManager.SetActiveObjects(&myPlayScenePointers);
 	}
 	else
 	{
-		myImguiManager.SetActiveObjects(&myScene.GameObjects);
+		myImguiManager.SetActiveObjects(&myScene.gameObjects);
 		myPlayScenePointers.clear();
 		myPlayScene = Scene();
 		myPlayModeRedoCommands.clear();
@@ -368,7 +368,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 		command.Execute();
 	}
 
-	return myScene.GameObjects.at(newObject->GetID());
+	return myScene.gameObjects.at(newObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
@@ -383,7 +383,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 		command.Execute();
 	}
 
-	return myScene.GameObjects.at(anObject->GetID());
+	return myScene.gameObjects.at(anObject->GetID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
@@ -398,14 +398,14 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 		EditCmd_AddGameObject command(std::move(anObject));
 		command.Execute();
 	}
-	return myScene.GameObjects.at(id);
+	return myScene.gameObjects.at(id);
 }
 
 std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
 		return iter->second;
 	}
@@ -416,7 +416,7 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
 		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
 		return true;
@@ -427,24 +427,24 @@ bool ModelViewer::RemoveGameObject(unsigned anID)
 GameObject& ModelViewer::AddGameObject()
 {
 	GameObject newObject;
-	auto iter = myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject));
+	auto iter = myScene.gameObjects.emplace(newobject->GetID(), std::move(newObject));
 	return iter.first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
 {
 	GameObject newObject(anObject);
-	return myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
+	return myScene.gameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
 }
 
 GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
 {
-	return myScene.GameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
+	return myScene.gameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
 }
 
 GameObject* ModelViewer::GetGameObject(unsigned anID)
 {
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
 		return &iter->second;
 	}
@@ -453,9 +453,9 @@ GameObject* ModelViewer::GetGameObject(unsigned anID)
 
 bool ModelViewer::RemoveGameObject(unsigned anID)
 {
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
-		myScene.GameObjects.erase(iter);
+		myScene.gameObjects.erase(iter);
 		return true;
 	}
 	return false;
@@ -527,9 +527,9 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 {
-	myScene.Name = Crimson::GetFileNameWithoutExtension(aPath);
-	myScene.Path = aPath;
-	myScene.GameObjectIDCount = GameObject::GetIDCount();
+	myScene.name = Crimson::GetFileNameWithoutExtension(aPath);
+	myScene.path = aPath;
+	myScene.gameObjectIDCount = GameObject::GetIDCount();
 	AssetManager::SaveAsset(myScene, aPath, aAsBinary);
 	mySceneIsEdited = false;
 	myLogger.Succ("Saved scene as: " + Crimson::MakeRelativeTo(aPath, "../"));
@@ -554,7 +554,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	myImguiManager.Reset();
 	SetPlayMode(false);
 
-	for (auto& [id, object] : myScene.GameObjects)
+	for (auto& [id, object] : myScene.gameObjects)
 	{
 		myImguiManager.AddGameObject(object.get());
 	}
@@ -564,8 +564,8 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		myScene = AssetManager::GetAsset<Scene>(aPath);
 	}
 #endif // !_RETAIL
-	SetGameObjectIDCount(myScene.GameObjectIDCount);
-	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
+	SetGameObjectIDCount(myScene.gameObjectIDCount);
+	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.path, "../"));
 }
 
 void ModelViewer::Init()
@@ -615,20 +615,20 @@ void ModelViewer::UpdateScene()
 #ifndef _RETAIL
 	if (myIsInPlayMode)
 	{
-		for (auto& [id, object] : myPlayScene.GameObjects)
+		for (auto& [id, object] : myPlayScene.gameObjects)
 		{
 			object.Update();
 		}
 	}
 	else
 	{
-		for (auto& [id, object] : myScene.GameObjects)
+		for (auto& [id, object] : myScene.gameObjects)
 		{
 			object->Render();
 		}
 	}
 #else
-	for (auto& [id, object] : myScene.GameObjects)
+	for (auto& [id, object] : myScene.gameObjects)
 	{
 		object.Update();
 	}

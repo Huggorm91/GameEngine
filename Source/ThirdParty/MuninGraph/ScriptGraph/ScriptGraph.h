@@ -36,6 +36,7 @@ public:
 	void UnbindErrorHandler();
 
 	FORCEINLINE void* GetOwner() const { return myOwner; }
+	FORCEINLINE const std::string& GetPath() const { return myPath; }
 
 protected:
 	void Reset() override;
@@ -50,6 +51,7 @@ private:
 	bool myShouldStop;
 	size_t myNumActiveFunctions;
 	void* myOwner;
+	std::string myPath;
 
 	std::vector<size_t> myLastExecutedPath;
 	std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> myEntryPoints;

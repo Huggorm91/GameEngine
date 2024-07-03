@@ -619,6 +619,8 @@ void ScriptGraphEditor::RenderEdge(const ScriptGraphEdge& anEdge)
 
 void ScriptGraphEditor::RenderToolbar()
 {
+	CurrentAction = ScriptGraphEditorAction::eNoAction;
+
 	ImGui::SetNextItemWidth(50);
 	if(ImGui::Button(ICON_FA_PLAY "  Events"))
 	{
@@ -642,6 +644,9 @@ void ScriptGraphEditor::RenderToolbar()
 			file.write(reinterpret_cast<const char*>(&size), sizeof(size));
 			file.write(reinterpret_cast<const char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
 			file.close();
+
+			mySchema->SetPath(path);
+			CurrentAction = ScriptGraphEditorAction::eHasSaved;
 		}		
 	}
 	ImGui::SameLine();
@@ -660,8 +665,11 @@ void ScriptGraphEditor::RenderToolbar()
 			file.close();
 			
 			myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
+			mySchema->SetPath(path);
 			mySchema->AddToUndo();
 			myEditorState->Layout.RefreshNodePositions = true;
+
+			CurrentAction = ScriptGraphEditorAction::eHasLoaded;
 		}
 	}
 
