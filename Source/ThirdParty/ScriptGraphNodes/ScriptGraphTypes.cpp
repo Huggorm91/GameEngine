@@ -7,6 +7,8 @@ extern "C" void __MuninGraph_AutoRegTypes() {  }
 IMPLEMENT_REGISTERED_TYPE(void*, Internal_VoidPtr);
 //~
 
+IMPLEMENT_REGISTERED_TYPE(bool, Bool);
+
 IMPLEMENT_REGISTERED_TYPE(float, Float);
 
 BEGIN_IMPLEMENT_REGISTERED_TYPE(std::string, String);

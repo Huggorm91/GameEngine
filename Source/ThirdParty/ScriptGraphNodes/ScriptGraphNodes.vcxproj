@@ -117,8 +117,13 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScriptGraphTypes.h" />
     <ClInclude Include="Events\SGNode_BeginPlay.h" />
-    <ClInclude Include="Math\SGNode_MathAdd.h" />
+    <ClInclude Include="Math\SGNode_Float.h" />
     <ClInclude Include="FlowControl\SGNode_Sequence.h" />
+    <ClInclude Include="Logic\SGNode_BoolLogic.h" />
+    <ClInclude Include="FlowControl\SGNode_ForLoop.h" />
+    <ClInclude Include="FlowControl\SGNode_Gate.h" />
+    <ClInclude Include="FlowControl\SGNode_IfElse.h" />
+    <ClInclude Include="FlowControl\SGNode_WhileLoop.h" />
     <ClInclude Include="Text\SGNode_FormatText.h" />
     <ClInclude Include="Text\SGNode_LogText.h" />
   </ItemGroup>
@@ -131,8 +136,13 @@
     <ClCompile Include="ScriptGraphNodes.cpp" />
     <ClCompile Include="ScriptGraphTypes.cpp" />
     <ClCompile Include="Events\SGNode_BeginPlay.cpp" />
-    <ClCompile Include="Math\SGNode_MathAdd.cpp" />
+    <ClCompile Include="Math\SGNode_Float.cpp" />
     <ClCompile Include="FlowControl\SGNode_Sequence.cpp" />
+    <ClCompile Include="Logic\SGNode_BoolLogic.cpp" />
+    <ClCompile Include="FlowControl\SGNode_ForLoop.cpp" />
+    <ClCompile Include="FlowControl\SGNode_Gate.cpp" />
+    <ClCompile Include="FlowControl\SGNode_IfElse.cpp" />
+    <ClCompile Include="FlowControl\SGNode_WhileLoop.cpp" />
     <ClCompile Include="Text\SGNode_FormatText.cpp" />
     <ClCompile Include="Text\SGNode_LogText.cpp" />
   </ItemGroup>

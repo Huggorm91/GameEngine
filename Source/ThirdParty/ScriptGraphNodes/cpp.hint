@@ -2,3 +2,7 @@
 // such as names of functions and macros.
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define BEGIN_GRAPH_NODE(NodeClass, NodeBase)
+
+#define DECLARE_GRAPH_NODE(NodeClass, NodeBase)
+#define IMPLEMENT_GRAPH_NODE(NodeClass, NodeBase)
+#define IMPLEMENT_GRAPH_NODE_EX(NodeClass, NodeBase, ClassFlags)

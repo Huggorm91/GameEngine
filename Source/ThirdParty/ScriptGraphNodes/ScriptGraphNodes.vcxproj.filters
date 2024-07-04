@@ -24,7 +24,7 @@
     <ClInclude Include="Events\SGNode_BeginPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Math\SGNode_MathAdd.h">
+    <ClInclude Include="Math\SGNode_Float.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ScriptGraphTypes.h">
@@ -45,6 +45,21 @@
     <ClInclude Include="NodeIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Logic\SGNode_BoolLogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowControl\SGNode_IfElse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowControl\SGNode_ForLoop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowControl\SGNode_WhileLoop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowControl\SGNode_Gate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ScriptGraphNodes.cpp">
@@ -56,7 +71,7 @@
     <ClCompile Include="Events\SGNode_BeginPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Math\SGNode_MathAdd.cpp">
+    <ClCompile Include="Math\SGNode_Float.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScriptGraphTypes.cpp">
@@ -72,6 +87,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FlowControl\SGNode_Sequence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logic\SGNode_BoolLogic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowControl\SGNode_IfElse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowControl\SGNode_ForLoop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowControl\SGNode_WhileLoop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowControl\SGNode_Gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
