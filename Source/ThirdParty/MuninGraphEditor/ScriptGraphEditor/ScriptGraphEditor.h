@@ -97,7 +97,6 @@ protected:
 	void HandleBackgroundContextMenuItemClicked(const GraphEditorContextMenuItem& aItem) override;
 
 	void ReportError(const ScriptGraph* aGraph, size_t aNodeId, std::string_view aErrorMessage);
-	void ClearError();
 
 private:
 
