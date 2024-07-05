@@ -235,7 +235,7 @@ void GameObject::Update()
 			TransformHasChanged();
 		}
 
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).Update();
 		}
@@ -251,7 +251,7 @@ void GameObject::Render()
 			TransformHasChanged();
 		}
 
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).Render();
 		}
@@ -260,7 +260,7 @@ void GameObject::Render()
 
 const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		if (const Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
@@ -272,7 +272,7 @@ const Component* GameObject::GetComponentPointer(unsigned anID) const
 
 Component* GameObject::GetComponentPointer(unsigned anID)
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		if (Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
 		{
@@ -354,7 +354,7 @@ const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
@@ -366,7 +366,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{
-		for (auto [type, index] : myIndexList)
+		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
 		}
@@ -391,7 +391,7 @@ bool GameObject::IsActive() const
 
 void GameObject::SetActiveComponents(bool aIsActive)
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).SetActive(aIsActive);
 	}
@@ -399,7 +399,7 @@ void GameObject::SetActiveComponents(bool aIsActive)
 
 void GameObject::ToogleActiveComponents()
 {
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).ToogleActive();
 	}
@@ -457,7 +457,7 @@ void GameObject::TransformHasChanged()
 {
 	myTransform.Update();
 
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).TransformHasChanged();
 	}
@@ -636,7 +636,7 @@ void GameObject::CreateImGuiWindowContent()
 		{
 			Component* component = nullptr;
 			std::string text;
-			for (auto [type, index] : myIndexList)
+			for (auto& [type, index] : myIndexList)
 			{
 				component = &myComponents.GetValue<Component>(index);
 				text = component->ToString() + " " + std::to_string(component->GetComponentID());
@@ -671,7 +671,7 @@ Json::Value GameObject::ToJson() const
 	result["Components"] = Json::arrayValue;
 	const Component* component = nullptr;
 	unsigned i = 0;
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		component = &myComponents.GetValue<Component>(index);
 		result["Components"][i] = component->ToJson();
@@ -693,7 +693,7 @@ struct GameObjectData
 void GameObject::Serialize(std::ostream& aStream) const
 {
 	Binary::eType type = Binary::GameObject;
-	GameObjectData data;
+	GameObjectData data{};
 	data.ID = myID;
 	data.ParentID = myParent ? myParent->myID : 0u;
 	data.ComponentCount = static_cast<unsigned>(myIndexList.size());
@@ -703,7 +703,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);
 
-	for (auto [compType, index] : myIndexList)
+	for (auto& [compType, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).Serialize(aStream);
 	}
@@ -711,7 +711,7 @@ void GameObject::Serialize(std::ostream& aStream) const
 
 unsigned GameObject::Deserialize(std::istream& aStream)
 {
-	GameObjectData data;
+	GameObjectData data{};
 	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
 	const_cast<unsigned&>(myID) = data.ID;
 	myIsActive = data.IsActive;
@@ -720,7 +720,7 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 
 	for (unsigned i = 0; i < data.ComponentCount; i++)
 	{
-		Binary::eType type;
+		Binary::eType type{};
 		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
 		if (type != Binary::Component)
 		{
@@ -738,7 +738,7 @@ void GameObject::MarkAsPrefab()
 		const_cast<unsigned&>(myID) = 0;
 		localIDCount--;
 	}
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).MarkAsPrefabComponent();
 	}
@@ -761,7 +761,7 @@ void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
 	}
 	const_cast<unsigned&>(myID) = anObject.myID;
 
-	for (auto [type, index] : myIndexList)
+	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index), aDecrementIDCount);
 	}

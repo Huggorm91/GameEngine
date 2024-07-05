@@ -41,3 +41,23 @@ class Name : public Component {\
 #define BEGIN_COMPONENT(...) CW_OVERLOAD_MACRO(BEGIN_COMPONENT, __VA_ARGS__)
 
 #define END_COMPONENT };
+
+
+
+
+
+
+
+
+// ScriptGraph Macros
+#define DECLARE_GRAPH_NODE(NodeClass, NodeBase) \
+	__pragma(comment(linker, "/include:GN_" #NodeBase "_" #NodeClass)) \
+	class NodeClass : public NodeBase, public TypeObjectUID<NodeClass>
+
+#define IMPLEMENT_GRAPH_NODE(NodeClass, NodeBase) \
+	static NodeClassAutoRegister<NodeClass, CF_None> NodeRegistrant_##NodeBase##_##NodeClass; \
+	extern "C" void GN_##NodeBase##_##NodeClass() {  }
+
+#define IMPLEMENT_GRAPH_NODE_EX(NodeClass, NodeBase, ClassFlags) \
+	static NodeClassAutoRegister<NodeClass, ClassFlags> NodeRegistrant_##NodeBase##_##NodeClass; \
+	extern "C" void GN_##NodeBase##_##NodeClass() {  }

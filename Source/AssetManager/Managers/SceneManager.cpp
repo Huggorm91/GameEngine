@@ -344,14 +344,14 @@ void SceneManager::SaveSceneToBinary(const std::string& aPath, const EditorScene
 
 Scene::Scene() :
 	gameObjectIDCount(0),
-	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	scriptGraph(std::make_shared<ScriptGraph>()),
 	name("NewScene")
 {
 }
 
 inline Scene::Scene(const Json::Value& aJson) :
 	gameObjectIDCount(aJson["GameObjectIDCount"].asUInt()),
-	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	scriptGraph(std::make_shared<ScriptGraph>()),
 	name(aJson["SceneName"].asString())
 {
 	std::unordered_map<unsigned, unsigned> childlist;
@@ -383,14 +383,14 @@ inline Scene::Scene(const Json::Value& aJson) :
 
 EditorScene::EditorScene() :
 	gameObjectIDCount(0),
-	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	scriptGraph(std::make_shared<ScriptGraph>()),
 	name("NewScene")
 {
 }
 
 inline EditorScene::EditorScene(const Json::Value& aJson) :
 	gameObjectIDCount(aJson["GameObjectIDCount"].asUInt()),
-	scriptGraph(std::make_shared<ScriptGraph>(ScriptGraph(this))),
+	scriptGraph(std::make_shared<ScriptGraph>()),
 	name(aJson["SceneName"].asString())
 {
 	std::unordered_map<unsigned, unsigned> childlist;

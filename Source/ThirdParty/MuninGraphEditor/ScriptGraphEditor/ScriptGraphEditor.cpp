@@ -18,7 +18,7 @@
 #include "File/FileSelectors.h"
 
 constexpr std::string_view ScriptGraphEditor_TriggerEntryPointDialogName(ICON_FA_PLAY "  Events");
-constexpr std::string_view ScriptGraphEditor_EditVariablesDialogName( ICON_FA_CODE "  Variables");
+constexpr std::string_view ScriptGraphEditor_EditVariablesDialogName(ICON_FA_CODE "  Variables");
 
 ScriptGraphEditorSettings::ScriptGraphEditorSettings(const ComPtr<ID3D11Device>& aDevice)
 {
@@ -62,7 +62,7 @@ ScriptGraphEditor::ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, Scrip
 	UpdateVariablesContextMenu();
 
 	const auto& editorTypes = ScriptGraphEditorTypeRegistry::Get().GetEditorTypeNames();
-	for(const auto& editorType : editorTypes)
+	for (const auto& editorType : editorTypes)
 	{
 		const ScriptGraphEditorType* type = ScriptGraphEditorTypeRegistry::Get().GetEditorType(editorType);
 		if (type->IsInternal())
@@ -72,31 +72,31 @@ ScriptGraphEditor::ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, Scrip
 	}
 
 	myGraph->BindErrorHandler([this](const ScriptGraph* aGraph, size_t aNodeId, std::string_view aErrorMessage)
+		{
+			ReportError(std::forward<const ScriptGraph*>(aGraph), std::forward<size_t>(aNodeId), std::forward<std::string_view>(aErrorMessage));
+		});
+
+	for (auto& cat : myEditorState->BackgroundContextMenu.Categories | std::views::values)
 	{
-		ReportError(std::forward<const ScriptGraph*>(aGraph), std::forward<size_t>(aNodeId), std::forward<std::string_view>(aErrorMessage));
-	});
-	
-	for(auto& cat : myEditorState->BackgroundContextMenu.Categories | std::views::values)
-	{
-		for(auto& item : cat.Items)
+		for (auto& item : cat.Items)
 		{
 			const std::shared_ptr<ScriptGraphNode> CDO = std::static_pointer_cast<ScriptGraphNode>(item.Value->ClassDefaultObject);
-			switch(CDO->GetNodeType())
+			switch (CDO->GetNodeType())
 			{
 			case ScriptGraphNodeType::Function:
-				{
-					item.Title = ICON_FA_FLORIN_SIGN + ("  " + item.Title);
-				}
-				break;
+			{
+				item.Title = ICON_FA_FLORIN_SIGN + ("  " + item.Title);
+			}
+			break;
 			case ScriptGraphNodeType::Event:
-				{
-					item.Title = ICON_FA_RIGHT_FROM_BRACKET + ("  " + item.Title);
-				}
-				break;
+			{
+				item.Title = ICON_FA_RIGHT_FROM_BRACKET + ("  " + item.Title);
+			}
+			break;
 			case ScriptGraphNodeType::Variable:
-				{
-					item.Title = ICON_FA_DATABASE + ("  " + item.Title);
-				}
+			{
+				item.Title = ICON_FA_DATABASE + ("  " + item.Title);
+			}
 			break;
 			}
 		}
@@ -118,7 +118,7 @@ void ScriptGraphEditor::SetGraph(ScriptGraph* aGraph)
 				ReportError(std::forward<const ScriptGraph*>(aGraph), std::forward<size_t>(aNodeId), std::forward<std::string_view>(aErrorMessage));
 			});
 		myEditorState->Layout.RefreshNodePositions = true;
-	}	
+	}
 }
 
 bool ScriptGraphEditor::HasGraph() const
@@ -159,7 +159,7 @@ void ScriptGraphEditor::PasteNodes(const std::vector<uint8_t>& inData)
 
 	std::unordered_set<size_t> selectedIds;
 
-	std::pair<float,float> min, max;
+	std::pair<float, float> min, max;
 	mySchema->PasteNodes(inData, selectedIds, min, max);
 
 	if (!selectedIds.empty())
@@ -185,8 +185,8 @@ void ScriptGraphEditor::PasteNodes(const std::vector<uint8_t>& inData)
 			ImNodeEd::SelectNode(id, true);
 		}
 		mySchema->AddToUndo();
-	}	
-	
+	}
+
 	ImNodeEd::SetCurrentEditor(nullptr);
 }
 
@@ -209,9 +209,9 @@ void ScriptGraphEditor::Redo()
 void ScriptGraphEditor::RenderEditorStyle()
 {
 	ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
-	if(state->ShowFlow && !myGraph->GetLastExecutedPath().empty())
+	if (state->ShowFlow && !myGraph->GetLastExecutedPath().empty())
 	{
-		for(const size_t& edgeId : myGraph->GetLastExecutedPath())
+		for (const size_t& edgeId : myGraph->GetLastExecutedPath())
 		{
 			ImNodeEd::Flow(edgeId, ax::NodeEditor::FlowDirection::Forward);
 		}
@@ -233,7 +233,7 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 	ImVec2 rightMinSize = { 64, 0 };
 
 	ImGui::PushFont(mySettings->NodeBodyFont);
-	for(const auto& pin : aNode->GetPins() | std::views::values)
+	for (const auto& pin : aNode->GetPins() | std::views::values)
 	{
 		const ImVec2 currentTextSize = ImGui::CalcTextSize(pin.GetLabel().data());
 
@@ -272,6 +272,14 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 
 	const auto uidAwareNode = AsObjectUIDSharedPtr(aNode);
 	const ImNodeEd::NodeId currentImNodeId = uidAwareNode->GetUID();
+
+	ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
+	if (state->GraphError.HasError && uidAwareNode->GetUID() == state->GraphError.Node)
+	{
+		ImNodeEd::PushStyleVar(ImNodeEd::StyleVar_NodeBorderWidth, 10.0f);
+		ImNodeEd::PushStyleColor(ImNodeEd::StyleColor_NodeBorder, ImVec4(0.75f, 0, 0, 1));
+	}
+
 	ImNodeEd::BeginNode(currentImNodeId);
 	ImGui::PushID(static_cast<int>(uidAwareNode->GetUID()));
 
@@ -281,7 +289,7 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 	const float bodyMinWidth = leftMinSize.x + rightMinSize.x + 64;
 	const ImVec2 nodePinTableSize = { headerTextSize.x > bodyMinWidth ? headerTextSize.x : bodyMinWidth, 0 };
 
-	if(aNode->IsExecNode())
+	if (aNode->IsExecNode())
 	{
 		ImGui::BeginTable("nodeHeader", 2, ImGuiTableFlags_SizingFixedFit, nodePinTableSize);
 		ImGui::TableNextColumn();
@@ -316,20 +324,20 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 
 	ImGui::PopFont();
 
-	if(aNode->HasFlag(GraphNodeFlag_EditableInputPins) || aNode->HasFlag(GraphNodeFlag_EditableOutputPins))
+	if (aNode->HasFlag(GraphNodeFlag_EditableInputPins) || aNode->HasFlag(GraphNodeFlag_EditableOutputPins))
 	{
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
-		if(aNode->HasFlag(GraphNodeFlag_EditableInputPins))
+		if (aNode->HasFlag(GraphNodeFlag_EditableInputPins))
 		{
 			ImGui::Button(ICON_FA_PLUS "  Add");
 		}
 		else
 		{
-			ImGui::Dummy({32, 32});
+			ImGui::Dummy({ 32, 32 });
 		}
 		ImGui::TableNextColumn();
-		if(aNode->HasFlag(GraphNodeFlag_EditableOutputPins))
+		if (aNode->HasFlag(GraphNodeFlag_EditableOutputPins))
 		{
 			ImGui::SetCursorPosX(
 				ImGui::GetCursorPosX()
@@ -343,31 +351,31 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 			ImVec2 posCache = ImGui::GetCursorPos();
 			const ImVec2 textSize = ImGui::CalcTextSize(ICON_FA_PLUS "  Add");
 
-			if(ImGui::InvisibleButton("##btnAddOutputPin", textSize))
+			if (ImGui::InvisibleButton("##btnAddOutputPin", textSize))
 			{
 				const size_t newPinId = mySchema->CreateDynamicExecPin(aNode.get(), "New Pin", PinDirection::Output);
 				aNode->OnUserAddedPin(mySchema, newPinId);
 			}
 			const bool isButtonHovered = ImGui::IsItemHovered();
 			const bool isButtonClicked = ImGui::IsItemActive();
-			if(isButtonHovered || isButtonClicked)
+			if (isButtonHovered || isButtonClicked)
 			{
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(128, 128, 128, 255));	
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(128, 128, 128, 255));
 			}
-			if(ImGui::IsItemActive())
+			if (ImGui::IsItemActive())
 			{
 				posCache.y += 2;
 			}
-			ImGui::SetCursorPos(posCache);			
+			ImGui::SetCursorPos(posCache);
 			ImGui::TextUnformatted(ICON_FA_PLUS "  Add");
-			if(isButtonHovered || isButtonClicked)
+			if (isButtonHovered || isButtonClicked)
 			{
 				ImGui::PopStyleColor();
 			}
 		}
 		else
 		{
-			ImGui::Dummy({2, 2});
+			ImGui::Dummy({ 2, 2 });
 		}
 	}
 
@@ -380,8 +388,28 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 
 	// This cannot happen before ImNodeEd::EndNode() since the DrawList won't be available.
 	RenderNodeStyle(aNode, nodeHeaderRect, nodeBodyRect);
-	
+
 	ImGui::PopID();
+
+	if (state->GraphError.HasError && uidAwareNode->GetUID() == state->GraphError.Node)
+	{
+		ImNodeEd::PopStyleVar();
+		ImNodeEd::PopStyleColor();
+
+		if (ImNodeEd::GetHoveredNode() == currentImNodeId)
+		{
+			ImNodeEd::Suspend();
+			ImGui::SetTooltip(state->GraphError.Message.c_str());
+			ImNodeEd::Resume();
+		}
+
+		if (ImNodeEd::IsNodeSelected(currentImNodeId))
+		{
+			state->GraphError.HasError = false;
+			state->GraphError.Message.clear();
+			state->GraphError.Node = 0;
+		}
+	}
 
 	ImNodeEd::PopStyleVar();
 	ImNodeEd::PopStyleVar();
@@ -390,20 +418,20 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 void ScriptGraphEditor::RenderNodeHeader(const std::shared_ptr<ScriptGraphNode>& aNode, const ImVec2& aNodeHeaderRect)
 {
 	ScriptGraphEditorSettings* settings = dynamic_cast<ScriptGraphEditorSettings*>(mySettings);
-	if(aNode->IsExecNode())
+	if (aNode->IsExecNode())
 	{
 		ImGui::PushFont(mySettings->NodeTitleFont);
 		const unsigned nodeTypeU = EnumAsIntegral(aNode->GetNodeType());
-		if(settings->NodeSettings.contains(nodeTypeU))
+		if (settings->NodeSettings.contains(nodeTypeU))
 		{
 			const auto& nodeSettings = settings->NodeSettings.at(nodeTypeU);
-			if(const ImTextureID funcTextureId = nodeSettings.Icon.Get())
+			if (const ImTextureID funcTextureId = nodeSettings.Icon.Get())
 			{
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2.0f);
 				ImGui::Image(funcTextureId, { 16, 16 }, { 0, 0 }, { 1, 1 }, { 255, 255, 255, 255 });
 			}
 			ImGui::TableNextColumn();
-			if(nodeSettings.CenterTitle)
+			if (nodeSettings.CenterTitle)
 			{
 				const ImVec2 nodeTitleSize = ImGui::CalcTextSize(aNode->GetNodeTitle().data());
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
@@ -431,7 +459,7 @@ void ScriptGraphEditor::RenderNodeHeader(const std::shared_ptr<ScriptGraphNode>&
 void ScriptGraphEditor::RenderNodeStyle(const std::shared_ptr<ScriptGraphNode>& aNode, const ImRect& aNodeHeaderRect, const ImRect& aNodeBodyRect)
 {
 	ScriptGraphEditorSettings* settings = dynamic_cast<ScriptGraphEditorSettings*>(mySettings);
-	if(aNode->IsExecNode())
+	if (aNode->IsExecNode())
 	{
 		GraphColor nodeHeaderColor = GraphColor(80, 80, 80, 255);
 
@@ -458,12 +486,12 @@ void ScriptGraphEditor::RenderNodeStyle(const std::shared_ptr<ScriptGraphNode>& 
 		else
 		{
 			const unsigned nodeTypeU = EnumAsIntegral(aNode->GetNodeType());
-		
-			if(settings->NodeSettings.contains(nodeTypeU))
+
+			if (settings->NodeSettings.contains(nodeTypeU))
 			{
 				const ScriptGraphEditorSettings::NodeTypeSettings& nodeSettings = settings->NodeSettings.at(nodeTypeU);
 				nodeHeaderColor = nodeSettings.Color;
-			}	
+			}
 
 			const float halfBorderWidth = ImNodeEd::GetStyle().NodeBorderWidth * 0.5f;
 			const ImRect nodeHeader = ImRect(aNodeHeaderRect.Min.x - (8 - halfBorderWidth), aNodeHeaderRect.Min.y - 2 - (4 - halfBorderWidth), aNodeBodyRect.Max.x + (8 - halfBorderWidth), aNodeBodyRect.Min.y - 2);
@@ -477,13 +505,13 @@ void ScriptGraphEditor::RenderNodeStyle(const std::shared_ptr<ScriptGraphNode>& 
 				nodeHeaderColor.AsU32(),
 				ImNodeEd::GetStyle().NodeRounding,
 				ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight
-				);
+			);
 		}
 
 		return;
 	}
 
-	if(const auto& varNode = std::dynamic_pointer_cast<const SGNode_GetVariable>(aNode))
+	if (const auto& varNode = std::dynamic_pointer_cast<const SGNode_GetVariable>(aNode))
 	{
 		ImDrawList* nodeDrawList = ImNodeEd::GetNodeBackgroundDrawList(varNode->GetUID());
 
@@ -513,14 +541,14 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 	const float iconSize = 24.0f;
 	const ImVec2 iconSizeRect(iconSize, iconSize);
 
-	if(pinDir == PinDirection::Input)
+	if (pinDir == PinDirection::Input)
 	{
 		ImNodeEd::BeginPin(aPin.GetUID(), static_cast<ImNodeEd::PinKind>(pinDir));
 
 		const ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		const ImRect sizeRect(cursorPos, cursorPos + iconSizeRect);
-		
-		if(ImGui::IsRectVisible(iconSizeRect))
+
+		if (ImGui::IsRectVisible(iconSizeRect))
 		{
 			RenderPinIcon(aPin, sizeRect);
 		}
@@ -530,7 +558,7 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 		ImNodeEd::EndPin();
 		ImGui::SameLine();
 
-		if(aPin.IsLabelVisible())
+		if (aPin.IsLabelVisible())
 		{
 			const float y = ImGui::GetCursorPosY();
 			ImGui::SetCursorPosY(y + 3);
@@ -538,7 +566,7 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 			ImGui::SetCursorPosY(y);
 		}
 
-		if(!aPin.IsConnected() && aPin.GetPinType() != ScriptGraphPinType::Exec)
+		if (!aPin.IsConnected() && aPin.GetPinType() != ScriptGraphPinType::Exec)
 		{
 			ImGui::SameLine();
 			const float prevY = ImGui::GetCursorPosY();
@@ -547,20 +575,20 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 
 			const TypedDataContainer& pinData = aPin.GetDataContainer();
 
-			if(pinEditorType->TypeEditWidget(aPin.GetUniqueName(), pinData))
+			if (pinEditorType->TypeEditWidget(aPin.GetUniqueName(), pinData))
 			{
 				aPin.GetOwner()->OnUserChangedPinValue(mySchema, aPin.GetUID());
 			}
 			ImGui::SetCursorPosY(prevY + 3);
-			ImGui::Dummy({0, 0});
+			ImGui::Dummy({ 0, 0 });
 		}
 	}
 	else // Output
 	{
-		if(aPin.IsLabelVisible())
+		if (aPin.IsLabelVisible())
 		{
 			ImGui::SetCursorPosX(
-			ImGui::GetCursorPosX()
+				ImGui::GetCursorPosX()
 				+ ImGui::GetColumnWidth()
 				- ImGui::CalcTextSize(aPin.GetLabel().data()).x
 				- ImGui::GetScrollX() - 2 * ImGui::GetStyle().ItemSpacing.x
@@ -571,7 +599,7 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 			ImGui::SetCursorPosY(y + 3);
 			ImGui::TextUnformatted(aPin.GetLabel().data());
 			ImGui::SameLine();
-			ImGui::SetCursorPosY(y);	
+			ImGui::SetCursorPosY(y);
 		}
 		else
 		{
@@ -587,8 +615,8 @@ void ScriptGraphEditor::RenderPin(const ScriptGraphPin& aPin)
 
 		const ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		const ImRect sizeRect(cursorPos, cursorPos + iconSizeRect);
-		
-		if(ImGui::IsRectVisible(iconSizeRect))
+
+		if (ImGui::IsRectVisible(iconSizeRect))
 		{
 			RenderPinIcon(aPin, sizeRect);
 		}
@@ -608,14 +636,14 @@ void ScriptGraphEditor::RenderPinIcon(const ScriptGraphPin& aPin, const ImRect& 
 	GraphColor pinColor = GraphColor::White;
 
 	const RegisteredType* pinDataType = aPin.GetPinDataType();
-	if(pinType != ScriptGraphPinType::Exec && pinDataType)
+	if (pinType != ScriptGraphPinType::Exec && pinDataType)
 	{
-		const ScriptGraphEditorType* pinEditorType = ScriptGraphEditorTypeRegistry::Get().GetEditorType(pinDataType);	
-		if(pinEditorType)
-			pinColor = pinEditorType->GetTypeColor();	
+		const ScriptGraphEditorType* pinEditorType = ScriptGraphEditorTypeRegistry::Get().GetEditorType(pinDataType);
+		if (pinEditorType)
+			pinColor = pinEditorType->GetTypeColor();
 	}
 
-	switch(pinType)
+	switch (pinType)
 	{
 	case ScriptGraphPinType::Exec:
 		GraphEditorUtils::DrawIcon(drawList, aPinRect, GraphIcon::Exec, pinConnected, GraphColor::White, emptyColor);
@@ -628,7 +656,7 @@ void ScriptGraphEditor::RenderPinIcon(const ScriptGraphPin& aPin, const ImRect& 
 
 void ScriptGraphEditor::RenderEdge(const ScriptGraphEdge& anEdge)
 {
-	if(anEdge.Type == ScriptGraphPinType::Exec)
+	if (anEdge.Type == ScriptGraphPinType::Exec)
 	{
 		return GraphEditorBase::RenderEdge(anEdge);
 	}
@@ -637,24 +665,24 @@ void ScriptGraphEditor::RenderEdge(const ScriptGraphEdge& anEdge)
 	const RegisteredType* fromPinType = fromPin->GetPinDataType();
 	const ScriptGraphEditorType* editorType = ScriptGraphEditorTypeRegistry::Get().GetEditorType(fromPinType);
 	const GraphColor typeColor = editorType->GetTypeColor().AsNormalized();
-	ImNodeEd::Link(anEdge.EdgeId, anEdge.FromId, anEdge.ToId, {typeColor.R, typeColor.G, typeColor.B, typeColor.A}, 1.0f);
+	ImNodeEd::Link(anEdge.EdgeId, anEdge.FromId, anEdge.ToId, { typeColor.R, typeColor.G, typeColor.B, typeColor.A }, 1.0f);
 }
 
 void ScriptGraphEditor::RenderToolbar()
 {
 	ImGui::SetNextItemWidth(50);
-	if(ImGui::Button(ICON_FA_PLAY "  Events"))
+	if (ImGui::Button(ICON_FA_PLAY "  Events"))
 	{
 		ImGui::OpenPopup(ScriptGraphEditor_TriggerEntryPointDialogName.data());
 	}
 	ImGui::SameLine();
-	if(ImGui::Button(ICON_FA_CODE "  Variables"))
+	if (ImGui::Button(ICON_FA_CODE "  Variables"))
 	{
 		ImGui::OpenPopup(ScriptGraphEditor_EditVariablesDialogName.data());
 	}
 	ImGui::SameLine();
-	if(ImGui::Button(ICON_FA_FLOPPY_DISK "  Save"))
-	{		
+	if (ImGui::Button(ICON_FA_FLOPPY_DISK "  Save"))
+	{
 		std::string path;
 		if (Crimson::ShowSaveFileSelector(path, L"Script", L"scrp", { L"Scripts", L"*.scrp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Scripts"))))
 		{
@@ -667,10 +695,10 @@ void ScriptGraphEditor::RenderToolbar()
 			file.close();
 
 			myGraph->SetPath(Crimson::MakeRelativeTo(path, "../Content/Scripts"));
-		}		
+		}
 	}
 	ImGui::SameLine();
-	if(ImGui::Button(ICON_FA_FOLDER_OPEN "  Load"))
+	if (ImGui::Button(ICON_FA_FOLDER_OPEN "  Load"))
 	{
 		std::string path;
 		if (Crimson::ShowOpenFileSelector(path, { L"Script", L"*.scrp" }, Crimson::ToWString(Crimson::GetAbsolutePath("../Content/Scripts"))))
@@ -678,12 +706,12 @@ void ScriptGraphEditor::RenderToolbar()
 			TEMP_SAVE_LOAD_dataBlock.clear();
 
 			std::ifstream file(path, std::ios::binary);
-			size_t size;
+			size_t size = 0;
 			file.read(reinterpret_cast<char*>(&size), sizeof(size));
 			TEMP_SAVE_LOAD_dataBlock.resize(size);
 			file.read(reinterpret_cast<char*>(TEMP_SAVE_LOAD_dataBlock.data()), size);
 			file.close();
-			
+
 			myGraph->Deserialize(TEMP_SAVE_LOAD_dataBlock);
 			myGraph->SetPath(Crimson::MakeRelativeTo(path, "../Content/Scripts"));
 			mySchema->AddToUndo();
@@ -698,7 +726,7 @@ void ScriptGraphEditor::RenderToolbar()
 void ScriptGraphEditor::RenderUserBackgroundContextMenu()
 {
 	const ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
-	if(!state->VariablesContextCategory.Items.empty())
+	if (!state->VariablesContextCategory.Items.empty())
 	{
 		if (ImGui::TreeNodeEx("Variables", ImGuiTreeNodeFlags_SpanAvailWidth))
 		{
@@ -746,24 +774,24 @@ std::vector<GraphEditorStateBase::ContextSearchInfo::SearchMenuItem> ScriptGraph
 	const RegisteredNodeClass& setterNodeClass = MuninGraph::Get().GetNodeClass(typeid(SGNode_SetVariable));
 
 	bool varGetter = false;
-	if(queryCopy.starts_with("get"))
+	if (queryCopy.starts_with("get"))
 	{
 		varGetter = true;
-		if(queryCopy.length() > 3)
+		if (queryCopy.length() > 3)
 			queryCopy = queryCopy.substr(3);
 	}
 
-	else if(queryCopy.starts_with("set"))
+	else if (queryCopy.starts_with("set"))
 	{
-		if(queryCopy.length() > 3)
+		if (queryCopy.length() > 3)
 			queryCopy = queryCopy.substr(3);
 	}
 
 	trim_in_place(queryCopy);
 
-	if(!queryCopy.empty())
+	if (!queryCopy.empty())
 	{
-		for(const auto& varName : mySchema->GetVariables() | std::views::keys)
+		for (const auto& varName : mySchema->GetVariables() | std::views::keys)
 		{
 			const float rank = JaroWinklerDistance(varName, queryCopy);
 			GraphEditorContextMenuItem foundItem;
@@ -777,9 +805,9 @@ std::vector<GraphEditorStateBase::ContextSearchInfo::SearchMenuItem> ScriptGraph
 		}
 
 		std::ranges::sort(results, [](const GraphEditorStateBase::ContextSearchInfo::SearchMenuItem& A, const GraphEditorStateBase::ContextSearchInfo::SearchMenuItem& B)
-		{
-			return A.Rank > B.Rank;
-		});
+			{
+				return A.Rank > B.Rank;
+			});
 	}
 
 	for (auto& item : results)
@@ -811,14 +839,14 @@ std::vector<GraphEditorStateBase::ContextSearchInfo::SearchMenuItem> ScriptGraph
 void ScriptGraphEditor::HandleBackgroundContextMenuItemClicked(const GraphEditorContextMenuItem& aItem)
 {
 	const ImVec2 mousePos = ImNodeEd::ScreenToCanvas(ImGui::GetMousePos());
-	if(const std::shared_ptr<ScriptGraphNode> newNode = mySchema->CreateNode(*aItem.Value))
+	if (const std::shared_ptr<ScriptGraphNode> newNode = mySchema->CreateNode(*aItem.Value))
 	{
 		const auto uidNewNode = AsObjectUIDSharedPtr(newNode);
 		ImNodeEd::SetNodePosition(uidNewNode->GetUID(), mousePos);
 
 		newNode->SetNodePosition(mousePos.x, mousePos.y, 0.f);
 
-		if(const std::shared_ptr<ScriptGraphVariableNode> varNode = std::dynamic_pointer_cast<ScriptGraphVariableNode>(newNode))
+		if (const std::shared_ptr<ScriptGraphVariableNode> varNode = std::dynamic_pointer_cast<ScriptGraphVariableNode>(newNode))
 		{
 			mySchema->SetNodeVariable(varNode.get(), aItem.Tag);
 		}
@@ -830,18 +858,16 @@ void ScriptGraphEditor::HandleBackgroundContextMenuItemClicked(const GraphEditor
 void ScriptGraphEditor::ReportError([[maybe_unused]] const ScriptGraph* aGraph, size_t aNodeId, std::string_view aErrorMessage)
 {
 	ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
-	if (!state->GraphError.HasError)
-	{
-		state->GraphError.HasError = true;
-		myGraph->Stop();
 
-		state->GraphError.Message = aErrorMessage;
-		state->GraphError.Node = aNodeId;
+	state->GraphError.HasError = true;
+	myGraph->Stop();
 
-		ImNodeEd::SelectNode(state->GraphError.Node);
-		ImNodeEd::NavigateToSelection();
-		ImNodeEd::DeselectNode(state->GraphError.Node);
-	}
+	state->GraphError.Message = aErrorMessage;
+	state->GraphError.Node = aNodeId;
+
+	ImNodeEd::SelectNode(state->GraphError.Node);
+	ImNodeEd::NavigateToSelection();
+	ImNodeEd::DeselectNode(state->GraphError.Node);
 }
 
 void ScriptGraphEditor::UpdateVariablesContextMenu() const
@@ -862,7 +888,7 @@ void ScriptGraphEditor::UpdateVariablesContextMenu() const
 
 		state->VariablesContextCategory.Items.emplace_back(getterItem);
 
-		if(!var.HasFlag(ScriptGraphVariableFlag_ReadOnly))
+		if (!var.HasFlag(ScriptGraphVariableFlag_ReadOnly))
 		{
 			GraphEditorContextMenuItem setterItem;
 			setterItem.Title = ICON_FA_DATABASE + ("Set " + varName);
@@ -884,15 +910,15 @@ void ScriptGraphEditor::ScriptGraphEditor_TriggerEntryPointDialog() const
 	const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-	ImGui::SetNextWindowSize({512, 256});
-	if(ImGui::BeginPopupModal(ScriptGraphEditor_TriggerEntryPointDialogName.data()))
+	ImGui::SetNextWindowSize({ 512, 256 });
+	if (ImGui::BeginPopupModal(ScriptGraphEditor_TriggerEntryPointDialogName.data()))
 	{
 		const auto& entryPointList = mySchema->GetEntryPoints();
 		ImGui::BeginTable("entryPointBody", 2, ImGuiTableFlags_SizingStretchProp);
-		for(const auto& label : entryPointList | std::views::keys)
+		for (const auto& label : entryPointList | std::views::keys)
 		{
 			ImGui::TableNextColumn();
-			if(ImGui::Button(label.c_str()))
+			if (ImGui::Button(label.c_str()))
 			{
 				ImGui::CloseCurrentPopup();
 				ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
@@ -902,7 +928,7 @@ void ScriptGraphEditor::ScriptGraphEditor_TriggerEntryPointDialog() const
 		}
 		ImGui::EndTable();
 
-		if(ImGui::Button("Close"))
+		if (ImGui::Button("Close"))
 		{
 			ImGui::CloseCurrentPopup();
 		}
@@ -929,9 +955,9 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 		ImGui::TableSetupColumn("Actions");
 		ImGui::TableHeadersRow();
 		int varIdx = 0;
-		for(const auto& [ varName, variable ] : graphVariables)
+		for (const auto& [varName, variable] : graphVariables)
 		{
-			if(variable.HasFlag(ScriptGraphVariableFlag_Internal))
+			if (variable.HasFlag(ScriptGraphVariableFlag_Internal))
 			{
 				continue;
 			}
@@ -962,9 +988,9 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 
 			ImGui::TableNextColumn();
 			ImGui::PushID(varName.c_str());
-			if(state->VariableEditor.CurrentVariable == varIdx)
+			if (state->VariableEditor.CurrentVariable == varIdx)
 			{
-				if(ImGui::Button(ICON_FA_FLOPPY_DISK))
+				if (ImGui::Button(ICON_FA_FLOPPY_DISK))
 				{
 					variable.Reset();
 					state->VariableEditor.CurrentVariable = -1;
@@ -972,12 +998,12 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 			}
 			else
 			{
-				if(ImGui::Button(ICON_FA_PEN))
+				if (ImGui::Button(ICON_FA_PEN))
 				{
 					state->VariableEditor.CurrentVariable = varIdx;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(ICON_FA_XMARK))
+				if (ImGui::Button(ICON_FA_XMARK))
 				{
 					state->VariableEditor.VarToDelete = varName;
 				}
@@ -995,9 +1021,9 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 
 		ImGui::PushItemWidth(150);
 		{
-			if(ImGui::BeginCombo("##newVarType", state->VariableEditor.NewVarTypeIndex>= 0 ? state->VisibleEditorTypes[state->VariableEditor.NewVarTypeIndex].data() : nullptr, 0))
+			if (ImGui::BeginCombo("##newVarType", state->VariableEditor.NewVarTypeIndex >= 0 ? state->VisibleEditorTypes[state->VariableEditor.NewVarTypeIndex].data() : nullptr, 0))
 			{
-				for(size_t i = 0; i < state->VisibleEditorTypes.size(); i++)
+				for (size_t i = 0; i < state->VisibleEditorTypes.size(); i++)
 				{
 					const ScriptGraphEditorType* editorType = ScriptGraphEditorTypeRegistry::Get().GetEditorType(state->VisibleEditorTypes[i]);
 					if (editorType->IsInternal())
@@ -1019,14 +1045,14 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 
 		ImGui::TextUnformatted("Default Value:");
 		ImGui::SameLine();
-		if(state->VariableEditor.NewVarTypeIndex >= 0)
+		if (state->VariableEditor.NewVarTypeIndex >= 0)
 		{
 			const auto& editorTypes = ScriptGraphEditorTypeRegistry::Get().GetEditorTypeNames();
 			const RegisteredType* regType = TypeRegistry::Get().Resolve(editorTypes.at(state->VariableEditor.NewVarTypeIndex));
 			const ScriptGraphEditorType* editorType = ScriptGraphEditorTypeRegistry::Get().GetEditorType(regType);
-			if(editorType->IsInlineEditable())
+			if (editorType->IsInlineEditable())
 			{
-				if(state->VariableEditor.NewVariableDefault.GetType() != regType)
+				if (state->VariableEditor.NewVariableDefault.GetType() != regType)
 				{
 					state->VariableEditor.NewVariableDefault = TypedDataContainer::Create(regType);
 				}
@@ -1045,7 +1071,7 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 		//	ImGui::SameLine();
 		//}
 
-		if(ImGui::Button(ICON_FA_PLUS "  Create", ImVec2(100, 0)))
+		if (ImGui::Button(ICON_FA_PLUS "  Create", ImVec2(100, 0)))
 		{
 			mySchema->AddVariable(state->VariableEditor.NewVarName, state->VariableEditor.NewVariableDefault);
 			state->VariableEditor.NewVarName.clear();
@@ -1069,7 +1095,7 @@ void ScriptGraphEditor::ScriptGraphEditor_EditVariablesDialog() const
 
 	ImGui::PopStyleVar();
 
-	if(!state->VariableEditor.VarToDelete.empty())
+	if (!state->VariableEditor.VarToDelete.empty())
 	{
 		mySchema->RemoveVariable(state->VariableEditor.VarToDelete);
 		state->VariableEditor.VarToDelete.clear();

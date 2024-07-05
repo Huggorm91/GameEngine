@@ -305,6 +305,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\Components\Script\Nodes\AMNodes_GameObject.h" />
     <ClInclude Include="Assets\Components\Collision\BoxColliderComponent.h" />
     <ClInclude Include="Assets\Components\Collision\CapsuleColliderComponent.h" />
     <ClInclude Include="Assets\Components\Collision\ColliderComponent.h" />
@@ -329,6 +330,7 @@
     <ClInclude Include="Assets\Components\ComponentType.h" />
     <ClInclude Include="Assets\Binary.h" />
     <ClInclude Include="Assets\Components\Particles\Emitters\BurstEmitter.h" />
+    <ClInclude Include="Assets\Components\Script\Nodes\NodeInclude.h" />
     <ClInclude Include="Assets\ImguiTransform.h" />
     <ClInclude Include="Assets\Components\Camera\EditorCameraControllerComponent.h" />
     <ClInclude Include="Assets\Animation\BlendSpace.h" />
@@ -361,6 +363,7 @@
     <ClInclude Include="Managers\ScriptManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets\Components\Script\Nodes\AMNodes_GameObject.cpp" />
     <ClCompile Include="Assets\Components\Collision\BoxColliderComponent.cpp" />
     <ClCompile Include="Assets\Components\Collision\CapsuleColliderComponent.cpp" />
     <ClCompile Include="Assets\Components\Collision\ColliderComponent.cpp" />
@@ -421,7 +424,14 @@
     <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Assets\Components\Particles\Emitters\StreamEmitter.cpp" />
-    <ClCompile Include="Assets\Components\Script\ScriptComponent.cpp" />
+    <ClCompile Include="Assets\Components\Script\ScriptComponent.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Retail Editor|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug Editor|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Retail Game|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">$(SolutionDir)ThirdParty/MuninGraph;$(SolutionDir)CrimsonUtilities;$(SolutionDir)ThirdParty\;$(SolutionDir)ThirdParty\FBXImporter\include;</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="Managers\ScriptManager.cpp" />
   </ItemGroup>
   <ItemGroup>

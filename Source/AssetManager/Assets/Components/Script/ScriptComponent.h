@@ -6,13 +6,13 @@ class ScriptGraph;
 BEGIN_COMPONENT(ScriptComponent)
 public:
 	ScriptComponent();
-	ScriptComponent(const ScriptComponent& aComponent) = default;
-	ScriptComponent(ScriptComponent&& aComponent) noexcept = default;
+	ScriptComponent(const ScriptComponent& aComponent);
+	ScriptComponent(ScriptComponent&& aComponent) noexcept;
 	ScriptComponent(const Json::Value& aJson);
 	~ScriptComponent() = default;
 
-	ScriptComponent& operator=(const ScriptComponent& aComponent) = default;
-	ScriptComponent& operator=(ScriptComponent&& aComponent) noexcept = default;
+	ScriptComponent& operator=(const ScriptComponent& aComponent);
+	ScriptComponent& operator=(ScriptComponent&& aComponent) noexcept;
 
 	void Update() override;
 
@@ -20,13 +20,13 @@ public:
 
 	std::shared_ptr<ScriptGraph> GetScriptGraph();
 
-	// void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 
-	// void OnTriggerEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnTriggerStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnTriggerExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	void OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 
 	// void TransformHasChanged() const override;
 

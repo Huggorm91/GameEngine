@@ -1,12 +1,46 @@
 #include "AssetManager.pch.h"
 #include "ScriptComponent.h"
+
 #include "AssetManager.h"
+#include "Nodes/NodeInclude.h"
+#include "../Collision/ColliderComponent.h"
+#include "ScriptGraph/ScriptGraphPayload.h"
 
 ScriptComponent::ScriptComponent() : Component(ComponentType::Script), myScriptGraph(nullptr)
 {}
 
+ScriptComponent::ScriptComponent(const ScriptComponent& aComponent) : Component(aComponent), myScriptGraph(nullptr), myScriptPath(aComponent.myScriptPath)
+{
+}
+
+ScriptComponent::ScriptComponent(ScriptComponent&& aComponent) noexcept : Component(std::move(aComponent)), myScriptGraph(nullptr), myScriptPath(aComponent.myScriptPath)
+{
+}
+
 ScriptComponent::ScriptComponent(const Json::Value& aJson) : Component(aJson), myScriptGraph(nullptr), myScriptPath(aJson["ScriptPath"].asString())
 {}
+
+ScriptComponent& ScriptComponent::operator=(const ScriptComponent & aComponent)
+{
+	Component::operator=(aComponent);
+	Script::ScriptData data;
+	myScriptPath = aComponent.myScriptPath;
+	aComponent.myScriptGraph->Serialize(data);
+	myScriptGraph->Deserialize(data);
+	myScriptGraph->SetPath(myScriptPath);
+	return *this;
+}
+
+ScriptComponent& ScriptComponent::operator=(ScriptComponent&& aComponent) noexcept
+{
+	Component::operator=(std::move(aComponent));
+	Script::ScriptData data;
+	myScriptPath = aComponent.myScriptPath;
+	aComponent.myScriptGraph->Serialize(data);
+	myScriptGraph->Deserialize(data);
+	myScriptGraph->SetPath(myScriptPath);
+	return *this;
+}
 
 void ScriptComponent::Update()
 {
@@ -21,7 +55,10 @@ void ScriptComponent::Update()
 void ScriptComponent::Init(GameObject* aParent)
 {
 	Component::Init(aParent);
-	myScriptGraph = std::make_shared<ScriptGraph>(ScriptGraph(myParent));
+	if (!myScriptGraph)
+	{
+		myScriptGraph = std::make_shared<ScriptGraph>(ScriptGraph(myParent));
+	}	
 	
 	if (!myScriptPath.empty())
 	{
@@ -36,6 +73,48 @@ void ScriptComponent::Init(GameObject* aParent)
 std::shared_ptr<ScriptGraph> ScriptComponent::GetScriptGraph()
 {
 	return myScriptGraph;
+}
+
+void ScriptComponent::OnCollisionEnter(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Collider ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Collision Enter", payload);
+}
+
+void ScriptComponent::OnCollisionStay(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Collider ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Collision Stay", payload);
+}
+
+void ScriptComponent::OnCollisionExit(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Collider ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Collision Exit", payload);
+}
+
+void ScriptComponent::OnTriggerEnter(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Trigger ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Trigger Enter", payload);
+}
+
+void ScriptComponent::OnTriggerStay(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Trigger ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Trigger Stay", payload);
+}
+
+void ScriptComponent::OnTriggerExit(CollisionLayer::Layer, ColliderComponent* aCollider)
+{
+	ScriptGraphPayload payload;
+	payload.SetPinValue("Trigger ID", aCollider->GetParent().GetID());
+	myScriptGraph->ExecuteWithPayload("On Trigger Exit", payload);
 }
 
 void ScriptComponent::CreateImGuiComponents()
