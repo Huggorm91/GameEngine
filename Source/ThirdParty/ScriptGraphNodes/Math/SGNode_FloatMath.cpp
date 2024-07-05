@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "SGNode_Float.h"
+#include "SGNode_FloatMath.h"
 
 IMPLEMENT_GRAPH_NODE(SGNode_FloatAdd, ScriptGraphNode);
 

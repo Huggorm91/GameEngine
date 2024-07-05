@@ -5,6 +5,86 @@
 
 extern "C" void __MuninGraph_AutoRegEditorTypes() {  }
 
+IMPLEMENT_EDITOR_TYPE(bool, Bool)
+
+bool ScriptGraphEditorType_Bool::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
+{
+	const float y = ImGui::GetCursorPosY();
+	ImGui::SetCursorPosY(y - 2);
+	ImGui::Checkbox(aUniqueName.data(), static_cast<bool*>(*aDataContainer));
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+std::string ScriptGraphEditorType_Bool::ToString(const TypedDataContainer& aDataContainer) const
+{
+	bool f = 0;
+	aDataContainer.TryGet(f);
+	if (f)
+	{
+		return "True";
+	}
+	return "False";
+};
+
+IMPLEMENT_EDITOR_TYPE(int, Int);
+
+bool ScriptGraphEditorType_Int::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
+{
+	const float y = ImGui::GetCursorPosY();
+	ImGui::SetCursorPosY(y - 2);
+	const ImVec2 inputSize = ImGui::CalcTextSize("10000");
+	ImGui::SetNextItemWidth(inputSize.x);
+	ImGui::InputInt(aUniqueName.data(), static_cast<int*>(*aDataContainer), 0, 0);
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+std::string ScriptGraphEditorType_Int::ToString(const TypedDataContainer& aDataContainer) const
+{
+	int f = 0;
+	aDataContainer.TryGet(f);
+	return std::to_string(f);
+};
+
+IMPLEMENT_EDITOR_TYPE(unsigned, GameObjectID);
+
+bool ScriptGraphEditorType_GameObjectID::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
+{
+	const float y = ImGui::GetCursorPosY();
+	ImGui::SetCursorPosY(y - 2);
+	const ImVec2 inputSize = ImGui::CalcTextSize("100000");
+	ImGui::SetNextItemWidth(inputSize.x);
+	int value = *static_cast<unsigned*>(*aDataContainer);
+	if (ImGui::InputInt(aUniqueName.data(), &value))
+	{
+		std::clamp(value, 0, INT_MAX);
+		*static_cast<unsigned*>(*aDataContainer) = value;
+	}
+
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+std::string ScriptGraphEditorType_GameObjectID::ToString(const TypedDataContainer& aDataContainer) const
+{
+	unsigned f = 0;
+	aDataContainer.TryGet(f);
+	return std::to_string(f);
+};
+
 IMPLEMENT_EDITOR_TYPE(float, Float)
 
 bool ScriptGraphEditorType_Float::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const

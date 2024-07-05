@@ -18,6 +18,7 @@ public:
 
 	virtual NodeResult Enter(size_t anEntryPinId, NodeEntryType aEntryType);
 	virtual NodeResult DoOperation() { return NoExec(); }
+	virtual void Reset() {}
 
 	const std::vector<std::type_index>& GetSupportedSchemas() const override;
 

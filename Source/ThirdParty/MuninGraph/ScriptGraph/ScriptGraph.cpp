@@ -27,6 +27,7 @@ bool ScriptGraph::Execute(std::string_view aEntryPointHandle)
 		if(const auto& node = GetNodeById(it->second))
 		{
 			myLastExecutedPath.clear();
+			myActivatedNodes.clear();
 			myShouldStop = false;
 			myNumActiveFunctions++;
 			executeResult = ExecuteInternal(node.get(), 0);
@@ -308,6 +309,12 @@ bool ScriptGraph::ExecuteInternal(ScriptGraphNode* aNode, size_t aPinId)
 	NodeResult result;
 	do
 	{
+		// Reset the node if it is the first time it is visited during this Execute
+		if (!myActivatedNodes.contains(currentNodeEntryPin))
+		{
+			currentNode->Reset();
+			myActivatedNodes.emplace(currentNodeEntryPin);
+		}
 		// Execute the node.
 		result = currentNode->Enter(currentNodeEntryPin, NodeEntryType::New);
 
@@ -354,6 +361,10 @@ bool ScriptGraph::ExecuteInternal(ScriptGraphNode* aNode, size_t aPinId)
 					currentNode = entryPin.GetOwner();
 					currentNodeEntryPin = entryPin.GetUID();
 				}
+			}
+			else
+			{
+				railFinished = true;
 			}
 		}
 

@@ -10,6 +10,7 @@ public:
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Flow Control"; }
 
 	NodeResult Enter(size_t anEntryPinId, NodeEntryType aEntryType) override;
+	void Reset() override;
 
 private:
 	bool myIsOpen = true;

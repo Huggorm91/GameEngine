@@ -4,6 +4,21 @@
 
 #pragma comment(linker, "/include:__MuninGraph_AutoRegEditorTypes")
 
+BEGIN_DECLARE_EDITOR_TYPE(bool, Bool, GraphColor(255, 0, 0, 255), true);
+bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
+std::string ToString(const TypedDataContainer& aDataContainer) const override;
+END_DECLARE_EDITOR_TYPE();
+
+BEGIN_DECLARE_EDITOR_TYPE(int, Int, GraphColor(0, 255, 255, 255), true);
+bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
+std::string ToString(const TypedDataContainer& aDataContainer) const override;
+END_DECLARE_EDITOR_TYPE();
+
+BEGIN_DECLARE_EDITOR_TYPE(unsigned, GameObjectID, GraphColor(0, 255, 0, 255), true);
+bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
+std::string ToString(const TypedDataContainer& aDataContainer) const override;
+END_DECLARE_EDITOR_TYPE();
+
 BEGIN_DECLARE_EDITOR_TYPE(float, Float, GraphColor(156, 246, 60, 255), true);
 	bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
 	std::string ToString(const TypedDataContainer& aDataContainer) const override;

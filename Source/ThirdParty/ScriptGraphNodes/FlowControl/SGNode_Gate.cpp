@@ -15,10 +15,6 @@ SGNode_Gate::SGNode_Gate()
 NodeResult SGNode_Gate::Enter(size_t anEntryPinId, NodeEntryType aEntryType)
 {
 	ClearError();
-	if (aEntryType == NodeEntryType::New)
-	{
-		myIsOpen = true;
-	}
 
 	bool condition = false;
 	if (GetPinData("Condition", condition))
@@ -39,4 +35,9 @@ NodeResult SGNode_Gate::Enter(size_t anEntryPinId, NodeEntryType aEntryType)
 	}
 
 	return Error("Something went wrong evaluating condition!");
+}
+
+void SGNode_Gate::Reset()
+{
+	myIsOpen = true;
 }

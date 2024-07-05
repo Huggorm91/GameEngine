@@ -10,7 +10,7 @@
 
 #include "Logic\SGNode_BoolLogic.h"
 
-#include "Math\SGNode_Float.h"
+#include "Math\SGNode_FloatMath.h"
 
 #include "Text\SGNode_FormatText.h"
 #include "Text\SGNode_LogText.h"

@@ -24,7 +24,7 @@
     <ClInclude Include="Events\SGNode_BeginPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Math\SGNode_Float.h">
+    <ClInclude Include="Math\SGNode_FloatMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ScriptGraphTypes.h">
@@ -71,7 +71,7 @@
     <ClCompile Include="Events\SGNode_BeginPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Math\SGNode_Float.cpp">
+    <ClCompile Include="Math\SGNode_FloatMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScriptGraphTypes.cpp">

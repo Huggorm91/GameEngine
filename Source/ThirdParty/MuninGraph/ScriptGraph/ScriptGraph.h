@@ -2,6 +2,7 @@
 #include "Internal/MuninGraphCommon.h"
 #include "NodeGraph/NodeGraph.h"
 #include "NodeGraph/NodeGraphCommon.h"
+#include <unordered_set>
 
 class ScriptGraphPayload;
 struct ScriptGraphVariable;
@@ -56,6 +57,7 @@ private:
 	std::string myPath;
 
 	std::vector<size_t> myLastExecutedPath;
+	std::unordered_set<size_t> myActivatedNodes;
 	std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> myEntryPoints;
 	std::unordered_map<size_t, std::string> myNodeIdToEntryPoint;
 
