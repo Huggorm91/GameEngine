@@ -15,8 +15,8 @@ SGNode_FloatAdd::SGNode_FloatAdd()
 
 NodeResult SGNode_FloatAdd::DoOperation()
 {
-	float inA = 0;
-	float inB = 0;
+	float inA = 0.f;
+	float inB = 0.f;
 
 	if (GetPinData("A", inA) && GetPinData("B", inB))
 	{
@@ -41,8 +41,8 @@ SGNode_FloatSubtract::SGNode_FloatSubtract()
 
 NodeResult SGNode_FloatSubtract::DoOperation()
 {
-	float inA = 0;
-	float inB = 0;
+	float inA = 0.f;
+	float inB = 0.f;
 
 	if (GetPinData("A", inA) && GetPinData("B", inB))
 	{
@@ -67,8 +67,8 @@ SGNode_FloatMultiplication::SGNode_FloatMultiplication()
 
 NodeResult SGNode_FloatMultiplication::DoOperation()
 {
-	float inA = 0;
-	float inB = 0;
+	float inA = 0.f;
+	float inB = 0.f;
 
 	if (GetPinData("A", inA) && GetPinData("B", inB))
 	{
@@ -93,8 +93,8 @@ SGNode_FloatDivision::SGNode_FloatDivision()
 
 NodeResult SGNode_FloatDivision::DoOperation()
 {
-	float inA = 0;
-	float inB = 0;
+	float inA = 0.f;
+	float inB = 0.f;
 
 	if (GetPinData("A", inA) && GetPinData("B", inB))
 	{
@@ -118,7 +118,7 @@ SGNode_FloatCos::SGNode_FloatCos()
 
 NodeResult SGNode_FloatCos::DoOperation()
 {
-	float value = 0;
+	float value = 0.f;
 
 	if (GetPinData("Value", value))
 	{
@@ -142,7 +142,7 @@ SGNode_FloatSin::SGNode_FloatSin()
 
 NodeResult SGNode_FloatSin::DoOperation()
 {
-	float value = 0;
+	float value = 0.f;
 
 	if (GetPinData("Value", value))
 	{
@@ -166,7 +166,7 @@ SGNode_FloatAbs::SGNode_FloatAbs()
 
 NodeResult SGNode_FloatAbs::DoOperation()
 {
-	float value = 0;
+	float value = 0.f;
 
 	if (GetPinData("Value", value))
 	{
@@ -190,7 +190,7 @@ SGNode_FloatATan::SGNode_FloatATan()
 
 NodeResult SGNode_FloatATan::DoOperation()
 {
-	float inX = 0;
+	float inX = 0.f;
 
 	if (GetPinData("X", inX))
 	{
@@ -215,8 +215,8 @@ SGNode_FloatATan2::SGNode_FloatATan2()
 
 NodeResult SGNode_FloatATan2::DoOperation()
 {
-	float inX = 0;
-	float inY = 0;
+	float inX = 0.f;
+	float inY = 0.f;
 
 	if (GetPinData("X", inX) && GetPinData("Y", inY))
 	{

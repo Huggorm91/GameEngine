@@ -21,14 +21,14 @@ NodeResult SGNode_FormatText::DoOperation()
 	std::string pinValue;
 	GetPinData("Format", pinValue);
 
-	if(!pinValue.empty())
+	if (!pinValue.empty())
 	{
 		const std::regex expression(R"(\{[a-zA-Z0-9]*\})");
 		std::vector<std::string> tokenPins = GetFormatTokens(pinValue);
-		for(size_t p = 0; p < tokenPins.size(); p++)
+		for (size_t p = 0; p < tokenPins.size(); p++)
 		{
 			std::string& tokenValue = tokenPins[p];
-			if(!GetPinData(tokenPins[p], tokenValue))
+			if (!GetPinData(tokenPins[p], tokenValue))
 			{
 				tokenValue = "";
 			}
@@ -45,7 +45,7 @@ NodeResult SGNode_FormatText::DoOperation()
 void SGNode_FormatText::OnUserChangedPinValue(ScriptGraphSchema* aSchema, size_t aPinId)
 {
 	const ScriptGraphPin& pin = GetPin(aPinId);
-	if(pin.GetLabel() == "Format")
+	if (pin.GetLabel() == "Format")
 	{
 		std::string pinValue;
 		GetPinData("Format", pinValue);
@@ -54,15 +54,15 @@ void SGNode_FormatText::OnUserChangedPinValue(ScriptGraphSchema* aSchema, size_t
 		std::vector<size_t> pinsToDelete;
 
 		// Check if the pins already exist.
-		for(const auto& [pinId, existingPin] : GetPins())
+		for (const auto& [pinId, existingPin] : GetPins())
 		{
-			if(!existingPin.IsDynamicPin())
+			if (!existingPin.IsDynamicPin())
 				continue;
 
 			bool pinExists = false;
-			for(auto pinToCreate = pinsToCreate.begin(); pinToCreate != pinsToCreate.end(); ++pinToCreate)
+			for (auto pinToCreate = pinsToCreate.begin(); pinToCreate != pinsToCreate.end(); ++pinToCreate)
 			{
-				if(existingPin.GetLabel() == *pinToCreate)
+				if (existingPin.GetLabel() == *pinToCreate)
 				{
 					pinToCreate = pinsToCreate.erase(pinToCreate);
 					pinExists = true;
@@ -70,22 +70,22 @@ void SGNode_FormatText::OnUserChangedPinValue(ScriptGraphSchema* aSchema, size_t
 				}
 			}
 
-			if(!pinExists)
+			if (!pinExists)
 			{
 				pinsToDelete.emplace_back(pinId);
 			}
 		}
 
-		for(const auto& pinToDelete : pinsToDelete)
+		for (const auto& pinToDelete : pinsToDelete)
 		{
 			aSchema->MarkDynamicPinForDelete(pinToDelete);
 		}
 
-		for(const auto& pinToCreate : pinsToCreate)
+		for (const auto& pinToCreate : pinsToCreate)
 		{
 			aSchema->CreateDynamicDataPin(this, pinToCreate, PinDirection::Input, typeid(std::string));
 		}
-	}	
+	}
 }
 
 std::vector<std::string> SGNode_FormatText::GetFormatTokens(const std::string& aString) const
@@ -94,11 +94,39 @@ std::vector<std::string> SGNode_FormatText::GetFormatTokens(const std::string& a
 	const std::regex expression(R"(\{[a-zA-Z0-9]*\})");
 	std::smatch regexMatch;
 	std::string::const_iterator it(aString.cbegin());
-	while(std::regex_search(it, aString.cend(), regexMatch, expression))
+	while (std::regex_search(it, aString.cend(), regexMatch, expression))
 	{
 		std::string match = regexMatch[0];
 		result.emplace_back(match.substr(1, match.length() - 2));
 		it = regexMatch.suffix().first;
 	}
 	return result;
+}
+
+IMPLEMENT_GRAPH_NODE(SGNode_MergeText, ScriptGraphNode)
+
+SGNode_MergeText::SGNode_MergeText()
+{
+	CreateExecPin("In", PinDirection::Input, false);
+	CreateExecPin("Out", PinDirection::Output, false);
+
+	CreateDataPin<std::string>("A", PinDirection::Input);
+	CreateDataPin<std::string>("B", PinDirection::Input);
+	CreateDataPin<std::string>("Separator", PinDirection::Input);
+
+	CreateDataPin<std::string>("Result", PinDirection::Output);
+}
+
+NodeResult SGNode_MergeText::DoOperation()
+{
+	std::string inA;
+	std::string inB;
+	std::string separator;
+	GetPinData("A", inA);
+	GetPinData("B", inB);
+	GetPinData("Separator", separator);
+
+	SetPinData("Result", inA + separator + inB);
+
+	return ExecPin("Out");
 }

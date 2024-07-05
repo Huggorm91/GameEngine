@@ -7,5 +7,6 @@
 #ifndef PCH_H
 #define PCH_H
 #include "MuninGraph.h"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 
 #endif //PCH_H

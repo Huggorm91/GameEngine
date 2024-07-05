@@ -66,7 +66,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -93,7 +93,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)ThirdParty\MuninGraph;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -124,6 +124,11 @@
     <ClInclude Include="FlowControl\SGNode_Gate.h" />
     <ClInclude Include="FlowControl\SGNode_IfElse.h" />
     <ClInclude Include="FlowControl\SGNode_WhileLoop.h" />
+    <ClInclude Include="Math\SGNode_FloatCompare.h" />
+    <ClInclude Include="Math\SGNode_VectorFunctions.h" />
+    <ClInclude Include="Math\SGNode_VectorMath.h" />
+    <ClInclude Include="Events\SGNode_CollisionEvents.h" />
+    <ClInclude Include="Text\SGNode_ToString.h" />
     <ClInclude Include="Text\SGNode_FormatText.h" />
     <ClInclude Include="Text\SGNode_LogText.h" />
   </ItemGroup>
@@ -143,6 +148,11 @@
     <ClCompile Include="FlowControl\SGNode_Gate.cpp" />
     <ClCompile Include="FlowControl\SGNode_IfElse.cpp" />
     <ClCompile Include="FlowControl\SGNode_WhileLoop.cpp" />
+    <ClCompile Include="Math\SGNode_FloatCompare.cpp" />
+    <ClCompile Include="Math\SGNode_VectorFunctions.cpp" />
+    <ClCompile Include="Math\SGNode_VectorMath.cpp" />
+    <ClCompile Include="Events\SGNode_CollisionEvents.cpp" />
+    <ClCompile Include="Text\SGNode_ToString.cpp" />
     <ClCompile Include="Text\SGNode_FormatText.cpp" />
     <ClCompile Include="Text\SGNode_LogText.cpp" />
   </ItemGroup>
@@ -150,6 +160,9 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CrimsonUtilities\CrimsonUtilities.vcxproj">
+      <Project>{ada69e07-f6e6-4ed5-9569-9656dcb96e3c}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\MuninGraph\MuninGraph.vcxproj">
       <Project>{cab443dd-87c5-4989-a385-f45201559698}</Project>
     </ProjectReference>

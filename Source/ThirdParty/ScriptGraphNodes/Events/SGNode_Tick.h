@@ -7,5 +7,5 @@ DECLARE_GRAPH_NODE(SGNode_Tick, ScriptGraphEventNode)
 public:
 	SGNode_Tick();
 
-	FORCEINLINE std::string_view GetNodeTitle() const override { return "Tick"; }
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Update"; }
 };

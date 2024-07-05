@@ -66,8 +66,7 @@ bool ScriptGraphEditorType_GameObjectID::TypeEditWidget(std::string_view aUnique
 	int value = *static_cast<unsigned*>(*aDataContainer);
 	if (ImGui::InputInt(aUniqueName.data(), &value))
 	{
-		std::clamp(value, 0, INT_MAX);
-		*static_cast<unsigned*>(*aDataContainer) = value;
+		*static_cast<unsigned*>(*aDataContainer) = std::clamp(value, 0, INT_MAX);
 	}
 
 	if (ImGui::IsItemDeactivatedAfterEdit())
@@ -128,6 +127,15 @@ bool ScriptGraphEditorType_String::TypeEditWidget(std::string_view aUniqueName, 
 std::string ScriptGraphEditorType_String::ToString(const TypedDataContainer& aDataContainer) const
 {
 	return *static_cast<const std::string*>(*aDataContainer);
+}
+
+IMPLEMENT_EDITOR_TYPE(Crimson::Vector3f, Vector3)
+
+std::string ScriptGraphEditorType_Vector3::ToString(const TypedDataContainer& aDataContainer) const
+{
+	Crimson::Vector3f f;
+	aDataContainer.TryGet(f);
+	return f.ToString();
 }
 
 IMPLEMENT_EDITOR_TYPE(void*, Internal_VoidPtr);

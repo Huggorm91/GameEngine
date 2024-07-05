@@ -19,3 +19,14 @@ private:
 
 	std::vector<std::string> GetFormatTokens(const std::string& aString) const;
 };
+
+DECLARE_GRAPH_NODE(SGNode_MergeText, ScriptGraphNode)
+{
+public:
+	SGNode_MergeText();
+
+	NodeResult DoOperation() override;
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Merge Text"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "Text"; }
+};

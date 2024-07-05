@@ -57,6 +57,8 @@ namespace Crimson
 		void Serialize(std::ostream& aStream) const;
 		void Deserialize(std::istream& aStream);
 
+		inline std::string ToString() const;
+
 		Vector3<T> operator-() const;
 
 		inline Vector3<T>& operator+=(const Vector3<T>& aVector);
@@ -318,6 +320,12 @@ namespace Crimson
 	inline void Vector3<T>::Deserialize(std::istream& aStream)
 	{
 		aStream.read(reinterpret_cast<char*>(&x), sizeof(x) * 3);
+	}
+
+	template<typename T>
+	inline std::string Vector3<T>::ToString() const
+	{
+		return "x: " + std::to_string(x) + " y: " + std::to_string(y) + " z: " + std::to_string(x);
 	}
 
 	template<class T>
