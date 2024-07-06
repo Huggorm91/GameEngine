@@ -594,7 +594,6 @@ void ModelViewer::Update()
 		UpdateScene();
 	}
 
-	Crimson::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
 #ifndef _RETAIL
@@ -609,6 +608,7 @@ void ModelViewer::Update()
 	myImguiManager.Render();
 	RHI::EndEvent();
 #endif // _RETAIL
+	Crimson::InputMapper::GetInstance()->Update();
 
 	engine.EndFrame();
 }

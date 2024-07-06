@@ -2,6 +2,18 @@
 // such as names of functions and macros.
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define GraphEditorMethod(RetVal)
-#define BEGIN_DECLARE_EDITOR_TYPE(T, N, C, E)
-#define END_DECLARE_EDITOR_TYPE()
-#define IMPLEMENT_EDITOR_TYPE(T, N)
+#define BEGIN_DECLARE_EDITOR_TYPE(T, N, C, E) \
+	struct ScriptGraphEditorType_##N : public ScriptGraphEditorType \
+	{ \
+		FORCEINLINE const GraphColor& GetTypeColor() const override { static GraphColor myColor = C; return myColor; } \
+		FORCEINLINE bool IsInlineEditable() const override { return E; } \
+		ScriptGraphEditorType_##N##() \
+
+#define END_DECLARE_EDITOR_TYPE() \
+	}
+
+#define IMPLEMENT_EDITOR_TYPE(T, N) \
+	static AutoRegisterEditorType<ScriptGraphEditorType_##N##> zz__##N##EditorTypeRegistration; \
+	ScriptGraphEditorType_##N##::ScriptGraphEditorType_##N##() \
+		: ScriptGraphEditorType(TypeRegistry::Get().Resolve(typeid(T))) \
+	{  }

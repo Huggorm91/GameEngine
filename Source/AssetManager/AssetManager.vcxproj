@@ -305,6 +305,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\Components\Script\Nodes\AMNodes_Input.h" />
     <ClInclude Include="Assets\Components\Script\Nodes\AMNodes_GameObject.h" />
     <ClInclude Include="Assets\Components\Collision\BoxColliderComponent.h" />
     <ClInclude Include="Assets\Components\Collision\CapsuleColliderComponent.h" />
@@ -363,6 +364,7 @@
     <ClInclude Include="Managers\ScriptManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets\Components\Script\Nodes\AMNodes_Input.cpp" />
     <ClCompile Include="Assets\Components\Script\Nodes\AMNodes_GameObject.cpp" />
     <ClCompile Include="Assets\Components\Collision\BoxColliderComponent.cpp" />
     <ClCompile Include="Assets\Components\Collision\CapsuleColliderComponent.cpp" />

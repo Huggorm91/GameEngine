@@ -138,4 +138,55 @@ std::string ScriptGraphEditorType_Vector3::ToString(const TypedDataContainer& aD
 	return f.ToString();
 }
 
+IMPLEMENT_EDITOR_TYPE(Crimson::eKey, KeyEnum)
+
+bool ScriptGraphEditorType_KeyEnum::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
+{
+	ImGui::NewLine();
+	ImGui::PushItemWidth(150);
+	ImGui::PushID(std::string(aUniqueName).c_str());
+	Crimson::eKey* value = static_cast<Crimson::eKey*>(*aDataContainer);
+
+	if (ImGui::BeginCombo("", Crimson::KeyToString(*value).c_str()))
+	{
+		Crimson::eKey current = Crimson::eKey::None;
+		for (int index = 0; index < 255; index++)
+		{
+			current = static_cast<Crimson::eKey>(index);
+			if (Crimson::KeyToString(current) == "Unknown")
+			{
+				continue;
+			}
+
+			const bool isSelected = *value == current;
+			if (ImGui::Selectable(Crimson::KeyToString(current).c_str(), isSelected))
+			{
+				*value = current;
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+
+	bool result = false;
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		result = true;
+	}
+	ImGui::PopItemWidth();
+	return result;
+}
+
+std::string ScriptGraphEditorType_KeyEnum::ToString(const TypedDataContainer& aDataContainer) const
+{
+	Crimson::eKey f;
+	aDataContainer.TryGet(f);
+	return Crimson::KeyToString(f);
+}
+
 IMPLEMENT_EDITOR_TYPE(void*, Internal_VoidPtr);

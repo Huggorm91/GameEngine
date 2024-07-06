@@ -85,3 +85,30 @@ NodeResult SGNode_Vector3Equal::DoOperation()
 
 	return Error("Something went wrong comparing A and B!");
 }
+
+IMPLEMENT_GRAPH_NODE(SGNode_Vector3MultiplyFloat, ScriptGraphNode);
+
+SGNode_Vector3MultiplyFloat::SGNode_Vector3MultiplyFloat()
+{
+	CreateExecPin("In", PinDirection::Input);
+	CreateExecPin("Out", PinDirection::Output);
+
+	CreateDataPin<Crimson::Vector3f>("Vector", PinDirection::Input);
+	CreateDataPin<float>("Float", PinDirection::Input);
+
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+NodeResult SGNode_Vector3MultiplyFloat::DoOperation()
+{
+	Crimson::Vector3f inVector;
+	float inFloat = 0.f;
+
+	if (GetPinData("Vector", inVector) && GetPinData("Float", inFloat))
+	{
+		SetPinData("Result", inVector *= inFloat);
+		return ExecPin("Out");
+	}
+
+	return Error("Something went wrong mulitplying vector and float!");
+}

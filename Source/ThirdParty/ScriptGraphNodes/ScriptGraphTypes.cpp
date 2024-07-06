@@ -15,6 +15,8 @@ IMPLEMENT_REGISTERED_TYPE(unsigned, GameObjectID);
 
 IMPLEMENT_REGISTERED_TYPE(float, Float);
 
+IMPLEMENT_REGISTERED_TYPE(Crimson::eKey, KeyEnum);
+
 IMPLEMENT_REGISTERED_TYPE(Crimson::Vector3f, Vector3);
 
 BEGIN_IMPLEMENT_REGISTERED_TYPE(std::string, String);

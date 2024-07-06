@@ -16,6 +16,7 @@
 #include "Textures/Texture_NodeGradient.h"
 #include "Textures/Texture_NodeHeader.h"
 #include "File/FileSelectors.h"
+#include "Time/Timer.h"
 
 constexpr std::string_view ScriptGraphEditor_TriggerEntryPointDialogName(ICON_FA_PLAY "  Events");
 constexpr std::string_view ScriptGraphEditor_EditVariablesDialogName(ICON_FA_CODE "  Variables");
@@ -105,6 +106,8 @@ ScriptGraphEditor::ScriptGraphEditor(ScriptGraphEditorSettings* aSettings, Scrip
 
 void ScriptGraphEditor::SetGraph(ScriptGraph* aGraph)
 {
+	ClearError();
+	myShouldTick = false;
 	myGraph = aGraph;
 	if (myGraph)
 	{
@@ -405,9 +408,7 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 
 		if (ImNodeEd::IsNodeSelected(currentImNodeId))
 		{
-			state->GraphError.HasError = false;
-			state->GraphError.Message.clear();
-			state->GraphError.Node = 0;
+			ClearError();
 		}
 	}
 
@@ -718,6 +719,20 @@ void ScriptGraphEditor::RenderToolbar()
 			myEditorState->Layout.RefreshNodePositions = true;
 		}
 	}
+	bool disableTick = !mySchema->GetEntryPoints().contains("Update");
+	if (disableTick)
+	{
+		ImGui::BeginDisabled();
+	}
+	ImGui::Checkbox("Run Update", &myShouldTick);
+	if (myShouldTick)
+	{
+		myGraph->Tick(Crimson::Timer::GetDeltaTime());
+	}
+	if (disableTick)
+	{
+		ImGui::EndDisabled();
+	}
 
 	ScriptGraphEditor_TriggerEntryPointDialog();
 	ScriptGraphEditor_EditVariablesDialog();
@@ -868,6 +883,15 @@ void ScriptGraphEditor::ReportError([[maybe_unused]] const ScriptGraph* aGraph, 
 	ImNodeEd::SelectNode(state->GraphError.Node);
 	ImNodeEd::NavigateToSelection();
 	ImNodeEd::DeselectNode(state->GraphError.Node);
+}
+
+void ScriptGraphEditor::ClearError()
+{
+	ScriptGraphEditorState* state = dynamic_cast<ScriptGraphEditorState*>(myEditorState);
+
+	state->GraphError.HasError = false;
+	state->GraphError.Message.clear();
+	state->GraphError.Node = 0;
 }
 
 void ScriptGraphEditor::UpdateVariablesContextMenu() const

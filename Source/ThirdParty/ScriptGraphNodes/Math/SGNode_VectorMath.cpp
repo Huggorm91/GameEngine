@@ -243,3 +243,56 @@ NodeResult SGNode_Vector3Distance::DoOperation()
 
 	return Error("Something went wrong getting distance between A and B!");
 }
+
+IMPLEMENT_GRAPH_NODE(SGNode_Vector3Dot, ScriptGraphNode);
+
+SGNode_Vector3Dot::SGNode_Vector3Dot()
+{
+	CreateExecPin("In", PinDirection::Input);
+	CreateExecPin("Out", PinDirection::Output);
+
+	CreateDataPin<Crimson::Vector3f>("A", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("B", PinDirection::Input);
+	CreateDataPin<float>("Result", PinDirection::Output);
+}
+
+NodeResult SGNode_Vector3Dot::DoOperation()
+{
+	Crimson::Vector3f inA;
+	Crimson::Vector3f inB;
+
+	if (GetPinData("A", inA) && GetPinData("B", inB))
+	{
+		SetPinData("Result", inA.Dot(inB));
+		return ExecPin("Out");
+	}
+
+	return Error("Something went wrong calculating dot of A and B!");
+}
+
+
+IMPLEMENT_GRAPH_NODE(SGNode_Vector3Cross, ScriptGraphNode);
+
+SGNode_Vector3Cross::SGNode_Vector3Cross()
+{
+	CreateExecPin("In", PinDirection::Input);
+	CreateExecPin("Out", PinDirection::Output);
+
+	CreateDataPin<Crimson::Vector3f>("A", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("B", PinDirection::Input);
+	CreateDataPin<Crimson::Vector3f>("Result", PinDirection::Output);
+}
+
+NodeResult SGNode_Vector3Cross::DoOperation()
+{
+	Crimson::Vector3f inA;
+	Crimson::Vector3f inB;
+
+	if (GetPinData("A", inA) && GetPinData("B", inB))
+	{
+		SetPinData("Result", inA.Cross(inB));
+		return ExecPin("Out");
+	}
+
+	return Error("Something went wrong calculating cross of A and B!");
+}

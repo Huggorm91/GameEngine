@@ -54,10 +54,9 @@ bool ScriptGraph::ExecuteWithPayload(std::string_view aEntryPointHandle, const S
 
 void ScriptGraph::Tick(float aDeltaTime)
 {
-	myLastExecutedPath.clear();
 	static ScriptGraphPayload thisPayload;
 	thisPayload.SetPinValue("Delta Time", aDeltaTime);
-	ExecuteWithPayload("Tick", thisPayload);
+	ExecuteWithPayload("Update", thisPayload);
 }
 
 void ScriptGraph::Stop()

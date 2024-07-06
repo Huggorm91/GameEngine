@@ -90,3 +90,23 @@ public:
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Vector3"; }
 	NodeResult DoOperation() override;
 };
+
+DECLARE_GRAPH_NODE(SGNode_Vector3Dot, ScriptGraphNode)
+{
+public:
+	SGNode_Vector3Dot();
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Dot"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "Vector3"; }
+	NodeResult DoOperation() override;
+};
+
+DECLARE_GRAPH_NODE(SGNode_Vector3Cross, ScriptGraphNode)
+{
+public:
+	SGNode_Vector3Cross();
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Cross"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "Vector3"; }
+	NodeResult DoOperation() override;
+};
