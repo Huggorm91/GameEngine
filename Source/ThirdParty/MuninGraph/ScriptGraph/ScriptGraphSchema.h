@@ -45,6 +45,8 @@ public:
 	void Undo();
 	void Redo();
 
+	void ClearGraph();
+
 	void MarkDynamicPinForDelete(size_t aPinId);
 	void CommitDynamicPinDeletes();
 

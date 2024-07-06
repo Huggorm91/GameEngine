@@ -490,6 +490,13 @@ void ScriptGraphSchema::Redo()
 	myRedoStack->pop_back();
 }
 
+void ScriptGraphSchema::ClearGraph()
+{
+	auto& graph = *GetMutableGraph();
+	graph.Reset();
+	graph.myPath.clear();
+}
+
 void ScriptGraphSchema::MarkDynamicPinForDelete(size_t aPinId)
 {
 	myPinsToDelete.push_back(aPinId);

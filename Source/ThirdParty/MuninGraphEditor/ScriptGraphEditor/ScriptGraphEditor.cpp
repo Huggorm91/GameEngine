@@ -719,6 +719,11 @@ void ScriptGraphEditor::RenderToolbar()
 			myEditorState->Layout.RefreshNodePositions = true;
 		}
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Clear"))
+	{
+		mySchema->ClearGraph();
+	}
 	bool disableTick = !mySchema->GetEntryPoints().contains("Update");
 	if (disableTick)
 	{

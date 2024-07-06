@@ -202,11 +202,11 @@ void ImguiManager::ReceiveEvent(eInputEvent, eKey aKey)
 	{
 	case eKey::Del:
 	{
-		if (mySelectedObjects.size() > 0)
+		/*if (mySelectedObjects.size() > 0)
 		{
 			myModelViewer->AddCommand(std::make_shared<EditCmd_RemoveGameObjects>());
 			mySelectedObjects.clear();
-		}
+		}*/
 		break;
 	}
 	default:
@@ -447,7 +447,7 @@ void ImguiManager::CreateMenubar()
 				std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
 				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneExtension(), true));
 				std::string path;
-				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
 					myModelViewer->SaveScene(path, false);
 				}
@@ -1210,7 +1210,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 
 		if (ImGui::Button("Overwrite"))
 		{
-			auto overwriteFile = [this](const std::string& aSource, const std::string& aTarget){
+			auto overwriteFile = [this](const std::string& aSource, const std::string& aTarget) {
 				if (CopyFileA(aSource.c_str(), aTarget.c_str(), FALSE) == 0)
 				{
 					ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + GetFileName(aTarget) + "\" in folder: " + GetContainingFolder(aTarget));
@@ -1219,7 +1219,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 				{
 					myLatestAddedFile = aTarget;
 				}
-			};
+				};
 
 			if (myOverwriteAppliedToAll)
 			{
@@ -1242,7 +1242,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 
 		if (ImGui::Button("Create Copy"))
 		{
-			auto copyFile = [this](const std::string& aSource, const std::string& aTarget){
+			auto copyFile = [this](const std::string& aSource, const std::string& aTarget) {
 				std::string path = GetContainingFolder(aTarget);
 				std::string filename = GetFileNameWithoutExtension(aTarget);
 				std::string extension = GetFileExtension(aTarget);
@@ -1260,7 +1260,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 				{
 					myLatestAddedFile = path + filename + "(" + std::to_string(i) + ")" + extension;
 				}
-			};
+				};
 
 			if (myOverwriteAppliedToAll)
 			{
