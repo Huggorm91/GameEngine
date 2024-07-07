@@ -7,9 +7,6 @@ IMPLEMENT_GRAPH_NODE(AMNode_GameObjectGetThis, ScriptGraphNode);
 
 AMNode_GameObjectGetThis::AMNode_GameObjectGetThis()
 {
-	CreateExecPin("In", PinDirection::Input);
-	CreateExecPin("Out", PinDirection::Output);
-
 	CreateDataPin<void*>("Owner", PinDirection::Input);
 	CreateDataPin<unsigned>("GameObject ID", PinDirection::Output);
 }
@@ -23,7 +20,7 @@ NodeResult AMNode_GameObjectGetThis::DoOperation()
 		if (owner)
 		{
 			SetPinData("GameObject ID", static_cast<GameObject*>(owner)->GetID());
-			return ExecPin("Out");
+			return NoExec();
 		}
 		return Error("No owner is set!");
 	}
@@ -295,6 +292,30 @@ NodeResult AMNode_GameObjectSetScale::DoOperation()
 			return ExecPin("Out");
 		}
 		return Error("An object with this ID does not exist!");
+	}
+
+	return Error("Something went wrong setting scale!");
+}
+
+IMPLEMENT_GRAPH_NODE(AMNode_GameObjectIDToString, ScriptGraphNode);
+
+AMNode_GameObjectIDToString::AMNode_GameObjectIDToString()
+{
+	CreateExecPin("In", PinDirection::Input);
+	CreateExecPin("Out", PinDirection::Output);
+
+	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<std::string>("Text", PinDirection::Output);
+}
+
+NodeResult AMNode_GameObjectIDToString::DoOperation()
+{
+	unsigned id = 0u;
+
+	if (GetPinData("GameObject ID", id))
+	{
+		SetPinData("Text", "GameObject: " + std::to_string(id));
+		return ExecPin("Out");
 	}
 
 	return Error("Something went wrong setting scale!");

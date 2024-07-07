@@ -16,7 +16,7 @@ bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDat
 std::string ToString(const TypedDataContainer& aDataContainer) const override;
 END_DECLARE_EDITOR_TYPE();
 
-BEGIN_DECLARE_EDITOR_TYPE(unsigned, GameObjectID, GraphColor(0, 255, 0, 255), true);
+BEGIN_DECLARE_EDITOR_TYPE(unsigned, GameObjectID, GraphColor(0, 0, 255, 255), true);
 bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
 std::string ToString(const TypedDataContainer& aDataContainer) const override;
 END_DECLARE_EDITOR_TYPE();
@@ -35,7 +35,7 @@ BEGIN_DECLARE_EDITOR_TYPE(Crimson::Vector3f, Vector3, GraphColor(255, 255, 0, 25
 std::string ToString(const TypedDataContainer& aDataContainer) const override;
 END_DECLARE_EDITOR_TYPE();
 
-BEGIN_DECLARE_EDITOR_TYPE(Crimson::eKey, KeyEnum, GraphColor(0, 200, 200, 255), true);
+BEGIN_DECLARE_EDITOR_TYPE(Crimson::eKey, KeyEnum, GraphColor(0, 0, 0, 255), true);
 bool TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const override;
 std::string ToString(const TypedDataContainer& aDataContainer) const override;
 END_DECLARE_EDITOR_TYPE();

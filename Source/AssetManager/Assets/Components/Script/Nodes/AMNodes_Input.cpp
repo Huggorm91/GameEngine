@@ -7,7 +7,7 @@ IMPLEMENT_GRAPH_NODE(AMNode_GetKeyDown, ScriptGraphNode);
 AMNode_GetKeyDown::AMNode_GetKeyDown()
 {
 	CreateDataPin<Crimson::eKey>("Key", PinDirection::Input);
-	CreateDataPin<bool>("Is Key Down", PinDirection::Output);
+	CreateDataPin<bool>("Result", PinDirection::Output);
 }
 
 NodeResult AMNode_GetKeyDown::DoOperation()
@@ -16,7 +16,7 @@ NodeResult AMNode_GetKeyDown::DoOperation()
 
 	if (GetPinData("Key", key))
 	{
-		SetPinData("Is Key Down", Crimson::InputMapper::GetInstance()->GetKeyDown(key));
+		SetPinData("Result", Crimson::InputMapper::GetInstance()->GetKeyDown(key));
 		return NoExec();
 	}
 
@@ -28,7 +28,7 @@ IMPLEMENT_GRAPH_NODE(AMNode_GetKeyHeld, ScriptGraphNode);
 AMNode_GetKeyHeld::AMNode_GetKeyHeld()
 {
 	CreateDataPin<Crimson::eKey>("Key", PinDirection::Input);
-	CreateDataPin<bool>("Is Key Held", PinDirection::Output);
+	CreateDataPin<bool>("Result", PinDirection::Output);
 }
 
 NodeResult AMNode_GetKeyHeld::DoOperation()
@@ -37,7 +37,7 @@ NodeResult AMNode_GetKeyHeld::DoOperation()
 
 	if (GetPinData("Key", key))
 	{
-		SetPinData("Is Key Held", Crimson::InputMapper::GetInstance()->GetKeyHeld(key));
+		SetPinData("Result", Crimson::InputMapper::GetInstance()->GetKeyHeld(key));
 		return NoExec();
 	}
 
@@ -49,7 +49,7 @@ IMPLEMENT_GRAPH_NODE(AMNode_GetKeyUp, ScriptGraphNode);
 AMNode_GetKeyUp::AMNode_GetKeyUp()
 {
 	CreateDataPin<Crimson::eKey>("Key", PinDirection::Input);
-	CreateDataPin<bool>("Is Key Up", PinDirection::Output);
+	CreateDataPin<bool>("Result", PinDirection::Output);
 }
 
 NodeResult AMNode_GetKeyUp::DoOperation()
@@ -58,7 +58,7 @@ NodeResult AMNode_GetKeyUp::DoOperation()
 
 	if (GetPinData("Key", key))
 	{
-		SetPinData("Is Key Up", Crimson::InputMapper::GetInstance()->GetKeyUp(key));
+		SetPinData("Result", Crimson::InputMapper::GetInstance()->GetKeyUp(key));
 		return NoExec();
 	}
 
@@ -70,7 +70,7 @@ IMPLEMENT_GRAPH_NODE(AMNode_GetKeyDownOrHeld, ScriptGraphNode);
 AMNode_GetKeyDownOrHeld::AMNode_GetKeyDownOrHeld()
 {
 	CreateDataPin<Crimson::eKey>("Key", PinDirection::Input);
-	CreateDataPin<bool>("Is Key Down or Held", PinDirection::Output);
+	CreateDataPin<bool>("Result", PinDirection::Output);
 }
 
 NodeResult AMNode_GetKeyDownOrHeld::DoOperation()
@@ -79,7 +79,7 @@ NodeResult AMNode_GetKeyDownOrHeld::DoOperation()
 
 	if (GetPinData("Key", key))
 	{
-		SetPinData("Is Key Down or Held", Crimson::InputMapper::GetInstance()->GetKeyDownOrHeld(key));
+		SetPinData("Result", Crimson::InputMapper::GetInstance()->GetKeyDownOrHeld(key));
 		return NoExec();
 	}
 

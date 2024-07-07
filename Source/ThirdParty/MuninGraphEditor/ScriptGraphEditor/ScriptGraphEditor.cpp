@@ -292,7 +292,7 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 	const float bodyMinWidth = leftMinSize.x + rightMinSize.x + 64;
 	const ImVec2 nodePinTableSize = { headerTextSize.x > bodyMinWidth ? headerTextSize.x : bodyMinWidth, 0 };
 
-	if (aNode->IsExecNode())
+	if (aNode->ShouldRenderNodeHeader())
 	{
 		ImGui::BeginTable("nodeHeader", 2, ImGuiTableFlags_SizingFixedFit, nodePinTableSize);
 		ImGui::TableNextColumn();
@@ -419,7 +419,7 @@ void ScriptGraphEditor::RenderNode(const std::shared_ptr<ScriptGraphNode>& aNode
 void ScriptGraphEditor::RenderNodeHeader(const std::shared_ptr<ScriptGraphNode>& aNode, const ImVec2& aNodeHeaderRect)
 {
 	ScriptGraphEditorSettings* settings = dynamic_cast<ScriptGraphEditorSettings*>(mySettings);
-	if (aNode->IsExecNode())
+	if (aNode->ShouldRenderNodeHeader())
 	{
 		ImGui::PushFont(mySettings->NodeTitleFont);
 		const unsigned nodeTypeU = EnumAsIntegral(aNode->GetNodeType());

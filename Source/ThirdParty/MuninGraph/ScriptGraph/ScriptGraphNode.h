@@ -25,6 +25,7 @@ public:
 	~ScriptGraphNode() override = default;
 
 	FORCEINLINE bool IsExecNode() const { return myIsExecNode; }
+	virtual FORCEINLINE bool ShouldRenderNodeHeader() const { return myIsExecNode; } // Override for any node without ExecPins that you still want to draw a header on
 	FORCEINLINE std::string_view GetError() const { return myErrorMessage; }
 
 	virtual FORCEINLINE bool IsInternalOnly() const { return false; }

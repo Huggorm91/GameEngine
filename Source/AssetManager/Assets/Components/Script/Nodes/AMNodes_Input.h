@@ -8,6 +8,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Key Down"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Input"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -18,6 +19,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Key Held"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Input"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -28,6 +30,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Key Up"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Input"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -38,5 +41,6 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Key Down or Held"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Input"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };

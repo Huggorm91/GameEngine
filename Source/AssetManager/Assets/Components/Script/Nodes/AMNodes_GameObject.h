@@ -8,6 +8,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Get from Owner"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "GameObject"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -88,5 +89,15 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Set Scale"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "GameObject"; }
+	NodeResult DoOperation() override;
+};
+
+DECLARE_GRAPH_NODE(AMNode_GameObjectIDToString, ScriptGraphNode)
+{
+public:
+	AMNode_GameObjectIDToString();
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "GameObject ID To String"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "Casts"; }
 	NodeResult DoOperation() override;
 };
