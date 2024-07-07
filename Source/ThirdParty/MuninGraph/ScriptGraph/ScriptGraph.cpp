@@ -293,6 +293,7 @@ void ScriptGraph::SetupScriptGraph()
 {
 	ScriptGraphSchema schema(this);
 	const TypedDataContainer container = TypedDataContainer::Create(typeid(myOwner));
+	container.TrySet(myOwner);
 	schema.AddVariable("Owner", container, ScriptGraphVariableFlag_Internal | ScriptGraphVariableFlag_ReadOnly);
 }
 
