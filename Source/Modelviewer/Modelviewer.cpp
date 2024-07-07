@@ -640,7 +640,7 @@ void ModelViewer::UpdateScene()
 		object.Update();
 	}
 #endif // !_RETAIL
-
+	myScene.scriptGraph->Tick(Crimson::Timer::GetDeltaTime());
 }
 
 #ifndef _RETAIL
