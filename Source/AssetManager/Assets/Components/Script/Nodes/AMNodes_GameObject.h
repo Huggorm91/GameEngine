@@ -101,3 +101,24 @@ public:
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Casts"; }
 	NodeResult DoOperation() override;
 };
+
+DECLARE_GRAPH_NODE(AMNode_GameObjectSetActive, ScriptGraphNode)
+{
+public:
+	AMNode_GameObjectSetActive();
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Set Active"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "GameObject"; }
+	NodeResult DoOperation() override;
+};
+
+DECLARE_GRAPH_NODE(AMNode_GameObjectGetActive, ScriptGraphNode)
+{
+public:
+	AMNode_GameObjectGetActive();
+
+	FORCEINLINE std::string_view GetNodeTitle() const override { return "Get Active"; }
+	FORCEINLINE std::string_view GetNodeCategory() const override { return "GameObject"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
+	NodeResult DoOperation() override;
+};

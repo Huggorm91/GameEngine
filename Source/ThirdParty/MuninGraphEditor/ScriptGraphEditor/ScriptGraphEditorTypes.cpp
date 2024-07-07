@@ -11,8 +11,7 @@ IMPLEMENT_EDITOR_TYPE(bool, Bool)
 
 bool ScriptGraphEditorType_Bool::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
 {
-	const float y = ImGui::GetCursorPosY();
-	ImGui::SetCursorPosY(y - 2);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
 	ImGui::Checkbox(aUniqueName.data(), static_cast<bool*>(*aDataContainer));
 	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
@@ -37,10 +36,8 @@ IMPLEMENT_EDITOR_TYPE(int, Int);
 
 bool ScriptGraphEditorType_Int::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
 {
-	const float y = ImGui::GetCursorPosY();
-	ImGui::SetCursorPosY(y - 2);
-	const ImVec2 inputSize = ImGui::CalcTextSize("10000");
-	ImGui::SetNextItemWidth(inputSize.x);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+	ImGui::SetNextItemWidth(150);
 	ImGui::InputInt(aUniqueName.data(), static_cast<int*>(*aDataContainer), 0, 0);
 	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
@@ -61,10 +58,8 @@ IMPLEMENT_EDITOR_TYPE(unsigned, GameObjectID);
 
 bool ScriptGraphEditorType_GameObjectID::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
 {
-	const float y = ImGui::GetCursorPosY();
-	ImGui::SetCursorPosY(y - 2);
-	const ImVec2 inputSize = ImGui::CalcTextSize("100000");
-	ImGui::SetNextItemWidth(inputSize.x);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+	ImGui::SetNextItemWidth(150);
 	int value = *static_cast<unsigned*>(*aDataContainer);
 	if (ImGui::InputInt(aUniqueName.data(), &value))
 	{
@@ -90,10 +85,8 @@ IMPLEMENT_EDITOR_TYPE(float, Float)
 
 bool ScriptGraphEditorType_Float::TypeEditWidget(std::string_view aUniqueName, const TypedDataContainer& aDataContainer) const
 {
-	const float y = ImGui::GetCursorPosY();
-	ImGui::SetCursorPosY(y - 2);
-	const ImVec2 inputSize = ImGui::CalcTextSize("0.0000");
-	ImGui::SetNextItemWidth(inputSize.x);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+	ImGui::SetNextItemWidth(150);
 	ImGui::InputFloat(aUniqueName.data(), static_cast<float*>(*aDataContainer), 0, 0, "%.1f");
 	if (ImGui::IsItemDeactivatedAfterEdit())
 	{

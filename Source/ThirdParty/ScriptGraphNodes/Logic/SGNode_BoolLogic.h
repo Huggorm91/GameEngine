@@ -8,6 +8,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Not"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Logic"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -18,6 +19,7 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "And"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Logic"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };
 
@@ -28,5 +30,6 @@ public:
 
 	FORCEINLINE std::string_view GetNodeTitle() const override { return "Or"; }
 	FORCEINLINE std::string_view GetNodeCategory() const override { return "Logic"; }
+	FORCEINLINE bool ShouldRenderNodeHeader() const override { return true; }
 	NodeResult DoOperation() override;
 };

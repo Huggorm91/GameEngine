@@ -82,7 +82,7 @@ NodeResult AMNode_GameObjectCreate::DoOperation()
 
 		if (result != 0u)
 		{
-			SetPinData("Object ID", result);
+			SetPinData("GameObject ID", result);
 			return ExecPin("Out");
 		}
 	}
@@ -97,7 +97,7 @@ AMNode_GameObjectMove::AMNode_GameObjectMove()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Movement", PinDirection::Input);
 }
 
@@ -106,7 +106,7 @@ NodeResult AMNode_GameObjectMove::DoOperation()
 	unsigned id = 0u;
 	Crimson::Vector3f movement;
 
-	if (GetPinData("GameObject ID", id) && GetPinData("Movement", movement))
+	if (GetPinData("ID", id) && GetPinData("Movement", movement))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -127,7 +127,7 @@ AMNode_GameObjectGetPosition::AMNode_GameObjectGetPosition()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Position", PinDirection::Output);
 }
 
@@ -135,7 +135,7 @@ NodeResult AMNode_GameObjectGetPosition::DoOperation()
 {
 	unsigned id = 0u;
 
-	if (GetPinData("GameObject ID", id))
+	if (GetPinData("ID", id))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -156,7 +156,7 @@ AMNode_GameObjectSetPosition::AMNode_GameObjectSetPosition()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Position", PinDirection::Input);
 }
 
@@ -165,7 +165,7 @@ NodeResult AMNode_GameObjectSetPosition::DoOperation()
 	unsigned id = 0u;
 	Crimson::Vector3f value;
 
-	if (GetPinData("GameObject ID", id) && GetPinData("Position", value))
+	if (GetPinData("ID", id) && GetPinData("Position", value))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -186,7 +186,7 @@ AMNode_GameObjectGetRotation::AMNode_GameObjectGetRotation()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Output);
 }
 
@@ -194,7 +194,7 @@ NodeResult AMNode_GameObjectGetRotation::DoOperation()
 {
 	unsigned id = 0u;
 
-	if (GetPinData("GameObject ID", id))
+	if (GetPinData("ID", id))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -215,7 +215,7 @@ AMNode_GameObjectSetRotation::AMNode_GameObjectSetRotation()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Rotation", PinDirection::Input);
 }
 
@@ -224,7 +224,7 @@ NodeResult AMNode_GameObjectSetRotation::DoOperation()
 	unsigned id = 0u;
 	Crimson::Vector3f value;
 
-	if (GetPinData("GameObject ID", id) && GetPinData("Rotation", value))
+	if (GetPinData("ID", id) && GetPinData("Rotation", value))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -245,7 +245,7 @@ AMNode_GameObjectGetScale::AMNode_GameObjectGetScale()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Output);
 }
 
@@ -253,7 +253,7 @@ NodeResult AMNode_GameObjectGetScale::DoOperation()
 {
 	unsigned id = 0u;
 
-	if (GetPinData("GameObject ID", id))
+	if (GetPinData("ID", id))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -274,7 +274,7 @@ AMNode_GameObjectSetScale::AMNode_GameObjectSetScale()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<Crimson::Vector3f>("Scale", PinDirection::Input);
 }
 
@@ -283,7 +283,7 @@ NodeResult AMNode_GameObjectSetScale::DoOperation()
 	unsigned id = 0u;
 	Crimson::Vector3f value;
 
-	if (GetPinData("GameObject ID", id) && GetPinData("Scale", value))
+	if (GetPinData("ID", id) && GetPinData("Scale", value))
 	{
 		auto object = ModelViewer::Get().GetGameObject(id);
 		if (object)
@@ -304,7 +304,7 @@ AMNode_GameObjectIDToString::AMNode_GameObjectIDToString()
 	CreateExecPin("In", PinDirection::Input);
 	CreateExecPin("Out", PinDirection::Output);
 
-	CreateDataPin<unsigned>("GameObject ID", PinDirection::Input);
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
 	CreateDataPin<std::string>("Text", PinDirection::Output);
 }
 
@@ -312,11 +312,67 @@ NodeResult AMNode_GameObjectIDToString::DoOperation()
 {
 	unsigned id = 0u;
 
-	if (GetPinData("GameObject ID", id))
+	if (GetPinData("ID", id))
 	{
 		SetPinData("Text", "GameObject: " + std::to_string(id));
 		return ExecPin("Out");
 	}
 
-	return Error("Something went wrong setting scale!");
+	return Error("Something went wrong converting to string!");
+}
+
+IMPLEMENT_GRAPH_NODE(AMNode_GameObjectSetActive, ScriptGraphNode);
+
+AMNode_GameObjectSetActive::AMNode_GameObjectSetActive()
+{
+	CreateExecPin("In", PinDirection::Input);
+	CreateExecPin("Out", PinDirection::Output);
+
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
+	CreateDataPin<bool>("Value", PinDirection::Input);
+}
+
+NodeResult AMNode_GameObjectSetActive::DoOperation()
+{
+	unsigned id = 0u;
+	bool value = false;
+
+	if (GetPinData("ID", id) && GetPinData("Value", value))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			object->SetActive(value);
+			return ExecPin("Out");
+		}
+		return Error("An object with this ID does not exist!");
+	}
+
+	return Error("Something went wrong setting IsActive!");
+}
+
+IMPLEMENT_GRAPH_NODE(AMNode_GameObjectGetActive, ScriptGraphNode);
+
+AMNode_GameObjectGetActive::AMNode_GameObjectGetActive()
+{
+	CreateDataPin<unsigned>("ID", PinDirection::Input);
+	CreateDataPin<bool>("Is Active", PinDirection::Output);
+}
+
+NodeResult AMNode_GameObjectGetActive::DoOperation()
+{
+	unsigned id = 0u;
+
+	if (GetPinData("ID", id))
+	{
+		auto object = ModelViewer::Get().GetGameObject(id);
+		if (object)
+		{
+			SetPinData("Is Active", object->IsActive());
+			return NoExec();
+		}
+		return Error("An object with this ID does not exist!");
+	}
+
+	return Error("Something went wrong getting IsActive!");
 }
