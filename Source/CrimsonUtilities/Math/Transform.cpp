@@ -11,7 +11,7 @@ Transform::Transform() :
 
 Transform::Transform(const Json::Value& aJson) :
 	myPosition(aJson["Position"]),
-	myRotation(Crimson::DegreeToRadian(Crimson::Vector3f(aJson["Rotation"]))),
+	myRotation(Crimson::Vector3f(aJson["Rotation"])),
 	myScale(aJson["Scale"]),
 	myHasChangedInternal(true),
 	myHasChangedThisFrame(false),
