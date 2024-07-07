@@ -96,6 +96,7 @@
     <ClInclude Include="Fonts\FontAwesomeSolid.h" />
     <ClInclude Include="Fonts\IconsFontAwesome6.h" />
     <ClInclude Include="GraphEditor\GraphEditorUtils.h" />
+    <ClInclude Include="ScriptGraphEditor\ImNodeEd_Combo.h" />
     <ClInclude Include="ScriptGraphEditor\ScriptGraphEditor.h" />
     <ClInclude Include="MuninGraphEditor.h" />
     <ClInclude Include="GraphEditor\GraphEditorBase.h" />
@@ -118,6 +119,7 @@
     </ClCompile>
     <ClCompile Include="GraphEditor\GraphEditorBase.cpp" />
     <ClCompile Include="GraphEditor\GraphEditorUtils.cpp" />
+    <ClCompile Include="ScriptGraphEditor\ImNodeEd_Combo.cpp" />
     <ClCompile Include="ScriptGraphEditor\ScriptGraphEditor.cpp" />
     <ClCompile Include="MuninGraphEditor.cpp" />
     <ClCompile Include="pch.cpp">

@@ -72,6 +72,9 @@
     <ClInclude Include="Fonts\IconsFontAwesome6.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptGraphEditor\ImNodeEd_Combo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuninGraphEditor.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScriptGraphEditor\ScriptGraphEditorTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptGraphEditor\ImNodeEd_Combo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

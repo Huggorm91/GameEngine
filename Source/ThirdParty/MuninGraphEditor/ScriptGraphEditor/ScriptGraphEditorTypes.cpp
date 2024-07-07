@@ -1,7 +1,9 @@
 ﻿#include "pch.h"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "ImNodeEd_Combo.h"
 #include "ScriptGraphEditorTypes.h"
+#include "String/StringFunctions.h"
 
 extern "C" void __MuninGraph_AutoRegEditorTypes() {  }
 
@@ -93,7 +95,7 @@ bool ScriptGraphEditorType_Float::TypeEditWidget(std::string_view aUniqueName, c
 	const ImVec2 inputSize = ImGui::CalcTextSize("0.0000");
 	ImGui::SetNextItemWidth(inputSize.x);
 	ImGui::InputFloat(aUniqueName.data(), static_cast<float*>(*aDataContainer), 0, 0, "%.1f");
-	if(ImGui::IsItemDeactivatedAfterEdit())
+	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
 		return true;
 	}
@@ -116,7 +118,7 @@ bool ScriptGraphEditorType_String::TypeEditWidget(std::string_view aUniqueName, 
 	ImGui::PushItemWidth(150);
 	ImGui::InputText(aUniqueName.data(), static_cast<std::string*>(*aDataContainer), ImGuiInputTextFlags_EnterReturnsTrue);
 	bool result = false;
-	if(ImGui::IsItemDeactivatedAfterEdit())
+	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
 		result = true;
 	}
@@ -145,15 +147,26 @@ bool ScriptGraphEditorType_KeyEnum::TypeEditWidget(std::string_view aUniqueName,
 	ImGui::NewLine();
 	ImGui::PushItemWidth(150);
 	ImGui::PushID(std::string(aUniqueName).c_str());
-	Crimson::eKey* value = static_cast<Crimson::eKey*>(*aDataContainer);
 
-	if (ImGui::BeginCombo("", Crimson::KeyToString(*value).c_str()))
+	Crimson::eKey* value = static_cast<Crimson::eKey*>(*aDataContainer);
+	
+	if (ImNodeEd::BeginNodeCombo("", Crimson::KeyToString(*value).c_str()))
 	{
+		static std::string localSearch;
+		ImGui::InputText("##ctxtMenuSearch", &localSearch);
+
+		std::string currentString;
 		Crimson::eKey current = Crimson::eKey::None;
 		for (int index = 0; index < 255; index++)
 		{
 			current = static_cast<Crimson::eKey>(index);
-			if (Crimson::KeyToString(current) == "Unknown")
+			currentString = Crimson::ToLower(Crimson::KeyToString(current));
+			if (currentString == "unknown")
+			{
+				continue;
+			}
+
+			if (!localSearch.empty() && currentString.find(Crimson::ToLower(localSearch)) == std::string::npos)
 			{
 				continue;
 			}
@@ -169,7 +182,7 @@ bool ScriptGraphEditorType_KeyEnum::TypeEditWidget(std::string_view aUniqueName,
 				ImGui::SetItemDefaultFocus();
 			}
 		}
-		ImGui::EndCombo();
+		ImNodeEd::EndNodeCombo();
 	}
 	ImGui::PopID();
 
