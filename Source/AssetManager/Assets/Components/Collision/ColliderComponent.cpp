@@ -31,7 +31,7 @@ ColliderComponent::ColliderComponent(ColliderComponent&& aComponent) noexcept :
 	myFlags(aComponent.myFlags),
 	myLayer(aComponent.myLayer),
 	myLayersToCollideWith(aComponent.myLayersToCollideWith)
-{	
+{
 }
 
 ColliderComponent::ColliderComponent(const Json::Value& aJson) :
@@ -46,7 +46,7 @@ ColliderComponent::ColliderComponent(const Json::Value& aJson) :
 
 ColliderComponent::~ColliderComponent()
 {
-	CollisionManager::Get().RemoveCollider(this);
+	//CollisionManager::Get().RemoveCollider(this);
 }
 
 ColliderComponent& ColliderComponent::operator=(const ColliderComponent& aComponent)
@@ -71,19 +71,59 @@ void ColliderComponent::Update()
 {
 	if (myFlags[eHasChanged])
 	{
-		if (myFlags[eHasChangedParent])
-		{
-			const_cast<std::bitset<eCount>&>(myFlags)[eHasChangedParent] = false;
-		}
-		else
-		{
-			UpdateWorldPosition();
-		}
+		UpdateWorldPosition();
 	}
 
 	if (IsValid())
 	{
 		CollisionManager::Get().AddCollider(this);
+	}
+}
+
+void ColliderComponent::CreateImGuiComponents()
+{
+	Component::CreateImGuiComponents();
+
+	bool trigger = myFlags[eIsTrigger];
+	if (ImGui::Checkbox("Trigger", &trigger))
+	{
+		myFlags[eIsTrigger] = trigger;
+	}
+
+	if (ImGui::BeginCombo("Layer", CollisionLayer::globalLayerNames[myLayer].c_str(), ImGuiComboFlags_HeightLarge))
+	{
+		for (unsigned index = 0; index < CollisionLayer::globalLayerNames.size(); index++)
+		{
+			const bool isSelected = index == myLayer;
+			if (ImGui::Selectable(CollisionLayer::globalLayerNames[index].c_str(), isSelected))
+			{
+				myLayer = static_cast<CollisionLayer::Layer>(index);
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::BeginCombo("Layers To Collide With", nullptr, ImGuiComboFlags_HeightLarge))
+	{
+		for (unsigned index = 0; index < CollisionLayer::globalLayerNames.size(); index++)
+		{
+			const bool isSelected = myLayersToCollideWith[index];
+			if (ImGui::Selectable(CollisionLayer::globalLayerNames[index].c_str(), isSelected))
+			{
+				myLayersToCollideWith[index] = !myLayersToCollideWith[index];
+			}
+
+			if (isSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
 	}
 }
 
@@ -144,10 +184,5 @@ bool ColliderComponent::IsColliding() const
 
 void ColliderComponent::TransformHasChanged() const
 {
-	if (myFlags[eHasChangedParent])
-	{
-		const_cast<std::bitset<eCount>&>(myFlags)[eHasChangedParent] = false;
-		return;
-	}
 	const_cast<ColliderComponent&>(*this).UpdateWorldPosition();
 }

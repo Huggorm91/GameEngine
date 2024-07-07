@@ -258,6 +258,17 @@ void GameObject::Render()
 	}
 }
 
+void GameObject::DebugDraw()
+{
+	if (myIsActive)
+	{
+		for (auto& [type, index] : myIndexList)
+		{
+			myComponents.GetValue<Component>(index).DebugDraw();
+		}
+	}
+}
+
 const Component* GameObject::GetComponentPointer(unsigned anID) const
 {
 	for (auto& [type, index] : myIndexList)
@@ -354,6 +365,7 @@ const Crimson::Matrix4x4f& GameObject::GetTransformMatrix() const
 {
 	if (myTransform.HasChanged())
 	{
+		const_cast<GameObject&>(*this).myTransform.Update();
 		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
@@ -366,6 +378,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{
+		const_cast<GameObject&>(*this).myTransform.Update();
 		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();

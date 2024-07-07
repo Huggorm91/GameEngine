@@ -3,7 +3,7 @@
 #include "Intersection.h"
 #include "Assets\GameObject.h"
 #include "../ComponentParts/BoxSphereBounds.h"
-#include "GraphicsEngine/Drawer/LineDrawer.h"
+#include "GraphicsEngine/GraphicsEngine.h"
 
 BoxColliderComponent::BoxColliderComponent() : ColliderComponent(ComponentType::BoxCollider)
 {}
@@ -72,6 +72,23 @@ bool BoxColliderComponent::IsValid() const
 	return myIsActive && myHalfSize != Crimson::Vector3f::Null;
 }
 
+void BoxColliderComponent::CreateImGuiComponents()
+{
+	ColliderComponent::CreateImGuiComponents();
+
+	if (ImGui::DragFloat3("Offset", &myOffset.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	Crimson::Vector3f size = GetSize();
+	if (ImGui::DragFloat3("Size", &size.x))
+	{
+		SetSize(size);
+		UpdateWorldPosition();
+	}
+}
+
 Json::Value BoxColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();
@@ -82,7 +99,15 @@ Json::Value BoxColliderComponent::ToJson() const
 
 void BoxColliderComponent::DebugDraw()
 {
-	//globalEngine->debugDrawer->RemovePrimitiveNextFrame(globalEngine->debugDrawer->AddBox(GetCenter(), GetSize(), Crimson::Vector3f::Null, Crimson::Vector4f(ourColorMap[GetLayer()], 1.f)));
+	// TODO:
+	// Fix this! Was quickly written in order to see any kind of representation of the collider on screen
+	static std::unordered_map<BoxColliderComponent*, LineHandle*> localHandles;
+	if (auto iter = localHandles.find(this); iter != localHandles.end())
+	{
+		GraphicsEngine::Get().GetLineDrawer().DeleteHandle(*iter->second);
+		delete iter->second;
+	}
+	localHandles[this] = new LineHandle(GraphicsEngine::Get().GetLineDrawer().AddCube(myParent->GetWorldPosition() + myOffset, myHalfSize, ColorManager::GetColor("Green")));
 }
 
 void BoxColliderComponent::InitWithMinMax(const Crimson::Vector3f& aMin, const Crimson::Vector3f& aMax, bool anIsStatic)

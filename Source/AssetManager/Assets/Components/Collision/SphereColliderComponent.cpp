@@ -118,6 +118,18 @@ bool SphereColliderComponent::IsValid() const
 	return myIsActive && myRadius > 0.f;
 }
 
+void SphereColliderComponent::CreateImGuiComponents()
+{
+	ColliderComponent::CreateImGuiComponents();
+
+	if (ImGui::DragFloat3("Offset", &myOffset.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	ImGui::DragFloat("Radius", &myRadius);
+}
+
 Json::Value SphereColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();

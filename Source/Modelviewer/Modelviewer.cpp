@@ -10,6 +10,7 @@
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
+#include "AssetManager/Managers/CollisionManager.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 
@@ -566,8 +567,6 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.path, "../"));
 }
 
-#include "AssetManager/Assets/Components/Script/ScriptComponent.h"
-
 void ModelViewer::Init()
 {
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
@@ -593,6 +592,9 @@ void ModelViewer::Update()
 		myCamera.Update();
 		UpdateScene();
 	}
+
+	CollisionManager::Get().CheckCollisions();
+	CollisionManager::Get().EndFrame();
 
 	engine.RenderFrame();
 
@@ -627,7 +629,9 @@ void ModelViewer::UpdateScene()
 	{
 		for (auto& [id, object] : myScene.gameObjects)
 		{
-			object->Render();
+			//object->Render();
+			object->Update(); // Temporary to test collision
+			object->DebugDraw();
 		}
 	}
 #else

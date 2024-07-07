@@ -40,6 +40,7 @@ public:
 
 	bool IsValid() const override;
 
+	void CreateImGuiComponents() override;
 	Json::Value ToJson() const override;
 
 private:

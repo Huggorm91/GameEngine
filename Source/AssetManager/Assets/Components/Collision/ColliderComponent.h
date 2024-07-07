@@ -41,6 +41,7 @@ public:
 
 	void TransformHasChanged() const override;
 
+	void CreateImGuiComponents() override;
 	Json::Value ToJson() const override;
 
 	static void SetDebugDrawColor(CollisionLayer::Layer aLayer, const Crimson::Vector3f& aColor);
@@ -58,13 +59,12 @@ protected:
 		eIsTrigger,
 		eIsColliding,
 		eHasChanged,
-		eHasChangedParent,
 		eCount
 	};
 
+	std::bitset<CollisionLayer::Count> myLayersToCollideWith;
 	std::bitset<eCount> myFlags;
+	CollisionLayer::Layer myLayer;
 private:
 
-	CollisionLayer::Layer myLayer;
-	std::bitset<CollisionLayer::Count> myLayersToCollideWith;
 };

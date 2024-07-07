@@ -118,6 +118,24 @@ bool RayColliderComponent::IsValid() const
 	return myIsActive && myLength != 0.f;
 }
 
+void RayColliderComponent::CreateImGuiComponents()
+{
+	ColliderComponent::CreateImGuiComponents();
+
+	if (ImGui::DragFloat3("Offset", &myOffset.x))
+	{
+		UpdateWorldPosition();
+	}
+
+	Crimson::Vector3f direction = myDirection;
+	if (ImGui::DragFloat3("Direction", &direction.x))
+	{
+		SetDirection(direction);
+	}
+
+	ImGui::DragFloat("Length", &myLength);
+}
+
 Json::Value RayColliderComponent::ToJson() const
 {
 	auto result = ColliderComponent::ToJson();

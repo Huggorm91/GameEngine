@@ -79,7 +79,8 @@ void ImguiManager::Init(bool aStartInSkeletonEditor)
 		myAssetIcons.emplace(Assets::eAssetType::Shader, AssetManager::GetAsset<Texture>(myInternalAssetPath + "ShaderIcon.dds"));
 		myAssetIcons.emplace(Assets::eAssetType::Scene, AssetManager::GetAsset<Texture>(myInternalAssetPath + "SceneIcon.dds"));
 		myAssetIcons.emplace(Assets::eAssetType::Folder, AssetManager::GetAsset<Texture>(myInternalAssetPath + "FolderIcon.dds"));
-		myAssetIcons.emplace(Assets::eAssetType::Texture, AssetManager::GetAsset<Texture>(myInternalAssetPath + "TextureIcon.dds"));
+		myAssetIcons.emplace(Assets::eAssetType::Texture, AssetManager::GetAsset<Texture>(myInternalAssetPath + "TextureIcon.dds")); 
+		myAssetIcons.emplace(Assets::eAssetType::Script, AssetManager::GetAsset<Texture>(myInternalAssetPath + "ScriptIcon.dds"));
 		myAssetIcons.emplace(static_cast<Assets::eAssetType>(-1), AssetManager::GetAsset<Texture>(myInternalAssetPath + "StepOutIcon.dds"));
 	}
 
