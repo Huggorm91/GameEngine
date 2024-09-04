@@ -14,20 +14,20 @@
 
 #if defined(__BYTE_ORDER)
   #if defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)
-    #define BIGENDIAN
+    #define BIG_ENDIAN
   #elif defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)
-    #define LITTLEENDIAN
+    #define LITTLE_ENDIAN
   #endif
 #elif defined(_BYTE_ORDER)
   #if defined(_BIG_ENDIAN) && (_BYTE_ORDER == _BIG_ENDIAN)
-    #define BIGENDIAN
+    #define BIG_ENDIAN
   #elif defined(_LITTLE_ENDIAN) && (_BYTE_ORDER == _LITTLE_ENDIAN)
-    #define LITTLEENDIAN
+    #define LITTLE_ENDIAN
   #endif
 #elif defined(__BIG_ENDIAN__)
-  #define BIGENDIAN
+  #define BIG_ENDIAN
 #elif defined(__LITTLE_ENDIAN__)
-  #define LITTLEENDIAN
+  #define LITTLE_ENDIAN
 #else
   #if defined(__ARMEL__) || \
       defined(__THUMBEL__) || \
@@ -50,7 +50,7 @@
       defined(__bfin__) || defined(__BFIN__) || \
       defined(bfin) || defined(BFIN)
 
-      #define LITTLEENDIAN
+      #define LITTLE_ENDIAN
   #elif defined(__m68k__) || defined(M68000) || \
         defined(__hppa__) || defined(__hppa) || defined(__HPPA__) || \
         defined(__sparc__) || defined(__sparc) || \
@@ -58,7 +58,7 @@
         defined(__s390__) || defined(__s390x__) || \
         defined(__SYSC_ZARCH__)
 
-      #define BIGENDIAN
+      #define BIG_ENDIAN
 
   #elif defined(__arm__) || defined(__arm64) || defined(__thumb__) || \
         defined(__TARGET_ARCH_ARM) || defined(__TARGET_ARCH_THUMB) || \
@@ -69,7 +69,7 @@
           defined(__WIN32__) || defined(__TOS_WIN__) || \
           defined(__WINDOWS__)
 
-        #define LITTLEENDIAN
+        #define LITTLE_ENDIAN
 
       #else
         #error "Cannot determine system endianness."
@@ -78,7 +78,7 @@
 #endif
 
 
-#if defined(BIGENDIAN)
+#if defined(BIG_ENDIAN)
   // Try to use compiler intrinsics
   #if defined(__INTEL_COMPILER) || defined(__ICC)
     #define betole16(x) _bswap16(x)
@@ -107,9 +107,9 @@
   #define betole64(x) (x)
   #define betole128(x) (x)
   #define betole256(x) (x)
-#endif // BIGENDIAN
+#endif // BIG_ENDIAN
 
-#if defined(BIGENDIAN)
+#if defined(BIG_ENDIAN)
   #include <emmintrin.h>
   #include <smmintrin.h>
   #include <immintrin.h>
@@ -124,7 +124,7 @@
     const __m256i shuffle = _mm256_set_epi64x(0x0001020304050607, 0x08090a0b0c0d0e0f, 0x0001020304050607, 0x08090a0b0c0d0e0f);
     return _mm256_shuffle_epi8(value, shuffle);
   }
-#endif // BIGENDIAN
+#endif // BIG_ENDIAN
 
 #if defined(FALLBACK_SWAP)
   #include <stdint.h>

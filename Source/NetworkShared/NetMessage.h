@@ -13,7 +13,7 @@ namespace Network
 			Confirmation,
 			Chat,
 			Ping,
-			MoveGameObject,
+			GameObjectMessage,
 			CreateGameObject,
 			DeleteGameObject
 		};

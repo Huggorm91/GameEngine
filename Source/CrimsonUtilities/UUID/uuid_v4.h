@@ -103,7 +103,7 @@ __m128i inline stom128i(const char* mem) {
  */
 class UUID {
   public:
-    UUID()
+    UUID():data()
     {}
 
     UUID(const UUID &other) {
@@ -227,7 +227,7 @@ class UUID {
     }
 
   private:
-    alignas(128) uint8_t data[16];
+    alignas(16) uint8_t data[16];
 };
 
 /*

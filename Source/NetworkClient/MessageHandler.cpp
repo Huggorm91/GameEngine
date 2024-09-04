@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "MessageHandler.h"
 #include <assert.h>
 #include "Client.h"
@@ -79,7 +80,7 @@ void Network::MessageHandler::SendNetMessage(const NetMessage& aMessage) const
 	myClient->SendNetMessage(aMessage);
 }
 
-void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, unsigned anID)
+void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
 {
 	assert(myClient && "Not initialized!");
 	myClient->SendNetMessage(CreateMoveGameObjectMessage(anID, aTransform.GetPosition(), aTransform.GetRotationRadian()));

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "NetworkShared/NetMessage.h"
+#include "NetworkShared/GameObjectMessage.h"
 
 class Transform;
 
@@ -23,7 +23,7 @@ namespace Network
 
 		void SendNetMessage(const NetMessage& aMessage) const;
 
-		void SendTransformChanged(const Transform& aTransform, unsigned anID);
+		void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
 
 		void SendChatMessage(const std::string& aMessage);
 		constexpr std::string GetSelfHeader() const;

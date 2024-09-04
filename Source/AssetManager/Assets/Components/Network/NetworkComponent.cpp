@@ -15,7 +15,7 @@ void NetworkComponent::Update()
 {
 	if (myRaisedFlags[eTransformHasChanged])
 	{
-		ModelViewer::Get().GetMessageHandler().SendTransformChanged(*GetParentTransform(), myParent->GetID());
+		ModelViewer::Get().GetMessageHandler().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
 	}
 	myRaisedFlags.reset();
 }

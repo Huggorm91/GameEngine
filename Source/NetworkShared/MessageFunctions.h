@@ -1,5 +1,6 @@
 #pragma once
-#include "NetMessage.h"
+
+#include "GameObjectMessage.h"
 #include <string>
 
 namespace Crimson
@@ -17,7 +18,11 @@ namespace Network
 	NetMessage CreatePingMessage(bool aNeedReply);
 	NetMessage CreateChatMessage(const std::string& aMessage);
 
-	NetMessage CreateMoveGameObjectMessage(unsigned anID, const Crimson::Vector3<float>& aPosition, const Crimson::Vector3<float>& aRotation);
-	NetMessage CreateCreateGameObjectMessage(unsigned anID);
-	NetMessage CreateDeleteGameObjectMessage(unsigned anID);
+	NetMessage CreateCreateGameObjectMessage(const UUIDv4::UUID& anID);
+	NetMessage CreateDeleteGameObjectMessage(const UUIDv4::UUID& anID);
+
+	NetMessage CreateGameObjectMessage(const UUIDv4::UUID& anID, const GameObjectMessage& aMessage);
+	NetMessage CreateMoveGameObjectMessage(const UUIDv4::UUID& anID, const Crimson::Vector3<float>& aPosition, const Crimson::Vector3<float>& aRotation);
+
+	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage);
 }

@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Client.h"
 #include <winsock2.h>
 #include <format>

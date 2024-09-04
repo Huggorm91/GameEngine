@@ -378,6 +378,15 @@ void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* 
 	}
 }
 
+void GameObject::RecieveNetmessage(const Network::NetMessage& aMessage)
+{
+	auto& message = Network::ExtractGameObjectMessage(aMessage);
+	for (auto& [type, index] : myIndexList)
+	{
+		myComponents.GetValue<Component>(index).RecieveNetmessage(message);
+	}
+}
+
 void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 {
 	myTransform.SetPosition(aPosition);
@@ -660,6 +669,11 @@ unsigned int GameObject::GetComponentCount() const
 unsigned int GameObject::GetID() const
 {
 	return myID;
+}
+
+const UUIDv4::UUID& GameObject::GetUUID() const
+{
+	return myUUID;
 }
 
 void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)

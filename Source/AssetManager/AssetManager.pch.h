@@ -32,6 +32,8 @@ using namespace Microsoft::WRL;
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 #include "CrimsonUtilities/Math/QuaternionTransform.h"
 
+#include "NetworkShared/MessageFunctions.h"
+
 #include "Logging/Logging.h"
 inline Logger AMLogger;
 #endif //ASSETMANAGER_PCH_H

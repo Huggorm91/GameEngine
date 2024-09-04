@@ -13,6 +13,7 @@ namespace CollisionLayer
 }
 class ColliderComponent;
 class Transform;
+namespace Network { struct GameObjectMessage; }
 
 // A template to build new components can be found in ComponentTemplate.h
 class Component
@@ -42,6 +43,8 @@ public:
 	virtual void OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aComponent) {}
 	virtual void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aComponent) {}
 	virtual void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aComponent){}
+
+	virtual void RecieveNetmessage(const Network::GameObjectMessage& aMessage) {}
 
 	// Only use this when Init(GameObject*) can not be called!
 	void SetParent(GameObject* aParent);

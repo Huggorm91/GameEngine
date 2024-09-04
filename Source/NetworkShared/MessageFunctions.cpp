@@ -35,20 +35,44 @@ namespace Network
 		return message;
 	}
 
-	NetMessage CreateMoveGameObjectMessage(unsigned anID, const Crimson::Vector3<float>& aPosition, const Crimson::Vector3<float>& aRotation)
+	NetMessage CreateGameObjectMessage(const UUIDv4::UUID& anID, const GameObjectMessage& aMessage)
 	{
+		static_assert(sizeof(UUIDv4::UUID) + sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
+
+		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
+		constexpr rsize_t messageSize = sizeof(GameObjectMessage);
+		constexpr unsigned short size = idSize + messageSize;
+
 		NetMessage message;
-		message.type = MessageType::MoveGameObject;
-		constexpr unsigned short size = sizeof(unsigned) + sizeof(Crimson::Vector3<float>) + sizeof(Crimson::Vector3<float>);
 		message.dataSize = size;
+		message.type = MessageType::GameObjectMessage;
 
-		memcpy_s(message.data, globalBuffLength, &anID, sizeof(unsigned));
+		memcpy_s(message.data, globalBuffLength, &anID, idSize);
+		memcpy_s(message.data + idSize, globalBuffLength, aMessage, messageSize);
 
-		constexpr unsigned firstOffset = sizeof(unsigned);
-		memcpy_s(message.data + firstOffset, globalBuffLength, &aPosition, sizeof(Crimson::Vector3<float>));
-
-		constexpr unsigned secondOffset = sizeof(unsigned) + sizeof(Crimson::Vector3<float>);
-		memcpy_s(message.data + secondOffset, globalBuffLength, &aRotation, sizeof(Crimson::Vector3<float>));
 		return message;
+	}
+
+	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage)
+	{
+		static_assert(sizeof(UUIDv4::UUID) + sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
+		assert(aMessage.type == MessageType::GameObjectMessage && "Invalid MessageType!");
+
+		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
+		return reinterpret_cast<const GameObjectMessage&>(aMessage.data[idSize]);
+	}
+
+	NetMessage CreateMoveGameObjectMessage(const UUIDv4::UUID& anID, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aRotation)
+	{
+		constexpr rsize_t dataSize = sizeof(GameObjectMessage::data);
+		constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
+
+		GameObjectMessage message;
+		message.action = ObjectAction::Move;
+
+		memcpy_s(message.data, dataSize, &aPosition, vectorSize);
+		memcpy_s(message.data + vectorSize, dataSize, &aRotation, vectorSize);
+
+		return CreateGameObjectMessage(anID, message);
 	}
 }

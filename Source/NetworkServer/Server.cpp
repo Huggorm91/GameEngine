@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Server.h"
 #include "CrimsonUtilities/String/StringFunctions.h"
 #include "NetworkShared/MessageFunctions.h"

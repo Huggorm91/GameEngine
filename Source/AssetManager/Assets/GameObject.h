@@ -8,6 +8,8 @@
 
 class Prefab;
 void SetGameObjectIDCount(unsigned aValue);
+namespace Network { struct NetMessage; }
+
 
 class GameObject
 {
@@ -69,6 +71,8 @@ public:
 	void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
 	void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
 
+	void RecieveNetmessage(const Network::NetMessage& aMessage);
+
 	void SetPosition(const Crimson::Vector3f& aPosition);
 	void SetRotation(const Crimson::Vector3f& aDegree);
 	void SetScale(const Crimson::Vector3f& aScale);
@@ -105,6 +109,8 @@ public:
 
 	unsigned GetComponentCount() const;
 	unsigned GetID() const;
+
+	const UUIDv4::UUID& GetUUID() const;
 
 	void CreateImGuiWindowContent(const std::string& aWindowName);
 	Json::Value ToJson() const;
