@@ -25,6 +25,18 @@ const std::unordered_set<std::string>& AnimationManager::GetAnimationlist()
 	return myFilePaths;
 }
 
+bool AnimationManager::IsAnimation(const std::string& aPath)
+{
+	if (auto iter = myAnimationData.find(aPath); iter != myAnimationData.end())
+	{
+		return true;
+	}
+	else
+	{
+		return LoadAnimation(aPath, false) != nullptr;
+	}
+}
+
 AnimationData* AnimationManager::GetAnimation(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myAnimationData.find(aPath); iter != myAnimationData.end())

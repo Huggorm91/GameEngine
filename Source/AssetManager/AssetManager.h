@@ -99,6 +99,9 @@ public:
 
 	inline static void SetLogErrors(bool aState) { myIsLoggingErrors = aState; }
 
+	inline static bool IsAnimatedmesh(const std::string& anIdentifier) { return myModelManager.IsAnimatedmesh(anIdentifier); }
+	inline static bool IsAnimation(const std::string& anIdentifier) { return myAnimationManager.IsAnimation(anIdentifier); }
+
 private:
 	friend class Prefab;
 
@@ -121,7 +124,11 @@ inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)
 	{
 		return *object;
 	}
-	return *myPrefabManager.GetTemplate(anIdentifier, myIsLoggingErrors);
+	else if (object = myPrefabManager.GetTemplate(anIdentifier, myIsLoggingErrors); object != nullptr)
+	{
+		return *object;
+	}
+	return GameObject();
 }
 
 template<>

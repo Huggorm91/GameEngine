@@ -26,6 +26,8 @@ public:
 	void UpdateFilePaths();
 	const std::unordered_set<std::string>& GetModellist();
 
+	bool IsAnimatedmesh(const std::string& aPath);
+
 	GameObject* GetModel(const std::string& aPath, bool aShouldLogErrors);
 	GameObject* GetModel(Primitives aPrimitive);
 

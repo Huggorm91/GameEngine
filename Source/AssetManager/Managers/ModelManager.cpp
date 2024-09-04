@@ -95,6 +95,31 @@ const std::unordered_set<std::string>& ModelManager::GetModellist()
 	return myFilePaths;
 }
 
+bool ModelManager::IsAnimatedmesh(const std::string& aPath)
+{
+	if (auto iter = myModels.find(aPath); iter != myModels.end())
+	{
+		return iter->second.HasComponent<AnimatedMeshComponent>();
+	}
+	else
+	{
+		std::string path = Crimson::AddExtensionIfMissing(aPath, GetExtension());
+		path = Crimson::GetValidPath(path, GetPath());
+		if (path.empty())
+		{
+			return false;
+		}
+		else if (iter = myModels.find(path); iter != myModels.end())
+		{
+			return iter->second.HasComponent<AnimatedMeshComponent>();
+		}
+		else
+		{
+			return LoadSkeleton(path, false) != nullptr;
+		}
+	}
+}
+
 GameObject* ModelManager::GetModel(const std::string& aPath, bool aShouldLogErrors)
 {
 	if (auto iter = myModels.find(aPath); iter != myModels.end())
@@ -292,6 +317,10 @@ GameObject* ModelManager::LoadModel(const std::string& aPath, bool aShouldLogErr
 		auto modelIter = myModels.emplace(aPath, GameObject());
 		if (modelIter.second == false)
 		{
+			if (aShouldLogErrors)
+			{
+				AMLogger.Err("ModelManager: Failed to emplace: " + aPath);
+			}
 			return nullptr;
 		}
 		GameObject& model = modelIter.first->second;
@@ -381,13 +410,18 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 		}
 	}
 
-	if (success)
+	if (success && tgaMesh.Skeleton.GetRoot())
 	{
 		auto modelIter = myModels.emplace(aPath, GameObject());
 		if (modelIter.second == false)
 		{
+			if (aShouldLogErrors)
+			{
+				AMLogger.Err("ModelManager: Failed to emplace: " + aPath);
+			}
 			return nullptr;
 		}
+
 		GameObject& model = modelIter.first->second;
 		auto& dataList = myMeshData.emplace(aPath, std::vector<MeshData>()).first->second;
 		dataList.reserve(tgaMesh.Elements.size());
@@ -435,14 +469,12 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 			}
 		}
 
-		if (tgaMesh.Skeleton.GetRoot())	// Load Skeleton
-		{
-			auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
-			skeletonIter.first->second.SetPath(&skeletonIter.first->first);
-			model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &skeletonIter.first->second));
-			model.MarkAsPrefab();
-			return &skeletonIter.first->second;
-		}
+		// Load Skeleton
+		auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);
+		skeletonIter.first->second.SetPath(&skeletonIter.first->first);
+		model.AddComponent(AnimatedMeshComponent(tgaMesh, elements, &skeletonIter.first->second));
+		model.MarkAsPrefab();
+		return &skeletonIter.first->second;
 	}
 
 	if (aShouldLogErrors)
@@ -450,7 +482,6 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 		AMLogger.Err("ModelManager: Failed to load skeleton from: " + aPath);
 	}
 	myMeshData.erase(aPath);
-	myModels.at(aPath).MarkAsPrefab();
 	myModels.erase(aPath);
 	return nullptr;
 }

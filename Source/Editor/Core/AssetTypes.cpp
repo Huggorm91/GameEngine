@@ -226,13 +226,13 @@ Assets::eAssetType Assets::GetModelType(const std::string& aPath)
 {
 	eAssetType result = eAssetType::Unknown;
 	AssetManager::SetLogErrors(false);
-	if (AssetManager::GetAsset<Animation>(aPath).HasData())
+	if (AssetManager::IsAnimation(aPath))
 	{
 		result = eAssetType::Animation;
 	}
 	else
 	{
-		if (AssetManager::GetAsset<GameObject>(aPath).HasComponent<AnimatedMeshComponent>())
+		if (AssetManager::IsAnimatedmesh(aPath))
 		{
 			result = eAssetType::AnimatedModel;
 		}
