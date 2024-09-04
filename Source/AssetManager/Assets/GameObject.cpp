@@ -14,27 +14,39 @@ unsigned int GameObject::ourIDCount = 0;
 inline static UUIDv4::UUIDGenerator<std::mt19937_64> localUUIDGenerator;
 
 GameObject::GameObject() :
-	myComponents(1000u),
 	myIsActive(true),
 	myID(++ourIDCount),
+	myParent(nullptr),
 	myUUID(localUUIDGenerator.getUUID()),
 	myName("GameObject"),
-	myParent(nullptr)
 #ifdef EDITOR
-	, myImguiText(myName)
+	myImguiText(myName),
 #endif // EDITOR
+	myTransform(),
+	myChildren(),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(1000u)
 {
 }
 
 #ifdef EDITOR
 GameObject::GameObject(unsigned anID) :
-	myComponents(1000u),
 	myIsActive(true),
 	myID(anID),
+	myParent(nullptr),
 	myUUID(localUUIDGenerator.getUUID()),
 	myName("GameObject"),
-	myParent(nullptr),
-	myImguiText(myName)
+	myImguiText(myName),
+	myTransform(),
+	myChildren(),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(1000u)
 {
 }
 #endif // EDITOR
@@ -59,17 +71,21 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 }
 
 GameObject::GameObject(const GameObject& aGameObject) :
-	myComponents(aGameObject.myComponents.GetSize()),
-	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
 	myID(++ourIDCount),
+	myParent(aGameObject.myParent),
 	myUUID(localUUIDGenerator.getUUID()),
 	myName(aGameObject.myName),
-	myParent(aGameObject.myParent),
-	myChildren(aGameObject.myChildren)
 #ifdef EDITOR
-	, myImguiText(myName)
+	myImguiText(myName),
 #endif // EDITOR
+	myTransform(aGameObject.myTransform),
+	myChildren(aGameObject.myChildren),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(aGameObject.myComponents.GetSize())
 {
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -82,17 +98,21 @@ GameObject::GameObject(const GameObject& aGameObject) :
 }
 
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
-	myComponents(aGameObject.myComponents.GetSize()),
-	myTransform(aGameObject.myTransform),
 	myIsActive(aGameObject.myIsActive),
 	myID(aGameObject.myID),
+	myParent(aGameObject.myParent),
 	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
-	myParent(aGameObject.myParent),
-	myChildren(aGameObject.myChildren)
 #ifdef EDITOR
-	, myImguiText(myName)
+	myImguiText(myName),
 #endif // EDITOR
+	myTransform(aGameObject.myTransform),
+	myChildren(aGameObject.myChildren),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(aGameObject.myComponents.GetSize())
 {
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -105,16 +125,21 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 }
 
 GameObject::GameObject(const Json::Value& aJson) :
-	myComponents(aJson["MemorySize"].asLargestUInt()),
-	myTransform(aJson["Transform"]),
 	myIsActive(aJson["IsActive"].asBool()),
 	myID(aJson["ID"].asUInt()),
+	myParent(nullptr),
 	myUUID(aJson["UUID"].isNull() ? localUUIDGenerator.getUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
-	myParent(nullptr)
 #ifdef EDITOR
-	, myImguiText(myName)
+	myImguiText(myName),
 #endif // EDITOR
+	myTransform(aJson["Transform"]),
+	myChildren(),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(aJson["MemorySize"].asLargestUInt())
 {
 	if (myID > ourIDCount)
 	{

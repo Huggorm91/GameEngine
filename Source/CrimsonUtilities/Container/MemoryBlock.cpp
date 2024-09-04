@@ -4,12 +4,16 @@ namespace Crimson
 {
 	MemoryBlock::MemoryBlock() :
 		myCurrentIndex(0),
-		myCurrentSize(0)
+		myCurrentSize(0),
+		myDataIndices(),
+		myData()
 	{}
 
 	MemoryBlock::MemoryBlock(const size_t& aByteSize) :
 		myCurrentIndex(0),
-		myCurrentSize(aByteSize)
+		myCurrentSize(aByteSize),
+		myDataIndices(),
+		myData()
 	{
 		myData.resize(aByteSize);
 	}
