@@ -646,9 +646,8 @@ void GameObject::SetName(const std::string& aName)
 
 #ifdef EDITOR
 	myImguiText = aName;
-#endif // EDITOR
-
 	ModelViewer::GetImguiManager().ChangeIndexName(this, aName);
+#endif // EDITOR
 }
 
 const std::string& GameObject::GetName() const
@@ -692,8 +691,8 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			myName = myImguiText;
 #endif // !_RETAIL
 		}
-#endif // EDITOR
 		::CreateImGuiComponents(myTransform);
+#endif // EDITOR
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Component* component = nullptr;

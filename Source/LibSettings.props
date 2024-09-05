@@ -5,7 +5,7 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)..\Lib\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\Intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir);$(SolutionDir);</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir);$(SolutionDir);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

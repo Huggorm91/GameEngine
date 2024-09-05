@@ -93,7 +93,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	system("PAUSE");
 }
 
-bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
+bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON anIcon)
 {
 	myLogger = Logger::Create("ModelViewer");
 	myModuleHandle = aHInstance;
@@ -109,6 +109,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	windowClass.lpfnWndProc = aWindowProcess;
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.lpszClassName = windowClassName;
+	windowClass.hIcon = anIcon;
 	RegisterClass(&windowClass);
 
 	std::wstring stdTitle{ Crimson::ToWString(myApplicationState.WindowTitle) };

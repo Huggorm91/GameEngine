@@ -1,14 +1,10 @@
-﻿#include "Modelviewer.pch.h"
+#include "Gamelauncher.pch.h"
 #include "resource.h"
-#include "Editor/Modelviewer.h"
 #include "CrimsonUtilities/Input/InputHandler.h"
 #include "CrimsonUtilities/Time/Timer.h"
 
 Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
-#ifndef _RETAIL
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-#endif // !_RETAIL
 
 #pragma warning(disable:6387)
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -24,7 +20,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //constexpr SIZE windowSize = { 1920, 1080 };
     //constexpr LPCWSTR windowTitle = L"Modelviewer";
 
-    ModelViewer& MV = ModelViewer::Get();
+    //ModelViewer& MV = ModelViewer::Get();
 
     FILE* consoleOut;
     FILE* consoleErr;
@@ -33,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     freopen_s(&consoleErr, "CONOUT$", "w", stderr);
     setvbuf(consoleOut, nullptr, _IONBF, 1024);
 
-	HWND consoleWindow = GetConsoleWindow();
+    HWND consoleWindow = GetConsoleWindow();
     const Crimson::Vector2i consoleSize = { 1280, 720 };
     int monitorCount = GetSystemMetrics(SM_CMONITORS);
     if (monitorCount > 1)
@@ -46,7 +42,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         RECT desktopSize;
         GetWindowRect(GetDesktopWindow(), &desktopSize);
-        
+
         Crimson::Vector2i consolePos;
         if (virtualSize.left < 0 && desktopSize.right < virtualSize.right) // Secondary monitor to the left
         {
@@ -57,7 +53,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             consolePos.x = virtualSize.right - desktopSize.right;
             consolePos.y = desktopSize.top;
-        } 
+        }
         else if (virtualSize.top < 0) // Secondary monitor on top
         {
             // I am too lazy too account for anything else than the taskbar being on the bottom of the screen
@@ -72,7 +68,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             consolePos.x = desktopSize.left;
             consolePos.y = virtualSize.bottom - desktopSize.bottom;
         }
-        
+
         SetWindowPos(consoleWindow, HWND_TOP, consolePos.x, consolePos.y, consoleSize.x, consoleSize.y, 0);
     }
     else
@@ -81,9 +77,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         GetWindowRect(consoleWindow, &consolePos);
         MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
     }
-    
-    MV.Initialize(hInstance, WinProc, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MODELVIEWER_ICON)));
-    return MV.Run();
+
+    //MV.Initialize(hInstance, WinProc, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GAMELAUNCHER)));
+    //return MV.Run();
+    return 0;
 }
 #pragma warning(default:6387)
 
@@ -103,21 +100,10 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
         Crimson::Timer::ResetDeltaTime();
         break;
     }
-#ifndef _RETAIL
-    case WM_DROPFILES:
-    {
-        ModelViewer::Get().SetDropFile((HDROP)wParam);
-        return 0;
-    }
-#endif // !_RETAIL
     default:
         break;
-    }    
-
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-    {
-        return true;
     }
+
     if (globalInputHandler.UpdateEvents(uMsg, wParam, lParam))
     {
         return 0;

@@ -6,6 +6,7 @@
 
 void CreateImGuiComponents(Transform& aTransform)
 {
+#ifdef EDITOR
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
 	{
@@ -28,10 +29,14 @@ void CreateImGuiComponents(Transform& aTransform)
 		}
 		ImGui::TreePop();
 	}
+#else
+	aTransform;
+#endif // EDITOR
 }
 
 bool CreateImGuiComponentsNoUndo(Transform& aTransform)
 {
+#ifdef EDITOR
 	bool hasChanged = false;
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
@@ -59,10 +64,15 @@ bool CreateImGuiComponentsNoUndo(Transform& aTransform)
 		ImGui::TreePop();
 	}
 	return hasChanged;
+#else
+	aTransform;
+	return false;
+#endif // EDITOR
 }
 
 bool CreateMultipleSelectionImGuiComponents(Transform& aTransform)
 {
+#ifdef EDITOR
 	bool hasChanged = false;
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
 	if (ImGui::TreeNode("Transform"))
@@ -93,4 +103,8 @@ bool CreateMultipleSelectionImGuiComponents(Transform& aTransform)
 		ImGui::TreePop();
 	}
 	return hasChanged;
+#else
+	aTransform;
+	return false;
+#endif // EDITOR
 }

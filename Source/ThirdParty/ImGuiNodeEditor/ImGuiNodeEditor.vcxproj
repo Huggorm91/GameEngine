@@ -58,7 +58,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{a4912cdb-df6b-46c5-8b09-4d3ddb85f985}</ProjectGuid>
     <RootNamespace>ImGuiNodeEditor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

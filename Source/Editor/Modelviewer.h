@@ -44,7 +44,7 @@ public:
 		return *Get().myMessageHandler;
 	}
 
-	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
+	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON anIcon);
 	int Run();
 	void Shutdown();
 
