@@ -57,8 +57,7 @@ void Network::MessageHandler::Update()
 			myMessages.emplace_back(message);
 			break;
 		}
-		}
-		
+		}		
 	}
 }
 
@@ -106,4 +105,9 @@ constexpr std::string Network::MessageHandler::GetSelfHeader() const
 const std::vector<std::string>& Network::MessageHandler::GetChatHistory() const
 {
 	return myChatHistory;
+}
+
+std::vector<Network::NetMessage>& Network::MessageHandler::GetMessages()
+{
+	return myMessages;
 }

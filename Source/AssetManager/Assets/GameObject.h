@@ -2,14 +2,8 @@
 #include "Components/Component.h"
 #include "CrimsonUtilities/Container/MemoryBlock.h"
 #include "CrimsonUtilities/Math/Transform.h"
-#pragma warning (push,0)
-#include "CrimsonUtilities/UUID/uuid_v4.h"
-#pragma warning (pop)
 
 class Prefab;
-void SetGameObjectIDCount(unsigned aValue);
-namespace Network { struct NetMessage; }
-
 
 class GameObject
 {
@@ -71,7 +65,7 @@ public:
 	void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
 	void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger);
 
-	void RecieveNetmessage(const Network::NetMessage& aMessage);
+	void RecieveNetmessage(const Network::GameObjectMessage& aMessage);
 
 	void SetPosition(const Crimson::Vector3f& aPosition);
 	void SetRotation(const Crimson::Vector3f& aDegree);
@@ -104,48 +98,41 @@ public:
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
 
-	// returns "{Name}: {ID}"
+	// returns "{Name}: {UUID}"
 	std::string ToString() const;
 
 	unsigned GetComponentCount() const;
-	unsigned GetID() const;
 
 	const UUIDv4::UUID& GetUUID() const;
 
+#ifdef EDITOR
 	void CreateImGuiWindowContent(const std::string& aWindowName);
+#endif // EDITOR
 	Json::Value ToJson() const;
 
 	void Serialize(std::ostream& aStream) const;
 	// Returns parent ID. Has no parent if 0.
-	unsigned Deserialize(std::istream& aStream);
-
-	// Only call before creating another GameObject!
-	void MarkAsPrefab();
-	// Only call before creating another GameObject!
-	void MarkAsPrefab(unsigned anID);
+	UUIDv4::UUID Deserialize(std::istream& aStream);
 
 	// Excpects GameObjects to already be copies of eachother.
-	void CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount = false);
+	void CopyIDsOf(const GameObject& anObject);
 
-	static unsigned GetParentID(const Json::Value& aJson);
-	static unsigned GetIDCount() { return ourIDCount; }
+	static std::string GetParentID(const Json::Value& aJson);
+
+	static UUIDv4::UUID nullUUID;
 
 private:
 #ifdef EDITOR
 	friend class PrefabManager;
-	GameObject(unsigned anID);
 #endif // EDITOR
-	friend void SetGameObjectIDCount(unsigned aValue);
 	friend class Component;
 
-	static unsigned ourIDCount;
-
 	bool myIsActive;
-	const unsigned myID;
 
 	GameObject* myParent;
 
 	const UUIDv4::UUID myUUID;
+
 	std::string myName;
 #ifdef EDITOR
 	std::string myImguiText;
@@ -177,6 +164,8 @@ private:
 	bool IsChild(GameObject* anObject);
 	bool IsParentRecursive(GameObject* anObject);
 	bool IsParent(GameObject* anObject);
+
+	static UUIDv4::UUID GenerateUUID();
 };
 
 template<class T>

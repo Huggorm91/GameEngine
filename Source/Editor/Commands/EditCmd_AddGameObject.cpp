@@ -2,12 +2,11 @@
 #include "EditCmd_AddGameObject.h"
 #include "../Modelviewer.h"
 
-EditCmd_AddGameObject::EditCmd_AddGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetID())
+EditCmd_AddGameObject::EditCmd_AddGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetUUID())
 {
-	myObject->MarkAsPrefab(myID);
 }
 
-EditCmd_AddGameObject::EditCmd_AddGameObject(GameObject&& anObject) : myObject(std::make_shared<GameObject>(std::move(anObject))), myID(anObject.GetID())
+EditCmd_AddGameObject::EditCmd_AddGameObject(GameObject&& anObject) : myObject(std::make_shared<GameObject>(std::move(anObject))), myID(anObject.GetUUID())
 {
 }
 
@@ -15,7 +14,7 @@ void EditCmd_AddGameObject::Undo()
 {
 	if (!RemoveGameObject(myID))
 	{
-		LogError("EditCmd_AddGameObject::Undo: Failed to remove GameObject " + std::to_string(myID));
+		LogError("EditCmd_AddGameObject::Undo: Failed to remove GameObject " + myID.str());
 	}	
 }
 

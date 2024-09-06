@@ -28,9 +28,8 @@ ImguiManager::ImguiManager() : myModelViewer(nullptr), myIsShowingNewObjectWindo
 myImguiNameCounts(), mySelectedComponentType(ComponentType::Mesh), myDropfile(NULL), myDropFileCount(0), myDropFileSelection(0), myDropLocation(), myHasGottenDropfiles(false),
 mySelectedObjects(), myDropfileAssettype(Assets::eAssetType::Unknown), myShouldOpenOverwritePopUp(false), myOverwriteFromPaths(), myOverwriteToPaths(), myImguiNameIndex(), myViewportAwaitsFile(false),
 myMultiSelectionTransform(), myAvailableFiles(), myAssetPath("..\\Content\\"), myInternalAssetPath("Settings\\EditorAssets\\"), myAssetIcons(), myAssetBrowserIconSize(75), myHasAddedAssetFiles(false),
-myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f), myIsActive(true)
+myAssetBrowserPath(), myShouldOpenPopUp(false), myActiveObjects(nullptr), myRefreshTimer(0.f), myIsActive(true), myIsShowingChat(false)
 {
-	myNewObject->MarkAsPrefab();
 }
 
 void ImguiManager::Release()
@@ -163,7 +162,7 @@ void ImguiManager::Activate()
 
 void ImguiManager::AddGameObject(GameObject* anObject)
 {
-	if (myImguiNameIndex.find(anObject->GetID()) != myImguiNameIndex.end())
+	if (myImguiNameIndex.find(anObject->GetUUID()) != myImguiNameIndex.end())
 	{
 		return;
 	}
@@ -171,23 +170,23 @@ void ImguiManager::AddGameObject(GameObject* anObject)
 	if (auto iter = myImguiNameCounts.find(anObject->GetName()); iter != myImguiNameCounts.end())
 	{
 		std::string text = anObject->GetName() + " (" + std::to_string(iter->second++) + ")";
-		myImguiNameIndex.emplace(anObject->GetID(), text);
+		myImguiNameIndex.emplace(anObject->GetUUID(), text);
 	}
 	else
 	{
 		myImguiNameCounts.emplace(anObject->GetName(), 1);
-		myImguiNameIndex.emplace(anObject->GetID(), anObject->GetName());
+		myImguiNameIndex.emplace(anObject->GetUUID(), anObject->GetName());
 	}
 }
 
 void ImguiManager::ChangeIndexName(GameObject* anObject, const std::string& aName)
 {
-	myImguiNameIndex.at(anObject->GetID()) = aName;
+	myImguiNameIndex.at(anObject->GetUUID()) = aName;
 }
 
 const std::string& ImguiManager::GetIndexName(GameObject* anObject) const
 {
-	return myImguiNameIndex.at(anObject->GetID());
+	return myImguiNameIndex.at(anObject->GetUUID());
 }
 
 void ImguiManager::Reset()
@@ -311,7 +310,7 @@ void ImguiManager::RefreshAvailableFiles()
 	}
 }
 
-void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr<GameObject>>* aList)
+void ImguiManager::SetActiveObjects(std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>>* aList)
 {
 	myActiveObjects = aList;
 
@@ -320,7 +319,7 @@ void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr
 	{
 		for (auto& [id, object] : *myActiveObjects)
 		{
-			if (current->GetID() == id)
+			if (current->GetUUID() == id)
 			{
 				newSelection.emplace(object.get());
 			}
@@ -330,7 +329,7 @@ void ImguiManager::SetActiveObjects(std::unordered_map<unsigned, std::shared_ptr
 	myMultiSelectionTransform = Transform();
 }
 
-std::string ImguiManager::GetDropFilePath(unsigned anIndex)
+std::string ImguiManager::GetDropFilePath(unsigned anIndex) const
 {
 	LPSTR fileName = new char[1024];
 	unsigned charCount = DragQueryFileA(myDropfile, anIndex, fileName, 1024);
@@ -360,7 +359,7 @@ bool ImguiManager::NextDropFile()
 	}
 }
 
-bool ImguiManager::IsLastDropFile()
+bool ImguiManager::IsLastDropFile() const
 {
 	return myDropFileCount == 0 || myDropFileSelection == myDropFileCount - 1;
 }
@@ -439,7 +438,7 @@ void ImguiManager::CreateMenubar()
 			if (ImGui::MenuItem("Save Scene"))
 			{
 				std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneExtension(), true));
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneExtension(), true));
 				std::string path;
 				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
@@ -449,7 +448,7 @@ void ImguiManager::CreateMenubar()
 			if (ImGui::MenuItem("Save As Binary"))
 			{
 				std::wstring extension = std::wstring(AssetManager::GetSceneBinaryExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.Name, AssetManager::GetSceneBinaryExtension(), true));
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneBinaryExtension(), true));
 				std::string path;
 				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
 				{
@@ -954,7 +953,7 @@ void ImguiManager::CreateSceneContentWindow()
 {
 	if (ImGui::Begin("Scene"))
 	{
-		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.Name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -988,7 +987,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 {
 	using namespace Crimson;
 
-	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject->GetID()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
+	const bool isOpen = ImGui::TreeNodeEx(myImguiNameIndex.at(anObject->GetUUID()).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (IsSelected(anObject) ? ImGuiTreeNodeFlags_Selected : 0) | (anObject->HasChild() ? 0 : ImGuiTreeNodeFlags_Leaf));
 
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -1006,8 +1005,8 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 
 	if (ImGui::BeginDragDropSource())
 	{
-		const unsigned id = anObject->GetID();
-		ImGui::SetDragDropPayload("Dragged_SceneObject", &id, sizeof(unsigned));
+		const UUIDv4::UUID id = anObject->GetUUID();
+		ImGui::SetDragDropPayload("Dragged_SceneObject", &id, sizeof(UUIDv4::UUID));
 		if (!IsSelected(anObject))
 		{
 			mySelectedObjects.clear();
@@ -1020,7 +1019,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	{
 		for (auto& child : anObject->GetChildren())
 		{
-			SceneContentButton(myModelViewer->GetGameObject(child->GetID()));
+			SceneContentButton(myModelViewer->GetGameObject(child->GetUUID()));
 		}
 		ImGui::TreePop();
 	}
@@ -1030,11 +1029,11 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 {
 	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_SceneObject"))
 	{
-		//IM_ASSERT(payload->DataSize == sizeof(unsigned));
-		//unsigned id = *static_cast<unsigned*>(payload->Data);
+		//IM_ASSERT(payload->DataSize == sizeof(UUIDv4::UUID));
+		//const UUIDv4::UUID id = *static_cast<UUIDv4::UUID*>(payload->Data);
 		if (aParent)
 		{
-			auto parent = myModelViewer->GetGameObject(aParent->GetID());
+			auto parent = myModelViewer->GetGameObject(aParent->GetUUID());
 			for (auto& object : mySelectedObjects)
 			{
 				parent->AddChild(object);
@@ -1077,7 +1076,6 @@ void ImguiManager::CreatePrefabWindow()
 			if (ImGui::Button("Set as new object"))
 			{
 				*myNewObject = AssetManager::GetPrefab(*mySelectedPrefabName);
-				myNewObject->MarkAsPrefab();
 				if (!myIsShowingNewObjectWindow)
 				{
 					myIsShowingNewObjectWindow = true;

@@ -27,7 +27,9 @@ namespace Network
 
 		void SendChatMessage(const std::string& aMessage);
 		constexpr std::string GetSelfHeader() const;
+
 		const std::vector<std::string>& GetChatHistory() const;
+		std::vector<NetMessage>& GetMessages();
 
 	private:
 		std::vector<std::string> myChatHistory;

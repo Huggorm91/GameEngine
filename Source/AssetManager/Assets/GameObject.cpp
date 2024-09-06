@@ -3,21 +3,18 @@
 #include "Components/Rendering/AnimatedMeshComponent.h"
 #include "Prefab.h"
 
-#ifndef _RETAIL
+#ifdef EDITOR
 #include "Editor/ModelViewer.h"
 #include "Editor/Commands/EditCmd_ChangeGameObjectName.h"
 #include "ImguiTransform.h"
 #endif // !_RETAIL
 
-
-unsigned int GameObject::ourIDCount = 0;
-inline static UUIDv4::UUIDGenerator<std::mt19937_64> localUUIDGenerator;
+UUIDv4::UUID GameObject::nullUUID(uint64_t(0), uint64_t(0));
 
 GameObject::GameObject() :
 	myIsActive(true),
-	myID(++ourIDCount),
 	myParent(nullptr),
-	myUUID(localUUIDGenerator.getUUID()),
+	myUUID(GenerateUUID()),
 	myName("GameObject"),
 #ifdef EDITOR
 	myImguiText(myName),
@@ -31,25 +28,6 @@ GameObject::GameObject() :
 	myComponents(1000u)
 {
 }
-
-#ifdef EDITOR
-GameObject::GameObject(unsigned anID) :
-	myIsActive(true),
-	myID(anID),
-	myParent(nullptr),
-	myUUID(localUUIDGenerator.getUUID()),
-	myName("GameObject"),
-	myImguiText(myName),
-	myTransform(),
-	myChildren(),
-#ifndef _RETAIL
-	myDebugPointers(),
-#endif // !_RETAIL
-	myIndexList(),
-	myComponents(1000u)
-{
-}
-#endif // EDITOR
 
 GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 {
@@ -66,15 +44,14 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 	}
 	else
 	{
-		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+		AMLogger.Err("GameObject " + myUUID.str() + ": Trying to copy from invalid prefab");
 	}
 }
 
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
-	myID(++ourIDCount),
 	myParent(aGameObject.myParent),
-	myUUID(localUUIDGenerator.getUUID()),
+	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
 #ifdef EDITOR
 	myImguiText(myName),
@@ -99,7 +76,6 @@ GameObject::GameObject(const GameObject& aGameObject) :
 
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
-	myID(aGameObject.myID),
 	myParent(aGameObject.myParent),
 	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
@@ -126,9 +102,8 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 
 GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
-	myID(aJson["ID"].asUInt()),
 	myParent(nullptr),
-	myUUID(aJson["UUID"].isNull() ? localUUIDGenerator.getUUID().bytes() : aJson["UUID"].asString()),
+	myUUID(aJson["UUID"].isNull() ? GenerateUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
 #ifdef EDITOR
 	myImguiText(myName),
@@ -141,11 +116,6 @@ GameObject::GameObject(const Json::Value& aJson) :
 	myIndexList(),
 	myComponents(aJson["MemorySize"].asLargestUInt())
 {
-	if (myID > ourIDCount)
-	{
-		ourIDCount = myID;
-	}
-
 	for (auto& jsonComponent : aJson["Components"])
 	{
 		LoadComponent(jsonComponent, *this);
@@ -186,7 +156,7 @@ GameObject& GameObject::operator=(const Prefab& aPrefab)
 	}
 	else
 	{
-		AMLogger.Err("GameObject " + std::to_string(myID) + ": Trying to copy from invalid prefab");
+		AMLogger.Err("GameObject " + myUUID.str() + ": Trying to copy from invalid prefab");
 	}
 	return *this;
 }
@@ -236,7 +206,6 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myTransform = aGameObject.myTransform;
 	myIsActive = aGameObject.myIsActive;
 	myName = aGameObject.myName;
-	const_cast<unsigned&>(myID) = aGameObject.myID;
 	const_cast<UUIDv4::UUID&>(myUUID) = aGameObject.myUUID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
@@ -378,12 +347,11 @@ void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* 
 	}
 }
 
-void GameObject::RecieveNetmessage(const Network::NetMessage& aMessage)
+void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 {
-	auto& message = Network::ExtractGameObjectMessage(aMessage);
 	for (auto& [type, index] : myIndexList)
 	{
-		myComponents.GetValue<Component>(index).RecieveNetmessage(message);
+		myComponents.GetValue<Component>(index).RecieveNetmessage(aMessage);
 	}
 }
 
@@ -581,6 +549,17 @@ bool GameObject::IsParent(GameObject* anObject)
 	return myParent == anObject;
 }
 
+UUIDv4::UUID GameObject::GenerateUUID()
+{
+	static UUIDv4::UUIDGenerator<std::mt19937_64> localUUIDGenerator;
+	UUIDv4::UUID result = nullUUID;
+	while (result == nullUUID)
+	{
+		result = localUUIDGenerator.getUUID();
+	}
+	return result;
+}
+
 void GameObject::AddChild(GameObject* anObject)
 {
 	if (anObject == this || IsRelated(anObject))
@@ -657,7 +636,7 @@ const std::string& GameObject::GetName() const
 
 std::string GameObject::ToString() const
 {
-	return myName + ": " + std::to_string(myID);
+	return myName + ": " + myUUID.str();
 }
 
 unsigned int GameObject::GetComponentCount() const
@@ -665,34 +644,25 @@ unsigned int GameObject::GetComponentCount() const
 	return static_cast<unsigned>(myIndexList.size());
 }
 
-unsigned int GameObject::GetID() const
-{
-	return myID;
-}
 
 const UUIDv4::UUID& GameObject::GetUUID() const
 {
 	return myUUID;
 }
 
+#ifdef EDITOR
 void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 {
 	if (ImGui::CollapsingHeader(myName.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		std::string id = "ID: " + std::to_string(myID);
+		std::string id = "ID: " + myUUID.str();
 		ImGui::Text(id.c_str());
 		ImGui::Checkbox("Active", &myIsActive);
-#ifdef EDITOR
 		if (ImGui::InputText("Name", &myImguiText, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-#ifndef _RETAIL
 			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeGameObjectName>(this, myImguiText));
-#else
-			myName = myImguiText;
-#endif // !_RETAIL
 		}
 		::CreateImGuiComponents(myTransform);
-#endif // EDITOR
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Component* component = nullptr;
@@ -711,23 +681,24 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 		}
 	}
 }
+#endif // EDITOR
 
 Json::Value GameObject::ToJson() const
 {
 	Json::Value result;
 	result["IsActive"] = myIsActive;
-	result["ID"] = myID;
+	result["ID"] = myUUID.str();
 	result["UUID"] = myUUID.bytes();
 	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();
 
 	if (myParent)
 	{
-		result["ParentID"] = myParent->myID;
+		result["ParentUUID"] = myParent->myUUID.bytes();
 	}
 	else
 	{
-		result["ParentID"] = 0u;
+		result["ParentUUID"] = "";
 	}
 
 	result["Components"] = Json::arrayValue;
@@ -746,8 +717,8 @@ Json::Value GameObject::ToJson() const
 
 struct GameObjectData
 {
-	unsigned ID;
-	unsigned ParentID;
+	UUIDv4::UUID ID;
+	UUIDv4::UUID ParentID;
 	unsigned ComponentCount;
 	bool IsActive;
 };
@@ -756,8 +727,8 @@ void GameObject::Serialize(std::ostream& aStream) const
 {
 	Binary::eType type = Binary::GameObject;
 	GameObjectData data{};
-	data.ID = myID;
-	data.ParentID = myParent ? myParent->myID : 0u;
+	data.ID = myUUID;
+	data.ParentID = myParent ? myParent->myUUID : nullUUID;
 	data.ComponentCount = static_cast<unsigned>(myIndexList.size());
 	data.IsActive = myIsActive;
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
@@ -771,11 +742,11 @@ void GameObject::Serialize(std::ostream& aStream) const
 	}
 }
 
-unsigned GameObject::Deserialize(std::istream& aStream)
+UUIDv4::UUID GameObject::Deserialize(std::istream& aStream)
 {
 	GameObjectData data{};
 	aStream.read(reinterpret_cast<char*>(&data), sizeof(data));
-	const_cast<unsigned&>(myID) = data.ID;
+	const_cast<UUIDv4::UUID&>(myUUID) = data.ID;
 	myIsActive = data.IsActive;
 	std::getline(aStream, myName, '\0');
 	myTransform.Deserialize(aStream);
@@ -786,56 +757,24 @@ unsigned GameObject::Deserialize(std::istream& aStream)
 		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
 		if (type != Binary::Component)
 		{
-			throw std::runtime_error("GameObject::Deserialize: Invalid Binary::Type when loading components. ID: " + std::to_string(myID));
+			throw std::runtime_error("GameObject::Deserialize: Invalid Binary::Type when loading components. ID: " + myUUID.str());
 		}
 		LoadComponent(aStream, *this);
 	}
 	return data.ParentID;
 }
 
-void GameObject::MarkAsPrefab()
+void GameObject::CopyIDsOf(const GameObject& anObject)
 {
-	if (myID != 0)
-	{
-		const_cast<unsigned&>(myID) = 0;
-		ourIDCount--;
-	}
-	for (auto& [type, index] : myIndexList)
-	{
-		myComponents.GetValue<Component>(index).MarkAsPrefabComponent();
-	}
-}
-
-void GameObject::MarkAsPrefab(unsigned anID)
-{
-	if (myID != anID)
-	{
-		const_cast<unsigned&>(myID) = anID;
-		ourIDCount--;
-	}
-}
-
-void GameObject::CopyIDsOf(const GameObject& anObject, bool aDecrementIDCount)
-{
-	if (aDecrementIDCount)
-	{
-		ourIDCount--;
-	}
-	const_cast<unsigned&>(myID) = anObject.myID;
 	const_cast<UUIDv4::UUID&>(myUUID) = anObject.myUUID;
 
 	for (auto& [type, index] : myIndexList)
 	{
-		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index), aDecrementIDCount);
+		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index));
 	}
 }
 
-unsigned GameObject::GetParentID(const Json::Value& aJson)
-{
-	return aJson["ParentID"].asUInt();
-}
-
-void SetGameObjectIDCount(unsigned aValue)
-{
-	GameObject::ourIDCount = aValue;
+std::string GameObject::GetParentID(const Json::Value& aJson)
+{	
+	return aJson["ParentUUID"].isNull() ? "" : aJson["ParentUUID"].asString();
 }

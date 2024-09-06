@@ -12,7 +12,7 @@ void PrefabManager::Init()
 		myValidPaths.emplace(Crimson::RemoveStringPart(path, GetPath()));
 	}
 
-	myPrefabs.emplace("Empty", GameObject(0));
+	myPrefabs.emplace("Empty", GameObject());
 	myValidPaths.emplace("Empty");
 }
 

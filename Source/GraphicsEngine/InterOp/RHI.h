@@ -8,9 +8,11 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
+// Was printing too many "ComPtr is not a template" errors
+#pragma warning (push,0)
+
 class Shader;
 
-//struct Vertex;
 class Texture;
 struct ConstantBufferBase;
 struct ID3D11VertexShader;
@@ -392,3 +394,5 @@ bool RHI::CreateVertexBuffer(ComPtr<ID3D11Buffer>& outVxBuffer, const std::vecto
 	const size_t numVx = aVertexList.size();
 	return CreateVertexBufferInternal(outVxBuffer, reinterpret_cast<const uint8_t*>(aVertexList.data()), numVx, vxSize);
 }
+
+#pragma warning(pop)

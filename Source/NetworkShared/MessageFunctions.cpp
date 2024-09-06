@@ -53,6 +53,15 @@ namespace Network
 		return message;
 	}
 
+	const UUIDv4::UUID& ExtractUUID(const NetMessage& aMessage)
+	{
+		assert((aMessage.type == MessageType::GameObjectMessage 
+			|| aMessage.type == MessageType::CreateGameObject
+			|| aMessage.type == MessageType::DeleteGameObject)
+			&& "Invalid MessageType!");
+		return reinterpret_cast<const UUIDv4::UUID&>(aMessage.data);
+	}
+
 	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage)
 	{
 		static_assert(sizeof(UUIDv4::UUID) + sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");

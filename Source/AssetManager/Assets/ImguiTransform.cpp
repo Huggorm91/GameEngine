@@ -19,7 +19,7 @@ void CreateImGuiComponents(Transform& aTransform)
 		auto rotation = aTransform.GetRotationDegree();
 		if (ImGui::DragFloat3("Rotation", &rotation.x))
 		{
-			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myRotation, rotation, aTransform.myHasChangedInternal));
+			ModelViewer::Get().AddCommand(std::make_shared<EditCmd_ChangeTransform>(aTransform.myRotation, Crimson::DegreeToRadian(rotation), aTransform.myHasChangedInternal));
 		}
 
 		auto scale = aTransform.GetScale();

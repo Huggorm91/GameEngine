@@ -3,6 +3,9 @@
 #include "../Binary.h"
 #include "ComponentType.h"
 #include "ComponentMacros.h"
+#pragma warning (push,0)
+#include "CrimsonUtilities/UUID/uuid_v4.h"
+#pragma warning (pop)
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // 4100 = Unreferenced Parameter
@@ -52,7 +55,7 @@ public:
 	GameObject& GetParent();
 
 	ComponentType GetType() const;
-	unsigned GetParentID() const;
+	const UUIDv4::UUID& GetParentID() const;
 	unsigned GetComponentID() const;
 
 	virtual void SetActive(bool aIsActive);

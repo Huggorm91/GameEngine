@@ -24,5 +24,6 @@ namespace Network
 	NetMessage CreateGameObjectMessage(const UUIDv4::UUID& anID, const GameObjectMessage& aMessage);
 	NetMessage CreateMoveGameObjectMessage(const UUIDv4::UUID& anID, const Crimson::Vector3<float>& aPosition, const Crimson::Vector3<float>& aRotation);
 
+	const UUIDv4::UUID& ExtractUUID(const NetMessage& aMessage);
 	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage);
 }

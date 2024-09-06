@@ -61,9 +61,9 @@ ComponentType Component::GetType() const
 	return myType;
 }
 
-unsigned Component::GetParentID() const
+const UUIDv4::UUID& Component::GetParentID() const
 {
-	return myParent->myID;
+	return myParent->myUUID;
 }
 
 unsigned Component::GetComponentID() const

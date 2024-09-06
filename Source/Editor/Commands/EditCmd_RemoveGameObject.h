@@ -13,6 +13,6 @@ public:
 
 protected:
 	std::shared_ptr<GameObject> myObject;
-	std::unordered_map<unsigned, std::unordered_set<std::shared_ptr<GameObject>>> myChildList;
-	unsigned myID;
+	std::unordered_map<UUIDv4::UUID, std::unordered_set<std::shared_ptr<GameObject>>> myChildList;
+	UUIDv4::UUID myID;
 };

@@ -70,7 +70,7 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	}
 	default:
 	{
-		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
+		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
 		break;
 	}
 	}
@@ -157,7 +157,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	default:
 	{
-		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(type)));
+		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(type)));
 		break;
 	}
 	}
@@ -261,7 +261,7 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 	case ComponentType::Count:
 		break;
 	default:
-		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + std::to_string(aParent.GetID()) + "\tComponent type: " + std::to_string(static_cast<int>(type)));
+		AMLogger.Err("BinaryLoadComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(type)));
 		break;
 	}
 }

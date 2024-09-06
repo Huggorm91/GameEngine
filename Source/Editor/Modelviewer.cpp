@@ -14,6 +14,7 @@
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 
 #include "NetworkClient/MessageHandler.h"
+#include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Timer.h"
 #include "CrimsonUtilities/Input/InputMapper.h"
@@ -30,9 +31,8 @@ ModelViewer::ModelViewer() :
 	myLogger(),
 	myCamera(),
 	myScene(),
-	myIsMovingCamera(false)
-#ifndef _RETAIL
-	, myDebugMode(GraphicsEngine::DebugMode::Default),
+	myIsMovingCamera(false), 
+	myDebugMode(GraphicsEngine::DebugMode::Default),
 	myLightMode(GraphicsEngine::LightMode::Default),
 	myRenderMode(GraphicsEngine::RenderMode::Mesh),
 	myImguiManager(),
@@ -42,7 +42,6 @@ ModelViewer::ModelViewer() :
 	myPlayScenePointers(),
 	mySceneIsEdited(false),
 	myIsSceneActive(true)
-#endif // _RETAIL
 {}
 
 void ModelViewer::HandleCrash(const std::exception& anException)
@@ -73,7 +72,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	myLogger.LogException(anException);
 
 	// Save current scene if possible
-	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.Name;
+	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.name;
 	try
 	{
 		SaveScene("..\\" + saveName, false);
@@ -82,11 +81,6 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	catch (...)
 	{
 		myLogger.Err("Failed to save current scene to: " + saveName);
-	}
-
-	if (myMessageHandler)
-	{
-		delete myMessageHandler;
 	}
 
 	// Leave console up to let user read information
@@ -169,7 +163,6 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	AssetManager::Init();
 	AssetManager::GeneratePrimitives();
 
-#ifndef _RETAIL
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init(false);
 
@@ -203,9 +196,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScriptGraph.get());
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
-#endif // _RETAIL
 
-	myMessageHandler = new Network::MessageHandler();
+	myMessageHandler = std::make_unique<Network::MessageHandler>();
 	myMessageHandler->Init();
 
 	HideSplashScreen();
@@ -267,17 +259,9 @@ int ModelViewer::Run()
 
 void ModelViewer::Shutdown()
 {
-	if (myMessageHandler)
-	{
-		delete myMessageHandler;
-	}
-
-#ifndef _RETAIL
 	myImguiManager.Release();
-#endif // _RETAIL
 }
 
-#ifndef _RETAIL
 void ModelViewer::SetDropFile(HDROP aHandle)
 {
 	try
@@ -297,30 +281,30 @@ void ModelViewer::SetPlayMode(bool aState)
 	myIsInPlayMode = aState;
 	if (myIsInPlayMode)
 	{
-		myPlayScene.GameObjects.reserve(myScene.GameObjects.size());
-		std::unordered_map<unsigned, unsigned> childlist;
-		for (auto& [id, object] : myScene.GameObjects)
+		myPlayScene.gameObjects.reserve(myScene.gameObjects.size());
+		std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
+		for (auto& [id, object] : myScene.gameObjects)
 		{
 			if (object->HasParent())
 			{
-				childlist.emplace(id, object->GetParent()->GetID());
+				childlist.emplace(id, object->GetParent()->GetUUID());
 			}
-			auto copy = *object;
-			copy.CopyIDsOf(*object, true);
-			myPlayScene.GameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.GameObjects.at(id), [](GameObject*) {}));
+			GameObject copy = *object;
+			copy.CopyIDsOf(*object);
+			myPlayScene.gameObjects.emplace(id, std::move(copy));
+			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.gameObjects.at(id), [](GameObject*) {}));
 		}
 
 		for (auto& [childID, parentID] : childlist)
 		{
-			myPlayScene.GameObjects.at(parentID).AddChild(&myPlayScene.GameObjects.at(childID));
+			myPlayScene.gameObjects.at(parentID).AddChild(&myPlayScene.gameObjects.at(childID));
 		}
 
 		myImguiManager.SetActiveObjects(&myPlayScenePointers);
 	}
 	else
 	{
-		myImguiManager.SetActiveObjects(&myScene.GameObjects);
+		myImguiManager.SetActiveObjects(&myScene.gameObjects);
 		myPlayScenePointers.clear();
 		myPlayScene = Scene();
 		myPlayModeRedoCommands.clear();
@@ -380,7 +364,7 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
 		command.Execute();
 	}
 
-	return myScene.GameObjects.at(newObject->GetID());
+	return myScene.gameObjects.at(newObject->GetUUID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
@@ -395,12 +379,12 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<Ga
 		command.Execute();
 	}
 
-	return myScene.GameObjects.at(anObject->GetID());
+	return myScene.gameObjects.at(anObject->GetUUID());
 }
 
 std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
 {
-	unsigned id = anObject.GetID();
+	UUIDv4::UUID id = anObject.GetUUID();
 	if (aAddToUndo)
 	{
 		AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
@@ -410,69 +394,29 @@ std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, b
 		EditCmd_AddGameObject command(std::move(anObject));
 		command.Execute();
 	}
-	return myScene.GameObjects.at(id);
+	return myScene.gameObjects.at(id);
 }
 
-std::shared_ptr<GameObject> ModelViewer::GetGameObject(unsigned anID)
+std::shared_ptr<GameObject> ModelViewer::GetGameObject(const UUIDv4::UUID& anID)
 {
-	assert(anID != 0 && "Incorrect ID!");
-
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
 		return iter->second;
 	}
 	return nullptr;
 }
 
-bool ModelViewer::RemoveGameObject(unsigned anID)
+bool ModelViewer::RemoveGameObject(const UUIDv4::UUID& anID)
 {
 	assert(anID != 0 && "Incorrect ID!");
 
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
+	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
 	{
 		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
 		return true;
 	}
 	return false;
 }
-#else
-GameObject& ModelViewer::AddGameObject()
-{
-	GameObject newObject;
-	auto iter = myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject));
-	return iter.first->second;
-}
-
-GameObject& ModelViewer::AddGameObject(const GameObject& anObject)
-{
-	GameObject newObject(anObject);
-	return myScene.GameObjects.emplace(newobject->GetID(), std::move(newObject)).first->second;
-}
-
-GameObject& ModelViewer::AddGameObject(GameObject&& anObject)
-{
-	return myScene.GameObjects.emplace(anobject->GetID(), std::move(anObject)).first->second;
-}
-
-GameObject* ModelViewer::GetGameObject(unsigned anID)
-{
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
-	{
-		return &iter->second;
-	}
-	return nullptr;
-}
-
-bool ModelViewer::RemoveGameObject(unsigned anID)
-{
-	if (auto iter = myScene.GameObjects.find(anID); iter != myScene.GameObjects.end())
-	{
-		myScene.GameObjects.erase(iter);
-		return true;
-	}
-	return false;
-}
-#endif // _RETAIL
 
 void ModelViewer::ModelViewer::SaveState() const
 {
@@ -539,9 +483,8 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 {
-	myScene.Name = Crimson::GetFileNameWithoutExtension(aPath);
-	myScene.Path = aPath;
-	myScene.GameObjectIDCount = GameObject::GetIDCount();
+	myScene.name = Crimson::GetFileNameWithoutExtension(aPath);
+	myScene.path = aPath;
 	AssetManager::SaveAsset(myScene, aPath, aAsBinary);
 	mySceneIsEdited = false;
 	myLogger.Succ("Saved scene as: " + Crimson::MakeRelativeTo(aPath, "../"));
@@ -558,7 +501,6 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		myScene = {};
 	}
 
-#ifndef _RETAIL
 	else
 	{
 		myScene = AssetManager::GetAsset<EditorScene>(aPath);
@@ -566,18 +508,12 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	myImguiManager.Reset();
 	SetPlayMode(false);
 
-	for (auto& [id, object] : myScene.GameObjects)
+	for (auto& [id, object] : myScene.gameObjects)
 	{
 		myImguiManager.AddGameObject(object.get());
 	}
-#else
-	else
-	{
-		myScene = AssetManager::GetAsset<Scene>(aPath);
-	}
-#endif // !_RETAIL
-	SetGameObjectIDCount(myScene.GameObjectIDCount);
-	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.Path, "../"));
+
+	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.path, "../"));
 }
 
 void ModelViewer::Init()
@@ -595,10 +531,8 @@ void ModelViewer::Update()
 	Crimson::Timer::Update();
 	Crimson::InputMapper::GetInstance()->Notify();
 
-#ifndef _RETAIL
 	myImguiManager.Update();
 	mySkeletonEditor.Update();
-#endif // _RETAIL
 
 	myMessageHandler->Update();
 
@@ -611,7 +545,6 @@ void ModelViewer::Update()
 	Crimson::InputMapper::GetInstance()->Update();
 	engine.RenderFrame();
 
-#ifndef _RETAIL
 	//RHI::BeginEvent(L"NodeEditor Render");
 	//myScriptGraphEditor->Render();
 	//RHI::EndEvent();
@@ -619,38 +552,84 @@ void ModelViewer::Update()
 	RHI::BeginEvent(L"ImGui Render");
 	myImguiManager.Render();
 	RHI::EndEvent();
-#endif // _RETAIL
 
 	engine.EndFrame();
 }
 
+void ModelViewer::HandleNetmessages()
+{
+	auto& messages = myMessageHandler->GetMessages();
+	for (auto& message : messages)
+	{
+		switch (message.type)
+		{
+		case Network::MessageType::Invalid:
+		{
+			break;
+		}
+		case Network::MessageType::Connect:
+		{
+			// Should not end up in this list
+			break;
+		}
+		case Network::MessageType::Disconnect:
+		{
+			// Server has disconnected
+			break;
+		}
+		case Network::MessageType::Confirmation:
+		{
+			break;
+		}
+		case Network::MessageType::Chat:
+		{
+			// Should not end up in this list
+			break;
+		}
+		case Network::MessageType::Ping:
+		{
+			break;
+		}
+		case Network::MessageType::GameObjectMessage:
+		{
+			if (auto object = GetGameObject(Network::ExtractUUID(message)))
+			{
+				object->RecieveNetmessage(Network::ExtractGameObjectMessage(message));
+			}
+			break;
+		}
+		case Network::MessageType::CreateGameObject:
+		{
+			break;
+		}
+		case Network::MessageType::DeleteGameObject:
+		{
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
 void ModelViewer::UpdateScene()
 {
-#ifndef _RETAIL
 	if (myIsInPlayMode)
 	{
-		for (auto& [id, object] : myPlayScene.GameObjects)
+		for (auto& [id, object] : myPlayScene.gameObjects)
 		{
 			object.Update();
 		}
 	}
 	else
 	{
-		for (auto& [id, object] : myScene.GameObjects)
+		for (auto& [id, object] : myScene.gameObjects)
 		{
 			object->Render();
 		}
 	}
-#else
-	for (auto& [id, object] : myScene.GameObjects)
-	{
-		object.Update();
-	}
-#endif // !_RETAIL
-
 }
 
-#ifndef _RETAIL
 void ModelViewer::AddCommand(const std::shared_ptr<EditCommand>& aCommand)
 {
 	if (!myIsInPlayMode)
@@ -799,4 +778,3 @@ void ModelViewer::ReceiveEvent(Crimson::eInputAction anAction, float aValue)
 		RedoCommand();
 	}
 }
-#endif // _RETAIL

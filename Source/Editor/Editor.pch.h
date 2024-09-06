@@ -26,13 +26,13 @@ using namespace Microsoft::WRL;
 #include "AssetManager/AssetManager.h"
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 
+#pragma warning(push, 0)
+#pragma warning(disable: ALL_CODE_ANALYSIS_WARNINGS)
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "ThirdParty/ImGui/imgui.h"
 #include "ThirdParty/ImGui/backends/imgui_impl_win32.h"
 #include "ThirdParty/ImGui/backends/imgui_impl_dx11.h"
 
-#pragma warning(push, 0)
-#pragma warning(disable:4244)
 #include "ThirdParty/MuninGraph/MuninGraph.h"
 #include "ThirdParty/ScriptGraphNodes/ScriptGraphNodes.h"
 #include "ThirdParty/MuninGraphEditor/ScriptGraphEditor/ScriptGraphEditor.h"

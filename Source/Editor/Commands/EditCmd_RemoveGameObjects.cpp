@@ -27,9 +27,9 @@ void EditCmd_RemoveGameObjects::Execute()
 	ClearSelectedObjects();
 	for (auto& object : myObjects)
 	{
-		if (!RemoveGameObject(object->GetID()))
+		if (!RemoveGameObject(object->GetUUID()))
 		{
-			LogError("EditCmd_RemoveGameObjects: Failed to remove GameObject with ID: " + std::to_string(object->GetID()));
+			LogError("EditCmd_RemoveGameObjects: Failed to remove GameObject with ID: " + object->GetUUID().str());
 		}
 	}
 }

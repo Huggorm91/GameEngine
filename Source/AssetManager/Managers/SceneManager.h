@@ -4,9 +4,8 @@
 
 struct Scene
 {
-	unsigned GameObjectIDCount = 0;
-	std::string Name = "NewScene";
-	std::unordered_map<unsigned, GameObject> GameObjects;
+	std::string name = "NewScene";
+	std::unordered_map<UUIDv4::UUID, GameObject> gameObjects;
 
 	Scene() = default;
 	Scene(const Json::Value& aJson);
@@ -22,10 +21,9 @@ std::ostream& operator<<(std::ostream& aStream, const Scene& aScene);
 
 struct EditorScene
 {
-	unsigned GameObjectIDCount = 0;
-	std::string Name = "NewScene";
-	std::string Path{};
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> GameObjects;
+	std::string name = "NewScene";
+	std::string path{};
+	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> gameObjects;
 
 	EditorScene() = default;
 	EditorScene(const Json::Value& aJson);

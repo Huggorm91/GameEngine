@@ -366,7 +366,7 @@ Json::Value Transform::ToJson() const
 {
 	Json::Value result;
 	result["Position"] = static_cast<Json::Value>(myPosition);
-	result["Rotation"] = static_cast<Json::Value>(myRotation);
+	result["Rotation"] = static_cast<Json::Value>(RadianToDegree(myRotation));
 	result["Scale"] = static_cast<Json::Value>(myScale);
 	return result;
 }

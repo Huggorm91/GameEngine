@@ -4,6 +4,10 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "AssetManager/Managers/SceneManager.h"
 #include "Logging/Logging.h"
+#include "Editor/SkeletonEditor.h"
+#include "Editor/ImguiManager.h"
+#include "Commands/EditCommand.h"
+#include "NetworkClient/MessageHandler.h"
 
 class SplashWindow;
 class GameObject;
@@ -11,19 +15,9 @@ class ScriptGraphEditor;
 class ScriptGraph;
 struct ScriptGraphEditorSettings;
 struct ScriptGraphEditorState;
-namespace Network { class MessageHandler; }
-
-#ifndef _RETAIL
-#include "Editor/SkeletonEditor.h"
-#include "Editor/ImguiManager.h"
-#include "Commands/EditCommand.h"
 
 class ModelViewer : public Crimson::InputObserver
 {
-#else
-class ModelViewer
-{
-#endif // _RETAIL
 public:
 	// Singleton Getter.
 	static ModelViewer& Get()
@@ -48,7 +42,6 @@ public:
 	int Run();
 	void Shutdown();
 
-#ifndef _RETAIL
 	FORCEINLINE static ImguiManager& GetImguiManager()
 	{
 		return Get().myImguiManager;
@@ -72,31 +65,20 @@ public:
 	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo = true);
 	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
 
-	std::shared_ptr<GameObject> GetGameObject(unsigned anID);
+	std::shared_ptr<GameObject> GetGameObject(const UUIDv4::UUID& anID);
 	std::shared_ptr<GameObject> GetGameObject(const Crimson::Vector2f& aScreenPosition);
-#else
-	GameObject& AddGameObject();
-	GameObject& AddGameObject(const GameObject& anObject);
-	GameObject& AddGameObject(GameObject&& anObject);
 
-	GameObject* GetGameObject(unsigned anID);
-	GameObject* GetGameObject(const Crimson::Vector2f& aScreenPosition);
-#endif // _RETAIL
-
-	bool RemoveGameObject(unsigned anID);
+	bool RemoveGameObject(const UUIDv4::UUID& anID);
 
 	void SaveState() const;
 
 	void SaveScene(const std::string& aPath, bool aAsBinary);
 	void LoadScene(const std::string& aPath);
 
-#ifndef _RETAIL
 	void ReceiveEvent(Crimson::eInputEvent, Crimson::eKey) override;
 	void ReceiveEvent(Crimson::eInputAction, float) override;
-#endif // _RETAIL
 
 private:
-#ifndef _RETAIL
 	friend class ImguiManager;
 	friend class EditCommand;
 
@@ -123,12 +105,12 @@ private:
 
 	std::vector<std::shared_ptr<EditCommand>> myPlayModeRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myPlayModeUndoCommands;
-#endif // _RETAIL
+
 	HINSTANCE myModuleHandle;
 	HWND myMainWindowHandle;
 
 	SplashWindow* mySplashWindow;
-	Network::MessageHandler* myMessageHandler;
+	std::unique_ptr<Network::MessageHandler> myMessageHandler;
 
 	const std::string mySettingsPath;
 	ApplicationState myApplicationState;
@@ -136,13 +118,9 @@ private:
 	Logger myLogger;
 	GameObject myCamera;
 
-#ifndef _RETAIL
 	EditorScene myScene;
 	Scene myPlayScene;
-	std::unordered_map<unsigned, std::shared_ptr<GameObject>> myPlayScenePointers;
-#else
-	Scene myScene;
-#endif // _RETAIL
+	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> myPlayScenePointers;
 
 	ModelViewer();
 
@@ -158,8 +136,8 @@ private:
 	void Init();
 	void Update();
 
-#ifndef _RETAIL
+	void HandleNetmessages();
+
 	void UndoCommand();
 	void RedoCommand();
-#endif // _RETAIL
 };

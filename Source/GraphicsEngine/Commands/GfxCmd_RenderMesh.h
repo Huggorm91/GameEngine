@@ -19,7 +19,7 @@ private:
 	Crimson::Matrix4x4f myTransformMatrix;
 	Crimson::Vector4f myWorldPosition;
 	Crimson::Vector4f myColor;
-	unsigned myID;
+	UUIDv4::UUID myID;
 	unsigned myBoneCount;
 	bool myHasBones;
 #ifdef _DEBUG
