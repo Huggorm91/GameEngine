@@ -41,6 +41,13 @@ public:
 	template<class T>
 	T* GetComponent(unsigned anID);
 
+	// Returns nullptr if no component is of the specified type
+	template<class T>
+	const T* GetInheritedComponent() const;
+	// Returns nullptr if no component is of the specified type
+	template<class T>
+	T* GetInheritedComponent();
+
 	const Component* GetComponentPointer(unsigned anID) const;
 	Component* GetComponentPointer(unsigned anID);
 
@@ -229,6 +236,36 @@ inline T* GameObject::GetComponent(unsigned anID)
 		if (T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
 		{
 			return &component;
+		}
+	}
+	return nullptr;
+}
+
+template<class T>
+inline const T* GameObject::GetInheritedComponent() const
+{
+	const T* pointer = nullptr;
+	for (auto& [type, index] : myIndexList)
+	{
+		pointer = dynamic_cast<const T*>(&myComponents.GetValue<Component>(index));
+		if (pointer)
+		{
+			return pointer;
+		}
+	}
+	return nullptr;
+}
+
+template<class T>
+inline T* GameObject::GetInheritedComponent()
+{
+	T* pointer = nullptr;
+	for (auto& [type, index] : myIndexList)
+	{
+		pointer = dynamic_cast<T*>(&myComponents.GetValue<Component>(index));
+		if (pointer)
+		{
+			return pointer;
 		}
 	}
 	return nullptr;
