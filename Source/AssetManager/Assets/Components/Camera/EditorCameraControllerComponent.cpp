@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "EditorCameraControllerComponent.h"
-#include "CrimsonUtilities/Input/InputMapper.h"
+#include "GameplayEngine/Input/InputMapper.h"
 #include "Assets/GameObject.h"
 #include "PerspectiveCameraComponent.h"
 
@@ -10,27 +10,10 @@ EditorCameraControllerComponent::EditorCameraControllerComponent() : Component(C
 EditorCameraControllerComponent::EditorCameraControllerComponent(float aSpeed, float aSensitivity) : Component(ComponentType::EditorCameraController), myIsMoving(false), myMouseSensitivity(aSensitivity), mySpeed(aSpeed)
 {}
 
-EditorCameraControllerComponent::~EditorCameraControllerComponent()
-{
-	auto& input = *Crimson::InputMapper::GetInstance();
-
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
-	input.Detach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
-
-	input.Detach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
-	input.Detach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
-
-	input.Detach(this, Crimson::eInputEvent::MouseMove);
-}
-
 void EditorCameraControllerComponent::Init(GameObject* aParent)
 {
 	Component::Init(aParent);
-	auto& input = *Crimson::InputMapper::GetInstance();
+	auto& input = Engine::GetInputMapper();
 
 	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
 	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
@@ -66,7 +49,7 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	{
 		float multiplier = myMouseSensitivity * .01f;
 		auto& camera = myParent->GetComponent<PerspectiveCameraComponent>();
-		Crimson::Vector2f distance = Crimson::InputMapper::GetInstance()->GetMouseMovement();
+		Crimson::Vector2f distance = Engine::GetInputMapper().GetMouseMovement();
 		Crimson::Vector3f rotation = camera.GetRadianRotation();
 		rotation.x += distance.y * multiplier;
 		rotation.y += distance.x * multiplier;
@@ -77,7 +60,7 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
+			auto& inputHandler = Engine::GetInputMapper();
 			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.CaptureMouse(true);
 			inputHandler.HideMouse();
@@ -89,7 +72,7 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
-			auto& inputHandler = *Crimson::InputMapper::GetInstance();
+			auto& inputHandler = Engine::GetInputMapper();
 			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.ReleaseMouse();
 			inputHandler.ShowMouse();
@@ -106,7 +89,7 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 
 		auto& camera = myParent->GetComponent<PerspectiveCameraComponent>();
 		float multiplier = mySpeed * Crimson::Timer::GetUnscaledDeltaTime();
-		if (Crimson::InputMapper::GetInstance()->GetKeyDownOrHeld(Crimson::eKey::Shift))
+		if (Engine::GetInputMapper().GetKeyDownOrHeld(Crimson::eKey::Shift))
 		{
 			multiplier *= 2.f;
 		}

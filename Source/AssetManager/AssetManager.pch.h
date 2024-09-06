@@ -32,6 +32,8 @@ using namespace Microsoft::WRL;
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 #include "CrimsonUtilities/Math/QuaternionTransform.h"
 
+#include "GameplayEngine/Engine.h"
+
 #include "NetworkShared/MessageFunctions.h"
 
 #include "Logging/Logging.h"

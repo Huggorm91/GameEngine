@@ -1,11 +1,11 @@
+#include "GameplayEngine.pch.h"
 #include "Engine.h"
-#include "CrimsonUtilities\Math\Math.hpp"
 #include "CrimsonUtilities\Time\Timer.h"
-#include "CrimsonUtilities\Threadpool\ThreadPool.h"
-#include "CrimsonUtilities\Input\InputMapper.h"
-#include "CrimsonUtilities\Input\InputHandler.h"
-#include "CrimsonUtilities\PostMaster\PostMaster.h"
-#include "AssetManager\Managers\CollisionManager.h"
+#include "Threadpool\ThreadPool.h"
+#include "Input\InputMapper.h"
+#include "Input\InputHandler.h"
+#include "PostMaster\PostMaster.h"
+#include "Managers\CollisionManager.h"
 
 enum
 {
@@ -16,25 +16,12 @@ enum
 
 Engine::Engine() :
 	myWindowHandle(NULL),
-	myThreadPool(nullptr),
-	myInputMapper(nullptr),
-	myInputHandler(nullptr),
-	myPostMaster(nullptr),
-	myCollisionManager(nullptr),
 	myIsInitialized(false)
 {}
 
 Engine::~Engine()
 {
-	if (myIsInitialized)
-	{
-		myIsInitialized = false;
-		delete myThreadPool;
-		delete myInputMapper;
-		delete myInputHandler;
-		delete myPostMaster;
-		delete myCollisionManager;
-	}
+	myIsInitialized = false;
 }
 
 Engine& Engine::Get()
@@ -53,18 +40,18 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 		instance.myWindowHandle = aHandle;
 
 		// Threads
-		instance.myThreadPool = new Crimson::ThreadPool(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
+		instance.myThreadPool = std::make_unique<Crimson::ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
 
 		// Input
-		instance.myInputMapper = new Crimson::InputMapper();
+		instance.myInputMapper = std::make_unique<Crimson::InputMapper>();
 		instance.myInputMapper->Init(aHandle);
-		instance.myInputHandler = new Crimson::InputHandler(*instance.myInputMapper);
+		instance.myInputHandler = std::make_unique<Crimson::InputHandler>(*instance.myInputMapper);
 
 		// Events
-		instance.myPostMaster = new Crimson::PostMaster();
+		instance.myPostMaster = std::make_unique<Crimson::PostMaster>();
 
 		// Collision
-		instance.myCollisionManager = new CollisionManager();
+		instance.myCollisionManager = std::make_unique<CollisionManager>();
 
 		instance.myIsInitialized = true;
 	}
@@ -122,9 +109,10 @@ HWND Engine::GetWindowHandle()
 
 bool Engine::HandleInput(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (!Get().myIsInitialized)
+	auto& instance = Get();
+	if (!instance.myIsInitialized)
 	{
 		return false;
 	}
-	return Get().myInputHandler->UpdateEvents(message, wParam, lParam);
+	return instance.myInputHandler->UpdateEvents(message, wParam, lParam);
 }

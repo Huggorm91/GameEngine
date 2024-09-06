@@ -10,7 +10,7 @@ namespace Crimson
 	class InputHandler
 	{
 	public:
-		InputHandler();
+		InputHandler(InputMapper& anInputMapper);
 		~InputHandler() = default;
 		InputHandler(const InputHandler&) = delete;
 		InputHandler& operator=(const InputHandler&) = delete;

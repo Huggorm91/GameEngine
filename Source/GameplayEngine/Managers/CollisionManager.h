@@ -6,9 +6,8 @@
 class CollisionManager
 {
 public:
+	CollisionManager() = default;
 	~CollisionManager() = default;
-
-	static CollisionManager& Get();
 
 	void AddCollider(ColliderComponent* aCollider);
 	void RemoveCollider(ColliderComponent* aCollider);
@@ -24,7 +23,6 @@ private:
 	std::unordered_map<ColliderComponent*, std::unordered_set<ColliderComponent*>> myCollisions;
 	std::unordered_map<ColliderComponent*, std::unordered_set<ColliderComponent*>> myPreviousCollisions;
 
-	CollisionManager() = default;
 
 	void CollisionEnter(ColliderComponent* aFirst, ColliderComponent* aSecond) const;
 	void CollisionStay(ColliderComponent* aFirst, ColliderComponent* aSecond) const;

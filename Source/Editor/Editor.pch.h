@@ -23,6 +23,7 @@
 using namespace Microsoft::WRL;
 
 #include "Logging/Logging.h"
+#include "GameplayEngine/Engine.h"
 #include "AssetManager/AssetManager.h"
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 

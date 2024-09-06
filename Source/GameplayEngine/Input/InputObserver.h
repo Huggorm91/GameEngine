@@ -8,7 +8,7 @@ namespace Crimson
 	class InputObserver
 	{
 	public:
-		virtual ~InputObserver() = default;
+		virtual ~InputObserver();
 
 		virtual void ReceiveEvent(eInputEvent, eKey){}
 
@@ -17,7 +17,5 @@ namespace Crimson
 		// Xbox		| Sticks = 0.f to 1.f	:	Trigger = 0.f to 1.f
 		// Mouse	| Move = Pixeldistance moved	:	Scroll = Delta
 		virtual void ReceiveEvent(eInputAction, float){}
-
-	private:
 	};
 }

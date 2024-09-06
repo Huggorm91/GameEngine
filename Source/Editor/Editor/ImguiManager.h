@@ -3,7 +3,7 @@
 #include "Windows.h"
 #include <shellapi.h>
 #include <unordered_set>
-#include "CrimsonUtilities/Input/InputObserver.hpp"
+#include "GameplayEngine/Input/InputObserver.h"
 #include "Editor/Core/AssetTypes.h"
 #include "ThirdParty/ImGui/imgui.h"
 #include "AssetManager/Assets/GameObject.h"

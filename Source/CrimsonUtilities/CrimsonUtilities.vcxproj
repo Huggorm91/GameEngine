@@ -19,8 +19,6 @@
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="NewCollision - WIP\CollisionObject.hpp" />
     <ClInclude Include="NewCollision - WIP\CollisionObject2D.hpp" />
-    <ClInclude Include="Input\InputObserver.hpp" />
-    <ClInclude Include="PostMaster\Observer.hpp" />
     <ClInclude Include="Math\AStar.hpp" />
     <ClInclude Include="Collision\2DColliders.hpp" />
     <ClInclude Include="Collision\3DColliders.hpp" />
@@ -48,10 +46,6 @@
     <ClInclude Include="Math\Conversions.hpp" />
     <ClInclude Include="Math\Dijkstra.hpp" />
     <ClInclude Include="NewCollision - WIP\EnumCollisions.h" />
-    <ClInclude Include="Input\EnumInputAction.h" />
-    <ClInclude Include="Input\EnumInputEvents.h" />
-    <ClInclude Include="Input\EnumKeys.h" />
-    <ClInclude Include="PostMaster\EnumMessageTypes.h" />
     <ClInclude Include="Hash\CityHash\city.h" />
     <ClInclude Include="Hash\CityHash\citycrc.h" />
     <ClInclude Include="Hash\CityHash\config.h" />
@@ -63,17 +57,12 @@
     <ClInclude Include="Hash\SpookyHash\SpookyHashV2.h" />
     <ClInclude Include="Hash\SpookyHash\TestSpookyHashV2.hpp" />
     <ClInclude Include="Hash\Hash.hpp" />
-    <ClInclude Include="Input\Input.h" />
-    <ClInclude Include="Input\InputHandler.h" />
-    <ClInclude Include="Input\InputMapper.h" />
     <ClInclude Include="Json\Json.h" />
     <ClInclude Include="Json\JsonVector.hpp" />
-    <ClInclude Include="Input\KeyBind.h" />
     <ClInclude Include="Math\Matrix.hpp" />
     <ClInclude Include="Math\Matrix2x2.hpp" />
     <ClInclude Include="Math\Matrix3x3.hpp" />
     <ClInclude Include="Math\Matrix4x4.hpp" />
-    <ClInclude Include="PostMaster\Message.h" />
     <ClInclude Include="NewCollision - WIP\2DColliders.hpp" />
     <ClInclude Include="NewCollision - WIP\3DColliders.hpp" />
     <ClInclude Include="NewCollision - WIP\AABB2D.hpp" />
@@ -90,7 +79,6 @@
     <ClInclude Include="NewCollision - WIP\Ray.hpp" />
     <ClInclude Include="NewCollision - WIP\Ray2D.hpp" />
     <ClInclude Include="NewCollision - WIP\Sphere.hpp" />
-    <ClInclude Include="PostMaster\PostMaster.h" />
     <ClInclude Include="Math\Random.h" />
     <ClInclude Include="Math\Sort.hpp" />
     <ClInclude Include="Time\Timer.h" />
@@ -98,7 +86,6 @@
     <ClInclude Include="Math\Vector2.hpp" />
     <ClInclude Include="Math\Vector3.hpp" />
     <ClInclude Include="Math\Vector4.hpp" />
-    <ClInclude Include="Input\XBoxController.h" />
     <ClInclude Include="UUID\endianness.h" />
     <ClInclude Include="UUID\uuid_v4.h" />
   </ItemGroup>
@@ -138,19 +125,12 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IncludeInUnityFile>
     </ClCompile>
-    <ClCompile Include="Input\Input.cpp" />
-    <ClCompile Include="Input\InputHandler.cpp" />
-    <ClCompile Include="Input\InputMapper.cpp" />
     <ClCompile Include="Json\Json.cpp" />
-    <ClCompile Include="Input\KeyBind.cpp" />
     <ClCompile Include="Math\QuaternionTransform.cpp" />
     <ClCompile Include="Math\Transform.cpp" />
-    <ClCompile Include="PostMaster\Message.cpp" />
-    <ClCompile Include="PostMaster\PostMaster.cpp" />
     <ClCompile Include="Math\Random.cpp" />
     <ClCompile Include="String\StringFunctions.cpp" />
     <ClCompile Include="Time\Timer.cpp" />
-    <ClCompile Include="Input\XBoxController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Crimson.natvis" />

@@ -17,8 +17,9 @@
 #include "backends/imgui_impl_dx11.h"
 
 #include "CrimsonUtilities/File/FileSelectors.h"
-#include "CrimsonUtilities/Input/InputMapper.h"
 #include "CrimsonUtilities/Time/Timer.h"
+
+#include "GameplayEngine/Input/InputMapper.h"
 
 #include "AssetManager/Assets/ImguiTransform.h"
 
@@ -63,7 +64,7 @@ void ImguiManager::Init(bool aStartInSkeletonEditor)
 
 	// Setup keybinds
 	{
-		auto& input = *InputMapper::GetInstance();
+		auto& input = Engine::GetInputMapper();
 		input.Attach(this, eInputEvent::KeyDown, eKey::Del);
 	}
 
@@ -996,7 +997,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	}
 	else if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 	{
-		if (!InputMapper::GetInstance()->GetKeyDownOrHeld(eKey::Ctrl))
+		if (!Engine::GetInputMapper().GetKeyDownOrHeld(eKey::Ctrl))
 		{
 			mySelectedObjects.clear();
 		}

@@ -195,10 +195,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Input\EnumInputAction.h" />
+    <ClInclude Include="Input\EnumInputEvents.h" />
+    <ClInclude Include="Input\EnumKeys.h" />
+    <ClInclude Include="Input\Input.h" />
+    <ClInclude Include="Input\InputHandler.h" />
+    <ClInclude Include="Input\InputMapper.h" />
+    <ClInclude Include="Input\InputObserver.h" />
+    <ClInclude Include="Input\KeyBind.h" />
+    <ClInclude Include="Input\XBoxController.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="GameplayEngine.pch.h" />
+    <ClInclude Include="PostMaster\EnumMessageTypes.h" />
+    <ClInclude Include="PostMaster\Message.h" />
+    <ClInclude Include="PostMaster\Observer.h" />
+    <ClInclude Include="PostMaster\PostMaster.h" />
+    <ClInclude Include="Threadpool\ThreadPool.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Input\Input.cpp" />
+    <ClCompile Include="Input\InputHandler.cpp" />
+    <ClCompile Include="Input\InputMapper.cpp" />
+    <ClCompile Include="Input\InputObserver.cpp" />
+    <ClCompile Include="Input\KeyBind.cpp" />
+    <ClCompile Include="Input\XBoxController.cpp" />
     <ClCompile Include="Managers\CollisionManager.cpp" />
     <ClCompile Include="GameplayEngine.pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Game|x64'">Create</PrecompiledHeader>
@@ -214,6 +236,10 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="PostMaster\Message.cpp" />
+    <ClCompile Include="PostMaster\Observer.cpp" />
+    <ClCompile Include="PostMaster\PostMaster.cpp" />
+    <ClCompile Include="Threadpool\ThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AssetManager\AssetManager.vcxproj">

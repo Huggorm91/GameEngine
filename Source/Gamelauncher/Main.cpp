@@ -1,9 +1,8 @@
 #include "Gamelauncher.pch.h"
 #include "resource.h"
-#include "CrimsonUtilities/Input/InputHandler.h"
+#include "GameplayEngine/Engine.h"
 #include "CrimsonUtilities/Time/Timer.h"
 
-Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
 #pragma warning(disable:6387)
@@ -34,7 +33,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int monitorCount = GetSystemMetrics(SM_CMONITORS);
     if (monitorCount > 1)
     {
-        RECT virtualSize;
+        RECT virtualSize{};
         virtualSize.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         virtualSize.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
         virtualSize.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -104,7 +103,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
         break;
     }
 
-    if (globalInputHandler.UpdateEvents(uMsg, wParam, lParam))
+    if (Engine::HandleInput(uMsg, wParam, lParam))
     {
         return 0;
     }

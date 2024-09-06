@@ -2,12 +2,6 @@
 #include "CollisionManager.h"
 #include "AssetManager/Assets/GameObject.h"
 
-CollisionManager& CollisionManager::Get()
-{
-	static CollisionManager instance;
-	return instance;
-}
-
 void CollisionManager::AddCollider(ColliderComponent* aCollider)
 {
 	if (auto iter = myCollisionObjects.find(aCollider->GetLayer()); iter != myCollisionObjects.end())

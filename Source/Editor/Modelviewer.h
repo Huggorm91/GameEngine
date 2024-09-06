@@ -51,7 +51,7 @@ public:
 	void SetPlayMode(bool aState);
 	void SetIsSceneActive(bool aState);
 
-	void RestoreDebugSettings();
+	void RestoreDebugSettings() const;
 
 	void ActivateImGuiEditor();
 	void ActivateSkeletonEditor();
@@ -123,6 +123,8 @@ private:
 	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> myPlayScenePointers;
 
 	ModelViewer();
+
+	void SetKeyBinds();
 
 	void HandleCrash(const std::exception& anException);
 

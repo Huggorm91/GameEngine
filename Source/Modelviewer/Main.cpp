@@ -1,10 +1,9 @@
 ﻿#include "Modelviewer.pch.h"
 #include "resource.h"
 #include "Editor/Modelviewer.h"
-#include "CrimsonUtilities/Input/InputHandler.h"
+#include "GameplayEngine/Engine.h"
 #include "CrimsonUtilities/Time/Timer.h"
 
-Crimson::InputHandler globalInputHandler;
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 #ifndef _RETAIL
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int monitorCount = GetSystemMetrics(SM_CMONITORS);
     if (monitorCount > 1)
     {
-        RECT virtualSize;
+        RECT virtualSize{};
         virtualSize.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         virtualSize.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
         virtualSize.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -118,7 +117,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
     {
         return true;
     }
-    if (globalInputHandler.UpdateEvents(uMsg, wParam, lParam))
+    if (Engine::HandleInput(uMsg, wParam, lParam))
     {
         return 0;
     }

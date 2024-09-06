@@ -1,16 +1,12 @@
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include "Math/Vector2.hpp"
-
-Kopierade från scriptingkursens gamla motor. Inte implementerade!
+#include "CrimsonUtilities/Math/Vector2.hpp"
 
 namespace Crimson
 {
 	class ThreadPool;
+	class PostMaster;
 	class InputMapper;
 	class InputHandler;
-	class PostMaster;
 }
 class CollisionManager;
 
@@ -35,6 +31,7 @@ public:
 	static HWND GetWindowHandle();
 
 	static bool HandleInput(UINT message, WPARAM wParam, LPARAM lParam);
+
 private:
 	Engine();
 	static Engine& Get();
@@ -42,11 +39,11 @@ private:
 	Crimson::Vector2i myWindowSize;
 	HWND myWindowHandle;
 
-	Crimson::ThreadPool* myThreadPool;
-	Crimson::InputMapper* myInputMapper;
-	Crimson::InputHandler* myInputHandler;
-	Crimson::PostMaster* myPostMaster;
-	CollisionManager* myCollisionManager;
+	std::unique_ptr<Crimson::ThreadPool> myThreadPool;
+	std::unique_ptr<Crimson::InputMapper> myInputMapper;
+	std::unique_ptr<Crimson::InputHandler> myInputHandler;
+	std::unique_ptr<Crimson::PostMaster> myPostMaster;
+	std::unique_ptr<CollisionManager> myCollisionManager;
 
 	bool myIsInitialized;
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "../Component.h"
-#include "CrimsonUtilities/Input/InputObserver.hpp"
+#include "GameplayEngine/Input/InputObserver.h"
 
 BEGIN_COMPONENT_MULTI_INHERITANCE(EditorCameraControllerComponent, Component, public Crimson::InputObserver)
 public:
@@ -8,7 +8,7 @@ public:
 	EditorCameraControllerComponent(float aSpeed, float aSensitivity);
 	EditorCameraControllerComponent(const EditorCameraControllerComponent& aComponent) = default;
 	EditorCameraControllerComponent(EditorCameraControllerComponent&& aComponent) noexcept = default;
-	~EditorCameraControllerComponent();
+	~EditorCameraControllerComponent() = default;
 
 	EditorCameraControllerComponent& operator=(const EditorCameraControllerComponent& aComponent) = default;
 	EditorCameraControllerComponent& operator=(EditorCameraControllerComponent&& aComponent) noexcept = default;

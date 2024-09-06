@@ -7,9 +7,8 @@ namespace Crimson
 	class Observer
 	{
 	public:
-		virtual ~Observer() = default;
+		virtual ~Observer();
 
 		virtual void RecieveMessage(const Message& aMessage) = 0;
-	private:
 	};
 }

@@ -8,7 +8,6 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
-#include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Binary.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
@@ -17,8 +16,9 @@
 #include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Timer.h"
-#include "CrimsonUtilities/Input/InputMapper.h"
 #include "CrimsonUtilities/Json/jsonCpp/json.h"
+
+#include "GameplayEngine/Input/InputMapper.h"
 
 
 ModelViewer::ModelViewer() :
@@ -44,6 +44,23 @@ ModelViewer::ModelViewer() :
 	myIsSceneActive(true)
 {}
 
+void ModelViewer::SetKeyBinds()
+{
+	auto& input = Engine::GetInputMapper();
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
+
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
+
+	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
+	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
+	input.Attach(this, Crimson::eInputAction::Undo);
+	input.Attach(this, Crimson::eInputAction::Redo);
+}
+
 void ModelViewer::HandleCrash(const std::exception& anException)
 {
 	// Center console and bring it to the front
@@ -54,7 +71,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 		consolePos.right = consolePos.right - consolePos.left;
 		consolePos.bottom = consolePos.bottom - consolePos.top;
 
-		RECT windowRect;
+		RECT windowRect{};
 		SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 
 		windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (consolePos.right * 0.5f));
@@ -121,7 +138,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	myIsMaximized = myApplicationState.StartMaximized;
 
 	// Get center of screen
-	RECT windowRect;
+	RECT windowRect{};
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
 	//GetClientRect(GetDesktopWindow(), &windowRect);
 
@@ -152,8 +169,8 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	ShowSplashScreen();
 
 	// TODO: Load all settings from json
-	auto& input = *Crimson::InputMapper::GetInstance();
-	input.Init(myMainWindowHandle);
+	Engine::Init(myMainWindowHandle, myApplicationState.WindowSize);
+
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
@@ -166,18 +183,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	AssetManager::PreLoadAssets();
 	myImguiManager.Init(false);
 
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
-
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
-
-	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
-	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
-	input.Attach(this, Crimson::eInputAction::Undo);
-	input.Attach(this, Crimson::eInputAction::Redo);
+	SetKeyBinds();
 
 	constexpr float fov = 90.f;
 	constexpr float nearPlane = 1.f;
@@ -319,7 +325,7 @@ void ModelViewer::SetIsSceneActive(bool aState)
 	GraphicsEngine::Get().SetDrawGridLines(aState);
 }
 
-void ModelViewer::RestoreDebugSettings()
+void ModelViewer::RestoreDebugSettings() const
 {
 	auto& engine = GraphicsEngine::Get();
 	engine.SetDebugMode(myDebugMode);
@@ -526,10 +532,9 @@ void ModelViewer::Init()
 
 void ModelViewer::Update()
 {
-	GraphicsEngine& engine = GraphicsEngine::Get();
-	engine.BeginFrame();
-	Crimson::Timer::Update();
-	Crimson::InputMapper::GetInstance()->Notify();
+	GraphicsEngine& graphicsEngine = GraphicsEngine::Get();
+	graphicsEngine.BeginFrame();
+	Engine::BeginFrame();
 
 	myImguiManager.Update();
 	mySkeletonEditor.Update();
@@ -542,8 +547,8 @@ void ModelViewer::Update()
 		UpdateScene();
 	}
 
-	Crimson::InputMapper::GetInstance()->Update();
-	engine.RenderFrame();
+	Engine::EndFrame();
+	graphicsEngine.RenderFrame();
 
 	//RHI::BeginEvent(L"NodeEditor Render");
 	//myScriptGraphEditor->Render();
@@ -553,7 +558,7 @@ void ModelViewer::Update()
 	myImguiManager.Render();
 	RHI::EndEvent();
 
-	engine.EndFrame();
+	graphicsEngine.EndFrame();
 }
 
 void ModelViewer::HandleNetmessages()

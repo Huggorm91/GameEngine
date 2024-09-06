@@ -45,7 +45,10 @@ ColliderComponent::ColliderComponent(const Json::Value& aJson) :
 
 ColliderComponent::~ColliderComponent()
 {
-	CollisionManager::Get().RemoveCollider(this);
+	if (Engine::IsValid())
+	{
+		Engine::GetCollisionManager().RemoveCollider(this);
+	}	
 }
 
 ColliderComponent& ColliderComponent::operator=(const ColliderComponent& aComponent)
@@ -82,7 +85,7 @@ void ColliderComponent::Update()
 
 	if (IsValid())
 	{
-		CollisionManager::Get().AddCollider(this);
+		Engine::GetCollisionManager().AddCollider(this);
 	}
 }
 

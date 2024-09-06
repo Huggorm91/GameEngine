@@ -2,6 +2,15 @@
 
 namespace Crimson
 {
+	enum class eKeyAction : int
+	{
+		All,
+		KeyDown,
+		KeyHeld,
+		KeyUp,
+		KeyDownOrHeld
+	};
+
 	enum class eInputAction : int
 	{
 		MenuUp,
