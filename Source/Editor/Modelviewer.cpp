@@ -446,10 +446,23 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		Engine::GetSceneManager().LoadScene(aPath);
 		Scene& scene = Engine::GetSceneManager().GetActiveScene();
 		mySceneName = scene.name;
+
+		std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
 		for (auto& object : scene.gameObjects)
 		{
+			GameObject copy = object;
+			copy.CopyIDsOf(object);
+			if (object.HasParent())
+			{
+				childlist.emplace(object.GetUUID(), object.GetParent()->GetUUID());
+			}
 			myObjectOrder.emplace_back(object.GetUUID());
-			myGameobjects.emplace(object.GetUUID(), std::make_shared<GameObject>(std::move(object)));
+			myGameobjects.emplace(object.GetUUID(), std::make_shared<GameObject>(std::move(copy)));
+		}
+
+		for (auto& [childID, parentID] : childlist)
+		{
+			myGameobjects.at(parentID)->AddChild(myGameobjects.at(childID).get());
 		}
 	}
 

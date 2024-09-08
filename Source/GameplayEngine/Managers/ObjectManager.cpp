@@ -4,9 +4,14 @@
 
 void ObjectManager::UpdateObjects()
 {
-	for (auto& [id, object] : myGameObjects)
+	for (auto& object : myPersistantObjects)
 	{
-		object->Update();
+		object.Update();
+	}
+
+	for (auto& object : *myTemporaryObjects)
+	{
+		object.Update();
 	}
 }
 
@@ -14,17 +19,28 @@ void ObjectManager::RenderObjects(bool aDebugDraw)
 {
 	if (aDebugDraw)
 	{
-		for (auto& [id, object] : myGameObjects)
+		for (auto& object : myPersistantObjects)
 		{
-			object->Render();
-			object->DebugDraw();
+			object.Render();
+			object.DebugDraw();
+		}
+
+		for (auto& object : *myTemporaryObjects)
+		{
+			object.Render();
+			object.DebugDraw();
 		}
 	}
 	else
 	{
-		for (auto& [id, object] : myGameObjects)
+		for (auto& object : myPersistantObjects)
 		{
-			object->Render();
+			object.Render();
+		}
+
+		for (auto& object : *myTemporaryObjects)
+		{
+			object.Render();
 		}
 	}
 }

@@ -63,14 +63,15 @@ namespace Network
 	bool Client::Connect()
 	{
 		myLogger.Log("Attempting to connect to server...");
-		std::string IP = "127.0.0.1";
-		unsigned short port = 27015;
+		constexpr const char* IP = "127.0.0.1";
+		constexpr unsigned short port = 27015;
+		constexpr double timeoutValue = 1.;
 
 		// Setup address structure
 		memset((char*)&myServer, 0, sizeof(myServer));
 		myServer.sin_family = AF_INET;
 		myServer.sin_port = htons(port);
-		if (!inet_pton(myServer.sin_family, IP.c_str(), &myServer.sin_addr.S_un.S_addr))
+		if (!inet_pton(myServer.sin_family, IP, &myServer.sin_addr.S_un.S_addr))
 		{
 			myLogger.Warn(std::format("Invalid IPv4 Address with error code: {}", WSAGetLastError()));
 			return false;
@@ -90,7 +91,7 @@ namespace Network
 		NetMessage answer;
 		int slen = sizeof(sockaddr_in);
 		auto timer = Crimson::Time::StartTimer();
-		while (Crimson::Time::StopTimer(timer) < 3.0)
+		while (Crimson::Time::StopTimer(timer) < timeoutValue)
 		{
 			const auto result = recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen);
 			if (result != SOCKET_ERROR)

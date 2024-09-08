@@ -68,7 +68,7 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
-	myParent(),
+	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
 #ifdef EDITOR
