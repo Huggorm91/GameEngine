@@ -54,7 +54,7 @@ void AnimationControllerComponent::UpdateNoRender()
 
 	if (!myAdditiveAnimations.empty())
 	{
-		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		myAnimationTimer += Crimson::Time::GetDeltaTime();
 		if (myAnimationTimer >= myAnimationDelta)
 		{
 			myAnimationTimer = 0.f;
@@ -122,7 +122,7 @@ void AnimationControllerComponent::UpdateNoRender()
 			}
 		}
 	}
-	myAnimation->UpdateRootMotion(Crimson::Timer::GetDeltaTime());
+	myAnimation->UpdateRootMotion(Crimson::Time::GetDeltaTime());
 }
 
 void AnimationControllerComponent::Init(GameObject* aParent)

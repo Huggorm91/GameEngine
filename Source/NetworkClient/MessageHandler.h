@@ -34,6 +34,6 @@ namespace Network
 	private:
 		std::vector<std::string> myChatHistory;
 		std::vector<NetMessage> myMessages;
-		Client* myClient;
+		std::unique_ptr<Client> myClient;
 	};
 }

@@ -2,7 +2,7 @@
 #include <memory>
 #include "Core/ApplicationState.h"
 #include "GraphicsEngine/GraphicsEngine.h"
-#include "AssetManager/Managers/SceneManager.h"
+#include "GameplayEngine/Scene/Scene.h"
 #include "Logging/Logging.h"
 #include "Editor/SkeletonEditor.h"
 #include "Editor/ImguiManager.h"
@@ -16,7 +16,7 @@ class ScriptGraph;
 struct ScriptGraphEditorSettings;
 struct ScriptGraphEditorState;
 
-class ModelViewer : public Crimson::InputObserver
+class ModelViewer : public InputObserver
 {
 public:
 	// Singleton Getter.
@@ -35,7 +35,7 @@ public:
 		return Get().myLogger;
 	}
 	FORCEINLINE static Network::MessageHandler& GetMessageHandler() {
-		return *Get().myMessageHandler;
+		return Get().myMessageHandler;
 	}
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON anIcon);
@@ -60,15 +60,6 @@ public:
 	void SetMouseSensitivity(float aSensitivity);
 
 	void AddCommand(const std::shared_ptr<EditCommand>& aCommand);
-
-	std::shared_ptr<GameObject>& AddGameObject(bool aAddToUndo = true);
-	std::shared_ptr<GameObject>& AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo = true);
-	std::shared_ptr<GameObject>& AddGameObject(GameObject&& anObject, bool aAddToUndo = true);
-
-	std::shared_ptr<GameObject> GetGameObject(const UUIDv4::UUID& anID);
-	std::shared_ptr<GameObject> GetGameObject(const Crimson::Vector2f& aScreenPosition);
-
-	bool RemoveGameObject(const UUIDv4::UUID& anID);
 
 	void SaveState() const;
 
@@ -99,6 +90,7 @@ private:
 	
 	ImguiManager myImguiManager;
 	SkeletonEditor mySkeletonEditor;
+	Network::MessageHandler myMessageHandler;
 
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;
@@ -108,19 +100,19 @@ private:
 
 	HINSTANCE myModuleHandle;
 	HWND myMainWindowHandle;
-
 	SplashWindow* mySplashWindow;
-	std::unique_ptr<Network::MessageHandler> myMessageHandler;
 
+	std::string mySceneName;
 	const std::string mySettingsPath;
 	ApplicationState myApplicationState;
 
 	Logger myLogger;
 	GameObject myCamera;
 
-	EditorScene myScene;
-	Scene myPlayScene;
-	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> myPlayScenePointers;
+	Scene myPlayModeScene;
+	std::vector<UUIDv4::UUID> myObjectOrder;
+	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> myGameobjects;
+	std::unordered_map<UUIDv4::UUID, std::shared_ptr<GameObject>> myPlayModePointers;
 
 	ModelViewer();
 

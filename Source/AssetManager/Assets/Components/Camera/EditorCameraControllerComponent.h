@@ -2,7 +2,7 @@
 #include "../Component.h"
 #include "GameplayEngine/Input/InputObserver.h"
 
-BEGIN_COMPONENT_MULTI_INHERITANCE(EditorCameraControllerComponent, Component, public Crimson::InputObserver)
+BEGIN_COMPONENT_MULTI_INHERITANCE(EditorCameraControllerComponent, Component, public InputObserver)
 public:
 	EditorCameraControllerComponent();
 	EditorCameraControllerComponent(float aSpeed, float aSensitivity);

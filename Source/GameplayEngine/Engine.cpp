@@ -1,11 +1,13 @@
 #include "GameplayEngine.pch.h"
 #include "Engine.h"
-#include "CrimsonUtilities\Time\Timer.h"
+#include "CrimsonUtilities\Time\Time.h"
 #include "Threadpool\ThreadPool.h"
 #include "Input\InputMapper.h"
 #include "Input\InputHandler.h"
 #include "PostMaster\PostMaster.h"
 #include "Managers\CollisionManager.h"
+#include "Managers\ObjectManager.h"
+#include "Managers\SceneManager.h"
 
 enum
 {
@@ -40,18 +42,20 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 		instance.myWindowHandle = aHandle;
 
 		// Threads
-		instance.myThreadPool = std::make_unique<Crimson::ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
+		instance.myThreadPool = std::make_unique<ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
 
 		// Input
-		instance.myInputMapper = std::make_unique<Crimson::InputMapper>();
+		instance.myInputMapper = std::make_unique<InputMapper>();
 		instance.myInputMapper->Init(aHandle);
-		instance.myInputHandler = std::make_unique<Crimson::InputHandler>(*instance.myInputMapper);
+		instance.myInputHandler = std::make_unique<InputHandler>(*instance.myInputMapper);
 
 		// Events
-		instance.myPostMaster = std::make_unique<Crimson::PostMaster>();
+		instance.myPostMaster = std::make_unique<PostMaster>();
 
-		// Collision
+		// Managers
 		instance.myCollisionManager = std::make_unique<CollisionManager>();
+		instance.myObjectManager = std::make_unique<ObjectManager>();
+		instance.mySceneManager = std::make_unique<SceneManager>(instance.myObjectManager.get(), instance.myThreadPool.get());
 
 		instance.myIsInitialized = true;
 	}
@@ -59,7 +63,7 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 
 void Engine::BeginFrame()
 {
-	Crimson::Timer::Update();
+	Crimson::Time::Update();
 	Get().myInputMapper->Notify();
 }
 
@@ -77,17 +81,17 @@ bool Engine::IsValid()
 	return Get().myIsInitialized;
 }
 
-Crimson::ThreadPool& Engine::GetThreadPool()
+ThreadPool& Engine::GetThreadPool()
 {
 	return *Get().myThreadPool;
 }
 
-Crimson::InputMapper& Engine::GetInputMapper()
+InputMapper& Engine::GetInputMapper()
 {
 	return *Get().myInputMapper;
 }
 
-Crimson::PostMaster& Engine::GetPostMaster()
+PostMaster& Engine::GetPostMaster()
 {
 	return *Get().myPostMaster;
 }
@@ -95,6 +99,16 @@ Crimson::PostMaster& Engine::GetPostMaster()
 CollisionManager& Engine::GetCollisionManager()
 {
 	return *Get().myCollisionManager;
+}
+
+ObjectManager& Engine::GetObjectManager()
+{
+	return *Get().myObjectManager;
+}
+
+SceneManager& Engine::GetSceneManager()
+{
+	return *Get().mySceneManager;
 }
 
 const Crimson::Vector2i& Engine::GetWindowSize()

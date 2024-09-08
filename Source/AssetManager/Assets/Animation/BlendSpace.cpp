@@ -27,7 +27,7 @@ bool BlendSpace::Update()
 
 	if (myHasMatchingFPS)
 	{
-		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		myAnimationTimer += Crimson::Time::GetDeltaTime();
 		const float frameDelta = myLongestAnimation->GetFrameDelta();
 		if (myAnimationTimer >= frameDelta)
 		{
@@ -51,7 +51,7 @@ bool BlendSpace::Update()
 		}
 		else if (myTargetFrameDelta > 0.f)
 		{
-			myInterpolationTimer += Crimson::Timer::GetDeltaTime();
+			myInterpolationTimer += Crimson::Time::GetDeltaTime();
 			if (myInterpolationTimer >= myTargetFrameDelta)
 			{
 				myInterpolationTimer -= myTargetFrameDelta;
@@ -64,7 +64,7 @@ bool BlendSpace::Update()
 	}
 	else
 	{
-		myInterpolationTimer += Crimson::Timer::GetDeltaTime();
+		myInterpolationTimer += Crimson::Time::GetDeltaTime();
 		if (myInterpolationTimer >= myTargetFrameDelta)
 		{
 			UpdateAnimations();

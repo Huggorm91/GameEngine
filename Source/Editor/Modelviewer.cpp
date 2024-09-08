@@ -15,31 +15,24 @@
 #include "NetworkClient/MessageHandler.h"
 #include "NetworkShared/MessageFunctions.h"
 
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 #include "CrimsonUtilities/Json/jsonCpp/json.h"
 
 #include "GameplayEngine/Input/InputMapper.h"
-
+#include "GameplayEngine/Managers/SceneManager.h"
+#include "GameplayEngine/Managers/ObjectManager.h"
 
 ModelViewer::ModelViewer() :
 	myModuleHandle(nullptr),
 	myMainWindowHandle(nullptr),
 	mySplashWindow(nullptr),
-	myMessageHandler(nullptr),
 	mySettingsPath("Settings/mw_settings.json"),
-	myApplicationState(),
-	myLogger(),
-	myCamera(),
-	myScene(),
-	myIsMovingCamera(false), 
+	myIsMovingCamera(false),
 	myDebugMode(GraphicsEngine::DebugMode::Default),
 	myLightMode(GraphicsEngine::LightMode::Default),
 	myRenderMode(GraphicsEngine::RenderMode::Mesh),
-	myImguiManager(),
 	myIsInPlayMode(false),
 	myIsMaximized(false),
-	myPlayScene(),
-	myPlayScenePointers(),
 	mySceneIsEdited(false),
 	myIsSceneActive(true)
 {}
@@ -89,7 +82,7 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	myLogger.LogException(anException);
 
 	// Save current scene if possible
-	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + myScene.name;
+	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + mySceneName;
 	try
 	{
 		SaveScene("..\\" + saveName, false);
@@ -203,8 +196,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
 
-	myMessageHandler = std::make_unique<Network::MessageHandler>();
-	myMessageHandler->Init();
+	myMessageHandler.Init();
 
 	HideSplashScreen();
 
@@ -217,7 +209,7 @@ int ModelViewer::Run()
 	ZeroMemory(&msg, sizeof(MSG));
 
 	Init();
-	Crimson::Timer::Init();
+	Crimson::Time::Init();
 
 	bool isRunning = true;
 	while (isRunning)
@@ -285,36 +277,38 @@ void ModelViewer::SetDropFile(HDROP aHandle)
 void ModelViewer::SetPlayMode(bool aState)
 {
 	myIsInPlayMode = aState;
+	myPlayModePointers.clear();
+	myPlayModeRedoCommands.clear();
+	myPlayModeUndoCommands.clear();
+
 	if (myIsInPlayMode)
 	{
-		myPlayScene.gameObjects.reserve(myScene.gameObjects.size());
 		std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
-		for (auto& [id, object] : myScene.gameObjects)
+		for (auto& [id, object] : myGameobjects)
 		{
+			GameObject copy = *object;
+			copy.CopyIDsOf(*object);
+
 			if (object->HasParent())
 			{
 				childlist.emplace(id, object->GetParent()->GetUUID());
 			}
-			GameObject copy = *object;
-			copy.CopyIDsOf(*object);
-			myPlayScene.gameObjects.emplace(id, std::move(copy));
-			myPlayScenePointers.emplace(id, std::shared_ptr<GameObject>(&myPlayScene.gameObjects.at(id), [](GameObject*) {}));
+			
+			auto pointer = std::shared_ptr<GameObject>(&myPlayModeScene.gameObjects.emplace_back(std::move(copy)), [](GameObject*) {});
+			myPlayModePointers.emplace(id, pointer);
 		}
 
 		for (auto& [childID, parentID] : childlist)
 		{
-			myPlayScene.gameObjects.at(parentID).AddChild(&myPlayScene.gameObjects.at(childID));
+			myPlayModePointers.at(parentID)->AddChild(myPlayModePointers.at(childID).get());
 		}
 
-		myImguiManager.SetActiveObjects(&myPlayScenePointers);
+		Engine::GetObjectManager().SetTemporaryObjects(&myPlayModeScene.gameObjects);
+		myImguiManager.SetActiveObjects(&myPlayModePointers);
 	}
 	else
 	{
-		myImguiManager.SetActiveObjects(&myScene.gameObjects);
-		myPlayScenePointers.clear();
-		myPlayScene = Scene();
-		myPlayModeRedoCommands.clear();
-		myPlayModeUndoCommands.clear();
+		myImguiManager.SetActiveObjects(&myGameobjects);		
 	}
 }
 
@@ -355,73 +349,6 @@ void ModelViewer::SetMouseSensitivity(float aSensitivity)
 {
 	myApplicationState.CameraMouseSensitivity = aSensitivity;
 	mySkeletonEditor.SetMouseSensitivity(aSensitivity);
-}
-
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(bool aAddToUndo)
-{
-	std::shared_ptr<GameObject> newObject = std::make_shared<GameObject>();
-	if (aAddToUndo)
-	{
-		AddCommand(std::make_shared<EditCmd_AddGameObject>(newObject));
-	}
-	else
-	{
-		EditCmd_AddGameObject command(newObject);
-		command.Execute();
-	}
-
-	return myScene.gameObjects.at(newObject->GetUUID());
-}
-
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(const std::shared_ptr<GameObject>& anObject, bool aAddToUndo)
-{
-	if (aAddToUndo)
-	{
-		AddCommand(std::make_shared<EditCmd_AddGameObject>(anObject));
-	}
-	else
-	{
-		EditCmd_AddGameObject command(anObject);
-		command.Execute();
-	}
-
-	return myScene.gameObjects.at(anObject->GetUUID());
-}
-
-std::shared_ptr<GameObject>& ModelViewer::AddGameObject(GameObject&& anObject, bool aAddToUndo)
-{
-	UUIDv4::UUID id = anObject.GetUUID();
-	if (aAddToUndo)
-	{
-		AddCommand(std::make_shared<EditCmd_AddGameObject>(std::move(anObject)));
-	}
-	else
-	{
-		EditCmd_AddGameObject command(std::move(anObject));
-		command.Execute();
-	}
-	return myScene.gameObjects.at(id);
-}
-
-std::shared_ptr<GameObject> ModelViewer::GetGameObject(const UUIDv4::UUID& anID)
-{
-	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
-	{
-		return iter->second;
-	}
-	return nullptr;
-}
-
-bool ModelViewer::RemoveGameObject(const UUIDv4::UUID& anID)
-{
-	assert(anID != 0 && "Incorrect ID!");
-
-	if (auto iter = myScene.gameObjects.find(anID); iter != myScene.gameObjects.end())
-	{
-		AddCommand(std::make_shared<EditCmd_RemoveGameObject>(iter->second));
-		return true;
-	}
-	return false;
 }
 
 void ModelViewer::ModelViewer::SaveState() const
@@ -489,9 +416,14 @@ void ModelViewer::HideSplashScreen() const
 
 void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 {
-	myScene.name = Crimson::GetFileNameWithoutExtension(aPath);
-	myScene.path = aPath;
-	AssetManager::SaveAsset(myScene, aPath, aAsBinary);
+	Scene scene;
+	scene.name = Crimson::GetFileNameWithoutExtension(aPath);
+	scene.gameObjects.reserve(myObjectOrder.size());
+	for (auto& id : myObjectOrder)
+	{
+		scene.gameObjects.emplace_back(std::move(*myGameobjects.at(id)));
+	}
+	Engine::GetSceneManager().SaveScene(aPath, scene, aAsBinary);
 	mySceneIsEdited = false;
 	myLogger.Succ("Saved scene as: " + Crimson::MakeRelativeTo(aPath, "../"));
 }
@@ -501,25 +433,35 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 	// TODO: Check if scene is edited and confirm loading a new file
 	myUndoCommands.clear();
 	myRedoCommands.clear();
+	myObjectOrder.clear();
+	myGameobjects.clear();
 
 	if (aPath.empty())
 	{
-		myScene = {};
+		Engine::GetSceneManager().UnloadActiveScene();
+		mySceneName = "NewScene";
 	}
-
 	else
 	{
-		myScene = AssetManager::GetAsset<EditorScene>(aPath);
+		Engine::GetSceneManager().LoadScene(aPath);
+		Scene& scene = Engine::GetSceneManager().GetActiveScene();
+		mySceneName = scene.name;
+		for (auto& object : scene.gameObjects)
+		{
+			myObjectOrder.emplace_back(object.GetUUID());
+			myGameobjects.emplace(object.GetUUID(), std::make_shared<GameObject>(std::move(object)));
+		}
 	}
+
 	myImguiManager.Reset();
 	SetPlayMode(false);
 
-	for (auto& [id, object] : myScene.gameObjects)
+	for (auto& [id, object] : myGameobjects)
 	{
 		myImguiManager.AddGameObject(object.get());
 	}
 
-	myLogger.Succ("Loaded scene from: " + Crimson::MakeRelativeTo(myScene.path, "../"));
+	myLogger.Succ("Loaded scene from: " + aPath);
 }
 
 void ModelViewer::Init()
@@ -539,7 +481,7 @@ void ModelViewer::Update()
 	myImguiManager.Update();
 	mySkeletonEditor.Update();
 
-	myMessageHandler->Update();
+	myMessageHandler.Update();
 
 	if (myIsSceneActive)
 	{
@@ -563,7 +505,7 @@ void ModelViewer::Update()
 
 void ModelViewer::HandleNetmessages()
 {
-	auto& messages = myMessageHandler->GetMessages();
+	auto& messages = myMessageHandler.GetMessages();
 	for (auto& message : messages)
 	{
 		switch (message.type)
@@ -574,7 +516,7 @@ void ModelViewer::HandleNetmessages()
 		}
 		case Network::MessageType::Connect:
 		{
-			// Should not end up in this list
+			// This MessageType gets filtered before making it to this list, so this case should never be triggered
 			break;
 		}
 		case Network::MessageType::Disconnect:
@@ -588,7 +530,7 @@ void ModelViewer::HandleNetmessages()
 		}
 		case Network::MessageType::Chat:
 		{
-			// Should not end up in this list
+			// This MessageType gets filtered before making it to this list, so this case should never be triggered
 			break;
 		}
 		case Network::MessageType::Ping:
@@ -597,7 +539,7 @@ void ModelViewer::HandleNetmessages()
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
-			if (auto object = GetGameObject(Network::ExtractUUID(message)))
+			if (auto object = Engine::GetObjectManager().GetGameObject(Network::ExtractUUID(message)))
 			{
 				object->RecieveNetmessage(Network::ExtractGameObjectMessage(message));
 			}
@@ -621,14 +563,14 @@ void ModelViewer::UpdateScene()
 {
 	if (myIsInPlayMode)
 	{
-		for (auto& [id, object] : myPlayScene.gameObjects)
+		for (auto& object : myPlayModeScene.gameObjects)
 		{
 			object.Update();
 		}
 	}
 	else
 	{
-		for (auto& [id, object] : myScene.gameObjects)
+		for (auto& [id, object] : myGameobjects)
 		{
 			object->Render();
 		}

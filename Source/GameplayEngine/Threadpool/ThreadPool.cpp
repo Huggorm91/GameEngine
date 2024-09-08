@@ -1,6 +1,6 @@
 #include "ThreadPool.h"
 
-Crimson::ThreadPool::ThreadPool(size_t aThreadCount) :
+ThreadPool::ThreadPool(size_t aThreadCount) :
 	myIsRunning(true)
 {
 	for (size_t i = 0; i < aThreadCount; ++i)
@@ -31,7 +31,7 @@ Crimson::ThreadPool::ThreadPool(size_t aThreadCount) :
 	}
 }
 
-Crimson::ThreadPool::~ThreadPool()
+ThreadPool::~ThreadPool()
 {
 	{
 		std::unique_lock<std::mutex> lock(myTaskMutex);

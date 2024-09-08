@@ -1,6 +1,6 @@
 #include "PostMaster.h"
 
-void Crimson::PostMaster::Subscribe(Observer* anObserver, const eMessageType aType)
+void PostMaster::Subscribe(Observer* anObserver, const Crimson::eMessageType aType)
 {
 	if (myMutex.try_lock())
 	{
@@ -14,7 +14,7 @@ void Crimson::PostMaster::Subscribe(Observer* anObserver, const eMessageType aTy
 	}
 }
 
-void Crimson::PostMaster::ClearSubscribers()
+void PostMaster::ClearSubscribers()
 {
 	if (myMutex.try_lock())
 	{
@@ -32,21 +32,21 @@ void Crimson::PostMaster::ClearSubscribers()
 	}
 }
 
-void Crimson::PostMaster::UnsubscribeFromAllMessages(Observer* anObserver)
+void PostMaster::UnsubscribeFromAllMessages(Observer* anObserver)
 {
 	if (myMutex.try_lock())
 	{
-		RemoveSubscriber(eMessageType::Count, anObserver);
+		RemoveSubscriber(Crimson::eMessageType::Count, anObserver);
 		myMutex.unlock();
 	}
 	else
 	{
 		std::unique_lock lock(mySecondaryMutex);
-		myDeleteList.emplace_back(std::pair(eMessageType::Count, anObserver));
+		myDeleteList.emplace_back(std::pair(Crimson::eMessageType::Count, anObserver));
 	}
 }
 
-void  Crimson::PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& aMessageType, Observer* anObserver)
+void  PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& aMessageType, Observer* anObserver)
 {
 	if (myMutex.try_lock())
 	{
@@ -60,7 +60,7 @@ void  Crimson::PostMaster::UnsubscribeFromMessage(const  Crimson::eMessageType& 
 	}
 }
 
-void Crimson::PostMaster::AddMessage(const Message& aMessage)
+void PostMaster::AddMessage(const Crimson::Message& aMessage)
 {
 	if (myMutex.try_lock())
 	{
@@ -74,7 +74,7 @@ void Crimson::PostMaster::AddMessage(const Message& aMessage)
 	}
 }
 
-void Crimson::PostMaster::SendInstantMessage(const Message& aMessage)
+void PostMaster::SendInstantMessage(const Crimson::Message& aMessage)
 {
 	std::shared_lock lock(myMutex);
 	
@@ -94,7 +94,7 @@ void Crimson::PostMaster::SendInstantMessage(const Message& aMessage)
 	SendMessageToSubscribers(aMessage);
 }
 
-void Crimson::PostMaster::SendSavedMessages()
+void PostMaster::SendSavedMessages()
 {
 	std::shared_lock lock(myMutex);
 	if (!mySecondaryMessages.empty() || !myDeleteList.empty() || !myAddList.empty())
@@ -133,7 +133,7 @@ void Crimson::PostMaster::SendSavedMessages()
 	myMessages.clear();
 }
 
-void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) const
+void PostMaster::SendMessageToSubscribers(const Crimson::Message& aMessage) const
 {
 	auto range = myObservers.equal_range(aMessage.GetMessageType());
 	for (auto iter = range.first; iter != range.second; iter++)
@@ -142,9 +142,9 @@ void Crimson::PostMaster::SendMessageToSubscribers(const Message& aMessage) cons
 	}
 }
 
-void Crimson::PostMaster::RemoveSubscriber(const eMessageType& aMessageType, Observer* anObserver)
+void PostMaster::RemoveSubscriber(const Crimson::eMessageType& aMessageType, Observer* anObserver)
 {
-	if (aMessageType == eMessageType::Count)
+	if (aMessageType == Crimson::eMessageType::Count)
 	{
 		// Remove from all types
 		auto iterator = myObservers.begin();

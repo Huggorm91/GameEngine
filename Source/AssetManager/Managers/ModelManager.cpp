@@ -15,7 +15,7 @@ void ModelManager::Init()
 void ModelManager::GeneratePrimitives()
 {
 	{
-		auto modelIter = myModels.emplace("cube", GameObject());
+		auto modelIter = myModels.emplace("cube", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("cube", std::vector<MeshData>{ CreateCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -23,7 +23,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("sphere", GameObject());
+		auto modelIter = myModels.emplace("sphere", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("sphere", std::vector<MeshData>{ CreateSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -31,7 +31,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("pyramid", GameObject());
+		auto modelIter = myModels.emplace("pyramid", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("pyramid", std::vector<MeshData>{ CreatePyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -39,7 +39,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("invertedcube", GameObject());
+		auto modelIter = myModels.emplace("invertedcube", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedcube", std::vector<MeshData>{ CreateInvertedCubeMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -47,7 +47,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("invertedsphere", GameObject());
+		auto modelIter = myModels.emplace("invertedsphere", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedsphere", std::vector<MeshData>{ CreateInvertedSphereMesh(50.f, 50, 50) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -55,7 +55,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("invertedpyramid", GameObject());
+		auto modelIter = myModels.emplace("invertedpyramid", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("invertedpyramid", std::vector<MeshData>{ CreateInvertedPyramidMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -63,7 +63,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		auto modelIter = myModels.emplace("plane", GameObject());
+		auto modelIter = myModels.emplace("plane", GameObject(GameObject::nullUUID));
 		GameObject& model = modelIter.first->second;
 		auto elementIter = myMeshData.emplace("plane", std::vector<MeshData>{ CreatePlaneMesh(100.f) });
 		MeshComponent& mesh = model.AddComponent<MeshComponent>();
@@ -71,7 +71,7 @@ void ModelManager::GeneratePrimitives()
 	}
 
 	{
-		GameObject& model = myModels.emplace("", GameObject()).first->second;
+		GameObject& model = myModels.emplace("", GameObject(GameObject::nullUUID)).first->second;
 		model.AddComponent<MeshComponent>();
 		model.AddComponent<AnimatedMeshComponent>();
 	}
@@ -306,7 +306,7 @@ GameObject* ModelManager::LoadModel(const std::string& aPath, bool aShouldLogErr
 
 	if (success)
 	{
-		auto modelIter = myModels.emplace(aPath, GameObject());
+		auto modelIter = myModels.emplace(aPath, GameObject(GameObject::nullUUID));
 		if (modelIter.second == false)
 		{
 			if (aShouldLogErrors)
@@ -401,7 +401,7 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 
 	if (success && tgaMesh.Skeleton.GetRoot())
 	{
-		auto modelIter = myModels.emplace(aPath, GameObject());
+		auto modelIter = myModels.emplace(aPath, GameObject(GameObject::nullUUID));
 		if (modelIter.second == false)
 		{
 			if (aShouldLogErrors)

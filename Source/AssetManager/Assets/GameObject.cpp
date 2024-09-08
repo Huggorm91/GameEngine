@@ -48,16 +48,34 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 	}
 }
 
+GameObject::GameObject(const UUIDv4::UUID& anUUID) :
+	myIsActive(true),
+	myParent(nullptr),
+	myUUID(anUUID),
+	myName("GameObject"),
+#ifdef EDITOR
+	myImguiText(myName),
+#endif // EDITOR
+	myTransform(),
+	myChildren(),
+#ifndef _RETAIL
+	myDebugPointers(),
+#endif // !_RETAIL
+	myIndexList(),
+	myComponents(1000u)
+{
+}
+
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
-	myParent(aGameObject.myParent),
+	myParent(),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
 #ifdef EDITOR
 	myImguiText(myName),
 #endif // EDITOR
 	myTransform(aGameObject.myTransform),
-	myChildren(aGameObject.myChildren),
+	myChildren(),
 #ifndef _RETAIL
 	myDebugPointers(),
 #endif // !_RETAIL
@@ -222,9 +240,14 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	return *this;
 }
 
-bool GameObject::operator==(const GameObject& aGameObject)
+bool GameObject::operator==(const GameObject& aGameObject) const
 {
 	return myUUID == aGameObject.myUUID;
+}
+
+bool GameObject::operator==(const UUIDv4::UUID& anUUID) const
+{
+	return myUUID == anUUID;
 }
 
 void GameObject::Update()

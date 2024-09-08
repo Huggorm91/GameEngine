@@ -199,7 +199,6 @@
     <ClInclude Include="Input\EnumInputAction.h" />
     <ClInclude Include="Input\EnumInputEvents.h" />
     <ClInclude Include="Input\EnumKeys.h" />
-    <ClInclude Include="Input\Input.h" />
     <ClInclude Include="Input\InputHandler.h" />
     <ClInclude Include="Input\InputMapper.h" />
     <ClInclude Include="Input\InputObserver.h" />
@@ -207,15 +206,18 @@
     <ClInclude Include="Input\XBoxController.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="GameplayEngine.pch.h" />
+    <ClInclude Include="Managers\SceneManager.h" />
+    <ClInclude Include="Managers\ObjectManager.h" />
     <ClInclude Include="PostMaster\EnumMessageTypes.h" />
     <ClInclude Include="PostMaster\Message.h" />
     <ClInclude Include="PostMaster\Observer.h" />
     <ClInclude Include="PostMaster\PostMaster.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\SceneLoader.h" />
     <ClInclude Include="Threadpool\ThreadPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Input\InputHandler.cpp" />
     <ClCompile Include="Input\InputMapper.cpp" />
     <ClCompile Include="Input\InputObserver.cpp" />
@@ -236,9 +238,13 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="Managers\SceneManager.cpp" />
+    <ClCompile Include="Managers\ObjectManager.cpp" />
     <ClCompile Include="PostMaster\Message.cpp" />
     <ClCompile Include="PostMaster\Observer.cpp" />
     <ClCompile Include="PostMaster\PostMaster.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\SceneLoader.cpp" />
     <ClCompile Include="Threadpool\ThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>

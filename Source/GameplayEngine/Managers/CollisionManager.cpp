@@ -1,6 +1,7 @@
 #include "GameplayEngine.pch.h"
 #include "CollisionManager.h"
 #include "AssetManager/Assets/GameObject.h"
+#include "AssetManager/Assets/Components/Collision/ColliderComponent.h"
 
 void CollisionManager::AddCollider(ColliderComponent* aCollider)
 {

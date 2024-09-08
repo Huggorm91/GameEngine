@@ -19,7 +19,11 @@ void EditCommand::LogMessage(const std::string& anError) const
 
 std::shared_ptr<GameObject> EditCommand::GetGameObject(const UUIDv4::UUID& anID) const
 {
-	return ModelViewer::Get().GetGameObject(anID);
+	if (auto iter = ModelViewer::Get().myGameobjects.find(anID); iter != ModelViewer::Get().myGameobjects.end())
+	{
+		return iter->second;
+	}
+	return nullptr;
 }
 
 std::shared_ptr<GameObject>& EditCommand::AddGameObject(const std::shared_ptr<GameObject>& anObject, const std::unordered_map<UUIDv4::UUID, std::unordered_set<std::shared_ptr<GameObject>>>* aChildList) const
@@ -36,12 +40,12 @@ std::shared_ptr<GameObject>& EditCommand::AddGameObject(const std::shared_ptr<Ga
 	}	
 	
 	ModelViewer::Get().myImguiManager.AddGameObject(anObject.get());
-	return ModelViewer::Get().myScene.gameObjects.emplace(anObject->GetUUID(), anObject).first->second;
+	return ModelViewer::Get().myGameobjects.emplace(anObject->GetUUID(), anObject).first->second;
 }
 
 bool EditCommand::RemoveGameObject(const UUIDv4::UUID& anID) const
 {
-	for (auto& child : ModelViewer::Get().GetGameObject(anID)->GetChildren())
+	for (auto& child : GetGameObject(anID)->GetChildren())
 	{
 		EraseObject(child->GetUUID());
 	}
@@ -51,10 +55,9 @@ bool EditCommand::RemoveGameObject(const UUIDv4::UUID& anID) const
 std::unordered_set<std::shared_ptr<GameObject>> EditCommand::GetSelectedObjects() const
 {
 	std::unordered_set<std::shared_ptr<GameObject>> result;
-	auto& modelViewer = ModelViewer::Get();
-	for (auto& object : modelViewer.myImguiManager.mySelectedObjects)
+	for (auto& object : ModelViewer::Get().myImguiManager.mySelectedObjects)
 	{
-		result.emplace(modelViewer.GetGameObject(object->GetUUID()));
+		result.emplace(GetGameObject(object->GetUUID()));
 	}
 	return result;
 }
@@ -86,7 +89,7 @@ std::unordered_map<UUIDv4::UUID, std::unordered_set<std::shared_ptr<GameObject>>
 
 bool EditCommand::EraseObject(const UUIDv4::UUID& anID) const
 {
-	auto& gameObjects = ModelViewer::Get().myScene.gameObjects;
+	auto& gameObjects = ModelViewer::Get().myGameobjects;
 	if (auto iter = gameObjects.find(anID); iter != gameObjects.end())
 	{
 		auto& selectedObjects = ModelViewer::Get().myImguiManager.mySelectedObjects;
@@ -111,7 +114,7 @@ std::unordered_map<UUIDv4::UUID, std::unordered_set<std::shared_ptr<GameObject>>
 	result.emplace(anObject->GetUUID(), GetChildList(anObject));
 	for (auto& child : anObject->GetChildren())
 	{
-		auto childMap = GetChildrenInternal(ModelViewer::Get().GetGameObject(child->GetUUID()));
+		auto childMap = GetChildrenInternal(GetGameObject(child->GetUUID()));
 		if (!childMap.empty())
 		{
 			result.insert(childMap.begin(), childMap.end());
@@ -125,7 +128,7 @@ std::unordered_set<std::shared_ptr<GameObject>> EditCommand::GetChildList(const 
 	std::unordered_set<std::shared_ptr<GameObject>> result;
 	for (auto& child : anObject->GetChildren())
 	{
-		result.emplace(ModelViewer::Get().GetGameObject(child->GetUUID()));
+		result.emplace(GetGameObject(child->GetUUID()));
 	}
 	return result;
 }

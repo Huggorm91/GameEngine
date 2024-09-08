@@ -1,24 +1,23 @@
 #define NOMINMAX
+#include "Client.h"
 #include "MessageHandler.h"
 #include <assert.h>
-#include "Client.h"
 #include "NetworkShared/MessageFunctions.h"
 #include "CrimsonUtilities/Math/Transform.h"
 
-Network::MessageHandler::MessageHandler() : myClient(nullptr)
+Network::MessageHandler::MessageHandler()
 {
 }
 
+// Made to avoid including Client.h in header
 Network::MessageHandler::~MessageHandler()
-{
-	delete myClient;
-}
+{}
 
 void Network::MessageHandler::Init()
 {
 	if (myClient == nullptr)
 	{
-		myClient = new Network::Client();
+		myClient = std::make_unique<Client>();
 		myClient->Init();
 		return;
 	}

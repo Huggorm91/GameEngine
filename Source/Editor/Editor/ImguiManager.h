@@ -11,7 +11,7 @@
 class Texture;
 class ModelViewer;
 
-class ImguiManager : public Crimson::InputObserver
+class ImguiManager : public InputObserver
 {
 public:
 	ImguiManager();

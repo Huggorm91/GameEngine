@@ -3,12 +3,12 @@
 
 namespace Crimson
 {
-	class Timer
+	class Time
 	{
 	public:
-		Timer(const Timer&) = delete;
-		Timer& operator=(const Timer&) = delete;
-		~Timer() = default;
+		Time(const Time&) = delete;
+		Time& operator=(const Time&) = delete;
+		~Time() = default;
 
 		static void Init();
 		static void Update();
@@ -22,8 +22,8 @@ namespace Crimson
 		static float GetUnscaledDeltaTime();
 		static double GetUnscaledTotalTime();
 
-		static std::chrono::high_resolution_clock::time_point StartStopwatch();
-		static double StopStopwatch(const std::chrono::high_resolution_clock::time_point& aTimePoint);
+		static std::chrono::high_resolution_clock::time_point StartTimer();
+		static double StopTimer(const std::chrono::high_resolution_clock::time_point& aTimePoint);
 
 		static void ResetDeltaTime();
 
@@ -36,6 +36,6 @@ namespace Crimson
 		static float myScaledDeltaTime;
 		static float myTimeScale;
 
-		Timer() = default;
+		Time() = default;
 	};
 }

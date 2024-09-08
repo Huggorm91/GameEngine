@@ -26,7 +26,7 @@ using namespace Microsoft::WRL;
 #include "ThirdParty/ImGui/imgui.h"
 #include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
 
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 #include "CrimsonUtilities/Math/Matrix3x3.hpp"
 #include "CrimsonUtilities/Json/JsonVector.hpp"
 #include "CrimsonUtilities/File/DirectoryFunctions.h"

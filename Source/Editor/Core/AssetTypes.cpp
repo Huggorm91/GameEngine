@@ -1,6 +1,7 @@
 #include "Editor.pch.h"
 #include "AssetTypes.h"
 #include "../Modelviewer.h"
+#include "GameplayEngine/Scene/SceneLoader.h"
 
 std::string Assets::GetAssetTypeName(eAssetType aType)
 {
@@ -75,7 +76,7 @@ std::string Assets::GetAssetPath(eAssetType aType)
 	}
 	case Assets::eAssetType::Scene:
 	{
-		return AssetManager::GetScenePath();
+		return SceneLoader::GetPath();
 		break;
 	}
 	default:
@@ -146,7 +147,7 @@ bool Assets::IsType(eAssetType aType, std::string anAsset)
 	}
 	case Assets::eAssetType::Scene:
 	{
-		if (extension == AssetManager::GetSceneExtension() || extension == AssetManager::GetSceneBinaryExtension())
+		if (extension == SceneLoader::GetExtension() || extension == SceneLoader::GetBinaryExtension())
 		{
 			return true;
 		}
@@ -208,7 +209,7 @@ std::vector<Assets::eAssetType> Assets::GetPossibleTypes(const std::string& anEx
 		result.emplace_back(eAssetType::Texture);
 	}
 
-	if (extension == AssetManager::GetSceneExtension() || extension == AssetManager::GetSceneBinaryExtension())
+	if (extension == SceneLoader::GetExtension() || extension == SceneLoader::GetBinaryExtension())
 	{
 		result.emplace_back(eAssetType::Scene);
 	}

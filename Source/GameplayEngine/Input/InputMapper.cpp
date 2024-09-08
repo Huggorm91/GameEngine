@@ -1,14 +1,14 @@
 #include "InputMapper.h"
 #include "InputHandler.h"
 
-Crimson::InputMapper::InputMapper() :
+InputMapper::InputMapper() :
 	myXboxController(nullptr),
 	myClientRect{ 0, 0, 0, 0 },
 	myWindowHandle(NULL)
 {
 }
 
-Crimson::InputMapper::~InputMapper()
+InputMapper::~InputMapper()
 {
 	if (myXboxController)
 	{
@@ -16,7 +16,7 @@ Crimson::InputMapper::~InputMapper()
 	}
 }
 
-void Crimson::InputMapper::Init(HWND aHandle, bool aUsingXboxInput)
+void InputMapper::Init(HWND aHandle, bool aUsingXboxInput)
 {
 	myWindowHandle = aHandle;
 	GetClientRect(myWindowHandle, &myClientRect);
@@ -43,7 +43,7 @@ void Crimson::InputMapper::Init(HWND aHandle, bool aUsingXboxInput)
 	RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 }
 
-void Crimson::InputMapper::Attach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey)
+void InputMapper::Attach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
 	assert(anObserver);
 
@@ -54,7 +54,7 @@ void Crimson::InputMapper::Attach(InputObserver* anObserver, eInputEvent anEvent
 
 	if (IsValidCombination(anEvent, aKey))
 	{
-		if (aKey != eKey::None)
+		if (aKey != Crimson::eKey::None)
 		{
 			myObservedKeys.emplace(aKey);
 		}
@@ -62,14 +62,14 @@ void Crimson::InputMapper::Attach(InputObserver* anObserver, eInputEvent anEvent
 	}
 }
 
-void Crimson::InputMapper::Attach(InputObserver* anObserver, eInputAction anEvent, eKeyAction aKeyAction)
+void InputMapper::Attach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction)
 {
 	assert(anObserver);
 
 	myActionObservers.emplace(anEvent, ActionObserver{ aKeyAction, anObserver });
 }
 
-void Crimson::InputMapper::BindAction(eInputAction anEvent, KeyBind aKeybind)
+void InputMapper::BindAction(Crimson::eInputAction anEvent, Crimson::KeyBind aKeybind)
 {
 	myObservedKeys.emplace(aKeybind.myKey);
 	if (aKeybind.HasModifier())
@@ -83,11 +83,11 @@ void Crimson::InputMapper::BindAction(eInputAction anEvent, KeyBind aKeybind)
 	}
 	else
 	{
-		myKeybinds.emplace(anEvent, std::vector<KeyBind>{aKeybind});
+		myKeybinds.emplace(anEvent, std::vector<Crimson::KeyBind>{aKeybind});
 	}
 }
 
-void Crimson::InputMapper::BindAction(eInputAction anEvent, const std::vector<KeyBind>& aKeybindList)
+void InputMapper::BindAction(Crimson::eInputAction anEvent, const std::vector<Crimson::KeyBind>& aKeybindList)
 {
 	for (auto& keybind : aKeybindList)
 	{
@@ -100,14 +100,14 @@ void Crimson::InputMapper::BindAction(eInputAction anEvent, const std::vector<Ke
 	myKeybinds.emplace(anEvent, aKeybindList);
 }
 
-void Crimson::InputMapper::UnbindAction(eInputAction anEvent)
+void InputMapper::UnbindAction(Crimson::eInputAction anEvent)
 {
 	myKeybinds.erase(anEvent);
 }
 
-void Crimson::InputMapper::Detach(InputObserver* anObserver, eInputEvent anEvent, eKey aKey)
+void InputMapper::Detach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
-	eKey comparison = GetValidKey(anEvent, aKey);
+	Crimson::eKey comparison = GetValidKey(anEvent, aKey);
 
 	auto range = myEventObservers.equal_range(anEvent);
 	for (auto iter = range.first; iter != range.second; iter++)
@@ -120,7 +120,7 @@ void Crimson::InputMapper::Detach(InputObserver* anObserver, eInputEvent anEvent
 	}
 }
 
-void Crimson::InputMapper::Detach(InputObserver* anObserver, eInputAction anEvent, eKeyAction aKeyAction)
+void InputMapper::Detach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction)
 {
 	auto range = myActionObservers.equal_range(anEvent);
 	for (auto iter = range.first; iter != range.second; iter++)
@@ -133,7 +133,7 @@ void Crimson::InputMapper::Detach(InputObserver* anObserver, eInputAction anEven
 	}
 }
 
-void Crimson::InputMapper::DetachAll(InputObserver* anObserver)
+void InputMapper::DetachAll(InputObserver* anObserver)
 {
 	auto eventIter = myEventObservers.begin();
 	while (eventIter != myEventObservers.end())
@@ -162,7 +162,7 @@ void Crimson::InputMapper::DetachAll(InputObserver* anObserver)
 	}
 }
 
-void Crimson::InputMapper::Notify()
+void InputMapper::Notify()
 {
 	CreateEventList();
 	SendEventNotifications();
@@ -170,7 +170,7 @@ void Crimson::InputMapper::Notify()
 	ResetEvents();
 }
 
-void Crimson::InputMapper::Update()
+void InputMapper::Update()
 {
 	UpdatePreviousStates();
 	if (myFlags[eFlag::usingXboxInput])
@@ -179,7 +179,7 @@ void Crimson::InputMapper::Update()
 	}
 }
 
-void Crimson::InputMapper::ResetAll()
+void InputMapper::ResetAll()
 {
 	ResetInput();
 	myEventObservers.clear();
@@ -188,50 +188,50 @@ void Crimson::InputMapper::ResetAll()
 	myKeybinds.clear();
 	myFlags[eFlag::isMouseLocked] = false;
 	myFlags[hasSetCenterPosition] = false;
-	myCenterPosition = Vector2i::Null;
-	myRelativeCenterPosition = Vector2i::Null;
+	myCenterPosition = Crimson::Vector2i::Null;
+	myRelativeCenterPosition = Crimson::Vector2i::Null;
 }
 
-void Crimson::InputMapper::ResetInput()
+void InputMapper::ResetInput()
 {
 	ResetEvents();
 	myTriggeredKeys.clear();
 	myCurrentState.reset();
 	myPreviousState.reset();
-	myMousePosition = Vector2i::Null;
-	myRawMouseMovement = Vector2f::Null;
-	myScrollDelta = Vector2i::Null;
+	myMousePosition = Crimson::Vector2i::Null;
+	myRawMouseMovement = Crimson::Vector2f::Null;
+	myScrollDelta = Crimson::Vector2i::Null;
 	myDoubleClicks.reset();
 }
 
-Crimson::XBoxController& Crimson::InputMapper::GetXboxController()
+XBoxController& InputMapper::GetXboxController()
 {
 	return *myXboxController;
 }
 
-void Crimson::InputMapper::LockMouse()
+void InputMapper::LockMouse()
 {
 	myFlags[eFlag::isMouseLocked] = true;
 	CenterMouse();
 }
 
-void Crimson::InputMapper::UnlockMouse()
+void InputMapper::UnlockMouse()
 {
 	myFlags[eFlag::isMouseLocked] = false;
 	myFlags[hasSetCenterPosition] = false;
 }
 
-void Crimson::InputMapper::ShowMouse() const
+void InputMapper::ShowMouse() const
 {
 	PostMessage(myWindowHandle, WM_SHOWMOUSE, true, 0);
 }
 
-void Crimson::InputMapper::HideMouse() const
+void InputMapper::HideMouse() const
 {
 	PostMessage(myWindowHandle, WM_SHOWMOUSE, false, 0);
 }
 
-bool Crimson::InputMapper::CaptureMouse(bool excludeMenuBar) const
+bool InputMapper::CaptureMouse(bool excludeMenuBar) const
 {
 	assert(IsWindow(myWindowHandle));
 
@@ -262,34 +262,34 @@ bool Crimson::InputMapper::CaptureMouse(bool excludeMenuBar) const
 	return ClipCursor(&rect);
 }
 
-bool Crimson::InputMapper::ReleaseMouse()
+bool InputMapper::ReleaseMouse()
 {
 	return ClipCursor(nullptr);
 }
 
-const Crimson::Vector2i& Crimson::InputMapper::GetMousePosition() const
+const Crimson::Vector2i& InputMapper::GetMousePosition() const
 {
 	return myMousePosition;
 }
 
-Crimson::Vector2i Crimson::InputMapper::GetMousePositionInvertedY() const
+Crimson::Vector2i InputMapper::GetMousePositionInvertedY() const
 {
-	return Vector2i(myMousePosition.x, myClientRect.bottom - myMousePosition.y);
+	return Crimson::Vector2i(myMousePosition.x, myClientRect.bottom - myMousePosition.y);
 }
 
-Crimson::Vector2i Crimson::InputMapper::GetAbsoluteMousePosition() const
+Crimson::Vector2i InputMapper::GetAbsoluteMousePosition() const
 {
 	POINT point{};
 	GetCursorPos(&point);
 	return point;
 }
 
-const Crimson::Vector2f& Crimson::InputMapper::GetMouseMovement() const
+const Crimson::Vector2f& InputMapper::GetMouseMovement() const
 {
 	return myRawMouseMovement;
 }
 
-bool Crimson::InputMapper::SetMousePosition(const Vector2i& aPosition) const
+bool InputMapper::SetMousePosition(const Crimson::Vector2i& aPosition) const
 {
 	assert(IsWindow(myWindowHandle));
 
@@ -317,22 +317,22 @@ bool Crimson::InputMapper::SetMousePosition(const Vector2i& aPosition) const
 	return SetCursorPos(point.x, point.y);
 }
 
-bool Crimson::InputMapper::SetMousePosition(const int aX, const int aY) const
+bool InputMapper::SetMousePosition(const int aX, const int aY) const
 {
 	return SetMousePosition({ aX, aY });
 }
 
-bool Crimson::InputMapper::SetAbsoluteMousePosition(const Vector2i& aPosition) const
+bool InputMapper::SetAbsoluteMousePosition(const Crimson::Vector2i& aPosition) const
 {
 	return SetCursorPos(aPosition.x, aPosition.y);
 }
 
-bool Crimson::InputMapper::SetAbsoluteMousePosition(const int aX, const int aY) const
+bool InputMapper::SetAbsoluteMousePosition(const int aX, const int aY) const
 {
 	return SetCursorPos(aX, aY);
 }
 
-bool Crimson::InputMapper::CenterMouse()
+bool InputMapper::CenterMouse()
 {
 	assert(IsWindow(myWindowHandle));
 	if (myFlags[hasSetCenterPosition] == false)
@@ -345,7 +345,7 @@ bool Crimson::InputMapper::CenterMouse()
 		bottomRight.x = myClientRect.right;
 		bottomRight.y = myClientRect.bottom;
 
-		myRelativeCenterPosition = Vector2<int>(bottomRight) / 2;
+		myRelativeCenterPosition = Crimson::Vector2i(bottomRight) / 2;
 		myMousePosition = myRelativeCenterPosition;
 
 		MapWindowPoints(myWindowHandle, nullptr, &topLeft, 1);
@@ -360,19 +360,19 @@ bool Crimson::InputMapper::CenterMouse()
 	return SetCursorPos(myCenterPosition.x, myCenterPosition.y);
 }
 
-int Crimson::InputMapper::GetScrollWheelDelta() const
+int InputMapper::GetScrollWheelDelta() const
 {
 	return myScrollDelta.y;
 }
 
-int Crimson::InputMapper::GetHorizontalScrollWheelDelta() const
+int InputMapper::GetHorizontalScrollWheelDelta() const
 {
 	return myScrollDelta.x;
 }
 
-bool Crimson::InputMapper::IsValidCombination(eInputEvent anEvent, eKey aKey)
+bool InputMapper::IsValidCombination(Crimson::eInputEvent anEvent, Crimson::eKey aKey)
 {
-	if (anEvent == eInputEvent::MouseDoubleClick)
+	if (anEvent == Crimson::eInputEvent::MouseDoubleClick)
 	{
 		if (!IsMouseButton(aKey))
 		{
@@ -381,7 +381,7 @@ bool Crimson::InputMapper::IsValidCombination(eInputEvent anEvent, eKey aKey)
 	}
 	else if (IsMouseEvent(anEvent) || IsXboxEvent(anEvent))
 	{
-		if (aKey != eKey::None)
+		if (aKey != Crimson::eKey::None)
 		{
 			return false;
 		}
@@ -396,14 +396,14 @@ bool Crimson::InputMapper::IsValidCombination(eInputEvent anEvent, eKey aKey)
 	return true;
 }
 
-bool Crimson::InputMapper::IsMouseEvent(eInputEvent anEvent)
+bool InputMapper::IsMouseEvent(Crimson::eInputEvent anEvent)
 {
 	switch (anEvent)
 	{
-	case eInputEvent::MouseMove:
-	case eInputEvent::VerticalScroll:
-	case eInputEvent::HorizontalScroll:
-	case eInputEvent::MouseDoubleClick:
+	case Crimson::eInputEvent::MouseMove:
+	case Crimson::eInputEvent::VerticalScroll:
+	case Crimson::eInputEvent::HorizontalScroll:
+	case Crimson::eInputEvent::MouseDoubleClick:
 	{
 		return true;
 	}
@@ -414,22 +414,22 @@ bool Crimson::InputMapper::IsMouseEvent(eInputEvent anEvent)
 	}
 }
 
-bool Crimson::InputMapper::IsMouseButton(eKey aKey)
+bool InputMapper::IsMouseButton(Crimson::eKey aKey)
 {
-	return static_cast<int>(aKey) >= static_cast<int>(eKey::MouseLeftButton) &&
-		static_cast<int>(aKey) <= static_cast<int>(eKey::MouseXButton2) &&
-		aKey != eKey::Cancel;
+	return static_cast<int>(aKey) >= static_cast<int>(Crimson::eKey::MouseLeftButton) &&
+		static_cast<int>(aKey) <= static_cast<int>(Crimson::eKey::MouseXButton2) &&
+		aKey != Crimson::eKey::Cancel;
 }
 
-bool Crimson::InputMapper::IsXboxEvent(eInputEvent anEvent)
+bool InputMapper::IsXboxEvent(Crimson::eInputEvent anEvent)
 {
 	switch (anEvent)
 	{
-	case eInputEvent::XboxLeftStick:
-	case eInputEvent::XboxRightStick:
-	case eInputEvent::XboxLeftTrigger:
-	case eInputEvent::XboxRightTrigger:
-	case eInputEvent::XboxAllInput:
+	case Crimson::eInputEvent::XboxLeftStick:
+	case Crimson::eInputEvent::XboxRightStick:
+	case Crimson::eInputEvent::XboxLeftTrigger:
+	case Crimson::eInputEvent::XboxRightTrigger:
+	case Crimson::eInputEvent::XboxAllInput:
 	{
 		return true;
 	}
@@ -440,35 +440,35 @@ bool Crimson::InputMapper::IsXboxEvent(eInputEvent anEvent)
 	}
 }
 
-bool Crimson::InputMapper::IsXboxButton(eKey aKey)
+bool InputMapper::IsXboxButton(Crimson::eKey aKey)
 {
-	return static_cast<int>(aKey) >= static_cast<int>(eKey::Gamepad_A) &&
-		static_cast<int>(aKey) <= static_cast<int>(eKey::Gamepad_RightThumbStickButton);
+	return static_cast<int>(aKey) >= static_cast<int>(Crimson::eKey::Gamepad_A) &&
+		static_cast<int>(aKey) <= static_cast<int>(Crimson::eKey::Gamepad_RightThumbStickButton);
 }
 
-bool Crimson::InputMapper::IsActionOnly(eKey aKey)
+bool InputMapper::IsActionOnly(Crimson::eKey aKey)
 {
 	switch (aKey)
 	{
-	case eKey::None:
-	case eKey::Gamepad_LeftTrigger:
-	case eKey::Gamepad_RightTrigger:
-	case eKey::Gamepad_LeftThumbStickUp:
-	case eKey::Gamepad_LeftThumbStickDown:
-	case eKey::Gamepad_LeftThumbStickRight:
-	case eKey::Gamepad_LeftThumbStickLeft:
-	case eKey::Gamepad_RightThumbStickUp:
-	case eKey::Gamepad_RightThumbStickDown:
-	case eKey::Gamepad_RightThumbStickRight:
-	case eKey::Gamepad_RightThumbStickLeft:
-	case eKey::MouseMove_Up:
-	case eKey::MouseMove_Down:
-	case eKey::MouseMove_Left:
-	case eKey::MouseMove_Right:
-	case eKey::MouseScroll_Up:
-	case eKey::MouseScroll_Down:
-	case eKey::MouseScroll_Left:
-	case eKey::MouseScroll_Right:
+	case Crimson::eKey::None:
+	case Crimson::eKey::Gamepad_LeftTrigger:
+	case Crimson::eKey::Gamepad_RightTrigger:
+	case Crimson::eKey::Gamepad_LeftThumbStickUp:
+	case Crimson::eKey::Gamepad_LeftThumbStickDown:
+	case Crimson::eKey::Gamepad_LeftThumbStickRight:
+	case Crimson::eKey::Gamepad_LeftThumbStickLeft:
+	case Crimson::eKey::Gamepad_RightThumbStickUp:
+	case Crimson::eKey::Gamepad_RightThumbStickDown:
+	case Crimson::eKey::Gamepad_RightThumbStickRight:
+	case Crimson::eKey::Gamepad_RightThumbStickLeft:
+	case Crimson::eKey::MouseMove_Up:
+	case Crimson::eKey::MouseMove_Down:
+	case Crimson::eKey::MouseMove_Left:
+	case Crimson::eKey::MouseMove_Right:
+	case Crimson::eKey::MouseScroll_Up:
+	case Crimson::eKey::MouseScroll_Down:
+	case Crimson::eKey::MouseScroll_Left:
+	case Crimson::eKey::MouseScroll_Right:
 	{
 		return true;
 	}
@@ -479,27 +479,27 @@ bool Crimson::InputMapper::IsActionOnly(eKey aKey)
 	}
 }
 
-bool Crimson::InputMapper::GetKeyDown(const eKey aKeyCode) const
+bool InputMapper::GetKeyDown(const Crimson::eKey aKeyCode) const
 {
 	return IsKeyDown(static_cast<int>(aKeyCode));
 }
 
-bool Crimson::InputMapper::GetKeyUp(const eKey aKeyCode) const
+bool InputMapper::GetKeyUp(const Crimson::eKey aKeyCode) const
 {
 	return IsKeyUp(static_cast<int>(aKeyCode));
 }
 
-bool Crimson::InputMapper::GetKeyHeld(const eKey aKeyCode) const
+bool InputMapper::GetKeyHeld(const Crimson::eKey aKeyCode) const
 {
 	return IsKeyHeld(static_cast<int>(aKeyCode));
 }
 
-bool Crimson::InputMapper::GetKeyDownOrHeld(const eKey aKeyCode) const
+bool InputMapper::GetKeyDownOrHeld(const Crimson::eKey aKeyCode) const
 {
 	return myCurrentState[static_cast<int>(aKeyCode)];
 }
 
-bool Crimson::InputMapper::GetDoubleMouseClick(const eKey aKeyCode) const
+bool InputMapper::GetDoubleMouseClick(const Crimson::eKey aKeyCode) const
 {
 	if (IsMouseButton(aKeyCode))
 	{
@@ -508,35 +508,35 @@ bool Crimson::InputMapper::GetDoubleMouseClick(const eKey aKeyCode) const
 	return false;
 }
 
-void Crimson::InputMapper::UpdateKeyEvent(int aKey, bool aState)
+void InputMapper::UpdateKeyEvent(int aKey, bool aState)
 {
 	myCurrentState[aKey] = aState;
-	myTriggeredKeys.emplace(static_cast<eKey>(aKey));
+	myTriggeredKeys.emplace(static_cast<Crimson::eKey>(aKey));
 }
 
-void Crimson::InputMapper::UpdateDoubleClick(int aKey)
+void InputMapper::UpdateDoubleClick(int aKey)
 {
 	myDoubleClicks[aKey] = true;
-	myTriggeredEvents[static_cast<int>(eInputEvent::MouseDoubleClick)] = true;
+	myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::MouseDoubleClick)] = true;
 }
 
-void Crimson::InputMapper::UpdateMouseMove(const Vector2<int>& aPosition)
+void InputMapper::UpdateMouseMove(const Crimson::Vector2i& aPosition)
 {
 	myMousePosition = aPosition;
 }
 
-void Crimson::InputMapper::UpdateMouseScroll(int aDelta, bool aIsVertical)
+void InputMapper::UpdateMouseScroll(int aDelta, bool aIsVertical)
 {
 	int* currentScrollDelta;
 	if (aIsVertical)
 	{
 		currentScrollDelta = &myScrollDelta.y;
-		myTriggeredEvents[static_cast<int>(eInputEvent::VerticalScroll)] = true;
+		myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::VerticalScroll)] = true;
 	}
 	else
 	{
 		currentScrollDelta = &myScrollDelta.x;
-		myTriggeredEvents[static_cast<int>(eInputEvent::HorizontalScroll)] = true;
+		myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::HorizontalScroll)] = true;
 	}
 
 	if ((*currentScrollDelta < 0) != (aDelta < 0))
@@ -546,29 +546,29 @@ void Crimson::InputMapper::UpdateMouseScroll(int aDelta, bool aIsVertical)
 	*currentScrollDelta += aDelta;
 }
 
-void Crimson::InputMapper::UpdateRawData(const Vector2<float>& aMouseDelta)
+void InputMapper::UpdateRawData(const Crimson::Vector2f& aMouseDelta)
 {
 	myRawMouseMovement += aMouseDelta * 0.3125f; // 125hz / 400 dpi
-	myTriggeredEvents[static_cast<int>(eInputEvent::MouseMove)] = true;
+	myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::MouseMove)] = true;
 }
 
-void Crimson::InputMapper::WindowUpdated()
+void InputMapper::WindowUpdated()
 {
 	ReleaseAndResetInput();
 	GetClientRect(myWindowHandle, &myClientRect);
 }
 
-void Crimson::InputMapper::WindowLostFocus()
+void InputMapper::WindowLostFocus()
 {
 	ReleaseAndResetInput();
 }
 
-void Crimson::InputMapper::WindowGotFocus()
+void InputMapper::WindowGotFocus()
 {
 	ReleaseAndResetInput();
 }
 
-void Crimson::InputMapper::CreateEventList()
+void InputMapper::CreateEventList()
 {
 	AddMouseEvents();
 	AddMouseActions();
@@ -585,7 +585,7 @@ void Crimson::InputMapper::CreateEventList()
 	}
 }
 
-void Crimson::InputMapper::AddMouseEvents()
+void InputMapper::AddMouseEvents()
 {
 	for (int index = 0; index < myTriggeredEvents.size(); index++)
 	{
@@ -594,19 +594,19 @@ void Crimson::InputMapper::AddMouseEvents()
 			continue;
 		}
 
-		eInputEvent event = static_cast<eInputEvent>(index);
-		if (event == eInputEvent::MouseMove)
+		Crimson::eInputEvent event = static_cast<Crimson::eInputEvent>(index);
+		if (event == Crimson::eInputEvent::MouseMove)
 		{
-			if (myRawMouseMovement != Vector2f::Null)
+			if (myRawMouseMovement != Crimson::Vector2f::Null)
 			{
-				myEvents.emplace(event, eKey::None);
+				myEvents.emplace(event, Crimson::eKey::None);
 			}
 			else
 			{
 				myTriggeredEvents[index] = false;
 			}
 		}
-		else if (event == eInputEvent::MouseDoubleClick)
+		else if (event == Crimson::eInputEvent::MouseDoubleClick)
 		{
 			for (int key = VK_LBUTTON; key < myDoubleClicks.size(); key++)
 			{
@@ -616,68 +616,68 @@ void Crimson::InputMapper::AddMouseEvents()
 				}
 				if (myDoubleClicks[key])
 				{
-					myEvents.emplace(eInputEvent::MouseDoubleClick, static_cast<eKey>(key));
+					myEvents.emplace(Crimson::eInputEvent::MouseDoubleClick, static_cast<Crimson::eKey>(key));
 				}
 			}
 		}
 		else
 		{
-			myEvents.emplace(event, eKey::None);
+			myEvents.emplace(event, Crimson::eKey::None);
 		}
 	}
 }
 
-void Crimson::InputMapper::AddMouseActions()
+void InputMapper::AddMouseActions()
 {
-	if (myTriggeredEvents[static_cast<int>(eInputEvent::MouseMove)])
+	if (myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::MouseMove)])
 	{
 		if (myRawMouseMovement.x < 0.f)
 		{
-			AddAction(eKey::MouseMove_Left, myRawMouseMovement.x, false);
+			AddAction(Crimson::eKey::MouseMove_Left, myRawMouseMovement.x, false);
 		}
 		else if (myRawMouseMovement.x > 0.f)
 		{
-			AddAction(eKey::MouseMove_Right, myRawMouseMovement.x, false);
+			AddAction(Crimson::eKey::MouseMove_Right, myRawMouseMovement.x, false);
 		}
 
 		if (myRawMouseMovement.y < 0.f)
 		{
-			AddAction(eKey::MouseMove_Up, myRawMouseMovement.y, false);
+			AddAction(Crimson::eKey::MouseMove_Up, myRawMouseMovement.y, false);
 		}
 		else if (myRawMouseMovement.y > 0.f)
 		{
-			AddAction(eKey::MouseMove_Down, myRawMouseMovement.y, false);
+			AddAction(Crimson::eKey::MouseMove_Down, myRawMouseMovement.y, false);
 		}
 	}
 
-	if (myTriggeredEvents[static_cast<int>(eInputEvent::VerticalScroll)])
+	if (myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::VerticalScroll)])
 	{
 		int delta = GetScrollWheelDelta();
 		if (delta < 0)
 		{
-			AddAction(eKey::MouseScroll_Down, static_cast<float>(delta), false);
+			AddAction(Crimson::eKey::MouseScroll_Down, static_cast<float>(delta), false);
 		}
 		else
 		{
-			AddAction(eKey::MouseScroll_Up, static_cast<float>(delta), false);
+			AddAction(Crimson::eKey::MouseScroll_Up, static_cast<float>(delta), false);
 		}
 	}
 
-	if (myTriggeredEvents[static_cast<int>(eInputEvent::HorizontalScroll)])
+	if (myTriggeredEvents[static_cast<int>(Crimson::eInputEvent::HorizontalScroll)])
 	{
 		int delta = GetHorizontalScrollWheelDelta();
 		if (delta < 0)
 		{
-			AddAction(eKey::MouseScroll_Left, static_cast<float>(delta), false);
+			AddAction(Crimson::eKey::MouseScroll_Left, static_cast<float>(delta), false);
 		}
 		else
 		{
-			AddAction(eKey::MouseScroll_Right, static_cast<float>(delta), false);
+			AddAction(Crimson::eKey::MouseScroll_Right, static_cast<float>(delta), false);
 		}
 	}
 }
 
-void Crimson::InputMapper::AddKeyEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold)
+void InputMapper::AddKeyEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold)
 {
 	for (auto iter = myTriggeredKeys.begin(); iter != myTriggeredKeys.end();)
 	{
@@ -691,165 +691,165 @@ void Crimson::InputMapper::AddKeyEvents(bool& aOutTriggeredKeyDown, bool& aOutTr
 		{
 			if (aOutTriggeredKeyHold == false)
 			{
-				myEvents.emplace(eInputEvent::KeyHeld, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyHeld, Crimson::eKey::Any);
 				aOutTriggeredKeyHold = true;
 			}
 			AddAction(*iter, 1.f, true);
-			myEvents.emplace(eInputEvent::KeyHeld, *iter);
+			myEvents.emplace(Crimson::eInputEvent::KeyHeld, *iter);
 			iter++;
 		}
 		else if (IsKeyDown(static_cast<int>(*iter)))
 		{
 			if (aOutTriggeredKeyDown == false)
 			{
-				myEvents.emplace(eInputEvent::KeyDown, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyDown, Crimson::eKey::Any);
 				aOutTriggeredKeyDown = true;
 			}
 			AddAction(*iter, 2.f, true);
-			myEvents.emplace(eInputEvent::KeyDown, *iter);
+			myEvents.emplace(Crimson::eInputEvent::KeyDown, *iter);
 			iter++;
 		}
 		else if (IsKeyUp(static_cast<int>(*iter)))
 		{
 			if (aOutTriggeredKeyUp == false)
 			{
-				myEvents.emplace(eInputEvent::KeyUp, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyUp, Crimson::eKey::Any);
 				aOutTriggeredKeyUp = true;
 			}
 			AddAction(*iter, 0.f, true);
-			myEvents.emplace(eInputEvent::KeyUp, *iter);
+			myEvents.emplace(Crimson::eInputEvent::KeyUp, *iter);
 			iter = myTriggeredKeys.erase(iter);
 		}
 		else // Key was pressed and released during a single frame
 		{
 			if (aOutTriggeredKeyDown == false)
 			{
-				myEvents.emplace(eInputEvent::KeyDown, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyDown, Crimson::eKey::Any);
 				aOutTriggeredKeyDown = true;
 			}
 			if (aOutTriggeredKeyUp == false)
 			{
-				myEvents.emplace(eInputEvent::KeyUp, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyUp, Crimson::eKey::Any);
 				aOutTriggeredKeyUp = true;
 			}
 			AddAction(*iter, 2.f, true);
 			AddAction(*iter, 0.f, true);
-			myEvents.emplace(eInputEvent::KeyDown, *iter);
-			myEvents.emplace(eInputEvent::KeyUp, *iter);
+			myEvents.emplace(Crimson::eInputEvent::KeyDown, *iter);
+			myEvents.emplace(Crimson::eInputEvent::KeyUp, *iter);
 			iter = myTriggeredKeys.erase(iter);
 		}
 	}
 }
 
-void Crimson::InputMapper::AddXboxEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold)
+void InputMapper::AddXboxEvents(bool& aOutTriggeredKeyDown, bool& aOutTriggeredKeyUp, bool& aOutTriggeredKeyHold)
 {
 	auto& keys = myXboxController->GetKeyArray();
 
 	// Create button events
 	for (size_t index = 0; index < keys.size(); index++)
 	{
-		const eKey key = GetXboxKey(keys[index]);
+		const Crimson::eKey key = GetXboxKey(keys[index]);
 
 		if (myXboxController->GetButtonHeld(keys[index]))
 		{
 			if (aOutTriggeredKeyHold == false)
 			{
-				myEvents.emplace(eInputEvent::KeyHeld, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyHeld, Crimson::eKey::Any);
 				aOutTriggeredKeyHold = true;
 			}
 			AddAction(key, 1.f, true);
-			myEvents.emplace(eInputEvent::KeyHeld, key);
+			myEvents.emplace(Crimson::eInputEvent::KeyHeld, key);
 		}
 		else if (myXboxController->GetButtonDown(keys[index]))
 		{
 			if (aOutTriggeredKeyDown == false)
 			{
-				myEvents.emplace(eInputEvent::KeyDown, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyDown, Crimson::eKey::Any);
 				aOutTriggeredKeyDown = true;
 			}
 			AddAction(key, 2.f, true);
-			myEvents.emplace(eInputEvent::KeyDown, key);
+			myEvents.emplace(Crimson::eInputEvent::KeyDown, key);
 		}
 		else if (myXboxController->GetButtonUp(keys[index]))
 		{
 			if (aOutTriggeredKeyUp == false)
 			{
-				myEvents.emplace(eInputEvent::KeyUp, eKey::Any);
+				myEvents.emplace(Crimson::eInputEvent::KeyUp, Crimson::eKey::Any);
 				aOutTriggeredKeyUp = true;
 			}
 			AddAction(key, 0.f, true);
-			myEvents.emplace(eInputEvent::KeyUp, key);
+			myEvents.emplace(Crimson::eInputEvent::KeyUp, key);
 		}
 	}
 
 	// Create trigger events
 	if (myXboxController->GetRightTrigger() > 0.f)
 	{
-		myEvents.emplace(eInputEvent::XboxRightTrigger, eKey::None);
-		AddAction(eKey::Gamepad_RightTrigger, myXboxController->GetRightTrigger(), false);
+		myEvents.emplace(Crimson::eInputEvent::XboxRightTrigger, Crimson::eKey::None);
+		AddAction(Crimson::eKey::Gamepad_RightTrigger, myXboxController->GetRightTrigger(), false);
 	}
 	if (myXboxController->GetLeftTrigger() > 0.f)
 	{
-		myEvents.emplace(eInputEvent::XboxLeftTrigger, eKey::None);
-		AddAction(eKey::Gamepad_LeftTrigger, myXboxController->GetLeftTrigger(), false);
+		myEvents.emplace(Crimson::eInputEvent::XboxLeftTrigger, Crimson::eKey::None);
+		AddAction(Crimson::eKey::Gamepad_LeftTrigger, myXboxController->GetLeftTrigger(), false);
 	}
 
 	// Create right stick events
 	const auto& rightStick = myXboxController->GetRightStick();
-	if (rightStick != Vector2f::Null)
+	if (rightStick != Crimson::Vector2f::Null)
 	{
-		myEvents.emplace(eInputEvent::XboxRightStick, eKey::None);
+		myEvents.emplace(Crimson::eInputEvent::XboxRightStick, Crimson::eKey::None);
 		if (myActionObservers.size() != 0)
 		{
 			if (rightStick.x > 0.f)
 			{
-				AddAction(eKey::Gamepad_RightThumbStickRight, rightStick.x, false);
+				AddAction(Crimson::eKey::Gamepad_RightThumbStickRight, rightStick.x, false);
 			}
 			else
 			{
-				AddAction(eKey::Gamepad_RightThumbStickLeft, rightStick.x, false);
+				AddAction(Crimson::eKey::Gamepad_RightThumbStickLeft, rightStick.x, false);
 			}
 
 			if (rightStick.y > 0.f)
 			{
-				AddAction(eKey::Gamepad_RightThumbStickUp, rightStick.y, false);
+				AddAction(Crimson::eKey::Gamepad_RightThumbStickUp, rightStick.y, false);
 			}
 			else
 			{
-				AddAction(eKey::Gamepad_RightThumbStickDown, rightStick.y, false);
+				AddAction(Crimson::eKey::Gamepad_RightThumbStickDown, rightStick.y, false);
 			}
 		}
 	}
 
 	// Create left stick events
 	const auto& leftStick = myXboxController->GetLeftStick();
-	if (leftStick != Vector2f::Null)
+	if (leftStick != Crimson::Vector2f::Null)
 	{
-		myEvents.emplace(eInputEvent::XboxLeftStick, eKey::None);
+		myEvents.emplace(Crimson::eInputEvent::XboxLeftStick, Crimson::eKey::None);
 		if (myActionObservers.size() != 0)
 		{
 			if (leftStick.x > 0.f)
 			{
-				AddAction(eKey::Gamepad_LeftThumbStickRight, leftStick.x, false);
+				AddAction(Crimson::eKey::Gamepad_LeftThumbStickRight, leftStick.x, false);
 			}
 			else
 			{
-				AddAction(eKey::Gamepad_LeftThumbStickLeft, leftStick.x, false);
+				AddAction(Crimson::eKey::Gamepad_LeftThumbStickLeft, leftStick.x, false);
 			}
 
 			if (leftStick.y > 0.f)
 			{
-				AddAction(eKey::Gamepad_LeftThumbStickUp, leftStick.y, false);
+				AddAction(Crimson::eKey::Gamepad_LeftThumbStickUp, leftStick.y, false);
 			}
 			else
 			{
-				AddAction(eKey::Gamepad_LeftThumbStickDown, leftStick.y, false);
+				AddAction(Crimson::eKey::Gamepad_LeftThumbStickDown, leftStick.y, false);
 			}
 		}
 	}
 }
 
-void Crimson::InputMapper::AddAction(eKey aKey, float aValue, bool aIsKeyAction)
+void InputMapper::AddAction(Crimson::eKey aKey, float aValue, bool aIsKeyAction)
 {
 	bool isModifierKey;
 	for (auto iter = myKeybinds.begin(); iter != myKeybinds.end(); iter++)
@@ -914,11 +914,11 @@ void Crimson::InputMapper::AddAction(eKey aKey, float aValue, bool aIsKeyAction)
 	}
 }
 
-void Crimson::InputMapper::UpdatePreviousStates()
+void InputMapper::UpdatePreviousStates()
 {
 	myPreviousState = myCurrentState;
-	myScrollDelta = Vector2i::Null;
-	myRawMouseMovement = Vector2f::Null;
+	myScrollDelta = Crimson::Vector2i::Null;
+	myRawMouseMovement = Crimson::Vector2f::Null;
 	myDoubleClicks.reset();
 
 	if (myFlags[eFlag::isMouseLocked] && myMousePosition != myRelativeCenterPosition)
@@ -928,55 +928,55 @@ void Crimson::InputMapper::UpdatePreviousStates()
 	}
 }
 
-void Crimson::InputMapper::ResetEvents()
+void InputMapper::ResetEvents()
 {
 	myEvents.clear();
 	myTriggeredEvents.reset();
 	myTriggeredActions.clear();
 }
 
-void Crimson::InputMapper::ReleaseAndResetInput()
+void InputMapper::ReleaseAndResetInput()
 {
 	myEvents.clear();
 	myTriggeredEvents.reset();
 	myTriggeredActions.clear();
 	myCurrentState.reset();
 	myPreviousState.reset();
-	myMousePosition = Vector2i::Null;
-	myRawMouseMovement = Vector2f::Null;
-	myScrollDelta = Vector2i::Null;
+	myMousePosition = Crimson::Vector2i::Null;
+	myRawMouseMovement = Crimson::Vector2f::Null;
+	myScrollDelta = Crimson::Vector2i::Null;
 	myDoubleClicks.reset();
 	for (auto iter = myTriggeredKeys.begin(); iter != myTriggeredKeys.end(); ++iter)
 	{
-		AddAction(static_cast<eKey>(*iter), 0.f, true);
-		myEvents.emplace(eInputEvent::KeyUp, static_cast<eKey>(*iter));
+		AddAction(static_cast<Crimson::eKey>(*iter), 0.f, true);
+		myEvents.emplace(Crimson::eInputEvent::KeyUp, static_cast<Crimson::eKey>(*iter));
 	}
 	myTriggeredKeys.clear();
 }
 
-bool Crimson::InputMapper::IsKeyDown(int aKey) const
+bool InputMapper::IsKeyDown(int aKey) const
 {
 	return (myCurrentState[aKey] == true && myPreviousState[aKey] == false);
 }
 
-bool Crimson::InputMapper::IsKeyUp(int aKey) const
+bool InputMapper::IsKeyUp(int aKey) const
 {
 	return (myCurrentState[aKey] == false && myPreviousState[aKey] == true);
 }
 
-bool Crimson::InputMapper::IsKeyHeld(int aKey) const
+bool InputMapper::IsKeyHeld(int aKey) const
 {
 	return (myCurrentState[aKey] == true && myPreviousState[aKey] == true);
 }
 
-bool Crimson::InputMapper::IsKeyReleased(int aKey) const
+bool InputMapper::IsKeyReleased(int aKey) const
 {
 	return (myCurrentState[aKey] == false && myPreviousState[aKey] == false);
 }
 
-void Crimson::InputMapper::SendEventNotifications() const
+void InputMapper::SendEventNotifications() const
 {
-	auto xboxAllInputObservers = FindObservers(eInputEvent::XboxAllInput, eKey::None);
+	auto xboxAllInputObservers = FindObservers(Crimson::eInputEvent::XboxAllInput, Crimson::eKey::None);
 	for (auto iter = myEvents.begin(); iter != myEvents.end(); iter++)
 	{
 		auto observerList = FindObservers(iter->first, iter->second);
@@ -995,7 +995,7 @@ void Crimson::InputMapper::SendEventNotifications() const
 	}
 }
 
-void Crimson::InputMapper::SendActionNotifications() const
+void InputMapper::SendActionNotifications() const
 {
 	for (auto iter = myTriggeredActions.begin(); iter != myTriggeredActions.end(); iter++)
 	{
@@ -1006,7 +1006,7 @@ void Crimson::InputMapper::SendActionNotifications() const
 			{
 				switch (observer.myKeyAction)
 				{
-				case eKeyAction::KeyDown:
+				case Crimson::eKeyAction::KeyDown:
 				{
 					if (iter->second.first < 1.5f)
 					{
@@ -1014,7 +1014,7 @@ void Crimson::InputMapper::SendActionNotifications() const
 					}
 					break;
 				}
-				case eKeyAction::KeyHeld:
+				case Crimson::eKeyAction::KeyHeld:
 				{
 					if (iter->second.first < 0.5f || iter->second.first > 1.5f)
 					{
@@ -1022,7 +1022,7 @@ void Crimson::InputMapper::SendActionNotifications() const
 					}
 					break;
 				}
-				case eKeyAction::KeyUp:
+				case Crimson::eKeyAction::KeyUp:
 				{
 					if (iter->second.first > 0.5f)
 					{
@@ -1030,7 +1030,7 @@ void Crimson::InputMapper::SendActionNotifications() const
 					}
 					break;
 				}
-				case eKeyAction::KeyDownOrHeld:
+				case Crimson::eKeyAction::KeyDownOrHeld:
 				{
 					if (iter->second.first < 0.5f)
 					{
@@ -1048,7 +1048,7 @@ void Crimson::InputMapper::SendActionNotifications() const
 	}
 }
 
-std::vector<Crimson::InputObserver*> Crimson::InputMapper::FindObservers(eInputEvent anEvent, eKey aKey) const
+std::vector<InputObserver*> InputMapper::FindObservers(Crimson::eInputEvent anEvent, Crimson::eKey aKey) const
 {
 	std::vector<InputObserver*> result;
 	auto range = myEventObservers.equal_range(anEvent);
@@ -1062,7 +1062,7 @@ std::vector<Crimson::InputObserver*> Crimson::InputMapper::FindObservers(eInputE
 	return result;
 }
 
-std::vector<Crimson::InputMapper::ActionObserver> Crimson::InputMapper::FindObservers(eInputAction anEvent) const
+std::vector<InputMapper::ActionObserver> InputMapper::FindObservers(Crimson::eInputAction anEvent) const
 {
 	std::vector<ActionObserver> result;
 	auto range = myActionObservers.equal_range(anEvent);
@@ -1073,96 +1073,96 @@ std::vector<Crimson::InputMapper::ActionObserver> Crimson::InputMapper::FindObse
 	return result;
 }
 
-Crimson::eKey Crimson::InputMapper::GetValidKey(eInputEvent anEvent, eKey aKey) const
+Crimson::eKey InputMapper::GetValidKey(Crimson::eInputEvent anEvent, Crimson::eKey aKey) const
 {
-	if (anEvent == eInputEvent::MouseDoubleClick)
+	if (anEvent == Crimson::eInputEvent::MouseDoubleClick)
 	{
 		if (!IsMouseButton(aKey))
 		{
-			return eKey::None;
+			return Crimson::eKey::None;
 		}
 	}
 	else if (IsMouseEvent(anEvent) || IsXboxEvent(anEvent))
 	{
-		return eKey::None;
+		return Crimson::eKey::None;
 	}
 
 	return aKey;
 }
 
-Crimson::eKey Crimson::InputMapper::GetXboxKey(const WORD& aWord) const
+Crimson::eKey InputMapper::GetXboxKey(const WORD& aWord) const
 {
-	eKey key = eKey::None;
+	Crimson::eKey key = Crimson::eKey::None;
 	switch (aWord)
 	{
 	case XBOX_DPAD_UP:
 	{
-		key = eKey::Gamepad_DpadUp;
+		key = Crimson::eKey::Gamepad_DpadUp;
 		break;
 	}
 	case XBOX_DPAD_DOWN:
 	{
-		key = eKey::Gamepad_DpadDown;
+		key = Crimson::eKey::Gamepad_DpadDown;
 		break;
 	}
 	case XBOX_DPAD_LEFT:
 	{
-		key = eKey::Gamepad_DpadLeft;
+		key = Crimson::eKey::Gamepad_DpadLeft;
 		break;
 	}
 	case XBOX_DPAD_RIGHT:
 	{
-		key = eKey::Gamepad_DpadRight;
+		key = Crimson::eKey::Gamepad_DpadRight;
 		break;
 	}
 	case XBOX_START:
 	{
-		key = eKey::Gamepad_Menu;
+		key = Crimson::eKey::Gamepad_Menu;
 		break;
 	}
 	case XBOX_BACK:
 	{
-		key = eKey::Gamepad_View;
+		key = Crimson::eKey::Gamepad_View;
 		break;
 	}
 	case XBOX_L_THUMBSTICK:
 	{
-		key = eKey::Gamepad_LeftThumbStickButton;
+		key = Crimson::eKey::Gamepad_LeftThumbStickButton;
 		break;
 	}
 	case XBOX_R_THUMBSTICK:
 	{
-		key = eKey::Gamepad_RightThumbStickButton;
+		key = Crimson::eKey::Gamepad_RightThumbStickButton;
 		break;
 	}
 	case XBOX_L_SHOULDER:
 	{
-		key = eKey::Gamepad_LeftShoulder;
+		key = Crimson::eKey::Gamepad_LeftShoulder;
 		break;
 	}
 	case XBOX_R_SHOULDER:
 	{
-		key = eKey::Gamepad_RightShoulder;
+		key = Crimson::eKey::Gamepad_RightShoulder;
 		break;
 	}
 	case XBOX_A:
 	{
-		key = eKey::Gamepad_A;
+		key = Crimson::eKey::Gamepad_A;
 		break;
 	}
 	case XBOX_B:
 	{
-		key = eKey::Gamepad_B;
+		key = Crimson::eKey::Gamepad_B;
 		break;
 	}
 	case XBOX_X:
 	{
-		key = eKey::Gamepad_X;
+		key = Crimson::eKey::Gamepad_X;
 		break;
 	}
 	case XBOX_Y:
 	{
-		key = eKey::Gamepad_Y;
+		key = Crimson::eKey::Gamepad_Y;
 		break;
 	}
 	default:

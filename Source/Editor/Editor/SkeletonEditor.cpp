@@ -5,7 +5,7 @@
 #include "AssetManager/Assets/ImguiTransform.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "CrimsonUtilities/File/FileSelectors.h"
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 #include "CrimsonUtilities/Math/Sort.hpp"
 #include "../Modelviewer.h"
 
@@ -67,7 +67,7 @@ void SkeletonEditor::Update()
 	if (myPlayCount > 0)
 	{
 		myMesh->UpdateNoRender();
-		myAnimationTimer += Crimson::Timer::GetDeltaTime();
+		myAnimationTimer += Crimson::Time::GetDeltaTime();
 		if (myAnimationTimer >= myMesh->myAnimationDelta)
 		{
 			myAnimationTimer = 0.f;
@@ -260,8 +260,8 @@ void SkeletonEditor::Activate()
 	UpdateAvailableFiles();
 	myCamera.SetActiveComponents(true);
 
-	myEditorTimeScale = Crimson::Timer::GetTimeScale();
-	Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
+	myEditorTimeScale = Crimson::Time::GetTimeScale();
+	Crimson::Time::SetTimeScale(myPlaybackMultiplier);
 
 	auto& engine = GraphicsEngine::Get();
 	engine.SetDebugMode(GraphicsEngine::DebugMode::Default);
@@ -282,7 +282,7 @@ void SkeletonEditor::Deactivate()
 	ModelViewer::Get().ActivateImGuiEditor();
 	ModelViewer::Get().RestoreDebugSettings();
 
-	Crimson::Timer::SetTimeScale(myEditorTimeScale);
+	Crimson::Time::SetTimeScale(myEditorTimeScale);
 
 	GraphicsEngine::Get().GetLineDrawer().SetUsingDepthBuffer(true);
 	for (auto& [bone, line] : myLines)
@@ -582,7 +582,7 @@ void SkeletonEditor::CreateAnimationInspector()
 
 		if (ImGui::DragFloat("Playback speed", &myPlaybackMultiplier, 0.01f, 0.f, 1000.f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			Crimson::Timer::SetTimeScale(myPlaybackMultiplier);
+			Crimson::Time::SetTimeScale(myPlaybackMultiplier);
 		}
 
 		if (ImGui::Checkbox("Root Motion", &myIsUsingRootMotion))

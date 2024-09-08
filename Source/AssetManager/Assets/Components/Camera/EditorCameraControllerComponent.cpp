@@ -88,7 +88,7 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 		}
 
 		auto& camera = myParent->GetComponent<PerspectiveCameraComponent>();
-		float multiplier = mySpeed * Crimson::Timer::GetUnscaledDeltaTime();
+		float multiplier = mySpeed * Crimson::Time::GetUnscaledDeltaTime();
 		if (Engine::GetInputMapper().GetKeyDownOrHeld(Crimson::eKey::Shift))
 		{
 			multiplier *= 2.f;

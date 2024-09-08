@@ -50,7 +50,7 @@ void ParticleEmitterComponent::Render()
 		return;
 	}
 
-	myEmitter->Update(Crimson::Timer::GetDeltaTime());
+	myEmitter->Update(Crimson::Time::GetDeltaTime());
 }
 
 void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter)

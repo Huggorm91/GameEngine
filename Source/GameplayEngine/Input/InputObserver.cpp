@@ -2,7 +2,7 @@
 #include "InputMapper.h"
 #include "GameplayEngine/Engine.h"
 
-Crimson::InputObserver::~InputObserver()
+InputObserver::~InputObserver()
 {
 	if (Engine::IsValid())
 	{

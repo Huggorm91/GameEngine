@@ -5,7 +5,6 @@
 #include "Managers/TextureManager.h"
 #include "Managers/ShaderManager.h"
 #include "Managers/PrefabManager.h"
-#include "Managers/SceneManager.h"
 
 class AssetManager
 {
@@ -40,9 +39,6 @@ public:
 	inline static void SaveAsset(const Material& anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(&anAsset, aPath); }
 	inline static void SaveAsset(const Material* anAsset, const std::string& aPath) { myMaterialManager.SaveMaterial(anAsset, aPath); }
 
-	inline static void SaveAsset(const Scene& anAsset, const std::string& aPath, bool anAsBinary = true) { mySceneManager.SaveScene(aPath, anAsset, anAsBinary); }
-	inline static void SaveAsset(const EditorScene& anAsset, const std::string& aPath, bool anAsBinary = true) { mySceneManager.SaveScene(aPath, anAsset, anAsBinary); }
-
 	inline static void SaveAsset(const BlendSpace& anAsset, const std::string& aPath) { myAnimationManager.SaveBlendSpace(anAsset, aPath); }
 
 	inline static Prefab GetPrefab(const std::string& anIdentifier) { return myPrefabManager.GetPrefab(anIdentifier, myIsLoggingErrors); }
@@ -61,8 +57,6 @@ public:
 	inline static const char* GetMaterialExtension() { return MaterialManager::GetExtension(); }
 	inline static const char* GetShaderExtension() { return ShaderManager::GetExtension(); }
 	inline static const char* GetPrefabExtension() { return PrefabManager::GetExtension(); }
-	inline static const char* GetSceneExtension() { return SceneManager::GetExtension(); }
-	inline static const char* GetSceneBinaryExtension() { return SceneManager::GetBinaryExtension(); }
 
 	inline static const char* GetModelPath() { return ModelManager::GetPath(); }
 	inline static const char* GetAnimationPath() { return AnimationManager::GetPath(); }
@@ -70,7 +64,6 @@ public:
 	inline static const char* GetMaterialPath() { return MaterialManager::GetPath(); }
 	inline static const char* GetShaderPath() { return ShaderManager::GetPath(); }
 	inline static const char* GetPrefabPath() { return PrefabManager::GetPath(); }
-	inline static const char* GetScenePath() { return SceneManager::GetPath(); }
 
 	inline static const wchar_t* GetModelExtensionW() { return ModelManager::GetExtensionW(); }
 	inline static const wchar_t* GetAnimationExtensionW() { return AnimationManager::GetExtensionW(); }
@@ -78,8 +71,6 @@ public:
 	inline static const wchar_t* GetMaterialExtensionW() { return MaterialManager::GetExtensionW(); }
 	inline static const wchar_t* GetShaderExtensionW() { return ShaderManager::GetExtensionW(); }
 	inline static const wchar_t* GetPrefabExtensionW() { return PrefabManager::GetExtensionW(); }
-	inline static const wchar_t* GetSceneExtensionW() { return SceneManager::GetExtensionW(); }
-	inline static const wchar_t* GetSceneBinaryExtensionW() { return SceneManager::GetBinaryExtensionW(); }
 
 	inline static const wchar_t* GetModelPathW() { return ModelManager::GetPathW(); }
 	inline static const wchar_t* GetAnimationPathW() { return AnimationManager::GetPathW(); }
@@ -87,7 +78,6 @@ public:
 	inline static const wchar_t* GetMaterialPathW() { return MaterialManager::GetPathW(); }
 	inline static const wchar_t* GetShaderPathW() { return ShaderManager::GetPathW(); }
 	inline static const wchar_t* GetPrefabPathW() { return PrefabManager::GetPathW(); }
-	inline static const wchar_t* GetScenePathW() { return SceneManager::GetPathW(); }
 
 	inline static const std::unordered_set<std::string>& GetAvailableModels(){ return myModelManager.GetModellist(); }
 	inline static const std::unordered_set<std::string>& GetAvailableAnimations(){ return myAnimationManager.GetAnimationlist(); }
@@ -95,7 +85,6 @@ public:
 	// inline static const std::unordered_set<std::string>& GetAvailableMaterials(){ return myMaterialManager.GetMateriallist(); }
 	// inline static const std::unordered_set<std::string>& GetAvailableShaders(){ return myShaderManager.GetShaderlist(); }
 	inline static const std::unordered_set<std::string>& GetAvailablePrefabs() { return myPrefabManager.GetPrefablist(); }
-	inline static const std::unordered_set<std::string>& GetAvailableScenes() { return mySceneManager.GetScenelist(); }
 
 	inline static void SetLogErrors(bool aState) { myIsLoggingErrors = aState; }
 
@@ -112,7 +101,6 @@ private:
 	static MaterialManager myMaterialManager;
 	static ShaderManager myShaderManager;
 	static PrefabManager myPrefabManager;
-	static SceneManager mySceneManager;
 };
 
 /*******************************************************************************************************************************************************/
@@ -128,7 +116,7 @@ inline GameObject AssetManager::GetAsset(const std::string& anIdentifier)
 	{
 		return *object;
 	}
-	return GameObject();
+	return GameObject(GameObject::nullUUID);
 }
 
 template<>
@@ -219,18 +207,6 @@ template<>
 inline Shader* AssetManager::GetAsset(const std::string& anIdentifier)
 {
 	return myShaderManager.GetShader(anIdentifier, myIsLoggingErrors);
-}
-
-template<>
-inline Scene AssetManager::GetAsset(const std::string& anIdentifier)
-{
-	return mySceneManager.GetScene(anIdentifier, myIsLoggingErrors);
-}
-
-template<>
-inline EditorScene AssetManager::GetAsset(const std::string& anIdentifier)
-{
-	return mySceneManager.GetEditorScene(anIdentifier, myIsLoggingErrors);
 }
 
 template<>

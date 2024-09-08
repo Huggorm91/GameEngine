@@ -3,7 +3,7 @@
 #include <winsock2.h>
 #include <format>
 #include "CrimsonUtilities/String/StringFunctions.h"
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 #include "NetworkShared/MessageFunctions.h"
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -89,8 +89,8 @@ namespace Network
 		// Wait for reply from server
 		NetMessage answer;
 		int slen = sizeof(sockaddr_in);
-		auto timer = Crimson::Timer::StartStopwatch();
-		while (Crimson::Timer::StopStopwatch(timer) < 3.0)
+		auto timer = Crimson::Time::StartTimer();
+		while (Crimson::Time::StopTimer(timer) < 3.0)
 		{
 			const auto result = recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen);
 			if (result != SOCKET_ERROR)

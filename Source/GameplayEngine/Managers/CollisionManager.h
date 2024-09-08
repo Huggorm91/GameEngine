@@ -1,7 +1,8 @@
 #pragma once
-#include "AssetManager/Assets/Components/Collision/ColliderComponent.h"
 #include <unordered_map>
 #include <unordered_set>
+
+class ColliderComponent;
 
 class CollisionManager
 {

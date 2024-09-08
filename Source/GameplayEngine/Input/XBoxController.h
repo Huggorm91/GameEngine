@@ -22,70 +22,66 @@
 #define XBOX_X 0x4000
 #define XBOX_Y 0x8000
 
-
-namespace Crimson
+class XBoxController
 {
-	class XBoxController
-	{
-	public:
-		XBoxController();
-		~XBoxController() = default;
+public:
+	XBoxController();
+	~XBoxController() = default;
 
-		bool VerifyConnection();
-		bool UpdateState();
+	bool VerifyConnection();
+	bool UpdateState();
 
-		const XINPUT_GAMEPAD& GetState() const;
-		const XINPUT_GAMEPAD& GetPreviousState() const;
-		const std::array<WORD, 14>& GetKeyArray() const;
+	const XINPUT_GAMEPAD& GetState() const;
+	const XINPUT_GAMEPAD& GetPreviousState() const;
+	const std::array<WORD, 14>& GetKeyArray() const;
 
-		bool GetButtonDown(const WORD& aWord) const;
-		bool GetButtonHeld(const WORD& aWord) const;
-		bool GetButtonUp(const WORD& aWord) const;
+	bool GetButtonDown(const WORD& aWord) const;
+	bool GetButtonHeld(const WORD& aWord) const;
+	bool GetButtonUp(const WORD& aWord) const;
 
-		Vector2<float> GetLeftStick() const;
-		Vector2<float> GetLeftStickDelta() const;
+	Crimson::Vector2f GetLeftStick() const;
+	Crimson::Vector2f GetLeftStickDelta() const;
 
-		Vector2<float> GetRightStick() const;
-		Vector2<float> GetRightStickDelta() const;
+	Crimson::Vector2f GetRightStick() const;
+	Crimson::Vector2f GetRightStickDelta() const;
 
-		float GetLeftTrigger() const;
-		float GetLeftTriggerDelta() const;
+	float GetLeftTrigger() const;
+	float GetLeftTriggerDelta() const;
 
-		float GetRightTrigger() const;
-		float GetRightTriggerDelta() const;
+	float GetRightTrigger() const;
+	float GetRightTriggerDelta() const;
 
-		void SetVibrationToggle(bool aState);
-		void ToggleVibration();
+	void SetVibrationToggle(bool aState);
+	void ToggleVibration();
 
-		void Vibrate(WORD aLeftVibrationAmount, WORD aRightVibrationAmount);
-		WORD GetLeftVibration();
-		WORD GetRightVibration();
+	void Vibrate(WORD aLeftVibrationAmount, WORD aRightVibrationAmount);
+	WORD GetLeftVibration();
+	WORD GetRightVibration();
 
-		void SetDeadZone(const Vector2<float>& aDeadZone);
-		Vector2<float> GetDeadZone();
+	void SetDeadZone(const Crimson::Vector2f& aDeadZone);
+	Crimson::Vector2f GetDeadZone();
 
-	private:
-		int myID;
+private:
+	int myID;
 
-		Vector2<float> myPreviousLeftStickInput;
-		Vector2<float> myLeftStickInput;
-		Vector2<float> myPreviousRightStickInput;
-		Vector2<float> myRightStickInput;
+	Crimson::Vector2f myPreviousLeftStickInput;
+	Crimson::Vector2f myLeftStickInput;
+	Crimson::Vector2f myPreviousRightStickInput;
+	Crimson::Vector2f myRightStickInput;
 
-		float myPreviousLeftTriggerInput;
-		float myLeftTriggerInput;
-		float myPreviousRightTriggerInput;
-		float myRightTriggerInput;
+	float myPreviousLeftTriggerInput;
+	float myLeftTriggerInput;
+	float myPreviousRightTriggerInput;
+	float myRightTriggerInput;
 
-		XINPUT_STATE myPreviousState;
-		XINPUT_STATE myCurrentState;
-		XINPUT_VIBRATION myVibration;
-		WORD myLeftVibration;
-		WORD myRightVibration;
+	XINPUT_STATE myPreviousState;
+	XINPUT_STATE myCurrentState;
+	XINPUT_VIBRATION myVibration;
+	WORD myLeftVibration;
+	WORD myRightVibration;
 
-		bool myIsVibrating;
-		Vector2<float> myDeadzone;
+	bool myIsVibrating;
+	Crimson::Vector2f myDeadzone;
 
-		void ResetState();
-	};
-}
+	void ResetState();
+};

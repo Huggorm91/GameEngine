@@ -3,12 +3,12 @@
 namespace Crimson
 {
 	class Message;
-
-	class Observer
-	{
-	public:
-		virtual ~Observer();
-
-		virtual void RecieveMessage(const Message& aMessage) = 0;
-	};
 }
+
+class Observer
+{
+public:
+	virtual ~Observer();
+
+	virtual void RecieveMessage(const Crimson::Message& aMessage) = 0;
+};

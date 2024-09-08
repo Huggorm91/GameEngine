@@ -36,7 +36,7 @@ bool Animation::Update()
 		return false;
 	}
 
-	myAnimationTimer += Crimson::Timer::GetDeltaTime();
+	myAnimationTimer += Crimson::Time::GetDeltaTime();
 	if (myAnimationTimer >= myData->frameDelta)
 	{
 		myInterpolationTimer = 0.f;
@@ -59,7 +59,7 @@ bool Animation::Update()
 	}
 	else if (myTargetFrameDelta > 0.f)
 	{
-		myInterpolationTimer += Crimson::Timer::GetDeltaTime();
+		myInterpolationTimer += Crimson::Time::GetDeltaTime();
 		if (myInterpolationTimer >= myTargetFrameDelta)
 		{
 			myInterpolationTimer -= myTargetFrameDelta;

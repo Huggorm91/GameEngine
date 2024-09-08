@@ -1,14 +1,13 @@
 #pragma once
 #include "CrimsonUtilities/Math/Vector2.hpp"
 
-namespace Crimson
-{
-	class ThreadPool;
-	class PostMaster;
-	class InputMapper;
-	class InputHandler;
-}
+class ThreadPool;
+class PostMaster;
+class InputMapper;
+class InputHandler;
 class CollisionManager;
+class ObjectManager;
+class SceneManager;
 
 class Engine
 {
@@ -22,10 +21,12 @@ public:
 
 	static bool IsValid();
 
-	static Crimson::ThreadPool& GetThreadPool();
-	static Crimson::InputMapper& GetInputMapper();
-	static Crimson::PostMaster& GetPostMaster();
+	static ThreadPool& GetThreadPool();
+	static InputMapper& GetInputMapper();
+	static PostMaster& GetPostMaster();
 	static CollisionManager& GetCollisionManager();
+	static ObjectManager& GetObjectManager();
+	static SceneManager& GetSceneManager();
 
 	static const Crimson::Vector2i& GetWindowSize();
 	static HWND GetWindowHandle();
@@ -39,11 +40,13 @@ private:
 	Crimson::Vector2i myWindowSize;
 	HWND myWindowHandle;
 
-	std::unique_ptr<Crimson::ThreadPool> myThreadPool;
-	std::unique_ptr<Crimson::InputMapper> myInputMapper;
-	std::unique_ptr<Crimson::InputHandler> myInputHandler;
-	std::unique_ptr<Crimson::PostMaster> myPostMaster;
+	std::unique_ptr<ThreadPool> myThreadPool;
+	std::unique_ptr<InputMapper> myInputMapper;
+	std::unique_ptr<InputHandler> myInputHandler;
+	std::unique_ptr<PostMaster> myPostMaster;
 	std::unique_ptr<CollisionManager> myCollisionManager;
+	std::unique_ptr<ObjectManager> myObjectManager;
+	std::unique_ptr<SceneManager> mySceneManager;
 
 	bool myIsInitialized;
 };

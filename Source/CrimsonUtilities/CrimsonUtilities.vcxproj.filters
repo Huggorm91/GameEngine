@@ -204,7 +204,7 @@
     <ClInclude Include="Math\Sort.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Time\Timer.h">
+    <ClInclude Include="Time\Time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Math.hpp">
@@ -266,7 +266,7 @@
     <ClCompile Include="Math\Random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Time\Timer.cpp">
+    <ClCompile Include="Time\Time.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="File\DirectoryFunctions.cpp">

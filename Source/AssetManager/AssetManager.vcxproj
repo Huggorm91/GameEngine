@@ -255,7 +255,6 @@
     <ClInclude Include="Managers\PrefabManager.h" />
     <ClInclude Include="Assets\Prefab.h" />
     <ClInclude Include="Assets\Components\Particles\ParticleEmitterComponent.h" />
-    <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Assets\Components\Particles\Emitters\StreamEmitter.h" />
     <ClInclude Include="Assets\Components\Network\NetworkComponent.h" />
   </ItemGroup>
@@ -316,7 +315,6 @@
     <ClCompile Include="Managers\PrefabManager.cpp" />
     <ClCompile Include="Assets\Prefab.cpp" />
     <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp" />
-    <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Assets\Components\Particles\Emitters\StreamEmitter.cpp" />
     <ClCompile Include="Assets\Components\Network\NetworkComponent.cpp" />
   </ItemGroup>

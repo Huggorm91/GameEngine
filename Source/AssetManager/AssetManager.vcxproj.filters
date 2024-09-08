@@ -105,9 +105,6 @@
     <ClInclude Include="Assets\Binary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Managers\SceneManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Assets\Components\Particles\Emitters\StreamEmitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -252,9 +249,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Particles\ParticleEmitterComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Managers\SceneManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Assets\Components\Particles\Emitters\StreamEmitter.cpp">

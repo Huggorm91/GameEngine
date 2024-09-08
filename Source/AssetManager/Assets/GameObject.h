@@ -10,6 +10,7 @@ class GameObject
 public:
 	GameObject();
 	GameObject(const Prefab& aPrefab);
+	GameObject(const UUIDv4::UUID& anUUID);
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
@@ -19,7 +20,8 @@ public:
 	GameObject& operator=(const GameObject& aGameObject);
 	GameObject& operator=(GameObject&& aGameObject) noexcept;
 
-	bool operator==(const GameObject& aGameObject);
+	bool operator==(const GameObject& aGameObject) const;
+	bool operator==(const UUIDv4::UUID& anUUID) const;
 
 	void Update();
 	void Render();

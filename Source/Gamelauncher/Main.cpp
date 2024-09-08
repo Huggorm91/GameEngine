@@ -1,7 +1,7 @@
 #include "Gamelauncher.pch.h"
 #include "resource.h"
 #include "GameplayEngine/Engine.h"
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
@@ -96,7 +96,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
     case WM_SETFOCUS:
     case WM_EXITSIZEMOVE:
     {
-        Crimson::Timer::ResetDeltaTime();
+        Crimson::Time::ResetDeltaTime();
         break;
     }
     default:

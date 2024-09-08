@@ -2,7 +2,7 @@
 #include "PostMaster.h"
 #include "GameplayEngine/Engine.h"
 
-Crimson::Observer::~Observer()
+Observer::~Observer()
 {
 	if (Engine::IsValid())
 	{

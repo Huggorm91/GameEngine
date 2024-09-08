@@ -17,9 +17,10 @@
 #include "backends/imgui_impl_dx11.h"
 
 #include "CrimsonUtilities/File/FileSelectors.h"
-#include "CrimsonUtilities/Time/Timer.h"
+#include "CrimsonUtilities/Time/Time.h"
 
 #include "GameplayEngine/Input/InputMapper.h"
+#include "GameplayEngine/Scene/SceneLoader.h"
 
 #include "AssetManager/Assets/ImguiTransform.h"
 
@@ -103,7 +104,7 @@ void ImguiManager::Update()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	myRefreshTimer += Timer::GetDeltaTime();
+	myRefreshTimer += Time::GetDeltaTime();
 
 	if (!myIsActive)
 	{
@@ -428,30 +429,30 @@ void ImguiManager::CreateMenubar()
 			}
 			if (ImGui::MenuItem("Open Scene"))
 			{
-				std::wstring extensions = L"*" + std::wstring(AssetManager::GetSceneExtensionW()) + L";*";
-				extensions += std::wstring(AssetManager::GetSceneBinaryExtensionW()) + L";";
+				std::wstring extensions = L"*" + std::wstring(SceneLoader::GetExtensionW()) + L";*";
+				extensions += std::wstring(SceneLoader::GetBinaryExtensionW()) + L";";
 				std::string path;
-				if (Crimson::ShowOpenFileSelector(path, { L"Scenes", extensions }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				if (Crimson::ShowOpenFileSelector(path, { L"Scenes", extensions }, ToWString(GetAbsolutePath(SceneLoader::GetPath()))))
 				{
 					myModelViewer->LoadScene(path);
 				}
 			}
 			if (ImGui::MenuItem("Save Scene"))
 			{
-				std::wstring extension = std::wstring(AssetManager::GetSceneExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneExtension(), true));
+				std::wstring extension = std::wstring(SceneLoader::GetExtensionW());
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->mySceneName, SceneLoader::GetExtension(), true));
 				std::string path;
-				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(SceneLoader::GetPath()))))
 				{
 					myModelViewer->SaveScene(path, false);
 				}
 			}
 			if (ImGui::MenuItem("Save As Binary"))
 			{
-				std::wstring extension = std::wstring(AssetManager::GetSceneBinaryExtensionW());
-				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->myScene.name, AssetManager::GetSceneBinaryExtension(), true));
+				std::wstring extension = std::wstring(SceneLoader::GetBinaryExtensionW());
+				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->mySceneName, SceneLoader::GetBinaryExtension(), true));
 				std::string path;
-				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(AssetManager::GetScenePath()))))
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(SceneLoader::GetPath()))))
 				{
 					myModelViewer->SaveScene(path, true);
 				}
@@ -857,10 +858,10 @@ void ImguiManager::CreatePreferenceWindow()
 		{
 			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(applicationState.ShadowBias));
 		}
-		float timeScale = Crimson::Timer::GetTimeScale();
+		float timeScale = Crimson::Time::GetTimeScale();
 		if (ImGui::DragFloat("Time Scale", &timeScale, 0.1f))
 		{
-			Crimson::Timer::SetTimeScale(timeScale);
+			Crimson::Time::SetTimeScale(timeScale);
 		}
 
 		ImGui::SeparatorText("");
@@ -954,7 +955,7 @@ void ImguiManager::CreateSceneContentWindow()
 {
 	if (ImGui::Begin("Scene"))
 	{
-		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->myScene.name.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
+		const bool isOpen = ImGui::TreeNodeEx(myModelViewer->mySceneName.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen);
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -1020,7 +1021,7 @@ void ImguiManager::SceneContentButton(const std::shared_ptr<GameObject>& anObjec
 	{
 		for (auto& child : anObject->GetChildren())
 		{
-			SceneContentButton(myModelViewer->GetGameObject(child->GetUUID()));
+			SceneContentButton(myModelViewer->myGameobjects.at(child->GetUUID()));
 		}
 		ImGui::TreePop();
 	}
@@ -1034,7 +1035,7 @@ void ImguiManager::DropSceneContent(GameObject* aParent)
 		//const UUIDv4::UUID id = *static_cast<UUIDv4::UUID*>(payload->Data);
 		if (aParent)
 		{
-			auto parent = myModelViewer->GetGameObject(aParent->GetUUID());
+			auto parent = myModelViewer->myGameobjects.at(aParent->GetUUID());
 			for (auto& object : mySelectedObjects)
 			{
 				parent->AddChild(object);
