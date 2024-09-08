@@ -122,8 +122,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GameLauncher.h" />
     <ClInclude Include="Gamelauncher.pch.h" />
+    <ClCompile Include="GameLauncher.cpp" />
+    <ClCompile Include="GameSettings.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClInclude Include="GameSettings.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

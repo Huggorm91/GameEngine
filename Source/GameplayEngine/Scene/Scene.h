@@ -13,8 +13,6 @@ struct Scene
 	~Scene() = default;
 	Scene& operator=(const Scene& aScene);
 	Scene& operator=(Scene&& aScene) = default;
-
-	operator Json::Value() const;
 };
 
 std::istream& operator>>(std::istream& aStream, Scene& aScene);

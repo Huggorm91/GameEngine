@@ -14,7 +14,9 @@ public:
 
 	void Update(float aDeltaTime) override;
 
+#ifdef EDITOR
 	void CreateImGuiElements() override;
+#endif // EDITOR
 private:
 	float myTimer;
 };

@@ -47,8 +47,10 @@ void StreamEmitter::Update(float aDeltaTime)
 	}
 }
 
+#ifdef EDITOR
 void StreamEmitter::CreateImGuiElements()
 {
 	ImGui::Text("Stream Emitter");
 	ParticleEmitter::CreateImGuiElements();
 }
+#endif // EDITOR

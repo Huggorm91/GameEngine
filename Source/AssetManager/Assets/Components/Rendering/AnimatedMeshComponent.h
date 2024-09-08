@@ -45,7 +45,9 @@ public:
 	const Skeleton& GetSkeleton() const;
 	const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& GetBoneTransforms() const;
 
+#ifdef EDITOR
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+#endif // EDITOR
 
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;

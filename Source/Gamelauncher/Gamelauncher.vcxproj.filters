@@ -24,6 +24,12 @@
     <ClInclude Include="Gamelauncher.pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameLauncher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Gamelauncher.pch.cpp">
@@ -31,6 +37,12 @@
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLauncher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSettings.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

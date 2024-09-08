@@ -1,6 +1,5 @@
 #pragma once
 #include "Settings.h"
-#include "InterOp/RHI.h"
 #include "Rendering/TextureContainer.h"
 #include "Rendering/ShaderContainer.h"
 #include "Rendering/Material.h"
@@ -8,9 +7,6 @@
 #include "Commands/CommandContainer.h"
 #include "Drawer/LineDrawer.h"
 #include "Drawer/ParticleDrawer.h"
-
-#include <wrl.h>
-using namespace Microsoft::WRL;
 
 class GraphicsEngine
 {

@@ -5,13 +5,13 @@
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include "GraphicsEngine/Commands/GfxCmd_UpdateWorldBounds.h"
-
-#ifndef _RETAIL
 #include "AssetManager.h"
+
+#ifdef EDITOR
 #include "Editor/ModelViewer.h"
 #include "Editor/Commands/EditCmd_ChangeValue.h"
 #include "../../ImguiTransform.h"
-#endif // !_RETAIL
+#endif // EDITOR
 
 MeshComponent::MeshComponent() :
 	Component(ComponentType::Mesh),
@@ -311,6 +311,7 @@ void MeshComponent::TransformHasChanged() const
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * Crimson::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * Crimson::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
 }
 
+#ifdef EDITOR
 void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
@@ -330,6 +331,7 @@ void MeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 
 	::CreateImGuiComponents(myTransform);
 }
+#endif // EDITOR
 
 void MeshComponent::Serialize(std::ostream& aStream) const
 {
@@ -383,7 +385,7 @@ Json::Value MeshComponent::ToJson() const
 	return result;
 }
 
-#ifndef _RETAIL
+#ifdef EDITOR
 void MeshComponent::CreateMaterialImGui(Material& aMaterial)
 {
 	ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
@@ -538,4 +540,4 @@ void MeshComponent::AcceptDropPayload(Texture*& aTexture)
 		ImGui::EndDragDropTarget();
 	}
 }
-#endif // !_RETAIL
+#endif // EDITOR

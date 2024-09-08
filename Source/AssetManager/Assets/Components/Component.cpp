@@ -86,6 +86,7 @@ bool Component::IsActive() const
 	return myIsActive;
 }
 
+#ifdef EDITOR
 void Component::CreateImGuiComponents(const std::string&)
 {
 	ImGui::Text(("ID: " + std::to_string(myID)).c_str());
@@ -94,6 +95,7 @@ void Component::CreateImGuiComponents(const std::string&)
 		SetActive(myIsActive);
 	}
 }
+#endif // EDITOR
 
 Json::Value Component::ToJson() const
 {

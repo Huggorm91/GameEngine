@@ -36,7 +36,9 @@ public:
 
 	void SetParentTransform(Transform& aParentTransform);
 
+#ifdef EDITOR
 	virtual void CreateImGuiElements();
+#endif // EDITOR
 	virtual Json::Value ToJson() const;
 
 private:

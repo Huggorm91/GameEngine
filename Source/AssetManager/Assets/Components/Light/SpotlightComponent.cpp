@@ -123,6 +123,7 @@ void SpotlightComponent::SetColor(const Crimson::Vector3f& aColor)
 	myColor = aColor;
 }
 
+#ifdef EDITOR
 void SpotlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
@@ -143,6 +144,7 @@ void SpotlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::SliderAngle("Outer Angle", &myOuterAngle, 0.f);
 	ImGui::PopItemWidth();
 }
+#endif // EDITOR
 
 Json::Value SpotlightComponent::ToJson() const
 {

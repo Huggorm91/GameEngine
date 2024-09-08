@@ -2,20 +2,20 @@
 #include "ApplicationState.h"
 #include "CrimsonUtilities/Json/JsonVector.hpp"
 
-ApplicationState::ApplicationState(const Json::Value& aJson) : StartMaximized(aJson["StartMaximized"].asBool()), CameraSpeed(aJson["CameraSpeed"].asFloat()), CameraMouseSensitivity(aJson["CameraMouseSensitivity"].asFloat()), 
-WindowSize(aJson["WindowSize"]), WindowTitle(aJson["WindowTitle"].asString()), AmbientIntensity(aJson["AmbientIntensity"].asFloat()), ShadowBias(aJson["ShadowBias"].asFloat())
+ApplicationState::ApplicationState(const Json::Value& aJson) : startMaximized(aJson["StartMaximized"].asBool()), cameraSpeed(aJson["CameraSpeed"].asFloat()), cameraMouseSensitivity(aJson["CameraMouseSensitivity"].asFloat()), 
+windowSize(aJson["WindowSize"]), windowTitle(aJson["WindowTitle"].asString()), ambientIntensity(aJson["AmbientIntensity"].asFloat()), shadowBias(aJson["ShadowBias"].asFloat())
 {
 }
 
 ApplicationState::operator Json::Value() const
 {
 	Json::Value result;
-	result["StartMaximized"] = StartMaximized;
-	result["CameraSpeed"] = CameraSpeed;
-	result["CameraMouseSensitivity"] = CameraMouseSensitivity;
-	result["WindowSize"] = static_cast<Json::Value>(WindowSize);
-	result["WindowTitle"] = WindowTitle;
-	result["AmbientIntensity"] = AmbientIntensity;
-	result["ShadowBias"] = ShadowBias;
+	result["StartMaximized"] = startMaximized;
+	result["CameraSpeed"] = cameraSpeed;
+	result["CameraMouseSensitivity"] = cameraMouseSensitivity;
+	result["WindowSize"] = static_cast<Json::Value>(windowSize);
+	result["WindowTitle"] = windowTitle;
+	result["AmbientIntensity"] = ambientIntensity;
+	result["ShadowBias"] = shadowBias;
 	return result;
 }

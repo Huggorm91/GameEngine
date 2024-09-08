@@ -4,13 +4,13 @@ namespace Json{ class Value; }
 
 struct ApplicationState
 {
-	bool StartMaximized{};
-	float ShadowBias{};
-	float AmbientIntensity{};
-	float CameraSpeed{};
-	float CameraMouseSensitivity{};
-	Crimson::Vector2i WindowSize{};
-	std::string WindowTitle {};
+	bool startMaximized{};
+	float shadowBias{};
+	float ambientIntensity{};
+	float cameraSpeed{};
+	float cameraMouseSensitivity{};
+	Crimson::Vector2i windowSize{};
+	std::string windowTitle {};
 
 	ApplicationState() = default;
 	ApplicationState(const Json::Value& aJSon);

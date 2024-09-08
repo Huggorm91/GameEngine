@@ -1,5 +1,6 @@
 #include "Editor.pch.h"
 #include "Modelviewer.h"
+#include "Modelviewer/resource.h"
 #include "Windows/SplashWindow.h"
 #include "Commands/EditCmd_AddGameobject.h"
 #include "Commands/EditCmd_RemoveGameobject.h"
@@ -54,7 +55,7 @@ void ModelViewer::SetKeyBinds()
 	input.Attach(this, Crimson::eInputAction::Redo);
 }
 
-void ModelViewer::HandleCrash(const std::exception& anException)
+void ModelViewer::HandleCrash(const std::exception& anException, bool aTrySavingScene)
 {
 	// Center console and bring it to the front
 	{
@@ -78,26 +79,29 @@ void ModelViewer::HandleCrash(const std::exception& anException)
 	// Log crash
 	myLogger.Err("Program has crashed!");
 	myLogger.Warn("Writing exception to log file!");
-	myLogger.SetPrintToFile(true, "Logs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
+	myLogger.SetPrintToFile(true, "EditorLogs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
 	myLogger.LogException(anException);
 
-	// Save current scene if possible
-	std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + mySceneName;
-	try
+	if (aTrySavingScene)
 	{
-		SaveScene("..\\" + saveName, false);
-		myLogger.Succ("Saved current scene to: " + saveName);
-	}
-	catch (...)
-	{
-		myLogger.Err("Failed to save current scene to: " + saveName);
-	}
+		// Save current scene if possible
+		std::string saveName = "Bin\\Crashdump\\" + Crimson::FileNameTimestamp() + "_" + mySceneName;
+		try
+		{
+			SaveScene("..\\" + saveName, false);
+			myLogger.Succ("Saved current scene to: " + saveName);
+		}
+		catch (...)
+		{
+			myLogger.Err("Failed to save current scene to: " + saveName);
+		}
+	}	
 
 	// Leave console up to let user read information
 	system("PAUSE");
 }
 
-bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON anIcon)
+bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 {
 	myLogger = Logger::Create("ModelViewer");
 	myModuleHandle = aHInstance;
@@ -113,14 +117,14 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	windowClass.lpfnWndProc = aWindowProcess;
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.lpszClassName = windowClassName;
-	windowClass.hIcon = anIcon;
+	windowClass.hIcon = LoadIcon(aHInstance, MAKEINTRESOURCE(IDI_MODELVIEWER_ICON));
 	RegisterClass(&windowClass);
 
-	std::wstring stdTitle{ Crimson::ToWString(myApplicationState.WindowTitle) };
+	std::wstring stdTitle{ Crimson::ToWString(myApplicationState.windowTitle) };
 	LPCWSTR title{ stdTitle.c_str() };
 
 	DWORD flags;
-	if (myApplicationState.StartMaximized)
+	if (myApplicationState.startMaximized)
 	{
 		flags = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_MAXIMIZE;
 	}
@@ -128,22 +132,21 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 	{
 		flags = WS_OVERLAPPEDWINDOW | WS_POPUP;
 	}
-	myIsMaximized = myApplicationState.StartMaximized;
+	myIsMaximized = myApplicationState.startMaximized;
 
 	// Get center of screen
 	RECT windowRect{};
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &windowRect, 0);
-	//GetClientRect(GetDesktopWindow(), &windowRect);
 
-	if (myApplicationState.WindowSize == Crimson::Vector2i::Null)
+	if (myApplicationState.windowSize == Crimson::Vector2i::Null)
 	{
-		myApplicationState.WindowSize = { 1920, 1080 };
+		myApplicationState.windowSize = { 1920, 1080 };
 	}
 
-	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (myApplicationState.WindowSize.x * 0.5f));
-	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (myApplicationState.WindowSize.y * 0.5f));
-	windowRect.right = myApplicationState.WindowSize.x;
-	windowRect.bottom = myApplicationState.WindowSize.y;
+	windowRect.left = static_cast<LONG>((windowRect.right * 0.5f) - (myApplicationState.windowSize.x * 0.5f));
+	windowRect.top = static_cast<LONG>((windowRect.bottom * 0.5f) - (myApplicationState.windowSize.y * 0.5f));
+	windowRect.right = myApplicationState.windowSize.x;
+	windowRect.bottom = myApplicationState.windowSize.y;
 
 	myMainWindowHandle = CreateWindow(
 		windowClassName,	// Classname
@@ -161,8 +164,12 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 
 	ShowSplashScreen();
 
-	// TODO: Load all settings from json
-	Engine::Init(myMainWindowHandle, myApplicationState.WindowSize);
+#ifndef _DEBUG
+	try
+	{
+#endif // _DEBUG
+
+	Engine::Init(myMainWindowHandle, myApplicationState.windowSize);
 
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
@@ -184,9 +191,9 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 
 	myCamera.SetPosition({ 0.f, 200.f, 0.f });
 	myCamera.AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
-	myCamera.AddComponent(EditorCameraControllerComponent(myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity));
+	myCamera.AddComponent(EditorCameraControllerComponent(myApplicationState.cameraSpeed, myApplicationState.cameraMouseSensitivity));
 
-	mySkeletonEditor.Init(fov, nearPlane, farPlane, myApplicationState.CameraSpeed, myApplicationState.CameraMouseSensitivity);
+	mySkeletonEditor.Init(fov, nearPlane, farPlane, myApplicationState.cameraSpeed, myApplicationState.cameraMouseSensitivity);
 
 	MuninGraph::Get().Initialize();
 	myScriptGraphEditorSettings = std::make_shared<ScriptGraphEditorSettings>(RHI::Device);
@@ -198,6 +205,19 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON
 
 	myMessageHandler.Init();
 
+#ifndef _DEBUG
+	}
+	catch (const std::exception& anException)
+	{
+		HandleCrash(anException, false);
+		Shutdown();
+	}
+	catch (...)
+	{
+		HandleCrash(std::invalid_argument("Caught unknown Error!"), false);
+		Shutdown();
+	}
+#endif // _DEBUG
 	HideSplashScreen();
 
 	return true;
@@ -224,10 +244,7 @@ int ModelViewer::Run()
 				isRunning = false;
 			}
 		}
-		// REMEMBER!
-		// The frame update for the game does NOT happen inside the PeekMessage loop.
-		// This would cause the game to only update if there are messages and also run
-		// the update several times per frame (once for each message).
+
 #ifndef _DEBUG
 		try
 		{
@@ -240,12 +257,12 @@ int ModelViewer::Run()
 		catch (const std::exception& anException)
 		{
 			isRunning = false;
-			HandleCrash(anException);
+			HandleCrash(anException, true);
 		}
 		catch (...)
 		{
 			isRunning = false;
-			HandleCrash(std::invalid_argument("Caught unknown Error!"));
+			HandleCrash(std::invalid_argument("Caught unknown Error!"), true);
 		}
 #endif // _DEBUG
 	}
@@ -341,13 +358,13 @@ void ModelViewer::ActivateSkeletonEditor()
 
 void ModelViewer::SetCameraSpeed(float aSpeed)
 {
-	myApplicationState.CameraSpeed = aSpeed;
+	myApplicationState.cameraSpeed = aSpeed;
 	mySkeletonEditor.SetCameraSpeed(aSpeed);
 }
 
 void ModelViewer::SetMouseSensitivity(float aSensitivity)
 {
-	myApplicationState.CameraMouseSensitivity = aSensitivity;
+	myApplicationState.cameraMouseSensitivity = aSensitivity;
 	mySkeletonEditor.SetMouseSensitivity(aSensitivity);
 }
 
@@ -385,7 +402,6 @@ void ModelViewer::ModelViewer::LoadState()
 	{
 		myLogger.Err("Could not load settings!");
 	}
-	fileStream.close();
 }
 
 void ModelViewer::ShowSplashScreen()
@@ -402,7 +418,7 @@ void ModelViewer::HideSplashScreen() const
 	mySplashWindow->Close();
 	delete mySplashWindow;
 
-	if (myApplicationState.StartMaximized)
+	if (myApplicationState.startMaximized)
 	{
 		ShowWindow(myMainWindowHandle, SW_MAXIMIZE);
 	}
@@ -479,8 +495,8 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 
 void ModelViewer::Init()
 {
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.AmbientIntensity));
-	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.ShadowBias));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetAmbientlight>(nullptr, myApplicationState.ambientIntensity));
+	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(myApplicationState.shadowBias));
 
 	LoadScene("Default");
 }
@@ -576,10 +592,7 @@ void ModelViewer::UpdateScene()
 {
 	if (myIsInPlayMode)
 	{
-		for (auto& object : myPlayModeScene.gameObjects)
-		{
-			object.Update();
-		}
+		Engine::GetObjectManager().UpdateObjects();
 	}
 	else
 	{

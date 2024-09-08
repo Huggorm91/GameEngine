@@ -36,7 +36,9 @@ public:
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;
 
+#ifdef EDITOR
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+#endif // EDITOR
 	Json::Value ToJson() const override;
 
 private:

@@ -45,5 +45,8 @@
     <Image Include="Modelviewer.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="TGPSplash.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

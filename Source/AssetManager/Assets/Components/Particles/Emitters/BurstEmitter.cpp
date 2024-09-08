@@ -60,6 +60,7 @@ void BurstEmitter::TriggerBurst()
 	CreateBurst();
 }
 
+#ifdef EDITOR
 void BurstEmitter::CreateImGuiElements()
 {
 	ImGui::Text("Burst Emitter");
@@ -73,6 +74,7 @@ void BurstEmitter::CreateImGuiElements()
 		myIsActive = true;
 	}
 }
+#endif // EDITOR
 
 Json::Value BurstEmitter::ToJson() const
 {

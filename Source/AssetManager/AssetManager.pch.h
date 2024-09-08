@@ -23,8 +23,10 @@
 #include <wrl.h>
 using namespace Microsoft::WRL;
 
+#ifdef EDITOR
 #include "ThirdParty/ImGui/imgui.h"
 #include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
+#endif // EDITOR
 
 #include "CrimsonUtilities/Time/Time.h"
 #include "CrimsonUtilities/Math/Matrix3x3.hpp"

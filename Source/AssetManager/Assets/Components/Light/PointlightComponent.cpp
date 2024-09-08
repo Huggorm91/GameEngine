@@ -153,6 +153,7 @@ void PointlightComponent::Deserialize(std::istream& aStream)
 	}
 }
 
+#ifdef EDITOR
 void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
@@ -162,6 +163,7 @@ void PointlightComponent::CreateImGuiComponents(const std::string& aWindowName)
 	ImGui::DragFloat("Radius", &myRadius);
 	ImGui::DragFloat3("Position", &myPosition.x);
 }
+#endif // EDITOR
 
 Json::Value PointlightComponent::ToJson() const
 {

@@ -3,9 +3,11 @@
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "AssetManager/AssetManager.h"
 #include "ParticleDrawer.h"
+#ifdef EDITOR
 #include "ThirdParty/ImGui/imgui.h"
 #include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
 #include "AssetManager/Assets/ImguiTransform.h"
+#endif // EDITOR
 
 ParticleEmitter::ParticleEmitter(EmitterType aType) :
 	myType(aType),
@@ -209,6 +211,7 @@ void ParticleEmitter::SetParentTransform(Transform& aParentTransform)
 	UpdateBuffer();
 }
 
+#ifdef EDITOR
 void ParticleEmitter::CreateImGuiElements()
 {
 	constexpr float imageSize = 75.f;
@@ -276,6 +279,7 @@ void ParticleEmitter::CreateImGuiElements()
 		UpdateBuffer();
 	}
 }
+#endif // EDITOR
 
 Json::Value ParticleEmitter::ToJson() const
 {

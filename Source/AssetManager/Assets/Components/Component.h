@@ -64,7 +64,9 @@ public:
 
 	virtual void TransformHasChanged() const{}
 
+#ifdef EDITOR
 	virtual void CreateImGuiComponents(const std::string& aWindowName);
+#endif // EDITOR
 
 	inline std::string ToString() const { return ComponentTypeToString(myType); }
 	virtual Json::Value ToJson() const;

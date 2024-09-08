@@ -64,11 +64,13 @@ void ParticleEmitterComponent::TransformHasChanged() const
 	myEmitter->SetParentTransform(*const_cast<Transform*>(GetParentTransform()));
 }
 
+#ifdef EDITOR
 void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	myEmitter->CreateImGuiElements();
 }
+#endif // EDITOR
 
 Json::Value ParticleEmitterComponent::ToJson() const
 {

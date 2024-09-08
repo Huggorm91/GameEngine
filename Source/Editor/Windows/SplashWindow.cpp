@@ -3,7 +3,7 @@
 
 #include <thread>
 
-#include "../resource.h"
+#include "Modelviewer/resource.h"
 
 LRESULT CALLBACK SplashWinProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

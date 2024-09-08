@@ -258,10 +258,12 @@ void AnimationControllerComponent::UpdateBoneCache()
 	}
 }
 
+#ifdef EDITOR
 void AnimationControllerComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	MeshComponent::CreateImGuiComponents(aWindowName);
 }
+#endif // EDITOR
 
 Json::Value AnimationControllerComponent::ToJson() const
 {

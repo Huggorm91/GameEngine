@@ -1,0 +1,11 @@
+{
+	"AmbientIntensity" : 1.0,
+	"ShadowBias" : 0.00060000002849847078,
+	"StartMaximized" : true,
+	"WindowSize" : 
+	{
+		"X" : 1980,
+		"Y" : 1080
+	},
+	"WindowTitle" : "GameLauncher"
+}

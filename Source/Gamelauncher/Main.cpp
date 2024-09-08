@@ -1,7 +1,7 @@
 #include "Gamelauncher.pch.h"
-#include "resource.h"
 #include "GameplayEngine/Engine.h"
 #include "CrimsonUtilities/Time/Time.h"
+#include "GameLauncher.h"
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
 
@@ -15,11 +15,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
     UNREFERENCED_PARAMETER(nCmdShow);
-
-    //constexpr SIZE windowSize = { 1920, 1080 };
-    //constexpr LPCWSTR windowTitle = L"Modelviewer";
-
-    //ModelViewer& MV = ModelViewer::Get();
 
     FILE* consoleOut;
     FILE* consoleErr;
@@ -77,9 +72,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
     }
 
-    //MV.Initialize(hInstance, WinProc, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GAMELAUNCHER)));
-    //return MV.Run();
-    return 0;
+    GameLauncher gl;
+    gl.Initialize(hInstance, WinProc);
+    return gl.Run();
 }
 #pragma warning(default:6387)
 

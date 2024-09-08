@@ -18,7 +18,9 @@ public:
 	static Crimson::Vector4f GetColor(const Crimson::Vector3f& aHexValue);
 
 	static std::vector<std::string> GetNames();
+#ifdef EDITOR
 	static bool CreateImGuiComponents(Crimson::Vector4f& outColor, std::string& outSelection, const std::string& aComboName = " ");
+#endif // EDITOR
 private:
 	static std::unordered_map<std::string, Crimson::Vector4f> myColors;
 };

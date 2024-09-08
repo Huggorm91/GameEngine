@@ -34,13 +34,15 @@ public:
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;
 
+#ifdef EDITOR
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+#endif // EDITOR
 	Json::Value ToJson() const override;
 
 private:
-#ifndef _RETAIL
+#ifdef EDITOR
 	Crimson::Vector3f myEditDirection;
-#endif // !_RETAIL
+#endif // EDITOR
 	std::shared_ptr<Texture> myShadowMap;
 	Crimson::Vector3f myInvertedLightDirection;
 	Crimson::Vector3f myLightDirection;

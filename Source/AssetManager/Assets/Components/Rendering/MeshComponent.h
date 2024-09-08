@@ -55,7 +55,9 @@ public:
 	const std::string& GetName() const;
 
 	void TransformHasChanged() const override;
+#ifdef EDITOR
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+#endif // EDITOR
 
 	void Serialize(std::ostream& aStream) const override;
 	void Deserialize(std::istream& aStream) override;
@@ -71,10 +73,10 @@ protected:
 	std::vector<MeshElement> myElements;
 	Transform myTransform;
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	void CreateMaterialImGui(Material& aMaterial);
 	void CreateTextureCombo(Texture*& aTexture, eTextureSlot aSlot);
 	void CreateTextureImage(Texture*& aTexture);
 	void AcceptDropPayload(Texture*& aTexture);
-#endif // !_RETAIL
+#endif // EDITOR
 };

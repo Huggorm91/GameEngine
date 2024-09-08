@@ -710,7 +710,6 @@ Json::Value GameObject::ToJson() const
 {
 	Json::Value result;
 	result["IsActive"] = myIsActive;
-	result["ID"] = myUUID.str();
 	result["UUID"] = myUUID.bytes();
 	result["Name"] = myName;
 	result["Transform"] = myTransform.ToJson();

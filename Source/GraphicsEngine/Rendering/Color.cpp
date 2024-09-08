@@ -1,8 +1,10 @@
 #include "GraphicsEngine.pch.h"
 #include "Color.h"
 #include "CrimsonUtilities/Json/JsonVector.hpp"
+#ifdef EDITOR
 #include "ThirdParty/ImGui/imgui.h"
 #include "ThirdParty/ImGui/misc/cpp/imgui_stdlib.h"
+#endif // EDITOR
 
 std::unordered_map<std::string, Crimson::Vector4f> ColorManager::myColors{};
 
@@ -69,6 +71,7 @@ std::vector<std::string> ColorManager::GetNames()
 	return result;
 }
 
+#ifdef EDITOR
 bool ColorManager::CreateImGuiComponents(Crimson::Vector4f& outColor, std::string& outSelection, const std::string& aComboName)
 {
 	bool result = false;
@@ -136,3 +139,4 @@ bool ColorManager::CreateImGuiComponents(Crimson::Vector4f& outColor, std::strin
 
 	return result;
 }
+#endif // EDITOR

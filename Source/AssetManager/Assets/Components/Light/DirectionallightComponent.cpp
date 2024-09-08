@@ -81,11 +81,11 @@ void DirectionallightComponent::SetIntensity(float anIntensity)
 
 Crimson::Vector3f DirectionallightComponent::GetLightDirection() const
 {
-#ifndef _RETAIL
+#ifdef EDITOR
 	return -myInvertedLightDirection;
 #else
 	return myLightDirection;
-#endif // !_RETAIL	
+#endif // EDITOR
 }
 
 const Crimson::Vector3f& DirectionallightComponent::GetInvertedLightDirection() const
@@ -140,9 +140,9 @@ void DirectionallightComponent::Deserialize(std::istream& aStream)
 	size_t size = sizeof(myInvertedLightDirection) + sizeof(myLightDirection) + sizeof(myColor) + sizeof(myIntensity) + sizeof(myCastShadows);
 	aStream.read(reinterpret_cast<char*>(&myInvertedLightDirection), size);
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	myEditDirection = myLightDirection;
-#endif // !_RETAIL
+#endif // EDITOR
 
 	if (myCastShadows)
 	{
@@ -150,20 +150,20 @@ void DirectionallightComponent::Deserialize(std::istream& aStream)
 	}
 }
 
+#ifdef EDITOR
 void DirectionallightComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	Component::CreateImGuiComponents(aWindowName);
 	ImGui::Checkbox("Cast Shadow", &myCastShadows);
 	ImGui::DragFloat("Intensity", &myIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	ImGui::ColorEdit3("Color", &myColor.x);
-#ifndef _RETAIL
 	if (ImGui::DragFloat3("Light Direction", &myEditDirection.x, .001f))
 	{
 		myLightDirection = myEditDirection.GetNormalizedNoAssert();
 		myInvertedLightDirection = -myLightDirection;
 	}
-#endif // _RETAIL
 }
+#endif // EDITOR
 
 Json::Value DirectionallightComponent::ToJson() const
 {

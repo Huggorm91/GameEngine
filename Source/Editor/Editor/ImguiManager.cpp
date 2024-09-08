@@ -841,22 +841,22 @@ void ImguiManager::CreatePreferenceWindow()
 	if (ImGui::Begin("Preferences"))
 	{
 		ImGui::SeparatorText("Launch Settings");
-		ImGui::Checkbox("Start Maximized", &applicationState.StartMaximized);
-		ImGui::DragInt2("Window Size", &applicationState.WindowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
-		ImGui::InputText("Window Title", &applicationState.WindowTitle);
+		ImGui::Checkbox("Start Maximized", &applicationState.startMaximized);
+		ImGui::DragInt2("Window Size", &applicationState.windowSize.x, 1.f, 0, INT_MAX, "%d", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::InputText("Window Title", &applicationState.windowTitle);
 
 		ImGui::SeparatorText("Camera Settings");
-		ImGui::DragFloat("Movement Speed", &myModelViewer->myApplicationState.CameraSpeed);
-		ImGui::DragFloat("Mouse Sensitivity", &myModelViewer->myApplicationState.CameraMouseSensitivity, 0.1f);
+		ImGui::DragFloat("Movement Speed", &myModelViewer->myApplicationState.cameraSpeed);
+		ImGui::DragFloat("Mouse Sensitivity", &myModelViewer->myApplicationState.cameraMouseSensitivity, 0.1f);
 
 		ImGui::SeparatorText("Scene Settings");
-		if (ImGui::DragFloat("Ambientlight Intensity", &applicationState.AmbientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+		if (ImGui::DragFloat("Ambientlight Intensity", &applicationState.ambientIntensity, 0.01f, 0.f, INFINITY, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetAmbientlight>(nullptr, applicationState.AmbientIntensity));
+			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetAmbientlight>(nullptr, applicationState.ambientIntensity));
 		}
-		if (ImGui::DragFloat("Shadow Bias", &applicationState.ShadowBias, 0.0001f, 0.f, 1.f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
+		if (ImGui::DragFloat("Shadow Bias", &applicationState.shadowBias, 0.0001f, 0.f, 1.f, "%.4f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(applicationState.ShadowBias));
+			GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(applicationState.shadowBias));
 		}
 		float timeScale = Crimson::Time::GetTimeScale();
 		if (ImGui::DragFloat("Time Scale", &timeScale, 0.1f))

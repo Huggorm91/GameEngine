@@ -19,7 +19,9 @@ public:
 
 	void TriggerBurst();
 
+#ifdef EDITOR
 	void CreateImGuiElements() override;
+#endif // EDITOR
 	Json::Value ToJson() const override;
 
 private:

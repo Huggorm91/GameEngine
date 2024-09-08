@@ -187,6 +187,7 @@ const std::array<Crimson::Matrix4x4f, MAX_BONE_COUNT>& AnimatedMeshComponent::Ge
 	return myBoneTransformCache;
 }
 
+#ifdef EDITOR
 void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName)
 {
 	MeshComponent::CreateImGuiComponents(aWindowName);
@@ -215,6 +216,7 @@ void AnimatedMeshComponent::CreateImGuiComponents(const std::string& aWindowName
 		PauseAnimation();
 	}
 }
+#endif // EDITOR
 
 void AnimatedMeshComponent::Serialize(std::ostream& aStream) const
 {

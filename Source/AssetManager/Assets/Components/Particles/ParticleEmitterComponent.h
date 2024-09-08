@@ -22,7 +22,9 @@ public:
 
 	void TransformHasChanged() const override;
 
+#ifdef EDITOR
 	void CreateImGuiComponents(const std::string& aWindowName) override;
+#endif // EDITOR
 	Json::Value ToJson() const override;
 
 private:

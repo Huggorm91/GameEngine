@@ -38,7 +38,7 @@ public:
 		return Get().myMessageHandler;
 	}
 
-	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess, HICON anIcon);
+	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
 	int Run();
 	void Shutdown();
 
@@ -118,7 +118,7 @@ private:
 
 	void SetKeyBinds();
 
-	void HandleCrash(const std::exception& anException);
+	void HandleCrash(const std::exception& anException, bool aTrySavingScene);
 
 	void ShowSplashScreen();
 	void HideSplashScreen() const;

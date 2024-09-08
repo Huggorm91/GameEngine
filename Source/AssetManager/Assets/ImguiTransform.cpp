@@ -1,8 +1,10 @@
 #include "AssetManager.pch.h"
 #include "ImguiTransform.h"
+#ifdef EDITOR
 #include "Editor/ModelViewer.h"
 #include "Editor/Commands/EditCmd_ChangeTransform.h"
 #include "Editor/Commands/EditCmd_ChangeMultipleGameObjects.h"
+#endif // EDITOR
 
 void CreateImGuiComponents(Transform& aTransform)
 {
