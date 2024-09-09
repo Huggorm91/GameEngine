@@ -20,4 +20,6 @@
 #include <wrl.h>
 using namespace Microsoft::WRL;
 
+#include "GraphicsEngine/InterOp/RHI.h"
+
 #endif //MODELVIEWER_PCH_H

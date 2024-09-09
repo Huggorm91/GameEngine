@@ -11,6 +11,7 @@ public:
 	GameObject();
 	GameObject(const Prefab& aPrefab);
 	GameObject(const UUIDv4::UUID& anUUID);
+	GameObject(const GameObject& aGameObject, const UUIDv4::UUID& anUUID);
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
@@ -50,16 +51,11 @@ public:
 	template<class T>
 	T* GetInheritedComponent();
 
-	const Component* GetComponentPointer(unsigned anID) const;
-	Component* GetComponentPointer(unsigned anID);
-
 	template<class T>
 	std::vector<const T*> GetComponents() const;
 	template<class T>
 	std::vector<T*> GetComponents();
 
-	template<class T>
-	bool RemoveComponent(unsigned anID);
 	template<class T>
 	bool RemoveComponent(const T* aComponent);
 
@@ -124,8 +120,7 @@ public:
 	// Returns parent ID. Has no parent if 0.
 	UUIDv4::UUID Deserialize(std::istream& aStream);
 
-	// Excpects GameObjects to already be copies of eachother.
-	void CopyIDsOf(const GameObject& anObject);
+	void CopyUuidOf(const GameObject& anObject);
 
 	static std::string GetParentID(const Json::Value& aJson);
 
@@ -296,24 +291,6 @@ inline std::vector<T*> GameObject::GetComponents()
 		result.emplace_back(&myComponents.GetValue<T>(iter->second));
 	}
 	return result;
-}
-
-template<class T>
-inline bool GameObject::RemoveComponent(unsigned anID)
-{
-	auto range = myIndexList.equal_range(typeid(T));
-	for (auto iter = range.first; iter != range.second; iter++)
-	{
-		if (T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
-		{
-#ifdef GAME
-			component.~T();
-#endif // GAME
-			myIndexList.erase(iter);
-			return true;
-		}
-	}
-	return false;
 }
 
 template<class T>

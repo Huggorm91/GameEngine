@@ -304,7 +304,7 @@ void ModelViewer::SetPlayMode(bool aState)
 		for (auto& [id, object] : myGameobjects)
 		{
 			GameObject copy = *object;
-			copy.CopyIDsOf(*object);
+			copy.CopyUuidOf(*object);
 
 			if (object->HasParent())
 			{
@@ -467,7 +467,7 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		for (auto& object : scene.gameObjects)
 		{
 			GameObject copy = object;
-			copy.CopyIDsOf(object);
+			copy.CopyUuidOf(object);
 			if (object.HasParent())
 			{
 				childlist.emplace(object.GetUUID(), object.GetParent()->GetUUID());

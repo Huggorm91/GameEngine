@@ -298,30 +298,6 @@ void GameObject::DebugDraw()
 	}
 }
 
-const Component* GameObject::GetComponentPointer(unsigned anID) const
-{
-	for (auto& [type, index] : myIndexList)
-	{
-		if (const Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
-		{
-			return component;
-		}
-	}
-	return nullptr;
-}
-
-Component* GameObject::GetComponentPointer(unsigned anID)
-{
-	for (auto& [type, index] : myIndexList)
-	{
-		if (Component* component = &myComponents.GetValue<Component>(index); component->GetComponentID() == anID)
-		{
-			return component;
-		}
-	}
-	return nullptr;
-}
-
 void GameObject::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
 {
 	for (auto& [type, index] : myIndexList)
@@ -705,13 +681,15 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 			for (auto& [type, index] : myIndexList)
 			{
 				component = &myComponents.GetValue<Component>(index);
-				text = component->ToString() + " " + std::to_string(component->GetComponentID());
+				ImGui::PushID(static_cast<int>(index));
 				ImGui::SetNextItemOpen(true, ImGuiCond_::ImGuiCond_Appearing);
-				if (ImGui::TreeNode(text.c_str(), component->ToString().c_str()))
+				if (ImGui::TreeNode(component->ToString().c_str(), component->ToString().c_str()))
 				{
 					component->CreateImGuiComponents(aWindowName);
 					ImGui::TreePop();
-}
+				}
+				ImGui::PopID();
+				ImGui::Separator();
 			}
 		}
 	}
@@ -798,14 +776,9 @@ UUIDv4::UUID GameObject::Deserialize(std::istream& aStream)
 	return data.ParentID;
 }
 
-void GameObject::CopyIDsOf(const GameObject& anObject)
+void GameObject::CopyUuidOf(const GameObject& anObject)
 {
 	const_cast<UUIDv4::UUID&>(myUUID) = anObject.myUUID;
-
-	for (auto& [type, index] : myIndexList)
-	{
-		myComponents.GetValue<Component>(index).CopyID(&anObject.myComponents.GetValue<Component>(index));
-	}
 }
 
 std::string GameObject::GetParentID(const Json::Value& aJson)

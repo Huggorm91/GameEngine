@@ -56,7 +56,6 @@ public:
 
 	ComponentType GetType() const;
 	const UUIDv4::UUID& GetParentID() const;
-	unsigned GetComponentID() const;
 
 	virtual void SetActive(bool aIsActive);
 	virtual void ToogleActive();
@@ -83,20 +82,10 @@ public:
 	virtual inline size_t SizeOf() const = 0;
 	virtual inline std::type_index TypeId() const = 0;
 
-	// Only call before creating another Component!
-	void MarkAsPrefabComponent(unsigned anID = 0);
-	void CopyID(const Component* aComponent, bool aDecrementIDCount = false);
-
-	static void SetIDCount(unsigned aValue) { ourIDCount = aValue; }
-	static unsigned GetIDCount() { return ourIDCount; }
-
 protected:
 	GameObject* myParent;
 	ComponentType myType;
-	const unsigned myID;
 	bool myIsActive;
-
-	static unsigned ourIDCount;
 
 	const Transform* GetParentTransform() const;
 	Transform* GetParentTransform();

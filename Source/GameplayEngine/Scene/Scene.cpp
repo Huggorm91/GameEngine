@@ -38,7 +38,7 @@ void CopyObjects(Scene& aCopy, const Scene& anOriginal)
 	for (auto& object : anOriginal.gameObjects)
 	{
 		GameObject copy = object;
-		copy.CopyIDsOf(object);
+		copy.CopyUuidOf(object);
 		aCopy.gameObjects.emplace_back(std::move(copy));
 
 		if (object.HasParent())
