@@ -18,6 +18,7 @@ enum class ComponentType
 	RayCollider,
 	CapsuleCollider,
 	Network,
+	FirstPersonCameraController,
 	Count
 };
 

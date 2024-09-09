@@ -7,6 +7,8 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
+#include "AssetManager/Assets/Components/Camera/FirstPersonCameraControllerComponent.h"
 
 #include "NetworkClient/MessageHandler.h"
 #include "NetworkShared/MessageFunctions.h"
@@ -105,6 +107,8 @@ bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 		AssetManager::GeneratePrimitives();
 
 		myMessageHandler.Init();
+
+		Engine::GetInputMapper().CenterMouse();
 
 #ifndef _DEBUG
 	}
@@ -239,6 +243,18 @@ void GameLauncher::Init()
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetShadowBias>(mySettings.shadowBias));
 
 	Engine::GetSceneManager().LoadScene("Test");
+
+	constexpr float fov = 90.f;
+	constexpr float nearPlane = 1.f;
+	constexpr float farPlane = 10000.f;
+
+	constexpr float cameraSpeed = 200.f;
+	constexpr float mouseSensitivity = 1.f;
+
+	auto player = Engine::GetObjectManager().AddGameObject(AssetManager::GetAsset<GameObject>("cube"), true);
+	player->SetPosition({ 0.f, 200.f, 0.f });
+	player->AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
+	player->AddComponent(FirstPersonCameraControllerComponent(cameraSpeed, mouseSensitivity));
 }
 
 void GameLauncher::Update()

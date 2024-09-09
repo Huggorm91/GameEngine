@@ -383,9 +383,21 @@ void GameObject::SetPosition(const Crimson::Vector3f& aPosition)
 	myTransform.SetPosition(aPosition);
 }
 
-void GameObject::SetRotation(const Crimson::Vector3f& aRotation)
+void GameObject::AddToPosition(const Crimson::Vector3f& aChange)
 {
-	myTransform.SetRotationDegree(aRotation);
+	myTransform.AddToPosition(aChange);
+}
+
+void GameObject::SetRotation(const Crimson::Vector3f& aRotation, bool anIsRadians)
+{
+	if (anIsRadians)
+	{
+		myTransform.SetRotationRadian(aRotation);
+	}
+	else
+	{
+		myTransform.SetRotationDegree(aRotation);
+	}
 }
 
 void GameObject::SetScale(const Crimson::Vector3f& aScale)
@@ -699,7 +711,7 @@ void GameObject::CreateImGuiWindowContent(const std::string& aWindowName)
 				{
 					component->CreateImGuiComponents(aWindowName);
 					ImGui::TreePop();
-				}
+}
 			}
 		}
 	}
@@ -797,6 +809,6 @@ void GameObject::CopyIDsOf(const GameObject& anObject)
 }
 
 std::string GameObject::GetParentID(const Json::Value& aJson)
-{	
+{
 	return aJson["ParentUUID"].isNull() ? "" : aJson["ParentUUID"].asString();
 }

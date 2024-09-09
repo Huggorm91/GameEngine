@@ -77,7 +77,8 @@ public:
 	void RecieveNetmessage(const Network::GameObjectMessage& aMessage);
 
 	void SetPosition(const Crimson::Vector3f& aPosition);
-	void SetRotation(const Crimson::Vector3f& aDegree);
+	void AddToPosition(const Crimson::Vector3f& aChange);
+	void SetRotation(const Crimson::Vector3f& aDegree, bool anIsRadians = false);
 	void SetScale(const Crimson::Vector3f& aScale);
 
 	const Transform& GetTransform() const;

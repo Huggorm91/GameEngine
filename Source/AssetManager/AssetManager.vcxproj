@@ -233,6 +233,7 @@
     <ClInclude Include="Assets\ImguiTransform.h" />
     <ClInclude Include="Assets\Components\Camera\EditorCameraControllerComponent.h" />
     <ClInclude Include="Assets\Animation\BlendSpace.h" />
+    <ClInclude Include="Assets\Components\Camera\FirstPersonCameraControllerComponent.h" />
     <ClInclude Include="Managers\AnimationManager.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AssetManager.pch.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="Assets\ImguiTransform.cpp" />
     <ClCompile Include="Assets\Components\Camera\EditorCameraControllerComponent.cpp" />
     <ClCompile Include="Assets\Animation\BlendSpace.cpp" />
+    <ClCompile Include="Assets\Components\Camera\FirstPersonCameraControllerComponent.cpp" />
     <ClCompile Include="Managers\AnimationManager.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="AssetManager.pch.cpp">

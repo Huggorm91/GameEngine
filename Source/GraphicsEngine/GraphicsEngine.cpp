@@ -19,11 +19,11 @@ GraphicsEngine::GraphicsEngine() :
 	myIsUsingBloom(true),
 	myAssetPath("Settings\\EngineAssets\\"),
 	mySettingsPath("Settings\\ge_settings.json")
-#ifndef _RETAIL
+#ifdef EDITOR
 	, myDebugMode(DebugMode::Default),
 	myLightMode(LightMode::Default),
 	myRenderMode(RenderMode::Mesh)
-#endif // !_RETAIL	
+#endif // EDITOR	
 {}
 
 bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
@@ -191,8 +191,11 @@ bool GraphicsEngine::Initialize(HWND windowHandle, bool enableDeviceDebug)
 			return false;
 		}
 
-#ifndef _RETAIL
+#ifdef EDITOR
 		myGrid = myLineDrawer.AddAxisLines(Crimson::Vector3f::Null, 100000.f, true);
+#endif // EDITOR
+
+#ifndef _RETAIL
 	}
 	catch (const std::exception& e)
 	{
@@ -318,7 +321,7 @@ GraphicsEngine::ToneMap GraphicsEngine::NextToneMap()
 	return SetToneMap(static_cast<ToneMap>(static_cast<int>(myToneMap) + 1));
 }
 
-#ifndef _RETAIL
+#ifdef EDITOR
 GraphicsEngine::DebugMode GraphicsEngine::SetDebugMode(DebugMode aMode)
 {
 	myDebugMode = aMode;
@@ -515,7 +518,7 @@ void GraphicsEngine::SetDrawGridLines(bool aShouldDraw)
 {
 	myGrid.SetActive(aShouldDraw);
 }
-#endif // _RETAIL
+#endif // EDITOR
 
 void GraphicsEngine::BeginFrame()
 {
@@ -854,12 +857,12 @@ void GraphicsEngine::RenderFrame()
 		RHI::SetBlendState(myAdditiveBlend);
 		//RHI::SetBlendState(myAlphaBlend);
 
-#ifndef _RETAIL
+#ifdef EDITOR
 		if (myDebugMode == DebugMode::Default)
 		{
 			if (myLightMode == LightMode::Default || myLightMode == LightMode::SpotLight)
 			{
-#endif // !_RETAIL
+#endif // EDITOR
 
 				// Draw Spotlights
 				RHI::SetPixelShader(&myShaders.SpotlightPS);
@@ -870,12 +873,12 @@ void GraphicsEngine::RenderFrame()
 					RHI::Draw(4);
 				}
 
-#ifndef _RETAIL
+#ifdef EDITOR
 			}
 
 			if (myLightMode == LightMode::Default || myLightMode == LightMode::PointLight)
 			{
-#endif // !_RETAIL
+#endif // EDITOR
 
 				// Draw Pointlight
 				RHI::SetPixelShader(&myShaders.PointlightPS);
@@ -886,10 +889,10 @@ void GraphicsEngine::RenderFrame()
 					RHI::Draw(4);
 				}
 
-#ifndef _RETAIL
+#ifdef EDITOR
 			}
 		}
-#endif // !_RETAIL
+#endif // EDITOR
 
 		RHI::SetBlendState(nullptr);
 		RHI::EndEvent();
@@ -958,9 +961,9 @@ void GraphicsEngine::RenderFrame()
 	RHI::EndEvent();
 
 	// PostProcessing
-#ifndef _RETAIL
+#ifdef EDITOR
 	if (myDebugMode == DebugMode::Default && myLightMode != LightMode::IgnoreLight)
-#endif // !_RETAIL
+#endif // EDITOR
 	{
 		RHI::SetRenderTarget(nullptr, nullptr);
 
@@ -1018,12 +1021,12 @@ void GraphicsEngine::RenderFrame()
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, &myTextures.HalfScenebuffer);
 			RHI::Draw(4);
 
-#ifndef _RETAIL
+#ifdef EDITOR
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, nullptr);
 			RHI::SetRenderTarget(&myTextures.Scenebuffer, nullptr);
 #else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
-#endif // !_RETAIL
+#endif // EDITOR
 
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.IntermediateB);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateBSlot, nullptr);
@@ -1031,7 +1034,7 @@ void GraphicsEngine::RenderFrame()
 		}
 		else // No bloom
 		{
-#ifndef _RETAIL
+#ifdef EDITOR
 			// Copy Scenebuffer onto IntermediateA in order to be able to Gamma correct onto Scenebuffer
 			RHI::SetPixelShader(&myShaders.CopyPS);
 			RHI::SetRenderTarget(&myTextures.IntermediateA, nullptr);
@@ -1044,7 +1047,7 @@ void GraphicsEngine::RenderFrame()
 #else
 			RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 			RHI::SetTextureResource(PIPELINE_STAGE_PIXEL_SHADER, myTextureSlots.IntermediateASlot, &myTextures.Scenebuffer);
-#endif // !_RETAIL			
+#endif // EDITOR			
 		}
 
 		// Gamma correction
@@ -1055,7 +1058,7 @@ void GraphicsEngine::RenderFrame()
 		RHI::EndEvent();
 	} // End: if (LightMode::IgnoreLight)
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	if (myLineDrawer.IsUsingDepthBuffer())
 	{
 		RHI::SetRenderTarget(&myTextures.Scenebuffer, &myTextures.DepthBuffer);
@@ -1073,15 +1076,15 @@ void GraphicsEngine::RenderFrame()
 	{
 		RHI::SetRenderTarget(&myTextures.BackBuffer, nullptr);
 	}
-#endif // !_RETAIL
+#endif // EDITOR
 
 	RHI::BeginEvent(L"Line Drawer");
 	myLineDrawer.Render();
 	RHI::EndEvent();
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	RHI::SetRenderTarget(&myTextures.BackBuffer, &myTextures.DepthBuffer);
-#endif // !_RETAIL
+#endif // EDITOR
 	}
 
 void GraphicsEngine::AddGraphicsCommand(std::shared_ptr<GraphicsCommand> aCommand)

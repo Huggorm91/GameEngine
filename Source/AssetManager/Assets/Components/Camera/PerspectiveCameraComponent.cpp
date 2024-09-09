@@ -66,11 +66,6 @@ void PerspectiveCameraComponent::Update()
 	{
 		UpdateTransform();
 	}
-
-	if (myHasChanged)
-	{
-		UpdateTransform();
-	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetFrameBuffer>(myView, myProjection, myPosition));
 }
 

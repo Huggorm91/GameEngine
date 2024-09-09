@@ -68,6 +68,10 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	{ 
 		return &aParent.AddComponent<NetworkComponent>();
 	}
+	case ComponentType::FirstPersonCameraController:
+	{
+		return &aParent.AddComponent<FirstPersonCameraControllerComponent>();
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
@@ -123,6 +127,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	}
 	case ComponentType::EditorCameraController:
 	{
+		// Should not be loaded from JSON
 		break;
 	}
 	case ComponentType::AnimationController:
@@ -155,6 +160,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 		aParent.AddComponent(NetworkComponent(aJson));
 		break; 
 	}
+	case ComponentType::FirstPersonCameraController:
+	{
+		aParent.AddComponent(FirstPersonCameraControllerComponent(aJson));
+		break;
+	}
 	default:
 	{
 		AMLogger.Err("LoadComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(type)));
@@ -165,7 +175,7 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 
 void LoadComponent(std::istream& aStream, GameObject& aParent)
 {
-	ComponentType type;
+	ComponentType type{};
 	aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
 
 	switch (type)
@@ -220,6 +230,7 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 	}
 	case ComponentType::EditorCameraController:
 	{
+		// Should not be loaded from file
 		break;
 	}
 	case ComponentType::AnimationController:
@@ -257,6 +268,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		auto& network = aParent.AddComponent<NetworkComponent>();
 		network.Deserialize(aStream);
 		break; 
+	}
+	case ComponentType::FirstPersonCameraController:
+	{
+		auto& controller = aParent.AddComponent<FirstPersonCameraControllerComponent>();
+		controller.Deserialize(aStream);
+		break;
 	}
 	case ComponentType::Count:
 		break;
@@ -329,6 +346,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::Network: 
 	{
 		return "Network";
+	}
+	case ComponentType::FirstPersonCameraController:
+	{
+		return "FirstPersonCameraController";
 	}
 	default:
 	{

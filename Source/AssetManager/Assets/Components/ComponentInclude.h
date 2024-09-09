@@ -13,6 +13,7 @@
 
 #include "Camera/PerspectiveCameraComponent.h"
 #include "Camera/EditorCameraControllerComponent.h"
+#include "Camera/FirstPersonCameraControllerComponent.h"
 
 #include "Collision/BoxColliderComponent.h"
 #include "Collision/SphereColliderComponent.h"

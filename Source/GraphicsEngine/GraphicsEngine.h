@@ -29,7 +29,7 @@ public:
 	ToneMap SetToneMap(ToneMap aMode);
 	ToneMap NextToneMap();
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	enum class DebugMode
 	{
 		Default,
@@ -77,7 +77,7 @@ public:
 	RenderMode NextRenderMode();
 
 	void SetDrawGridLines(bool aShouldDraw);
-#endif // !_RETAIL
+#endif // EDITOR
 
 /**
  * Initializes the Graphics Engine with the specified settings.
@@ -117,12 +117,12 @@ public:
 		return myWindowSize;
 	}
 
-#ifndef _RETAIL
+#ifdef EDITOR
 	inline const Texture* GetBackBufferCopy() const
 	{
 		return &myTextures.Scenebuffer;
 	}
-#endif // !_RETAIL
+#endif // EDITOR
 
 	inline const Material& GetDefaultMaterial() const
 	{
@@ -187,12 +187,12 @@ private:
 	bool myIsUsingBloom;
 
 	ToneMap myToneMap;
-#ifndef _RETAIL
+#ifdef EDITOR
 	DebugMode myDebugMode;
 	LightMode myLightMode;
 	RenderMode myRenderMode;
 	LineHandle myGrid;
-#endif // !_RETAIL	
+#endif // EDITOR	
 	unsigned myFrameBufferSlot;
 	unsigned myObjectBufferSlot;
 	unsigned myLightBufferSlot;
