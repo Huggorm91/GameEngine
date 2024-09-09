@@ -8,25 +8,33 @@ class InputHandler;
 class CollisionManager;
 class ObjectManager;
 class SceneManager;
+class MainLogger;
+namespace Network
+{
+	class NetworkManager;
+}
 
 class Engine
 {
 public:
 	~Engine();
 
-	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize);
+	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork);
 
 	static void BeginFrame();
 	static void EndFrame();
 
 	static bool IsValid();
+	static bool IsNetworkingEnabled();
 
+	static MainLogger& GetLogger();
 	static ThreadPool& GetThreadPool();
 	static InputMapper& GetInputMapper();
 	static PostMaster& GetPostMaster();
 	static CollisionManager& GetCollisionManager();
 	static ObjectManager& GetObjectManager();
 	static SceneManager& GetSceneManager();
+	static Network::NetworkManager& GetNetworkManager();
 
 	static const Crimson::Vector2i& GetWindowSize();
 	static HWND GetWindowHandle();
@@ -40,6 +48,7 @@ private:
 	Crimson::Vector2i myWindowSize;
 	HWND myWindowHandle;
 
+	std::unique_ptr<MainLogger> myLogger;
 	std::unique_ptr<ThreadPool> myThreadPool;
 	std::unique_ptr<InputMapper> myInputMapper;
 	std::unique_ptr<InputHandler> myInputHandler;
@@ -47,6 +56,7 @@ private:
 	std::unique_ptr<CollisionManager> myCollisionManager;
 	std::unique_ptr<ObjectManager> myObjectManager;
 	std::unique_ptr<SceneManager> mySceneManager;
+	std::unique_ptr<Network::NetworkManager> myNetworkManager;
 
 	bool myIsInitialized;
 };

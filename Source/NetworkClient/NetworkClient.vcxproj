@@ -12,11 +12,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
-    <ClCompile Include="MessageHandler.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
-    <ClInclude Include="MessageHandler.h" />
+    <ClInclude Include="NetworkManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrimsonUtilities\CrimsonUtilities.vcxproj">

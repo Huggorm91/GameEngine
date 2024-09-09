@@ -89,7 +89,6 @@ public:
 	// Saves current settings to file
 	void SaveSettings() const;
 
-	void SetLoggingWindow(HANDLE aHandle);
 	void SetBackGroundColor(const Crimson::Vector3f& aColor);
 
 	// Swaps the render buffers. Should be called before BeginFrame or after EndFrame

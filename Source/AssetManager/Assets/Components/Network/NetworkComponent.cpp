@@ -1,6 +1,7 @@
 #include "AssetManager.pch.h"
 #include "NetworkComponent.h"
-#include "NetworkClient/MessageHandler.h"
+#include "NetworkClient/NetworkManager.h"
+#include "../../GameObject.h"
 
 NetworkComponent::NetworkComponent() : Component(ComponentType::Network)
 {
@@ -14,7 +15,7 @@ void NetworkComponent::Update()
 {
 	if (myRaisedFlags[eTransformHasChanged])
 	{
-		//ModelViewer::Get().GetMessageHandler().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
+		Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
 	}
 	myRaisedFlags.reset();
 }

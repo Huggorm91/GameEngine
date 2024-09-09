@@ -13,7 +13,7 @@
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 
-#include "NetworkClient/MessageHandler.h"
+#include "NetworkClient/NetworkManager.h"
 #include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Time.h"
@@ -22,6 +22,8 @@
 #include "GameplayEngine/Input/InputMapper.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+
+#include "Logging/MainLogger.h"
 
 ModelViewer::ModelViewer() :
 	myModuleHandle(nullptr),
@@ -79,8 +81,8 @@ void ModelViewer::HandleCrash(const std::exception& anException, bool aTrySaving
 	// Log crash
 	myLogger.Err("Program has crashed!");
 	myLogger.Warn("Writing exception to log file!");
-	myLogger.SetPrintToFile(true, "EditorLogs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
 	myLogger.LogException(anException);
+	Engine::GetLogger().PrintHistoryToFile("EditorLogs\\" + Crimson::FileNameTimestamp() + "_Log.txt");
 
 	if (aTrySavingScene)
 	{
@@ -169,7 +171,7 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 #endif // _DEBUG
 
-	Engine::Init(myMainWindowHandle, myApplicationState.windowSize);
+	Engine::Init(myMainWindowHandle, myApplicationState.windowSize, false);
 
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
@@ -202,8 +204,6 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	myScriptGraphEditor = std::make_shared<ScriptGraphEditor>(myScriptGraphEditorSettings.get(), myScriptGraphEditorState.get(), myScriptGraph.get());
 
 	DragAcceptFiles(myMainWindowHandle, TRUE);
-
-	myMessageHandler.Init();
 
 #ifndef _DEBUG
 	}
@@ -507,10 +507,13 @@ void ModelViewer::Update()
 	graphicsEngine.BeginFrame();
 	Engine::BeginFrame();
 
+	if (Engine::IsNetworkingEnabled())
+	{
+		HandleNetmessages();
+	}
+
 	myImguiManager.Update();
 	mySkeletonEditor.Update();
-
-	myMessageHandler.Update();
 
 	if (myIsSceneActive)
 	{
@@ -534,7 +537,7 @@ void ModelViewer::Update()
 
 void ModelViewer::HandleNetmessages()
 {
-	auto& messages = myMessageHandler.GetMessages();
+	auto& messages = Engine::GetNetworkManager().GetMessages();
 	for (auto& message : messages)
 	{
 		switch (message.type)

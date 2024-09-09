@@ -1,5 +1,7 @@
 #include "GameplayEngine.pch.h"
 #include "Engine.h"
+#include "Logging\Logging.h"
+#include "Logging\MainLogger.h"
 #include "CrimsonUtilities\Time\Time.h"
 #include "Threadpool\ThreadPool.h"
 #include "Input\InputMapper.h"
@@ -8,6 +10,7 @@
 #include "Managers\CollisionManager.h"
 #include "Managers\ObjectManager.h"
 #include "Managers\SceneManager.h"
+#include "NetworkClient/NetworkManager.h"
 
 enum
 {
@@ -32,7 +35,7 @@ Engine& Engine::Get()
 	return instance;
 }
 
-void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
+void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork)
 {
 	auto& instance = Get();
 	if (!instance.myIsInitialized)
@@ -40,6 +43,9 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 		// Window
 		instance.myWindowSize = aWindowSize;
 		instance.myWindowHandle = aHandle;
+
+		instance.myLogger = std::make_unique<MainLogger>();
+		Logger::ourMainLogger = instance.myLogger.get();
 
 		// Threads
 		instance.myThreadPool = std::make_unique<ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
@@ -57,6 +63,13 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 		instance.myObjectManager = std::make_unique<ObjectManager>();
 		instance.mySceneManager = std::make_unique<SceneManager>(instance.myObjectManager.get(), instance.myThreadPool.get());
 
+		// Network
+		if (aShouldConnectToNetwork)
+		{
+			instance.myNetworkManager = std::make_unique<Network::NetworkManager>();
+			instance.myNetworkManager->Init();
+		}		
+
 		instance.myIsInitialized = true;
 	}
 }
@@ -64,7 +77,12 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize)
 void Engine::BeginFrame()
 {
 	Crimson::Time::Update();
-	Get().myInputMapper->Notify();
+	auto& instance = Get();
+	instance.myInputMapper->Notify();
+	if (instance.myNetworkManager)
+	{
+		instance.myNetworkManager->Update();
+	}
 }
 
 void Engine::EndFrame()
@@ -79,6 +97,16 @@ void Engine::EndFrame()
 bool Engine::IsValid()
 {
 	return Get().myIsInitialized;
+}
+
+bool Engine::IsNetworkingEnabled()
+{
+	return bool(Get().myNetworkManager);
+}
+
+MainLogger& Engine::GetLogger()
+{
+	return *Get().myLogger;
 }
 
 ThreadPool& Engine::GetThreadPool()
@@ -109,6 +137,11 @@ ObjectManager& Engine::GetObjectManager()
 SceneManager& Engine::GetSceneManager()
 {
 	return *Get().mySceneManager;
+}
+
+Network::NetworkManager& Engine::GetNetworkManager()
+{
+	return *Get().myNetworkManager;
 }
 
 const Crimson::Vector2i& Engine::GetWindowSize()

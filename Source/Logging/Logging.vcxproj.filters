@@ -18,9 +18,24 @@
     <ClInclude Include="Logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MainLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileLogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timestamp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

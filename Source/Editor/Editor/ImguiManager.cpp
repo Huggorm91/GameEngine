@@ -10,7 +10,7 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
-#include "NetworkClient/MessageHandler.h"
+#include "NetworkClient/NetworkManager.h"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "backends/imgui_impl_win32.h"
@@ -442,7 +442,7 @@ void ImguiManager::CreateMenubar()
 				std::wstring extension = std::wstring(SceneLoader::GetExtensionW());
 				std::wstring filename = ToWString(AddExtensionIfMissing(myModelViewer->mySceneName, SceneLoader::GetExtension(), true));
 				std::string path;
-				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), {L"Scene", L"*" + extension + L";"}, ToWString(GetAbsolutePath(SceneLoader::GetPath()))))
+				if (Crimson::ShowSaveFileSelector(path, filename, extension.substr(1), { L"Scene", L"*" + extension + L";" }, ToWString(GetAbsolutePath(SceneLoader::GetPath()))))
 				{
 					myModelViewer->SaveScene(path, false);
 				}
@@ -469,36 +469,39 @@ void ImguiManager::CreateMenubar()
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Network"))
+		if (Engine::IsNetworkingEnabled())
 		{
-			const bool connected = myModelViewer->GetMessageHandler().IsConnected();
-			if (connected)
+			if (ImGui::BeginMenu("Network"))
 			{
-				ImGui::Text("Status: Connected");
-				ImGui::BeginDisabled();
-			}
-			else
-			{
-				ImGui::Text("Status: Disconnected");
-			}
-			
+				const bool connected = Engine::GetNetworkManager().IsConnected();
+				if (connected)
+				{
+					ImGui::Text("Status: Connected");
+					ImGui::BeginDisabled();
+				}
+				else
+				{
+					ImGui::Text("Status: Disconnected");
+				}
 
-			if (ImGui::MenuItem("Connect"))
-			{
-				myModelViewer->GetMessageHandler().Connect();
-			}
 
-			if (connected)
-			{
-				ImGui::EndDisabled();
-			}
+				if (ImGui::MenuItem("Connect"))
+				{
+					Engine::GetNetworkManager().Connect();
+				}
 
-			if (ImGui::MenuItem("Open Chat"))
-			{
-				myIsShowingChat = true;
+				if (connected)
+				{
+					ImGui::EndDisabled();
+				}
+
+				if (ImGui::MenuItem("Open Chat"))
+				{
+					myIsShowingChat = true;
+				}
+
+				ImGui::EndMenu();
 			}
-			
-			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
 	}
@@ -1179,7 +1182,7 @@ void ImguiManager::CreateNewObjectWindow()
 
 void ImguiManager::CreateChatWindow()
 {
-	if (!myIsShowingChat)
+	if (!myIsShowingChat || !Engine::IsNetworkingEnabled())
 	{
 		return;
 	}
@@ -1187,7 +1190,7 @@ void ImguiManager::CreateChatWindow()
 	if (ImGui::Begin("Chat", &myIsShowingChat))
 	{
 		std::string input;
-		const bool connected = myModelViewer->GetMessageHandler().IsConnected();
+		const bool connected = Engine::GetNetworkManager().IsConnected();
 		if (!connected)
 		{
 			input = "offline";
@@ -1196,16 +1199,16 @@ void ImguiManager::CreateChatWindow()
 
 		if (ImGui::InputText("Message", &input, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			myModelViewer->GetMessageHandler().SendChatMessage(input);
+			Engine::GetNetworkManager().SendChatMessage(input);
 		}
 
 		if (!connected)
 		{
 			ImGui::EndDisabled();
 		}
-		
+
 		ImGui::Separator();
-		const auto& history = myModelViewer->GetMessageHandler().GetChatHistory();
+		const auto& history = Engine::GetNetworkManager().GetChatHistory();
 		for (auto iter = history.crbegin(); iter != history.crend(); iter++)
 		{
 			ImGui::Text(iter->c_str());
@@ -1270,7 +1273,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 
 		if (ImGui::Button("Overwrite"))
 		{
-			auto overwriteFile = [this](const std::string& aSource, const std::string& aTarget){
+			auto overwriteFile = [this](const std::string& aSource, const std::string& aTarget) {
 				if (CopyFileA(aSource.c_str(), aTarget.c_str(), FALSE) == 0)
 				{
 					ModelViewer::GetLogger().Err("ImGui Manager: Failed to create a copy of file \"" + GetFileName(aTarget) + "\" in folder: " + GetContainingFolder(aTarget));
@@ -1279,7 +1282,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 				{
 					myLatestAddedFile = aTarget;
 				}
-			};
+				};
 
 			if (myOverwriteAppliedToAll)
 			{
@@ -1302,7 +1305,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 
 		if (ImGui::Button("Create Copy"))
 		{
-			auto copyFile = [this](const std::string& aSource, const std::string& aTarget){
+			auto copyFile = [this](const std::string& aSource, const std::string& aTarget) {
 				std::string path = GetContainingFolder(aTarget);
 				std::string filename = GetFileNameWithoutExtension(aTarget);
 				std::string extension = GetFileExtension(aTarget);
@@ -1320,7 +1323,7 @@ void ImguiManager::CreateOverwriteFilePopUp()
 				{
 					myLatestAddedFile = path + filename + "(" + std::to_string(i) + ")" + extension;
 				}
-			};
+				};
 
 			if (myOverwriteAppliedToAll)
 			{

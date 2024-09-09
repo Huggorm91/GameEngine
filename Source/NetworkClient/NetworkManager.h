@@ -9,11 +9,11 @@ namespace Network
 {
 	class Client;
 
-	class MessageHandler
+	class NetworkManager
 	{
 	public:
-		MessageHandler();
-		~MessageHandler();
+		NetworkManager();
+		~NetworkManager();
 
 		void Init();
 		void Update();

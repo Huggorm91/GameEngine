@@ -251,11 +251,6 @@ void GraphicsEngine::SaveSettings() const
 	SaveSettings(settings);
 }
 
-void GraphicsEngine::SetLoggingWindow(HANDLE aHandle)
-{
-	GELogger.SetConsoleHandle(aHandle);
-}
-
 void GraphicsEngine::SetBackGroundColor(const Crimson::Vector3f& aColor)
 {
 	myBackgroundColor = aColor;

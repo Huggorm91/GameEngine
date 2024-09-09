@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <WS2tcpip.h>
 #include "NetworkShared/NetMessage.h"
-#include "Logging/Logging.h"
+#include "Logging/FileLogger.h"
 #include <unordered_map>
 
 namespace Network
@@ -39,7 +39,7 @@ namespace Network
 		std::vector<std::string> myRemovedClients;
 		NetMessage myMessage;
 		WSADATA myWSA;
-		Logger myLogger;
+		FileLogger myLogger;
 		sockaddr_in myClientInfo;
 		sockaddr_in myServerInfo;
 		SOCKET myServerSocket;

@@ -10,7 +10,18 @@
 
 namespace Network
 {
-	Client::Client() : myWSA(), myServer(), mySocket(), myThread(nullptr), myFailedMessageCount(0u), myIsRunning(false),myIsConnected(false), myIsInitialized(false), myServerDisconnected(false)
+	Client::Client() : 
+		myWSA(), 
+		myLogger("Network Logs/" + Crimson::FileNameTimestamp() + ".txt"),
+		myServer(), 
+		mySocket(), 
+		myThread(nullptr), 
+		myFailedMessageCount(0u), 
+		myHasError(false),
+		myIsRunning(false),
+		myIsConnected(false), 
+		myIsInitialized(false), 
+		myServerDisconnected(false)		
 	{}
 
 	Client::~Client()
@@ -32,9 +43,6 @@ namespace Network
 
 	void Client::Init()
 	{
-		myLogger = Logger::Create("Network Client");
-		myLogger.SetPrintToFile(true, "Network Logs/" + Crimson::FileNameTimestamp() + ".txt");
-
 		// Initialise winsock
 		myLogger.Log("Initialising Winsock...");
 		if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
@@ -124,13 +132,20 @@ namespace Network
 
 	void Client::Disconnect()
 	{
-		if (!myIsConnected)
+		if (myIsConnected)
 		{
-			return;
-		}
+			sendto(mySocket, CreateDisconnectMessage(), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
+			myIsConnected = false;
+		}		
+	}
 
-		sendto(mySocket, CreateDisconnectMessage(), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
-		myIsConnected = false;
+	void Client::CheckError()
+	{
+		if (myHasError)
+		{
+			myHasError = false;
+			myLogger.Warn(myLastError);
+		}
 	}
 
 	bool Client::SendNetMessage(const NetMessage& aMessage)
@@ -139,6 +154,8 @@ namespace Network
 		{
 			return false;
 		}
+
+		CheckError();
 
 		if (myServerDisconnected)
 		{
@@ -170,6 +187,7 @@ namespace Network
 
 	std::vector<NetMessage> Client::Flush()
 	{
+		CheckError();
 		std::unique_lock lock(myMutex);
 		std::vector<NetMessage> copy;
 		copy.swap(myMessages);
@@ -195,7 +213,29 @@ namespace Network
 				if (error == 10054) // Server has disconnected
 				{
 					myServerDisconnected = true;
-				}				
+				}
+
+				char buffer[256]('\0');
+
+				FormatMessageA(
+					FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,		// flags
+					NULL,															// lpsource
+					error,															// message id
+					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),						// languageid
+					buffer,															// output buffer
+					sizeof(buffer),													// size of msgbuf, bytes
+					NULL															// va_list of arguments
+				);
+
+				if (buffer)
+				{
+					myLastError = buffer;
+				}
+				else
+				{
+					myLastError = "Unknown error: " + std::to_string(error);
+				}
+				myHasError = true;
 			}
 		}
 	}

@@ -7,7 +7,6 @@
 #include "Editor/SkeletonEditor.h"
 #include "Editor/ImguiManager.h"
 #include "Commands/EditCommand.h"
-#include "NetworkClient/MessageHandler.h"
 
 class SplashWindow;
 class GameObject;
@@ -33,9 +32,6 @@ public:
 	FORCEINLINE static Logger& GetLogger()
 	{
 		return Get().myLogger;
-	}
-	FORCEINLINE static Network::MessageHandler& GetMessageHandler() {
-		return Get().myMessageHandler;
 	}
 
 	bool Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess);
@@ -90,7 +86,6 @@ private:
 	
 	ImguiManager myImguiManager;
 	SkeletonEditor mySkeletonEditor;
-	Network::MessageHandler myMessageHandler;
 
 	std::vector<std::shared_ptr<EditCommand>> myRedoCommands;
 	std::vector<std::shared_ptr<EditCommand>> myUndoCommands;

@@ -8,7 +8,15 @@
 
 namespace Network
 {
-	Server::Server() : myWSA(), myClientInfo(), myServerInfo(), myServerSocket(), myCurrentIP(nullptr), mySocketSize(sizeof(sockaddr_in)), myIsRunning(false)
+	Server::Server() : 
+		myWSA(), 
+		myLogger("Server Logs/" + Crimson::FileNameTimestamp() + ".txt"),
+		myClientInfo(), 
+		myServerInfo(), 
+		myServerSocket(), 
+		myCurrentIP(nullptr), 
+		mySocketSize(sizeof(sockaddr_in)), 
+		myIsRunning(false)
 	{}
 
 	Server::~Server()
@@ -19,9 +27,6 @@ namespace Network
 
 	void Server::Init()
 	{
-		myLogger = Logger::Create("Network Server");
-		myLogger.SetPrintToFile(true, "Server Logs/" + Crimson::FileNameTimestamp() + ".txt");
-
 		system("title Crimson Server");
 
 		// Initialize winsock

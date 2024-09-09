@@ -18,8 +18,6 @@ void AssetManager::Init()
 	try
 	{
 #endif
-		AMLogger.SetPrintToVSOutput(false);
-
 		TGA::FBX::Importer::InitImporter();
 		myModelManager.Init();
 		myAnimationManager.Init();

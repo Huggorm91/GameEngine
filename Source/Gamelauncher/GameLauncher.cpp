@@ -10,7 +10,7 @@
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/FirstPersonCameraControllerComponent.h"
 
-#include "NetworkClient/MessageHandler.h"
+#include "NetworkClient/NetworkManager.h"
 #include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Time.h"
@@ -21,6 +21,8 @@
 #include "GameplayEngine/Input/InputMapper.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+
+#include "Logging/MainLogger.h"
 
 constexpr const char* globalSettingsPath("Data/settings.json");
 
@@ -95,7 +97,7 @@ bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 #endif // _DEBUG
 
-		Engine::Init(myMainWindowHandle, mySettings.windowSize);
+		Engine::Init(myMainWindowHandle, mySettings.windowSize, true);
 
 #ifdef _RETAIL
 		GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
@@ -105,8 +107,6 @@ bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 
 		AssetManager::Init();
 		AssetManager::GeneratePrimitives();
-
-		myMessageHandler.Init();
 
 		Engine::GetInputMapper().CenterMouse();
 
@@ -214,8 +214,8 @@ void GameLauncher::HandleCrash(const std::exception& anException)
 	// Log crash
 	myLogger.Err("Program has crashed!");
 	myLogger.Warn("Writing exception to log file!");
-	myLogger.SetPrintToFile(true, "CrashReports\\" + Crimson::FileNameTimestamp() + "_Log.txt");
 	myLogger.LogException(anException);
+	Engine::GetLogger().PrintHistoryToFile("CrashReports\\" + Crimson::FileNameTimestamp() + "_Log.txt");
 
 	// Leave console up to let user read information
 	system("PAUSE");
@@ -262,7 +262,11 @@ void GameLauncher::Update()
 	GraphicsEngine& graphicsEngine = GraphicsEngine::Get();
 	graphicsEngine.BeginFrame();
 	Engine::BeginFrame();
-	myMessageHandler.Update();
+
+	if (Engine::IsNetworkingEnabled())
+	{
+		HandleNetmessages();
+	}
 
 	Engine::GetObjectManager().UpdateObjects();
 
@@ -273,7 +277,7 @@ void GameLauncher::Update()
 
 void GameLauncher::HandleNetmessages()
 {
-	auto& messages = myMessageHandler.GetMessages();
+	auto& messages = Engine::GetNetworkManager().GetMessages();
 	for (auto& message : messages)
 	{
 		switch (message.type)

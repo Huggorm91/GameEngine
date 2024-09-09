@@ -1,19 +1,20 @@
 #define NOMINMAX
 #include "Client.h"
-#include "MessageHandler.h"
+#include "NetworkManager.h"
 #include <assert.h>
 #include "NetworkShared/MessageFunctions.h"
 #include "CrimsonUtilities/Math/Transform.h"
 
-Network::MessageHandler::MessageHandler()
+// Needs to not be inline to avoid including Client.h in header
+Network::NetworkManager::NetworkManager()
 {
 }
 
-// Made to avoid including Client.h in header
-Network::MessageHandler::~MessageHandler()
+// Needs to not be inline to avoid including Client.h in header
+Network::NetworkManager::~NetworkManager()
 {}
 
-void Network::MessageHandler::Init()
+void Network::NetworkManager::Init()
 {
 	if (myClient == nullptr)
 	{
@@ -23,7 +24,7 @@ void Network::MessageHandler::Init()
 	}
 }
 
-void Network::MessageHandler::Update()
+void Network::NetworkManager::Update()
 {
 	assert(myClient && "Not initialized!");
 	auto messages = myClient->Flush();
@@ -60,31 +61,31 @@ void Network::MessageHandler::Update()
 	}
 }
 
-void Network::MessageHandler::Connect()
+void Network::NetworkManager::Connect()
 {
 	assert(myClient && "Not initialized!");
 	myClient->Connect();
 }
 
-bool Network::MessageHandler::IsConnected() const
+bool Network::NetworkManager::IsConnected() const
 {
 	assert(myClient && "Not initialized!");
 	return myClient->IsConnected();
 }
 
-void Network::MessageHandler::SendNetMessage(const NetMessage& aMessage) const
+void Network::NetworkManager::SendNetMessage(const NetMessage& aMessage) const
 {
 	assert(myClient && "Not initialized!");
 	myClient->SendNetMessage(aMessage);
 }
 
-void Network::MessageHandler::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
+void Network::NetworkManager::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
 {
 	assert(myClient && "Not initialized!");
 	myClient->SendNetMessage(CreateMoveGameObjectMessage(anID, aTransform.GetPosition(), aTransform.GetRotationRadian()));
 }
 
-void Network::MessageHandler::SendChatMessage(const std::string& aMessage)
+void Network::NetworkManager::SendChatMessage(const std::string& aMessage)
 {
 	if (aMessage.empty())
 	{
@@ -96,17 +97,17 @@ void Network::MessageHandler::SendChatMessage(const std::string& aMessage)
 	myChatHistory.emplace_back(GetSelfHeader() + aMessage);
 }
 
-constexpr std::string Network::MessageHandler::GetSelfHeader() const
+constexpr std::string Network::NetworkManager::GetSelfHeader() const
 {
 	return "Me:";
 }
 
-const std::vector<std::string>& Network::MessageHandler::GetChatHistory() const
+const std::vector<std::string>& Network::NetworkManager::GetChatHistory() const
 {
 	return myChatHistory;
 }
 
-std::vector<Network::NetMessage>& Network::MessageHandler::GetMessages()
+std::vector<Network::NetMessage>& Network::NetworkManager::GetMessages()
 {
 	return myMessages;
 }

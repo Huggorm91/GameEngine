@@ -5,13 +5,13 @@
 #include <WS2tcpip.h>
 #include <mutex>
 #include "NetworkShared/NetMessage.h"
-#include "Logging/Logging.h"
+#include "Logging/FileLogger.h"
 
 namespace Network
 {
 	class Client
 	{
-		friend class MessageHandler;
+		friend class NetworkManager;
 	public:
 		Client();
 		~Client();
@@ -31,17 +31,21 @@ namespace Network
 	private:
 		std::vector<NetMessage> myMessages;
 		WSADATA myWSA;
-		Logger myLogger;
+		FileLogger myLogger;
 		std::mutex myMutex;
+		std::string myLastError;
 		sockaddr_in myServer;
 		SOCKET mySocket;
 		std::thread* myThread;
 
 		unsigned myFailedMessageCount;
 
+		bool myHasError;
 		bool myIsRunning;
 		bool myIsConnected;
 		bool myIsInitialized;
 		bool myServerDisconnected;
+
+		void CheckError();
 	};
 }
