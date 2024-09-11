@@ -4,7 +4,7 @@
 struct Scene
 {
 	std::string name = "NewScene";
-	std::vector<GameObject> gameObjects;
+	std::unordered_map<UUIDv4::UUID, GameObject> gameObjects;
 
 	Scene() = default;
 	Scene(const Json::Value& aJson);

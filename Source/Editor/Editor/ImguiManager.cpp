@@ -10,7 +10,6 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
-#include "NetworkClient/NetworkManager.h"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "backends/imgui_impl_win32.h"
@@ -21,6 +20,7 @@
 
 #include "GameplayEngine/Input/InputMapper.h"
 #include "GameplayEngine/Scene/SceneLoader.h"
+#include "GameplayEngine/Network/NetworkManager.h"
 
 #include "AssetManager/Assets/ImguiTransform.h"
 

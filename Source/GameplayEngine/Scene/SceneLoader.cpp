@@ -136,10 +136,10 @@ void SceneLoader::SaveSceneToFile(const std::string& aPath, const Scene& aScene)
 		json["GameObjects"] = Json::arrayValue;
 
 		int i = 0;
-		for (auto& object : aScene.gameObjects)
+		for (auto& [id, object] : aScene.gameObjects)
 		{
 			json["GameObjects"][i] = object.ToJson();
-			json["GameObjects"][i].setComment("// " + object.GetName() + " | ID: " + object.GetUUID().str(), Json::commentBefore);
+			json["GameObjects"][i].setComment("// " + object.GetName() + " | ID: " + id.str(), Json::commentBefore);
 			i++;
 		}
 

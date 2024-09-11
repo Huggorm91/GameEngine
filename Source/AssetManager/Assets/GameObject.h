@@ -11,7 +11,6 @@ public:
 	GameObject();
 	GameObject(const Prefab& aPrefab);
 	GameObject(const UUIDv4::UUID& anUUID);
-	GameObject(const GameObject& aGameObject, const UUIDv4::UUID& anUUID);
 	GameObject(const GameObject& aGameObject);
 	GameObject(GameObject&& aGameObject) noexcept;
 	GameObject(const Json::Value& aJson);
@@ -116,8 +115,8 @@ public:
 #endif // EDITOR
 	Json::Value ToJson() const;
 
-	void Serialize(std::ostream& aStream) const;
-	// Returns parent ID. Has no parent if 0.
+	void Serialize(std::ostream& aStream, bool aIsForNetwork = false) const;
+	// Returns parent ID. Has no parent if Gameobject::nullUUID.
 	UUIDv4::UUID Deserialize(std::istream& aStream);
 
 	void CopyUuidOf(const GameObject& anObject);

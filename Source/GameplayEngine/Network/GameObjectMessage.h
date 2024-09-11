@@ -1,21 +1,25 @@
 #pragma once
-#include "NetMessage.h"
+#include "NetworkShared/Globals.h"
 #pragma warning (push,0)
 #include "CrimsonUtilities/UUID/uuid_v4.h"
 #pragma warning (pop)
 
 namespace Network
 {
-	enum class ObjectAction
+	enum class ObjectAction: unsigned short
 	{
 		Invalid,
 		Move,
 	};
 
+	constexpr unsigned short CalculateGameObjectMessageNonDataSize() { return sizeof(UUIDv4::UUID) + sizeof(ObjectAction) + sizeof(unsigned short); }
+
 	struct GameObjectMessage
 	{
+		UUIDv4::UUID id;
 		ObjectAction action;
-		char data[globalBuffLength - (sizeof(UUIDv4::UUID) + sizeof(ObjectAction))]{ '\0' };
+		unsigned short size;
+		char data[globalBuffLength - CalculateGameObjectMessageNonDataSize()]{'\0'};
 
 		inline operator char* ()
 		{

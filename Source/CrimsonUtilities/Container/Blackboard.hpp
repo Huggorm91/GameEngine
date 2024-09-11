@@ -18,6 +18,7 @@ namespace Crimson
 		// If true: the container has expanded and any pointers are invalidated
 		template<typename value>
 		bool SetValue(const key& aKey, const value& aValue);
+		// If true: the container has expanded and any pointers are invalidated
 		template<typename value>
 		bool SetValue(const key& aKey, value&& aValue);
 

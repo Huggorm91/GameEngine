@@ -20,6 +20,10 @@ namespace Network
 
 		bool SendNetMessage(const NetMessage& aMessage);
 
+		// messageID needs to be manually set before sending the NetMessage to this function
+		bool SendMultipartMessage(const NetMessage& aMessage);
+		unsigned short GetMessageID();
+
 		std::vector<NetMessage> Flush();
 
 		void Recieve();
@@ -30,6 +34,7 @@ namespace Network
 
 	private:
 		std::vector<NetMessage> myMessages;
+		std::vector<NetMessage> myMultipartMessages;
 		WSADATA myWSA;
 		FileLogger myLogger;
 		std::mutex myMutex;
@@ -39,6 +44,8 @@ namespace Network
 		std::thread* myThread;
 
 		unsigned myFailedMessageCount;
+		unsigned short mySenderID;
+		unsigned short myIDGenerator;
 
 		bool myHasError;
 		bool myIsRunning;
@@ -46,6 +53,12 @@ namespace Network
 		bool myIsInitialized;
 		bool myServerDisconnected;
 
-		void CheckError();
+		void HandleMultiMessages();
+
+		// This logs the last error reported my the thread running Recieve()
+		void LogLastError();
+
+		bool CanSendMessage();
+		bool SendNetMessageInternal(const NetMessage& aMessage);
 	};
 }

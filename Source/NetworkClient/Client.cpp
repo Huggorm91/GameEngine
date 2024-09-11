@@ -10,18 +10,20 @@
 
 namespace Network
 {
-	Client::Client() : 
-		myWSA(), 
+	Client::Client() :
+		myWSA(),
 		myLogger("Network Logs/" + Crimson::FileNameTimestamp() + ".txt"),
-		myServer(), 
-		mySocket(), 
-		myThread(nullptr), 
-		myFailedMessageCount(0u), 
+		myServer(),
+		mySocket(),
+		myThread(nullptr),
+		myFailedMessageCount(0u),
+		mySenderID(0u),
+		myIDGenerator(0u),
 		myHasError(false),
 		myIsRunning(false),
-		myIsConnected(false), 
-		myIsInitialized(false), 
-		myServerDisconnected(false)		
+		myIsConnected(false),
+		myIsInitialized(false),
+		myServerDisconnected(false)
 	{}
 
 	Client::~Client()
@@ -106,6 +108,7 @@ namespace Network
 			{
 				if (answer.type == MessageType::Confirmation)
 				{
+					mySenderID = reinterpret_cast<unsigned short&>(answer.data);
 					myIsConnected = true;
 					break;
 				}
@@ -136,10 +139,77 @@ namespace Network
 		{
 			sendto(mySocket, CreateDisconnectMessage(), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
 			myIsConnected = false;
-		}		
+		}
 	}
 
-	void Client::CheckError()
+	bool MultiMessageSort(const NetMessage& aFirst, const NetMessage& aSecond)
+	{
+		if (aFirst.senderID == aSecond.senderID)
+		{
+			if (aFirst.messageID == aSecond.messageID)
+			{
+				return aFirst.packetIndex < aSecond.packetIndex;
+			}
+			else
+			{
+				return aFirst.messageID < aSecond.messageID;
+			}
+		}
+		else
+		{
+			return aFirst.senderID < aSecond.senderID;
+		}
+	}
+
+	void Client::HandleMultiMessages()
+	{
+		std::sort(myMultipartMessages.begin(), myMultipartMessages.end(), MultiMessageSort);
+		unsigned short currentSender = 0;
+		unsigned short currentMessage = 0;
+		unsigned short previousIndex = 0;
+
+		// TODO: Add timer that checks for time since last message in a chain was recieved
+
+		std::vector<NetMessage> messagesToMove;
+		for (auto iter = myMultipartMessages.begin(); iter != myMultipartMessages.end(); iter++)
+		{
+			const auto& message = *iter;
+			if (currentSender != message.senderID)
+			{
+				currentSender = message.senderID;
+				currentMessage = message.messageID;
+				previousIndex = message.packetIndex;
+				continue;
+			}
+			if (currentMessage != message.messageID)
+			{
+				currentMessage = message.messageID;
+				previousIndex = message.packetIndex;
+				continue;
+			}
+			if (previousIndex != message.packetIndex -1)
+			{
+				// Missing a packet
+				// TODO: Send request for replacement
+				continue;
+			}
+
+			unsigned short totalIndex = message.totalPackets - 1;
+			if (message.packetIndex == totalIndex)
+			{
+				messagesToMove.insert(messagesToMove.end(), std::make_move_iterator(iter - totalIndex) , std::make_move_iterator(iter + 1));
+				iter = myMultipartMessages.erase(iter - totalIndex, iter + 1);
+			}
+		}
+
+		if (!messagesToMove.empty())
+		{
+			std::unique_lock lock(myMutex);
+			myMessages.insert(myMessages.end(), std::make_move_iterator(messagesToMove.begin()), std::make_move_iterator(messagesToMove.end()));
+		}
+	}
+
+	void Client::LogLastError()
 	{
 		if (myHasError)
 		{
@@ -148,14 +218,14 @@ namespace Network
 		}
 	}
 
-	bool Client::SendNetMessage(const NetMessage& aMessage)
+	bool Client::CanSendMessage()
 	{
 		if (!myIsConnected)
 		{
 			return false;
 		}
 
-		CheckError();
+		LogLastError();
 
 		if (myServerDisconnected)
 		{
@@ -163,7 +233,11 @@ namespace Network
 			myLogger.Warn("Connection to server has been lost!");
 			return false;
 		}
+		return true;
+	}
 
+	bool Client::SendNetMessageInternal(const NetMessage& aMessage)
+	{
 		if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			myLogger.Warn(std::format("SendNetMessage: sendto() failed with error code: {}", WSAGetLastError()));
@@ -185,9 +259,39 @@ namespace Network
 		}
 	}
 
+	bool Client::SendNetMessage(const NetMessage& aMessage)
+	{
+		if (!CanSendMessage())
+		{
+			return false;
+		}
+
+		const_cast<unsigned short&>(aMessage.senderID) = mySenderID;
+		const_cast<unsigned short&>(aMessage.messageID) = myIDGenerator++;
+
+		return SendNetMessageInternal(aMessage);
+	}
+
+	bool Client::SendMultipartMessage(const NetMessage& aMessage)
+	{
+		if (!CanSendMessage())
+		{
+			return false;
+		}
+
+		const_cast<unsigned short&>(aMessage.senderID) = mySenderID;
+
+		return SendNetMessageInternal(aMessage);
+	}
+
+	unsigned short Client::GetMessageID()
+	{
+		return myIDGenerator++;
+	}
+
 	std::vector<NetMessage> Client::Flush()
 	{
-		CheckError();
+		LogLastError();
 		std::unique_lock lock(myMutex);
 		std::vector<NetMessage> copy;
 		copy.swap(myMessages);
@@ -204,8 +308,16 @@ namespace Network
 			// Try to receive some data
 			if (recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen) != SOCKET_ERROR)
 			{
-				std::unique_lock lock(myMutex);
-				myMessages.emplace_back(answer);
+				if (answer.totalPackets == 1)
+				{
+					std::unique_lock lock(myMutex);
+					myMessages.emplace_back(answer);
+				}
+				else
+				{
+					myMultipartMessages.emplace_back(answer);
+					HandleMultiMessages();
+				}
 			}
 			else
 			{

@@ -10,7 +10,7 @@
 #include "Managers\CollisionManager.h"
 #include "Managers\ObjectManager.h"
 #include "Managers\SceneManager.h"
-#include "NetworkClient/NetworkManager.h"
+#include "Network\NetworkManager.h"
 
 enum
 {
@@ -44,8 +44,12 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShou
 		instance.myWindowSize = aWindowSize;
 		instance.myWindowHandle = aHandle;
 
+		// Logging
 		instance.myLogger = std::make_unique<MainLogger>();
 		Logger::ourMainLogger = instance.myLogger.get();
+
+		// Blackboard
+		instance.myBlackboard = std::make_unique<Crimson::Blackboard<std::string>>();
 
 		// Threads
 		instance.myThreadPool = std::make_unique<ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
@@ -66,7 +70,7 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShou
 		// Network
 		if (aShouldConnectToNetwork)
 		{
-			instance.myNetworkManager = std::make_unique<Network::NetworkManager>();
+			instance.myNetworkManager = std::make_unique<NetworkManager>();
 			instance.myNetworkManager->Init();
 		}		
 
@@ -104,6 +108,11 @@ bool Engine::IsNetworkingEnabled()
 	return bool(Get().myNetworkManager);
 }
 
+Crimson::Blackboard<std::string>& Engine::GetBlackboard()
+{
+	return *Get().myBlackboard;
+}
+
 MainLogger& Engine::GetLogger()
 {
 	return *Get().myLogger;
@@ -139,7 +148,7 @@ SceneManager& Engine::GetSceneManager()
 	return *Get().mySceneManager;
 }
 
-Network::NetworkManager& Engine::GetNetworkManager()
+NetworkManager& Engine::GetNetworkManager()
 {
 	return *Get().myNetworkManager;
 }

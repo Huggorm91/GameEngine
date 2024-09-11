@@ -735,15 +735,18 @@ struct GameObjectData
 	bool IsActive;
 };
 
-void GameObject::Serialize(std::ostream& aStream) const
+void GameObject::Serialize(std::ostream& aStream, bool aIsForNetwork) const
 {
-	Binary::eType type = Binary::GameObject;
 	GameObjectData data{};
 	data.ID = myUUID;
 	data.ParentID = myParent ? myParent->myUUID : nullUUID;
 	data.ComponentCount = static_cast<unsigned>(myIndexList.size());
 	data.IsActive = myIsActive;
-	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
+	if (!aIsForNetwork)
+	{
+		Binary::eType type = Binary::GameObject;
+		aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
+	}
 	aStream.write(reinterpret_cast<char*>(&data), sizeof(data));
 	aStream.write(myName.c_str(), myName.size() + 1);
 	myTransform.Serialize(aStream);

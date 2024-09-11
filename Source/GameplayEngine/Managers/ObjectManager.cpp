@@ -4,14 +4,9 @@
 
 void ObjectManager::UpdateObjects()
 {
-	for (auto& object : myPersistantObjects)
+	for (auto& [id, object] : myGameObjects)
 	{
-		object.Update();
-	}
-
-	for (auto& object : *myTemporaryObjects)
-	{
-		object.Update();
+		object->Update();
 	}
 }
 
@@ -19,78 +14,66 @@ void ObjectManager::RenderObjects(bool aDebugDraw)
 {
 	if (aDebugDraw)
 	{
-		for (auto& object : myPersistantObjects)
+		for (auto& [id, object] : myGameObjects)
 		{
-			object.Render();
-			object.DebugDraw();
-		}
-
-		for (auto& object : *myTemporaryObjects)
-		{
-			object.Render();
-			object.DebugDraw();
+			object->Render();
+			object->DebugDraw();
 		}
 	}
 	else
 	{
-		for (auto& object : myPersistantObjects)
+		for (auto& [id, object] : myGameObjects)
 		{
-			object.Render();
-		}
-
-		for (auto& object : *myTemporaryObjects)
-		{
-			object.Render();
+			object->Render();
 		}
 	}
 }
 
 GameObject* ObjectManager::AddGameObject(bool anIsPersistant)
 {
-	GameObject* newObject = nullptr;
-
+	GameObject* pointer = nullptr;
+	GameObject newObject;
 	if (anIsPersistant)
 	{
-		newObject = &myPersistantObjects.emplace_back();
+		pointer = &myPersistantObjects.emplace(newObject.GetUUID(), std::move(newObject)).first->second;
 	}
 	else
 	{
-		newObject = &myTemporaryObjects->emplace_back();
+		pointer = &myTemporaryObjects->emplace(newObject.GetUUID(), std::move(newObject)).first->second;
 	}
 
-	return myGameObjects.emplace(newObject->GetUUID(), newObject).first->second;
+	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
 }
 
 GameObject* ObjectManager::AddGameObject(const GameObject& anObject, bool anIsPersistant)
 {
-	GameObject* newObject = nullptr;
-
+	GameObject* pointer = nullptr;
+	GameObject newObject = anObject;
 	if (anIsPersistant)
 	{
-		newObject = &myPersistantObjects.emplace_back(anObject);
+		pointer = &myPersistantObjects.emplace(newObject.GetUUID(), newObject).first->second;
 	}
 	else
 	{
-		newObject = &myTemporaryObjects->emplace_back(anObject);
+		pointer = &myTemporaryObjects->emplace(newObject.GetUUID(), newObject).first->second;
 	}
 
-	return myGameObjects.emplace(newObject->GetUUID(), newObject).first->second;
+	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
 }
 
 GameObject* ObjectManager::AddGameObject(GameObject&& anObject, bool anIsPersistant)
 {
-	GameObject* newObject = nullptr;
-
+	GameObject* pointer = nullptr;
 	if (anIsPersistant)
 	{
-		newObject = &myPersistantObjects.emplace_back(std::move(anObject));
+		pointer = &myPersistantObjects.emplace(anObject.GetUUID(), std::move(anObject)).first->second;
 	}
 	else
 	{
-		newObject = &myTemporaryObjects->emplace_back(std::move(anObject));
+		pointer = &myTemporaryObjects->emplace(anObject.GetUUID(), std::move(anObject)).first->second;
 	}
 
-	return myGameObjects.emplace(newObject->GetUUID(), newObject).first->second;
+	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
 }
 
 GameObject* ObjectManager::GetGameObject(const UUIDv4::UUID& anID)
@@ -107,18 +90,19 @@ bool ObjectManager::RemoveGameObject(const UUIDv4::UUID& anID)
 	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
 	{
 		myGameObjects.erase(iter);
+		// TODO: Fix "memory leak" casued by never removing objects from containers
 		return true;
 	}
 	return false;
 }
 
-void ObjectManager::SetTemporaryObjects(std::vector<GameObject>* anObjectList)
+void ObjectManager::SetTemporaryObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList)
 {
 	ClearTemporaryObjects();
 	myTemporaryObjects = anObjectList;
-	for (auto& object : *myTemporaryObjects)
+	for (auto& [id, object] : *myTemporaryObjects)
 	{
-		myGameObjects.emplace(object.GetUUID(), &object);
+		myGameObjects.emplace(id, &object);
 	}
 }
 
@@ -126,9 +110,9 @@ void ObjectManager::ClearTemporaryObjects()
 {
 	if (myTemporaryObjects)
 	{
-		for (auto& object : *myTemporaryObjects)
+		for (auto& [id, object] : *myTemporaryObjects)
 		{
-			myGameObjects.erase(object.GetUUID());
+			myGameObjects.erase(id);
 		}
 		myTemporaryObjects = nullptr;
 	}
@@ -136,9 +120,9 @@ void ObjectManager::ClearTemporaryObjects()
 
 void ObjectManager::ClearPersistantObjects()
 {
-	for (auto& object : myPersistantObjects)
+	for (auto& [id, object] : myPersistantObjects)
 	{
-		myGameObjects.erase(object.GetUUID());
+		myGameObjects.erase(id);
 	}
 	myPersistantObjects.clear();
 }

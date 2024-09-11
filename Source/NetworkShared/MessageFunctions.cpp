@@ -1,5 +1,7 @@
 #include "MessageFunctions.h"
 #include "CrimsonUtilities/Math/Vector3.hpp"
+#include "GameplayEngine/Network/GameObjectMessage.h"
+
 namespace Network
 {
 	NetMessage CreateConnectMessage(bool aNeedReply, const std::string& aUserName)
@@ -26,6 +28,14 @@ namespace Network
 		return message;
 	}
 
+	NetMessage CreatePingMessage()
+	{
+		NetMessage message;
+		message.type = MessageType::Ping;
+		message.needReply = true;
+		return message;
+	}
+
 	NetMessage CreateChatMessage(const std::string& aMessage)
 	{
 		NetMessage message;
@@ -35,20 +45,45 @@ namespace Network
 		return message;
 	}
 
-	NetMessage CreateGameObjectMessage(const UUIDv4::UUID& anID, const GameObjectMessage& aMessage)
+	NetMessage CreateGameObjectMessage(const GameObjectMessage& aMessage)
 	{
-		static_assert(sizeof(UUIDv4::UUID) + sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
+		static_assert(sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
 
-		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
 		constexpr rsize_t messageSize = sizeof(GameObjectMessage);
-		constexpr unsigned short size = idSize + messageSize;
 
 		NetMessage message;
-		message.dataSize = size;
+		message.dataSize = CalculateGameObjectMessageNonDataSize() + aMessage.size;
 		message.type = MessageType::GameObjectMessage;
 
+		memcpy_s(message.data, globalBuffLength, aMessage, messageSize);
+
+		return message;
+	}
+
+	NetMessage CreateCreateGameObjectMessage(const UUIDv4::UUID& anID, const std::vector<uint8_t>& someData)
+	{
+		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
+		assert(someData.size() <= GetMaximumCreateGameobjectDataSize() && "The data is too large to be packed into a NetMessage!");
+
+		NetMessage message;
+		message.dataSize = static_cast<unsigned short>(idSize + someData.size());
+		message.type = MessageType::CreateGameObject;
+
 		memcpy_s(message.data, globalBuffLength, &anID, idSize);
-		memcpy_s(message.data + idSize, globalBuffLength, aMessage, messageSize);
+		memcpy_s(message.data + idSize, globalBuffLength, someData.data(), someData.size());
+
+		return message;
+	}
+
+	NetMessage CreateDeleteGameObjectMessage(const UUIDv4::UUID& anID)
+	{
+		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
+
+		NetMessage message;
+		message.dataSize = idSize;
+		message.type = MessageType::DeleteGameObject;
+
+		memcpy_s(message.data, globalBuffLength, &anID, idSize);
 
 		return message;
 	}
@@ -64,24 +99,9 @@ namespace Network
 
 	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage)
 	{
-		static_assert(sizeof(UUIDv4::UUID) + sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
+		static_assert(sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
 		assert(aMessage.type == MessageType::GameObjectMessage && "Invalid MessageType!");
 
-		constexpr rsize_t idSize = sizeof(UUIDv4::UUID);
-		return reinterpret_cast<const GameObjectMessage&>(aMessage.data[idSize]);
-	}
-
-	NetMessage CreateMoveGameObjectMessage(const UUIDv4::UUID& anID, const Crimson::Vector3f& aPosition, const Crimson::Vector3f& aRotation)
-	{
-		constexpr rsize_t dataSize = sizeof(GameObjectMessage::data);
-		constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
-
-		GameObjectMessage message;
-		message.action = ObjectAction::Move;
-
-		memcpy_s(message.data, dataSize, &aPosition, vectorSize);
-		memcpy_s(message.data + vectorSize, dataSize, &aRotation, vectorSize);
-
-		return CreateGameObjectMessage(anID, message);
+		return reinterpret_cast<const GameObjectMessage&>(aMessage.data);
 	}
 }

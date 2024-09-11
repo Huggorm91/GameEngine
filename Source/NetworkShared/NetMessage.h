@@ -11,6 +11,7 @@ namespace Network
 			Connect,
 			Disconnect,
 			Confirmation,
+			ResendMessage,
 			Chat,
 			Ping,
 			GameObjectMessage,
@@ -22,6 +23,8 @@ namespace Network
 	struct NetMessage
 	{
 		MessageType::Enum type = MessageType::Invalid;
+		unsigned short senderID = 0;
+		unsigned short messageID = 0;
 		unsigned short dataSize = 0;
 		unsigned short packetIndex = 0;
 		unsigned short totalPackets = 1;

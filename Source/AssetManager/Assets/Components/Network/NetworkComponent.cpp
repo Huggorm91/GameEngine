@@ -1,6 +1,6 @@
 #include "AssetManager.pch.h"
 #include "NetworkComponent.h"
-#include "NetworkClient/NetworkManager.h"
+#include "GameplayEngine/Network/NetworkManager.h"
 #include "../../GameObject.h"
 
 NetworkComponent::NetworkComponent() : Component(ComponentType::Network)

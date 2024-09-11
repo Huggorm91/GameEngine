@@ -8,14 +8,19 @@
 
 namespace Network
 {
-	Server::Server() : 
-		myWSA(), 
-		myLogger("Server Logs/" + Crimson::FileNameTimestamp() + ".txt"),
-		myClientInfo(), 
-		myServerInfo(), 
-		myServerSocket(), 
-		myCurrentIP(nullptr), 
-		mySocketSize(sizeof(sockaddr_in)), 
+	static std::string GetLogfileName()
+	{
+		return "Server Logs/" + Crimson::FileNameTimestamp() + ".txt";
+	}
+	Server::Server() :
+		myWSA(),
+		myLogger(),
+		myClientInfo(),
+		myServerInfo(),
+		myServerSocket(),
+		myCurrentIP(nullptr),
+		mySocketSize(sizeof(sockaddr_in)),
+		myIDGenerator(0),
 		myIsRunning(false)
 	{}
 
@@ -85,7 +90,9 @@ namespace Network
 				inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, myCurrentIP, 16);
 				auto port = ntohs(myClientInfo.sin_port);
 				myLogger.Warn(std::format("Client: {}:{} has been disconnected!", myCurrentIP, port));
-				myClients.erase(GetIdentifier(myCurrentIP, port));
+				const auto& identifier = GetIdentifier(myCurrentIP, port);
+				myClients.erase(identifier);
+				myClientIDs.erase(identifier);
 			}
 			return;
 		}
@@ -101,6 +108,7 @@ namespace Network
 		client.ip = myCurrentIP;
 		client.port = port;
 
+		// TODO: Save all messages sent by clients in a searchable list, so that they can be resent in case of packet loss
 		switch (myMessage.type)
 		{
 		case MessageType::Invalid:
@@ -115,9 +123,38 @@ namespace Network
 			HandleDisconnect(client, identifier);
 			break;
 		}
+		case Network::MessageType::Confirmation:
+		{
+			HandleConfirmation();
+			break;
+		}
+		case Network::MessageType::ResendMessage:
+		{
+			break;
+		}
 		case MessageType::Chat:
 		{
 			HandleChat(client, identifier);
+			break;
+		}
+		case Network::MessageType::Ping:
+		{			
+			HandlePing(identifier);
+			return; // Should not send to all
+		}
+		case Network::MessageType::GameObjectMessage:
+		{
+			HandleGameObjectMessage(client, identifier);
+			break;
+		}
+		case Network::MessageType::CreateGameObject:
+		{
+			HandleGameObjectMessage(client, identifier);
+			break;
+		}
+		case Network::MessageType::DeleteGameObject:
+		{
+			HandleGameObjectMessage(client, identifier);
 			break;
 		}
 		default:
@@ -129,6 +166,7 @@ namespace Network
 		for (auto& id : myRemovedClients)
 		{
 			myClients.erase(id);
+			myClientIDs.erase(identifier);
 		}
 		myRemovedClients.clear();
 	}
@@ -147,6 +185,8 @@ namespace Network
 		// Cleanup
 		closesocket(myServerSocket);
 		WSACleanup();
+
+		myLogger.PrintHistoryToFile(GetLogfileName());
 	}
 
 	void Server::ErrorShutDown()
@@ -156,35 +196,41 @@ namespace Network
 			closesocket(myServerSocket);
 		}
 		WSACleanup();
+
+		myLogger.PrintHistoryToFile(GetLogfileName());
+
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
 
 	void Server::HandleConnect(ClientInfo& outClient, const std::string& anIdentifier)
 	{
-		//outClient.username = myMessage.data;
 		outClient.username = "Client" + std::to_string(outClient.port);
 
 		myClients.emplace(anIdentifier, outClient);
-		myLogger.Log(std::format("New connection from: {}\tUsername: {}", anIdentifier.c_str(), outClient.username.c_str()));
+		myClientIDs.emplace(anIdentifier, ++myIDGenerator);
+		myLogger.Log(std::format("New connection from: {}\tUsername: {}", anIdentifier, outClient.username));
 
-		SetMessageData(std::format("{} has joined the server.", outClient.username.c_str()));
+		SetMessageData(std::format("{} has joined the server.", outClient.username));
 
-		sendto(myServerSocket, CreateConfirmationMessage(), sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+		auto message = CreateConfirmationMessage();
+		memcpy_s(message.data, globalBuffLength, &myIDGenerator, sizeof(unsigned short));
+		sendto(myServerSocket, message, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
 	}
 
 	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
-			SetMessageData(std::format("{} has disconnected.", iter->second.username.c_str()));
-			myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier.c_str(), iter->second.username.c_str()));
+			SetMessageData(std::format("{} has disconnected.", iter->second.username));
+			myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier, iter->second.username));
+			myClientIDs.erase(iter->first);
 			myClients.erase(iter);
 		}
 		else
 		{
 			SetMessageData(std::format("UnknownUser{} has disconnected.", aClient.port));
-			myLogger.Log(std::format("Unknown user disconnected: {}:{}", aClient.ip.c_str(), aClient.port));
+			myLogger.Log(std::format("Unknown user disconnected: {}:{}", aClient.ip, aClient.port));
 		}
 	}
 
@@ -192,22 +238,49 @@ namespace Network
 	{
 	}
 
-	void Server::HandlePing()
+	void Server::HandlePing(const std::string& anIdentifier)
 	{
+		if (myMessage.needReply)
+		{
+			if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
+			{
+				SendToClient(iter->second, anIdentifier);
+				myLogger.Log(std::format("Ping from: {}\tUsername: {}", anIdentifier, iter->second.username));
+			}		
+			else
+			{
+				myLogger.Log(std::format("Ping from Unknown user: {}", anIdentifier));
+			}
+		}
+		else
+		{
+			// This would be a return call from someone the server has pinged
+		}
 	}
 
 	void Server::HandleChat(const ClientInfo& aClient, const std::string& anIdentifier)
 	{
-		std::string message;
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
-			SetMessageData(std::format("{}: {}", iter->second.username.c_str(), myMessage.data));
-			myLogger.Log(std::format("Message from: {}", myMessage.data));
+			SetMessageData(std::format("{}: {}", iter->second.username, myMessage.data));
+			myLogger.Log(std::format("{} sent message: {}", iter->second.username, myMessage.data));
 		}
 		else
 		{
 			SetMessageData(std::format("UnknownUser{}: {}", aClient.port, myMessage.data));
-			myLogger.Log(std::format("Unknown user: {}:{}\nTried to send message: {}", aClient.ip.c_str(), aClient.port, myMessage.data));
+			myLogger.Log(std::format("Unknown user: {}:{}\tSent message: {}", aClient.ip, aClient.port, myMessage.data));
+		}
+	}
+
+	void Server::HandleGameObjectMessage(const ClientInfo& aClient, const std::string& anIdentifier)
+	{
+		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
+		{
+			myLogger.Log(std::format("{} sent {}byte data to Object with UUID: {}", iter->second.username, myMessage.dataSize, ExtractUUID(myMessage).str()));
+		}
+		else
+		{
+			myLogger.Log(std::format("Unknown user: {}:{}\tSent {}byte data to Object with UUID: {}", aClient.ip, aClient.port, myMessage.dataSize, ExtractUUID(myMessage).str()));
 		}
 	}
 
@@ -227,20 +300,25 @@ namespace Network
 				continue;
 			}
 
-			if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&entry.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+			SendToClient(entry, id);
+		}
+	}
+
+	void Server::SendToClient(ClientInfo& outClient, const std::string& anIdentifier)
+	{
+		if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		{
+			myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
+			++outClient.failedMessageCount;
+			if (outClient.failedMessageCount > 5)
 			{
-				myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
-				++entry.failedMessageCount;
-				if (entry.failedMessageCount > 5)
-				{
-					myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", id.c_str(), entry.username.c_str()));
-					myRemovedClients.emplace_back(id);
-				}
+				myLogger.Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", anIdentifier, outClient.username));
+				myRemovedClients.emplace_back(anIdentifier);
 			}
-			else
-			{
-				entry.failedMessageCount = 0;
-			}
+		}
+		else
+		{
+			outClient.failedMessageCount = 0;
 		}
 	}
 

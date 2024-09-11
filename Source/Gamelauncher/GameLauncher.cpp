@@ -7,13 +7,14 @@
 #include "GraphicsEngine/Commands/Light/LitCmd_SetShadowBias.h"
 
 #include "AssetManager/AssetManager.h"
+#include "AssetManager/Assets/Components/Network/NetworkComponent.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/FirstPersonCameraControllerComponent.h"
 
-#include "NetworkClient/NetworkManager.h"
 #include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Time.h"
+#include "CrimsonUtilities/Math/Random.h"
 #include "CrimsonUtilities/Json/jsonCpp/json.h"
 #include "CrimsonUtilities/File/DirectoryFunctions.h"
 
@@ -21,6 +22,7 @@
 #include "GameplayEngine/Input/InputMapper.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+#include "GameplayEngine/Network/NetworkManager.h"
 
 #include "Logging/MainLogger.h"
 
@@ -34,11 +36,8 @@ GameLauncher::GameLauncher() :
 
 bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 {
-	myLogger = Logger::Create("GameLauncher");
 	myModuleHandle = aHInstance;
 	LoadSettings();
-
-	myLogger.Log(Crimson::GetAppPath());
 
 	constexpr LPCWSTR windowClassName = L"GameLauncher_MainWindow";
 
@@ -96,8 +95,10 @@ bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	try
 	{
 #endif // _DEBUG
-
 		Engine::Init(myMainWindowHandle, mySettings.windowSize, true);
+
+		myLogger = Logger::Create("GameLauncher");
+		myLogger.Log(Crimson::GetAppPath());
 
 #ifdef _RETAIL
 		GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
@@ -188,6 +189,10 @@ int GameLauncher::Run()
 
 void GameLauncher::Shutdown()
 {
+	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
+	{
+		Engine::GetNetworkManager().SendDeleteGameObject(Engine::GetBlackboard().GetValue<UUIDv4::UUID>("playerUUID"));
+	}
 }
 
 void GameLauncher::HandleCrash(const std::exception& anException)
@@ -255,6 +260,17 @@ void GameLauncher::Init()
 	player->SetPosition({ 0.f, 200.f, 0.f });
 	player->AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
 	player->AddComponent(FirstPersonCameraControllerComponent(cameraSpeed, mouseSensitivity));
+
+	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
+	{
+		GameObject networkObject(player->GetUUID());
+		networkObject.SetPosition({ 0.f, 200.f, 0.f });
+		auto& mesh = networkObject.AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
+		mesh.SetColor({ Crimson::Random::RandomNumber(1.f), Crimson::Random::RandomNumber(1.f) , Crimson::Random::RandomNumber(1.f) , 1.f });
+		networkObject.AddComponent<NetworkComponent>();
+		Engine::GetNetworkManager().SendCreateGameObject(networkObject);
+		Engine::GetBlackboard().SetValue("playerUUID", player->GetUUID());
+	}
 }
 
 void GameLauncher::Update()
@@ -319,14 +335,20 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::CreateGameObject:
 		{
+			if (message.totalPackets == 1u)
+			{
+				Engine::GetObjectManager().AddGameObject(Engine::GetNetworkManager().ExtractCreatedGameObject(message));
+			}
 			break;
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
+			Engine::GetObjectManager().RemoveGameObject(Network::ExtractUUID(message));
 			break;
 		}
 		default:
 			break;
 		}
 	}
+	Engine::GetNetworkManager().ClearMessages();
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "CrimsonUtilities/Math/Vector2.hpp"
+#include "CrimsonUtilities/Container/Blackboard.hpp"
 
 class ThreadPool;
 class PostMaster;
@@ -9,10 +10,7 @@ class CollisionManager;
 class ObjectManager;
 class SceneManager;
 class MainLogger;
-namespace Network
-{
-	class NetworkManager;
-}
+class NetworkManager;
 
 class Engine
 {
@@ -27,6 +25,7 @@ public:
 	static bool IsValid();
 	static bool IsNetworkingEnabled();
 
+	static Crimson::Blackboard<std::string>& GetBlackboard();
 	static MainLogger& GetLogger();
 	static ThreadPool& GetThreadPool();
 	static InputMapper& GetInputMapper();
@@ -34,7 +33,7 @@ public:
 	static CollisionManager& GetCollisionManager();
 	static ObjectManager& GetObjectManager();
 	static SceneManager& GetSceneManager();
-	static Network::NetworkManager& GetNetworkManager();
+	static NetworkManager& GetNetworkManager();
 
 	static const Crimson::Vector2i& GetWindowSize();
 	static HWND GetWindowHandle();
@@ -48,6 +47,7 @@ private:
 	Crimson::Vector2i myWindowSize;
 	HWND myWindowHandle;
 
+	std::unique_ptr<Crimson::Blackboard<std::string>> myBlackboard;
 	std::unique_ptr<MainLogger> myLogger;
 	std::unique_ptr<ThreadPool> myThreadPool;
 	std::unique_ptr<InputMapper> myInputMapper;
@@ -56,7 +56,7 @@ private:
 	std::unique_ptr<CollisionManager> myCollisionManager;
 	std::unique_ptr<ObjectManager> myObjectManager;
 	std::unique_ptr<SceneManager> mySceneManager;
-	std::unique_ptr<Network::NetworkManager> myNetworkManager;
+	std::unique_ptr<NetworkManager> myNetworkManager;
 
 	bool myIsInitialized;
 };

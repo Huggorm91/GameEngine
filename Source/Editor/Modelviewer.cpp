@@ -13,7 +13,6 @@
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 
-#include "NetworkClient/NetworkManager.h"
 #include "NetworkShared/MessageFunctions.h"
 
 #include "CrimsonUtilities/Time/Time.h"
@@ -22,6 +21,7 @@
 #include "GameplayEngine/Input/InputMapper.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+#include "GameplayEngine/Network/NetworkManager.h"
 
 #include "Logging/MainLogger.h"
 
@@ -105,11 +105,8 @@ void ModelViewer::HandleCrash(const std::exception& anException, bool aTrySaving
 
 bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 {
-	myLogger = Logger::Create("ModelViewer");
 	myModuleHandle = aHInstance;
 	LoadState();
-
-	myLogger.Log(Crimson::GetAppPath());
 
 	constexpr LPCWSTR windowClassName = L"CrimsonEngine_MainWindow";
 
@@ -170,9 +167,10 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	try
 	{
 #endif // _DEBUG
-
 	Engine::Init(myMainWindowHandle, myApplicationState.windowSize, false);
 
+	myLogger = Logger::Create("ModelViewer");
+	myLogger.Log(Crimson::GetAppPath());
 #ifdef _RETAIL
 	GraphicsEngine::Get().Initialize(myMainWindowHandle, false);
 #else
@@ -311,7 +309,7 @@ void ModelViewer::SetPlayMode(bool aState)
 				childlist.emplace(id, object->GetParent()->GetUUID());
 			}
 			
-			auto pointer = std::shared_ptr<GameObject>(&myPlayModeScene.gameObjects.emplace_back(std::move(copy)), [](GameObject*) {});
+			auto pointer = std::shared_ptr<GameObject>(&myPlayModeScene.gameObjects.emplace(id, std::move(copy)).first->second, [](GameObject*) {});
 			myPlayModePointers.emplace(id, pointer);
 		}
 
@@ -435,9 +433,11 @@ void ModelViewer::SaveScene(const std::string& aPath, bool aAsBinary)
 	Scene scene;
 	scene.name = Crimson::GetFileNameWithoutExtension(aPath);
 	scene.gameObjects.reserve(myObjectOrder.size());
+
+	// TODO: Fix so an actual order can be saved
 	for (auto& id : myObjectOrder)
 	{
-		scene.gameObjects.emplace_back(std::move(*myGameobjects.at(id)));
+		scene.gameObjects.emplace(id, std::move(*myGameobjects.at(id)));
 	}
 	Engine::GetSceneManager().SaveScene(aPath, scene, aAsBinary);
 	mySceneIsEdited = false;
@@ -464,16 +464,16 @@ void ModelViewer::ModelViewer::LoadScene(const std::string& aPath)
 		mySceneName = scene.name;
 
 		std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
-		for (auto& object : scene.gameObjects)
+		for (auto& [id, object] : scene.gameObjects)
 		{
 			GameObject copy = object;
 			copy.CopyUuidOf(object);
 			if (object.HasParent())
 			{
-				childlist.emplace(object.GetUUID(), object.GetParent()->GetUUID());
+				childlist.emplace(id, object.GetParent()->GetUUID());
 			}
-			myObjectOrder.emplace_back(object.GetUUID());
-			myGameobjects.emplace(object.GetUUID(), std::make_shared<GameObject>(std::move(copy)));
+			myObjectOrder.emplace_back(id);
+			myGameobjects.emplace(id, std::make_shared<GameObject>(std::move(copy)));
 		}
 
 		for (auto& [childID, parentID] : childlist)

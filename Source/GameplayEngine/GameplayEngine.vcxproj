@@ -206,6 +206,8 @@
     <ClInclude Include="Input\XBoxController.h" />
     <ClInclude Include="Managers\CollisionManager.h" />
     <ClInclude Include="GameplayEngine.pch.h" />
+    <ClInclude Include="Network\GameObjectMessage.h" />
+    <ClInclude Include="Network\NetworkManager.h" />
     <ClInclude Include="Managers\SceneManager.h" />
     <ClInclude Include="Managers\ObjectManager.h" />
     <ClInclude Include="PostMaster\EnumMessageTypes.h" />
@@ -238,6 +240,7 @@
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Game|x64'">false</IncludeInUnityFile>
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Release Editor|x64'">false</IncludeInUnityFile>
     </ClCompile>
+    <ClCompile Include="Network\NetworkManager.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
     <ClCompile Include="Managers\ObjectManager.cpp" />
     <ClCompile Include="PostMaster\Message.cpp" />

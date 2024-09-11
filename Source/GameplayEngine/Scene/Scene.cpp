@@ -6,25 +6,21 @@ Scene::Scene(const Json::Value& aJson) : name(aJson["SceneName"].asString())
 	const auto& jsonObjects = aJson["GameObjects"];
 	gameObjects.reserve(jsonObjects.size());
 
-	std::unordered_map<UUIDv4::UUID, unsigned> idToIndex;
-	std::unordered_map<unsigned, UUIDv4::UUID> childlist;
-	unsigned index = 0;
+	std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
 	for (auto& json : jsonObjects)
 	{
 		GameObject object = json;
 		const std::string& parentID = GameObject::GetParentID(json);
 		if (!parentID.empty())
 		{
-			childlist.emplace(index, parentID);
+			childlist.emplace(object.GetUUID(), parentID);
 		}
-		gameObjects.emplace_back(object);
-		idToIndex.emplace(object.GetUUID(), index);
-		++index;
+		gameObjects.emplace(object.GetUUID(), object);
 	}
 
-	for (auto& [childIndex, parentID] : childlist)
+	for (auto& [childID, parentID] : childlist)
 	{
-		gameObjects.at(idToIndex.at(parentID)).AddChild(&gameObjects.at(childIndex));
+		gameObjects.at(parentID).AddChild(&gameObjects.at(childID));
 	}
 }
 
@@ -32,26 +28,22 @@ void CopyObjects(Scene& aCopy, const Scene& anOriginal)
 {
 	aCopy.gameObjects.reserve(anOriginal.gameObjects.size());
 
-	std::unordered_map<UUIDv4::UUID, unsigned> idToIndex;
-	std::unordered_map<unsigned, UUIDv4::UUID> childlist;
-	unsigned index = 0;
-	for (auto& object : anOriginal.gameObjects)
+	std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
+	for (auto& [id, object] : anOriginal.gameObjects)
 	{
 		GameObject copy = object;
 		copy.CopyUuidOf(object);
-		aCopy.gameObjects.emplace_back(std::move(copy));
+		aCopy.gameObjects.emplace(id, std::move(copy));
 
 		if (object.HasParent())
 		{
-			childlist.emplace(index, object.GetParent()->GetUUID());
+			childlist.emplace(id, object.GetParent()->GetUUID());
 		}
-		idToIndex.emplace(object.GetUUID(), index);
-		++index;
 	}
 
-	for (auto& [childIndex, parentID] : childlist)
+	for (auto& [childID, parentID] : childlist)
 	{
-		aCopy.gameObjects.at(idToIndex.at(parentID)).AddChild(&aCopy.gameObjects.at(childIndex));
+		aCopy.gameObjects.at(parentID).AddChild(&aCopy.gameObjects.at(childID));
 	}
 }
 
@@ -82,8 +74,7 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 	unsigned gameobjectCount = 0;
 	aStream.read(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
 
-	std::unordered_map<UUIDv4::UUID, unsigned> idToIndex;
-	std::unordered_map<unsigned, UUIDv4::UUID> childlist;
+	std::unordered_map<UUIDv4::UUID, UUIDv4::UUID> childlist;
 	for (unsigned i = 0; i < gameobjectCount; i++)
 	{
 		aStream.read(reinterpret_cast<char*>(&type), sizeof(type));
@@ -92,19 +83,18 @@ std::istream& operator>>(std::istream& aStream, Scene& aScene)
 			throw std::runtime_error("SceneLoader::LoadBinaryScene: Invalid Binary::Type when loading GameObject.");
 		}
 
-		GameObject object;
+		GameObject object(GameObject::nullUUID);
 		const UUIDv4::UUID& parentID = object.Deserialize(aStream);
 		if (parentID != GameObject::nullUUID)
 		{
-			childlist.emplace(i, parentID);
+			childlist.emplace(object.GetUUID(), parentID);
 		}
-		idToIndex.emplace(object.GetUUID(), i);
-		aScene.gameObjects.emplace_back(std::move(object));
+		aScene.gameObjects.emplace(object.GetUUID(), std::move(object));
 	}
 
 	for (auto& [childIndex, parentID] : childlist)
 	{
-		aScene.gameObjects.at(idToIndex.at(parentID)).AddChild(&aScene.gameObjects.at(childIndex));
+		aScene.gameObjects.at(parentID).AddChild(&aScene.gameObjects.at(childIndex));
 	}
 	return aStream;
 }
@@ -118,7 +108,7 @@ std::ostream& operator<<(std::ostream& aStream, const Scene& aScene)
 	aStream.write(reinterpret_cast<char*>(&type), sizeof(type));
 	aStream.write(aScene.name.c_str(), aScene.name.size() + 1);
 	aStream.write(reinterpret_cast<char*>(&gameobjectCount), sizeof(gameobjectCount));
-	for (auto& object : aScene.gameObjects)
+	for (auto& [id, object] : aScene.gameObjects)
 	{
 		object.Serialize(aStream);
 	}
