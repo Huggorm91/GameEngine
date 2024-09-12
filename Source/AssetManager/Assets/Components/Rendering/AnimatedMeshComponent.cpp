@@ -55,17 +55,6 @@ void AnimatedMeshComponent::Update()
 	}
 
 	myAnimation->Update();
-	Render();
-}
-
-void AnimatedMeshComponent::UpdateNoRender()
-{
-	if (!myIsActive || !myAnimation)
-	{
-		return;
-	}
-
-	myAnimation->Update();
 }
 
 void AnimatedMeshComponent::Render()

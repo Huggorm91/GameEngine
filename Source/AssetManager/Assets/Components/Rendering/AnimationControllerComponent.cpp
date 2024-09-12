@@ -19,7 +19,8 @@ AnimationControllerComponent::AnimationControllerComponent(const AnimatedMeshCom
 }
 
 AnimationControllerComponent::AnimationControllerComponent(const Json::Value& aJson) :
-	AnimatedMeshComponent(aJson)
+	AnimatedMeshComponent(aJson),
+	myAnimationTimer(0.f)
 {}
 
 AnimationControllerComponent& AnimationControllerComponent::operator=(const AnimatedMeshComponent& aComponent)
@@ -33,17 +34,6 @@ AnimationControllerComponent& AnimationControllerComponent::operator=(const Anim
 }
 
 void AnimationControllerComponent::Update()
-{
-	if (!myIsActive)
-	{
-		return;
-	}
-
-	UpdateNoRender();
-	Render();
-}
-
-void AnimationControllerComponent::UpdateNoRender()
 {
 	if (!myIsActive || !myAnimation)
 	{

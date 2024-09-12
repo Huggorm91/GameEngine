@@ -111,11 +111,6 @@ MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
 	return *this;
 }
 
-void MeshComponent::Update()
-{
-	Render();
-}
-
 void MeshComponent::Render()
 {
 	if (!myIsActive)

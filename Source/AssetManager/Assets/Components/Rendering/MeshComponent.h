@@ -17,7 +17,6 @@ public:
 	MeshComponent& operator=(const MeshComponent& aComponent);
 	MeshComponent& operator=(MeshComponent&& aComponent) noexcept;
 
-	void Update() override;
 	void Render() override;
 
 	void Init(GameObject* aParent) override;

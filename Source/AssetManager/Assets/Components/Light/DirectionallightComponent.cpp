@@ -48,11 +48,6 @@ DirectionallightComponent& DirectionallightComponent::operator=(const Directiona
 	return *this;
 }
 
-void DirectionallightComponent::Update()
-{
-	Render();
-}
-
 void DirectionallightComponent::Render()
 {
 	if (!myIsActive)

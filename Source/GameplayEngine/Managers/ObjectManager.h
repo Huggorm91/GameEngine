@@ -7,7 +7,7 @@ public:
 	ObjectManager() = default;
 	~ObjectManager() = default;
 
-	void UpdateObjects();
+	void UpdateObjects(bool aShouldRender = true);
 	void RenderObjects(bool aDebugDraw = false);
 
 	GameObject* AddGameObject(bool anIsPersistant = false);

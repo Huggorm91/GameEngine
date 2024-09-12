@@ -517,7 +517,7 @@ void ModelViewer::Update()
 
 	if (myIsSceneActive)
 	{
-		myCamera.Update();
+		myCamera.Render();
 		UpdateScene();
 	}
 

@@ -49,11 +49,6 @@ PointlightComponent& PointlightComponent::operator=(const PointlightComponent& a
 	return *this;
 }
 
-void PointlightComponent::Update()
-{
-	Render();
-}
-
 void PointlightComponent::Render()
 {
 	if (!myIsActive)

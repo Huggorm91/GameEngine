@@ -16,7 +16,6 @@ public:
 	AnimatedMeshComponent& operator=(AnimatedMeshComponent&& aComponent) noexcept = default;
 
 	void Update() override;
-	virtual void UpdateNoRender();
 
 	void Render() override;
 

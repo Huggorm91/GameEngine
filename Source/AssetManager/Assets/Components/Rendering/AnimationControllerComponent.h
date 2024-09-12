@@ -18,7 +18,6 @@ public:
 	AnimationControllerComponent& operator=(AnimationControllerComponent&& aComponent) noexcept = default;
 
 	void Update() override;
-	void UpdateNoRender() override;
 
 	using AnimatedMeshComponent::Init;
 	void Init(GameObject* aParent) override;

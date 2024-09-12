@@ -13,7 +13,7 @@ public:
 	PerspectiveCameraComponent& operator=(const PerspectiveCameraComponent& aLight) = default;
 	PerspectiveCameraComponent& operator=(PerspectiveCameraComponent&& aLight) = default;
 
-	void Update() override;
+	void Render() override;
 
 	void SetHorizontalFOV(float aDegree);
 	void SetVerticalFOV(float aDegree);

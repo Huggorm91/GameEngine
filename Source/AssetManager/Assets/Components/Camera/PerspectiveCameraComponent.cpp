@@ -55,7 +55,7 @@ PerspectiveCameraComponent::PerspectiveCameraComponent(const Json::Value& aJson)
 	UpdateTransform();
 }
 
-void PerspectiveCameraComponent::Update()
+void PerspectiveCameraComponent::Render()
 {
 	if (!myIsActive)
 	{

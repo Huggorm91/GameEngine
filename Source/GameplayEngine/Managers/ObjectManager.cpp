@@ -2,12 +2,23 @@
 #include "ObjectManager.h"
 
 
-void ObjectManager::UpdateObjects()
+void ObjectManager::UpdateObjects(bool aShouldRender)
 {
-	for (auto& [id, object] : myGameObjects)
+	if (aShouldRender)
 	{
-		object->Update();
+		for (auto& [id, object] : myGameObjects)
+		{
+			object->Update();
+			object->Render();
+		}
 	}
+	else
+	{
+		for (auto& [id, object] : myGameObjects)
+		{
+			object->Update();
+		}
+	}	
 }
 
 void ObjectManager::RenderObjects(bool aDebugDraw)

@@ -14,7 +14,6 @@ public:
 	PointlightComponent& operator=(const PointlightComponent& aLight);
 	PointlightComponent& operator=(PointlightComponent&& aLight) = default;
 
-	void Update() override;
 	void Render() override;
 
 	void SetRadius(float aRadius);

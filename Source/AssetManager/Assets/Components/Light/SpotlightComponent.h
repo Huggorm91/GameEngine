@@ -14,7 +14,6 @@ public:
 	SpotlightComponent& operator=(const SpotlightComponent& aLight);
 	SpotlightComponent& operator=(SpotlightComponent&& aLight) = default;
 
-	void Update() override;
 	void Render() override;
 
 	void SetRange(float aRange);

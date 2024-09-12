@@ -70,11 +70,6 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 	return *this;
 }
 
-void SpotlightComponent::Update()
-{
-	Render();
-}
-
 void SpotlightComponent::Render()
 {
 	if (!myIsActive)

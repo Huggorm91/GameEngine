@@ -15,7 +15,7 @@ Scene::Scene(const Json::Value& aJson) : name(aJson["SceneName"].asString())
 		{
 			childlist.emplace(object.GetUUID(), parentID);
 		}
-		gameObjects.emplace(object.GetUUID(), object);
+		gameObjects.emplace(object.GetUUID(), std::move(object));
 	}
 
 	for (auto& [childID, parentID] : childlist)

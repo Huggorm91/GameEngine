@@ -62,11 +62,11 @@ void SkeletonEditor::Update()
 		return;
 	}
 
-	myCamera.Update();
+	myCamera.Render();
 
 	if (myPlayCount > 0)
 	{
-		myMesh->UpdateNoRender();
+		myMesh->Update();
 		myAnimationTimer += Crimson::Time::GetDeltaTime();
 		if (myAnimationTimer >= myMesh->myAnimationDelta)
 		{

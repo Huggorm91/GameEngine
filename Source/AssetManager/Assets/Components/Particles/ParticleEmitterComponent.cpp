@@ -38,11 +38,6 @@ void ParticleEmitterComponent::Init(GameObject* aParent)
 	}
 }
 
-void ParticleEmitterComponent::Update()
-{
-	Render();
-}
-
 void ParticleEmitterComponent::Render()
 {
 	if (!myIsActive)

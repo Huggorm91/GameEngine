@@ -14,7 +14,6 @@ public:
 	DirectionallightComponent& operator=(const DirectionallightComponent& aLight);
 	DirectionallightComponent& operator=(DirectionallightComponent&& aLight) = default;
 
-	void Update() override;
 	void Render() override;
 
 	void SetLightDirection(const Crimson::Vector3f& aDirection);
