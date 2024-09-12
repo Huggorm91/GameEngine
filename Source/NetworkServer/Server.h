@@ -37,6 +37,7 @@ namespace Network
 
 		std::unordered_map<std::string, ClientInfo> myClients;
 		std::unordered_map<std::string, unsigned short> myClientIDs;
+		std::unordered_map<std::string, std::vector<NetMessage>> myClientHistory;
 		std::vector<std::string> myRemovedClients;
 		NetMessage myMessage;
 		WSADATA myWSA;
@@ -65,5 +66,8 @@ namespace Network
 		void SendToClient(ClientInfo& outClient, const std::string& anIdentifier);
 
 		std::string GetIdentifier(char* anIP, unsigned short aPort);
+
+		// Returns the error code
+		int LogWSAError();
 	};
 }

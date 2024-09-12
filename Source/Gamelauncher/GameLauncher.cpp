@@ -144,6 +144,10 @@ int GameLauncher::Run()
 	ZeroMemory(&msg, sizeof(MSG));
 
 	Init();
+	if (Engine::IsNetworkingEnabled())
+	{
+		HandleNetmessages();
+	}
 	Crimson::Time::Init();
 
 	bool isRunning = true;

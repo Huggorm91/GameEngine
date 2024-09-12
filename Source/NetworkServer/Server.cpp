@@ -38,7 +38,8 @@ namespace Network
 		myLogger.Log("Initializing Winsock...");
 		if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
 		{
-			myLogger.Err(std::format("Failed. Error Code: {}", WSAGetLastError()));
+			myLogger.Err("Failed to initialize!");
+			LogWSAError();
 			ErrorShutDown();
 		}
 
@@ -46,7 +47,8 @@ namespace Network
 		myLogger.Log("Creating socket...");
 		if ((myServerSocket = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
 		{
-			myLogger.Err(std::format("Could not create socket: {}", WSAGetLastError()));
+			myLogger.Err("Could not create socket!");
+			LogWSAError();
 			ErrorShutDown();
 		}
 
@@ -59,7 +61,8 @@ namespace Network
 		myLogger.Log("Binding socket...");
 		if (bind(myServerSocket, (sockaddr*)&myServerInfo, mySocketSize) == SOCKET_ERROR)
 		{
-			myLogger.Err(std::format("Bind failed with error code: {}", WSAGetLastError()));
+			myLogger.Err("Bind failed!");
+			LogWSAError();
 			ErrorShutDown();
 		}
 
@@ -76,12 +79,12 @@ namespace Network
 		ZeroMemory(myCurrentIP, 16);
 
 		// try to receive some data, this is a blocking call
-		if (recvfrom(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
+		if (recvfrom(myServerSocket, myMessage, sizeof(NetMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
 		{
-			auto error = WSAGetLastError();
-			myLogger.Err(std::format("recvfrom() failed with error code: {}", error));
-			if (error != 10054)
+			if (WSAGetLastError() != 10054)
 			{
+				myLogger.Err("recvfrom() failed!");
+				LogWSAError();
 				ErrorShutDown();
 			}
 			else
@@ -138,7 +141,7 @@ namespace Network
 			break;
 		}
 		case Network::MessageType::Ping:
-		{			
+		{
 			HandlePing(identifier);
 			return; // Should not send to all
 		}
@@ -207,15 +210,24 @@ namespace Network
 	{
 		outClient.username = "Client" + std::to_string(outClient.port);
 
+		myLogger.Log(std::format("New connection from: {}\tUsername: {}", anIdentifier, outClient.username));
+		SetMessageData(std::format("{} has joined the server.", outClient.username));
+
 		myClients.emplace(anIdentifier, outClient);
 		myClientIDs.emplace(anIdentifier, ++myIDGenerator);
-		myLogger.Log(std::format("New connection from: {}\tUsername: {}", anIdentifier, outClient.username));
-
-		SetMessageData(std::format("{} has joined the server.", outClient.username));
 
 		auto message = CreateConfirmationMessage();
 		memcpy_s(message.data, globalBuffLength, &myIDGenerator, sizeof(unsigned short));
 		sendto(myServerSocket, message, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+
+		for (auto& [id, history] : myClientHistory)
+		{
+			for (auto& oldMessage : history)
+			{
+				sendto(myServerSocket, oldMessage, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+			}
+		}
+		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myMessage);
 	}
 
 	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
@@ -225,6 +237,7 @@ namespace Network
 			SetMessageData(std::format("{} has disconnected.", iter->second.username));
 			myLogger.Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier, iter->second.username));
 			myClientIDs.erase(iter->first);
+			myClientHistory.erase(iter->first);
 			myClients.erase(iter);
 		}
 		else
@@ -246,7 +259,7 @@ namespace Network
 			{
 				SendToClient(iter->second, anIdentifier);
 				myLogger.Log(std::format("Ping from: {}\tUsername: {}", anIdentifier, iter->second.username));
-			}		
+			}
 			else
 			{
 				myLogger.Log(std::format("Ping from Unknown user: {}", anIdentifier));
@@ -277,6 +290,8 @@ namespace Network
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
 			myLogger.Log(std::format("{} sent {}byte data to Object with UUID: {}", iter->second.username, myMessage.dataSize, ExtractUUID(myMessage).str()));
+			// TODO: Make sure only the latest message of each UUID and type is saved
+			myClientHistory[anIdentifier].emplace_back(myMessage);
 		}
 		else
 		{
@@ -306,9 +321,10 @@ namespace Network
 
 	void Server::SendToClient(ClientInfo& outClient, const std::string& anIdentifier)
 	{
-		if (sendto(myServerSocket, myMessage, sizeof(myMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		if (sendto(myServerSocket, myMessage, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			myLogger.Err(std::format("sendto() failed with error code: {}", WSAGetLastError()));
+			myLogger.Err("sendto() failed!");
+			LogWSAError();
 			++outClient.failedMessageCount;
 			if (outClient.failedMessageCount > 5)
 			{
@@ -327,4 +343,31 @@ namespace Network
 		return std::string(anIP) + ':' + std::to_string(aPort);
 	}
 
+	int Server::LogWSAError()
+	{
+		int error = WSAGetLastError();
+
+		char buffer[256]('\0');
+
+		FormatMessageA(
+			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,		// flags
+			NULL,															// lpsource
+			error,															// message id
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),						// languageid
+			buffer,															// output buffer
+			sizeof(buffer),													// size of msgbuf, bytes
+			NULL															// va_list of arguments
+		);
+
+		if (buffer)
+		{
+			myLogger.Err(std::format("WSA error code {}: {}", error, buffer));
+		}
+		else
+		{
+			myLogger.Err(std::format("Unknown WSA error code: {}", error));
+		}
+
+		return error;
+	}
 }

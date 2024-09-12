@@ -23,8 +23,5 @@
 	result << ":";
 	result << std::setfill('0') << std::setw(2) << st.wSecond;
 
-	std::string test = "test";
-	result << test;
-
 	return result.str();
 }

@@ -92,7 +92,7 @@ void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUI
 	message.size = vectorSize + vectorSize;
 
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
-	memcpy_s(message.data + vectorSize, dataSize, &aTransform.GetRotationRadian(), vectorSize);
+	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
 
 	myClient->SendNetMessage(Network::CreateGameObjectMessage(message));
 }
