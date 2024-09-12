@@ -14,6 +14,7 @@
 #include <array>
 #include <memory>
 #include <vector>
+#include <format>
 #include <unordered_map>
 #include <unordered_set>
 #include <Windows.h>

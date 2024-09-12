@@ -17,10 +17,15 @@ public:
 
 	void TransformHasChanged() const override;
 
+	void SetSyncFrequency(float aTimeBetweenSyncs);
+	void SyncTransform(bool aState);
+
 	// void CreateImGuiComponents(const std::string& aWindowName) override;
 	Json::Value ToJson() const override;
 
 private:
+	float mySyncFrequency;
+	float mySyncTimer;
 	enum SyncFlags
 	{
 		eSyncTransform,

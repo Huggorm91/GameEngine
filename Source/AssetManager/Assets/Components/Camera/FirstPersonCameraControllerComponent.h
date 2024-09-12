@@ -26,6 +26,9 @@ public:
 	Json::Value ToJson() const override;
 
 private:
+#ifndef _RETAIL
+	bool myIsMoving;
+#endif // !_RETAIL
 	float myMouseSensitivity;
 	float mySpeed;
 };

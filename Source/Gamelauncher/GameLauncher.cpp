@@ -260,9 +260,14 @@ void GameLauncher::Init()
 	player->SetPosition({ 0.f, 200.f, 0.f });
 	player->AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
 	player->AddComponent(FirstPersonCameraControllerComponent(cameraSpeed, mouseSensitivity));
+	
 
 	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
 	{
+		auto& networkComponent = player->AddComponent<NetworkComponent>();
+		networkComponent.SyncTransform(true);
+		networkComponent.SetSyncFrequency(1.f/60.f);
+
 		GameObject networkObject(player->GetUUID());
 		networkObject.SetPosition({ 0.f, 200.f, 0.f });
 		auto& mesh = networkObject.AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
@@ -327,6 +332,7 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
+			myLogger.Log(std::format("Recieved {}bytes of data for object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			if (auto object = Engine::GetObjectManager().GetGameObject(Network::ExtractUUID(message)))
 			{
 				object->RecieveNetmessage(Network::ExtractGameObjectMessage(message));
@@ -335,6 +341,7 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::CreateGameObject:
 		{
+			myLogger.Log(std::format("Recieved {}bytes of data for creating object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			if (message.totalPackets == 1u)
 			{
 				Engine::GetObjectManager().AddGameObject(Engine::GetNetworkManager().ExtractCreatedGameObject(message));
@@ -343,6 +350,7 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
+			myLogger.Log(std::format("Recieved {}bytes of data for deleting object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			Engine::GetObjectManager().RemoveGameObject(Network::ExtractUUID(message));
 			break;
 		}

@@ -4,15 +4,36 @@
 #include "Assets/GameObject.h"
 #include "PerspectiveCameraComponent.h"
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent() : Component(ComponentType::FirstPersonCameraController), myMouseSensitivity(0.f), mySpeed(0.f)
+// TODO: Remove everything inside #ifndef _RETAIL
+// Its only there for a school assignment
+
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent() : 
+	Component(ComponentType::FirstPersonCameraController), 
+#ifndef _RETAIL
+	myIsMoving(false),
+#endif // !_RETAIL
+	myMouseSensitivity(0.f), 
+	mySpeed(0.f)
 {
 }
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(float aSpeed, float aSensitivity) : Component(ComponentType::FirstPersonCameraController), myMouseSensitivity(aSensitivity), mySpeed(aSpeed)
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(float aSpeed, float aSensitivity) : 
+	Component(ComponentType::FirstPersonCameraController), 
+#ifndef _RETAIL
+	myIsMoving(false),
+#endif // !_RETAIL
+	myMouseSensitivity(aSensitivity), 
+	mySpeed(aSpeed)
 {
 }
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(const Json::Value& aJson) : Component(aJson), myMouseSensitivity(aJson["MouseSensitivity"].asFloat()), mySpeed(aJson["Speed"].asFloat())
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(const Json::Value& aJson) : 
+	Component(aJson), 
+#ifndef _RETAIL
+	myIsMoving(false),
+#endif // !_RETAIL
+	myMouseSensitivity(aJson["MouseSensitivity"].asFloat()), 
+	mySpeed(aJson["Speed"].asFloat())
 {
 }
 
@@ -28,7 +49,12 @@ void FirstPersonCameraControllerComponent::Init(GameObject* aParent)
 	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
 	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
 
+#ifndef _RETAIL
+	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
+	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
+#else
 	input.Attach(this, Crimson::eInputEvent::MouseMove);
+#endif // !_RETAIL
 }
 
 void FirstPersonCameraControllerComponent::SetSpeed(float aSpeed)
@@ -62,6 +88,32 @@ void FirstPersonCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anE
 		camera.SetRadianRotation(rotation);
 		break;
 	}
+#ifndef _RETAIL
+	case Crimson::eInputEvent::KeyDown:
+	{
+		if (aKey == Crimson::eKey::MouseRightButton)
+		{
+			auto& inputHandler = Engine::GetInputMapper();
+			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
+			inputHandler.CaptureMouse(true);
+			inputHandler.HideMouse();
+			myIsMoving = true;
+	}
+		break;
+	}
+	case Crimson::eInputEvent::KeyUp:
+	{
+		if (aKey == Crimson::eKey::MouseRightButton)
+		{
+			auto& inputHandler = Engine::GetInputMapper();
+			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
+			inputHandler.ReleaseMouse();
+			inputHandler.ShowMouse();
+			myIsMoving = false;
+		}
+		break;
+	}
+#endif // !_RETAIL
 	case Crimson::eInputEvent::KeyHeld:
 	{
 		float multiplier = mySpeed * Crimson::Time::GetUnscaledDeltaTime();

@@ -3,16 +3,35 @@
 #include "GameplayEngine/Network/NetworkManager.h"
 #include "../../GameObject.h"
 
-NetworkComponent::NetworkComponent() : Component(ComponentType::Network)
+NetworkComponent::NetworkComponent() : 
+	Component(ComponentType::Network), 
+	mySyncFrequency(0.f), 
+	mySyncTimer(0.f)
 {
 }
 
-NetworkComponent::NetworkComponent(const Json::Value& aJson) : Component(aJson), mySyncFlags(aJson["SyncFlags"].asLargestUInt())
+NetworkComponent::NetworkComponent(const Json::Value& aJson) : 
+	Component(aJson), 
+	mySyncFrequency(aJson["SyncFrequency"].asFloat()), 
+	mySyncTimer(0.f), 
+	mySyncFlags(aJson["SyncFlags"].asLargestUInt())
 {
 }
 
 void NetworkComponent::Update()
 {
+	if (!myIsActive)
+	{
+		return;
+	}
+
+	mySyncTimer += Crimson::Time::GetDeltaTime();
+	if (mySyncTimer < mySyncFrequency)
+	{
+		return;
+	}
+	mySyncTimer = 0.f;
+
 	if (myRaisedFlags[eTransformHasChanged])
 	{
 		Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
@@ -28,9 +47,25 @@ void NetworkComponent::TransformHasChanged() const
 	}
 }
 
+void NetworkComponent::SetSyncFrequency(float aTimeBetweenSyncs)
+{
+	mySyncFrequency = aTimeBetweenSyncs;
+	mySyncTimer = 0.f;
+}
+
+void NetworkComponent::SyncTransform(bool aState)
+{
+	mySyncFlags[eSyncTransform] = aState;
+	if (aState == false)
+	{
+		myRaisedFlags[eTransformHasChanged] = false;
+	}
+}
+
 Json::Value NetworkComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
+	result["SyncFrequency"] = mySyncFrequency;
 	result["SyncFlags"] = mySyncFlags.to_ullong();
 	return result;
 }

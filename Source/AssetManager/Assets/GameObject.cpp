@@ -1,6 +1,7 @@
 #include "AssetManager.pch.h"
 #include "GameObject.h"
 #include "Components/Rendering/AnimatedMeshComponent.h"
+#include "GameplayEngine/Network/GameObjectMessage.h"
 #include "Prefab.h"
 
 #ifdef EDITOR
@@ -348,6 +349,11 @@ void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* 
 
 void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 {
+	if (aMessage.action == Network::ObjectAction::Move)
+	{
+		myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
+		myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[sizeof(Crimson::Vector3f)]));
+	}
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).RecieveNetmessage(aMessage);
