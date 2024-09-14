@@ -68,8 +68,7 @@ public:
 	 * @param outDepthBuffer The device Depth Buffer. This is used as a 2D representation of 3D space, to determine if an object is in front of or behind another.
 	 * @returns True if initialization was successful.
 	 */
-	static bool Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBackBuffer, Texture*
-	                       outDepthBuffer);
+	static bool Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBackBuffer, Texture* outDepthBuffer);
 	static bool UnInitialize();
 
 	/**

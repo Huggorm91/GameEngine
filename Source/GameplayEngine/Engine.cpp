@@ -95,6 +95,7 @@ void Engine::EndFrame()
 	instance.myPostMaster->SendSavedMessages();
 	instance.myCollisionManager->CheckCollisions();
 	instance.myCollisionManager->EndFrame();
+	instance.myObjectManager->EndOfFrame();
 	instance.myInputMapper->Update();
 }
 

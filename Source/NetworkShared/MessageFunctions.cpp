@@ -48,6 +48,7 @@ namespace Network
 	NetMessage CreateGameObjectMessage(const GameObjectMessage& aMessage)
 	{
 		static_assert(sizeof(GameObjectMessage) == globalBuffLength, "Size of GameObjectMessage does not match 'globalBuffLength'!");
+		static_assert(CalculateGameObjectMessageNonDataSize() + sizeof(GameObjectMessage::data) == sizeof(GameObjectMessage), "Size of GameObjectMessage.data + CalculateGameObjectMessageNonDataSize() does not match size of GameObjectMessage!");
 
 		constexpr rsize_t messageSize = sizeof(GameObjectMessage);
 

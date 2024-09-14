@@ -19,6 +19,7 @@ enum class ComponentType
 	CapsuleCollider,
 	Network,
 	FirstPersonCameraController,
+	Assignment,
 	Count
 };
 

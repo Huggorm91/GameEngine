@@ -21,3 +21,4 @@
 #include "Collision/CapsuleColliderComponent.h"
 
 #include "Network/NetworkComponent.h"
+#include "Network/AssignmentComponent.h"

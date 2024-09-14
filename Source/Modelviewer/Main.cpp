@@ -5,6 +5,7 @@
 #include "CrimsonUtilities/Time/Time.h"
 
 LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType);
 #ifndef _RETAIL
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif // !_RETAIL
@@ -33,6 +34,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     setvbuf(consoleOut, nullptr, _IONBF, 1024);
 
 	HWND consoleWindow = GetConsoleWindow();
+    SetConsoleCtrlHandler(CtrlHandler, TRUE);
     const Crimson::Vector2i consoleSize = { 1280, 720 };
     int monitorCount = GetSystemMetrics(SM_CMONITORS);
     if (monitorCount > 1)
@@ -93,6 +95,7 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
     case WM_DESTROY:
     case WM_CLOSE:
     {
+        ModelViewer::Get().Shutdown();
         PostQuitMessage(0);
         return 0;
     }
@@ -123,4 +126,18 @@ LRESULT CALLBACK WinProc(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In
     }
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType)
+    {
+    case CTRL_CLOSE_EVENT:
+        ModelViewer::Get().Shutdown();
+        PostQuitMessage(0);
+        return TRUE;
+
+    default:
+        return FALSE;
+    }
 }

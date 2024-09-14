@@ -31,13 +31,15 @@ public:
 	// void Update() override;
 	// void DebugDraw() override;
 
-	// void OnCollisionEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnCollisionStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnCollisionExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 
-	// void OnTriggerEnter(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnTriggerStay(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
-	// void OnTriggerExit(eCollisionLayer aLayer, ColliderComponent* aCollider) override;
+	// void OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	// void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	// void OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+
+	// void RecieveNetmessage(const Network::GameObjectMessage& aMessage) override;
 
 	// void SetActive(bool aIsActive) override;
 	// void ToogleActive() override;

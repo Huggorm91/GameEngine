@@ -72,6 +72,10 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	{
 		return &aParent.AddComponent<FirstPersonCameraControllerComponent>();
 	}
+	case ComponentType::Assignment:
+	{
+		return &aParent.AddComponent<AssignmentComponent>();
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
@@ -163,6 +167,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	case ComponentType::FirstPersonCameraController:
 	{
 		aParent.AddComponent(FirstPersonCameraControllerComponent(aJson));
+		break;
+	}
+	case ComponentType::Assignment:
+	{
+		aParent.AddComponent(AssignmentComponent(aJson));
 		break;
 	}
 	default:
@@ -275,6 +284,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		controller.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::Assignment:
+	{
+		auto& assignment = aParent.AddComponent<AssignmentComponent>();
+		assignment.Deserialize(aStream);
+		break;
+	}
 	case ComponentType::Count:
 		break;
 	default:
@@ -350,6 +365,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::FirstPersonCameraController:
 	{
 		return "FirstPersonCameraController";
+	}
+	case ComponentType::Assignment:
+	{
+		return "Assignment";
 	}
 	default:
 	{
