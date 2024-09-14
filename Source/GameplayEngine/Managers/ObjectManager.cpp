@@ -4,6 +4,7 @@
 
 void ObjectManager::UpdateObjects(bool aShouldRender)
 {
+	myIsUpdating = true;
 	if (aShouldRender)
 	{
 		for (auto& [id, object] : myGameObjects)
@@ -19,10 +20,12 @@ void ObjectManager::UpdateObjects(bool aShouldRender)
 			object->Update();
 		}
 	}	
+	myIsUpdating = false;
 }
 
 void ObjectManager::RenderObjects(bool aDebugDraw)
 {
+	myIsUpdating = true;
 	if (aDebugDraw)
 	{
 		for (auto& [id, object] : myGameObjects)
@@ -38,6 +41,18 @@ void ObjectManager::RenderObjects(bool aDebugDraw)
 			object->Render();
 		}
 	}
+	myIsUpdating = false;
+}
+
+void ObjectManager::EndOfFrame()
+{
+	for (auto& id : myObjectsToRemove)
+	{
+		myGameObjects.erase(id);
+		myPersistantObjects.erase(id);
+		myTemporaryObjects->erase(id);
+	}
+	myObjectsToRemove.clear();
 }
 
 GameObject* ObjectManager::AddGameObject(bool anIsPersistant)
@@ -98,13 +113,27 @@ GameObject* ObjectManager::GetGameObject(const UUIDv4::UUID& anID)
 
 bool ObjectManager::RemoveGameObject(const UUIDv4::UUID& anID)
 {
-	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	if (myIsUpdating)
 	{
-		myGameObjects.erase(iter);
-		// TODO: Fix "memory leak" casued by never removing objects from containers
+		myObjectsToRemove.emplace_back(anID);
 		return true;
 	}
+	else
+	{
+		if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+		{
+			myGameObjects.erase(iter);
+			myPersistantObjects.erase(anID);
+			myTemporaryObjects->erase(anID);
+			return true;
+		}
+	}	
 	return false;
+}
+
+void ObjectManager::RemoveGameObjectAtEndOfFrame(const UUIDv4::UUID& anID)
+{
+	myObjectsToRemove.emplace_back(anID);
 }
 
 void ObjectManager::SetTemporaryObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList)
