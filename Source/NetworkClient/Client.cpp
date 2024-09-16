@@ -49,7 +49,7 @@ namespace Network
 		myLogger.Log("Initialising Winsock...");
 		if (WSAStartup(MAKEWORD(2, 2), &myWSA) != 0)
 		{
-			myLogger.Warn(std::format("Failed. Error Code: {}", WSAGetLastError()));
+			myLogger.Warn(std::format("WSAStartup failed with error Code: {}", WSAGetLastError()));
 			return;
 		}
 
@@ -61,8 +61,13 @@ namespace Network
 			return;
 		}
 
+		// Make socket non-blocking
 		u_long ne = TRUE;
-		ioctlsocket(mySocket, FIONBIO, &ne);
+		if (ioctlsocket(mySocket, FIONBIO, &ne) == SOCKET_ERROR)
+		{
+			myLogger.Warn(std::format("ioctlsocket() failed with error code: {}", WSAGetLastError()));
+			return;
+		}
 		myIsInitialized = true;
 		myLogger.Succ("Network client initialized!");
 		myIsRunning = true;
@@ -171,7 +176,7 @@ namespace Network
 		// TODO: Add timer that checks for time since last message in a chain was recieved
 
 		std::vector<NetMessage> messagesToMove;
-		for (auto iter = myMultipartMessages.begin(); iter != myMultipartMessages.end(); iter++)
+		for (auto iter = myMultipartMessages.begin(); iter != myMultipartMessages.end();)
 		{
 			const auto& message = *iter;
 			if (currentSender != message.senderID)
@@ -179,18 +184,21 @@ namespace Network
 				currentSender = message.senderID;
 				currentMessage = message.messageID;
 				previousIndex = message.packetIndex;
+				iter++;
 				continue;
 			}
 			if (currentMessage != message.messageID)
 			{
 				currentMessage = message.messageID;
 				previousIndex = message.packetIndex;
+				iter++;
 				continue;
 			}
 			if (previousIndex != message.packetIndex -1)
 			{
 				// Missing a packet
 				// TODO: Send request for replacement
+				iter++;
 				continue;
 			}
 
@@ -199,6 +207,10 @@ namespace Network
 			{
 				messagesToMove.insert(messagesToMove.end(), std::make_move_iterator(iter - totalIndex) , std::make_move_iterator(iter + 1));
 				iter = myMultipartMessages.erase(iter - totalIndex, iter + 1);
+			}
+			else
+			{
+				iter++;
 			}
 		}
 
@@ -322,7 +334,11 @@ namespace Network
 			else
 			{
 				error = WSAGetLastError();
-				if (error == 10054) // Server has disconnected
+				if (error == WSAEWOULDBLOCK) // No data to retrieve in socket
+				{
+					continue;
+				}
+				else if (error == WSAECONNRESET) // Server has disconnected
 				{
 					myServerDisconnected = true;
 				}

@@ -117,11 +117,13 @@ bool GameLauncher::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 		HandleCrash(anException);
 		Shutdown();
+		return false;
 	}
 	catch (...)
 	{
 		HandleCrash(std::invalid_argument("Caught unknown Error!"));
 		Shutdown();
+		return false;
 	}
 #endif // _DEBUG
 
@@ -177,23 +179,27 @@ int GameLauncher::Run()
 		{
 			isRunning = false;
 			HandleCrash(anException);
+			Shutdown();
+			return EXIT_FAILURE;
 		}
 		catch (...)
 		{
 			isRunning = false;
 			HandleCrash(std::invalid_argument("Caught unknown Error!"));
+			Shutdown();
+			return EXIT_FAILURE;
 		}
 #endif // _DEBUG
 	}
 
 	Shutdown();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 void GameLauncher::Shutdown()
 {
-	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
+	if (Engine::IsValid() && Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
 	{
 		Engine::GetNetworkManager().SendDeleteGameObject(Engine::GetBlackboard().GetValue<UUIDv4::UUID>("playerUUID"));
 	}
@@ -260,10 +266,12 @@ void GameLauncher::Init()
 	constexpr float cameraSpeed = 200.f;
 	constexpr float mouseSensitivity = 1.f;
 
-	auto player = Engine::GetObjectManager().AddGameObject(AssetManager::GetAsset<GameObject>("cube"), true);
+	auto player = Engine::GetObjectManager().AddGameObject(true);
 	player->SetPosition({ 0.f, 200.f, 0.f });
 	player->AddComponent(PerspectiveCameraComponent(fov, nearPlane, farPlane));
 	player->AddComponent(FirstPersonCameraControllerComponent(cameraSpeed, mouseSensitivity));
+	auto& mesh = player->AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
+	mesh.SetColor({ Crimson::Random::RandomNumber(1.f), Crimson::Random::RandomNumber(1.f) , Crimson::Random::RandomNumber(1.f) , 1.f });
 	
 
 	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
@@ -274,8 +282,7 @@ void GameLauncher::Init()
 
 		GameObject networkObject(player->GetUUID());
 		networkObject.SetPosition({ 0.f, 200.f, 0.f });
-		auto& mesh = networkObject.AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
-		mesh.SetColor({ Crimson::Random::RandomNumber(1.f), Crimson::Random::RandomNumber(1.f) , Crimson::Random::RandomNumber(1.f) , 1.f });
+		networkObject.AddComponent<MeshComponent>(player->GetComponent<MeshComponent>());
 		networkObject.AddComponent<NetworkComponent>();
 		Engine::GetNetworkManager().SendCreateGameObject(networkObject);
 		Engine::GetBlackboard().SetValue("playerUUID", player->GetUUID());

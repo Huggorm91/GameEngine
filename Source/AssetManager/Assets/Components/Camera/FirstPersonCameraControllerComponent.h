@@ -25,10 +25,14 @@ public:
 	void Deserialize(std::istream& aStream) override;
 	Json::Value ToJson() const override;
 
+	void ComponentPointersInvalidated() override;
+
 private:
 #ifndef _RETAIL
 	bool myIsMoving;
 #endif // !_RETAIL
 	float myMouseSensitivity;
-	float mySpeed;
+	float mySpeed;	
+
+	void SubscribeToEvents();
 };

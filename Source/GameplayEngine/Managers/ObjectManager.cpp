@@ -48,9 +48,7 @@ void ObjectManager::EndOfFrame()
 {
 	for (auto& id : myObjectsToRemove)
 	{
-		myGameObjects.erase(id);
-		myPersistantObjects.erase(id);
-		myTemporaryObjects->erase(id);
+		InternalRemoveObject(id);
 	}
 	myObjectsToRemove.clear();
 }
@@ -65,7 +63,7 @@ GameObject* ObjectManager::AddGameObject(bool anIsPersistant)
 	}
 	else
 	{
-		pointer = &myTemporaryObjects->emplace(newObject.GetUUID(), std::move(newObject)).first->second;
+		pointer = &myTemporaryObjects.emplace(newObject.GetUUID(), std::move(newObject)).first->second;
 	}
 
 	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
@@ -81,7 +79,7 @@ GameObject* ObjectManager::AddGameObject(const GameObject& anObject, bool anIsPe
 	}
 	else
 	{
-		pointer = &myTemporaryObjects->emplace(newObject.GetUUID(), newObject).first->second;
+		pointer = &myTemporaryObjects.emplace(newObject.GetUUID(), newObject).first->second;
 	}
 
 	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
@@ -96,7 +94,7 @@ GameObject* ObjectManager::AddGameObject(GameObject&& anObject, bool anIsPersist
 	}
 	else
 	{
-		pointer = &myTemporaryObjects->emplace(anObject.GetUUID(), std::move(anObject)).first->second;
+		pointer = &myTemporaryObjects.emplace(anObject.GetUUID(), std::move(anObject)).first->second;
 	}
 
 	return myGameObjects.emplace(pointer->GetUUID(), pointer).first->second;
@@ -111,6 +109,16 @@ GameObject* ObjectManager::GetGameObject(const UUIDv4::UUID& anID)
 	return nullptr;
 }
 
+const std::unordered_map<UUIDv4::UUID, GameObject>& ObjectManager::GetTemporaryObjects()
+{
+	return myTemporaryObjects;
+}
+
+const std::unordered_map<UUIDv4::UUID, GameObject>& ObjectManager::GetPersistantObjects()
+{
+	return myPersistantObjects;
+}
+
 bool ObjectManager::RemoveGameObject(const UUIDv4::UUID& anID)
 {
 	if (myIsUpdating)
@@ -120,15 +128,8 @@ bool ObjectManager::RemoveGameObject(const UUIDv4::UUID& anID)
 	}
 	else
 	{
-		if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
-		{
-			myGameObjects.erase(iter);
-			myPersistantObjects.erase(anID);
-			myTemporaryObjects->erase(anID);
-			return true;
-		}
-	}	
-	return false;
+		return InternalRemoveObject(anID);
+	}
 }
 
 void ObjectManager::RemoveGameObjectAtEndOfFrame(const UUIDv4::UUID& anID)
@@ -136,26 +137,48 @@ void ObjectManager::RemoveGameObjectAtEndOfFrame(const UUIDv4::UUID& anID)
 	myObjectsToRemove.emplace_back(anID);
 }
 
-void ObjectManager::SetTemporaryObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList)
+void ObjectManager::SetSceneObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList)
 {
 	ClearTemporaryObjects();
-	myTemporaryObjects = anObjectList;
-	for (auto& [id, object] : *myTemporaryObjects)
+	mySceneObjects = anObjectList;
+	for (auto& [id, object] : *mySceneObjects)
 	{
 		myGameObjects.emplace(id, &object);
 	}
 }
 
-void ObjectManager::ClearTemporaryObjects()
+void ObjectManager::MoveTemporaryObjectsToScene()
 {
-	if (myTemporaryObjects)
+	if (mySceneObjects)
 	{
-		for (auto& [id, object] : *myTemporaryObjects)
+		for (auto& [id, object] : myTemporaryObjects)
+		{
+			auto iter = mySceneObjects->emplace(id, std::move(object));
+			myGameObjects.at(id) = &iter.first->second;
+		}
+		myTemporaryObjects.clear();
+	}
+}
+
+void ObjectManager::ClearSceneObjects()
+{
+	if (mySceneObjects)
+	{
+		for (auto& [id, object] : *mySceneObjects)
 		{
 			myGameObjects.erase(id);
 		}
-		myTemporaryObjects = nullptr;
+		mySceneObjects = nullptr;
 	}
+}
+
+void ObjectManager::ClearTemporaryObjects()
+{
+	for (auto& [id, object] : myTemporaryObjects)
+	{
+		myGameObjects.erase(id);
+	}
+	myTemporaryObjects.clear();
 }
 
 void ObjectManager::ClearPersistantObjects()
@@ -165,4 +188,16 @@ void ObjectManager::ClearPersistantObjects()
 		myGameObjects.erase(id);
 	}
 	myPersistantObjects.clear();
+}
+
+bool ObjectManager::InternalRemoveObject(const UUIDv4::UUID& anID)
+{
+	if (auto iter = myGameObjects.find(anID); iter != myGameObjects.end())
+	{
+		myGameObjects.erase(iter);
+		myPersistantObjects.erase(anID);
+		myTemporaryObjects.erase(anID);
+		return true;
+	}
+	return false;
 }

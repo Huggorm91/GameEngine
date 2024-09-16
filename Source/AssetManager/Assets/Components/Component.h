@@ -63,6 +63,9 @@ public:
 
 	virtual void TransformHasChanged() const{}
 
+	// Called when the container the components are stored in has resized, and any pointers to data inside components are invalidated
+	virtual void ComponentPointersInvalidated() {}
+
 #ifdef EDITOR
 	virtual void CreateImGuiComponents(const std::string& aWindowName);
 #endif // EDITOR

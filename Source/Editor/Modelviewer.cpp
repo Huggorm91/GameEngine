@@ -209,11 +209,13 @@ bool ModelViewer::Initialize(HINSTANCE aHInstance, WNDPROC aWindowProcess)
 	{
 		HandleCrash(anException, false);
 		Shutdown();
+		return false;
 	}
 	catch (...)
 	{
 		HandleCrash(std::invalid_argument("Caught unknown Error!"), false);
 		Shutdown();
+		return false;
 	}
 #endif // _DEBUG
 	HideSplashScreen();
@@ -256,18 +258,22 @@ int ModelViewer::Run()
 		{
 			isRunning = false;
 			HandleCrash(anException, true);
+			Shutdown();
+			return EXIT_FAILURE;
 		}
 		catch (...)
 		{
 			isRunning = false;
 			HandleCrash(std::invalid_argument("Caught unknown Error!"), true);
+			Shutdown();
+			return EXIT_FAILURE;
 		}
 #endif // _DEBUG
 	}
 
 	Shutdown();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 void ModelViewer::Shutdown()

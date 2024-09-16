@@ -2,6 +2,7 @@
 #include "Components/Component.h"
 #include "CrimsonUtilities/Container/MemoryBlock.h"
 #include "CrimsonUtilities/Math/Transform.h"
+#include <unordered_map>
 
 class Prefab;
 
@@ -38,15 +39,18 @@ public:
 	const T& GetComponent() const;
 	template<class T>
 	T& GetComponent();
-	template<class T>
-	const T* GetComponent(unsigned anID) const;
-	template<class T>
-	T* GetComponent(unsigned anID);
 
 	// Returns nullptr if no component is of the specified type
 	template<class T>
-	const T* GetInheritedComponent() const;
+	const T* TryGetComponent() const;
 	// Returns nullptr if no component is of the specified type
+	template<class T>
+	T* TryGetComponent();
+
+	// Returns nullptr if no component inherits from the specified type
+	template<class T>
+	const T* GetInheritedComponent() const;
+	// Returns nullptr if no component inherits from the specified type
 	template<class T>
 	T* GetInheritedComponent();
 
@@ -158,6 +162,8 @@ private:
 
 	void SetParent(GameObject* anObject);
 
+	void ComponentContainerResized();
+
 	void RemoveParentInternal();
 	void RemoveFromParent();
 
@@ -177,7 +183,11 @@ inline T& GameObject::AddComponent()
 {
 	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
 	auto index = myComponents.AddValue(T());
-	return AddComponentInternal<T>(index);
+	if (index.second)
+	{
+		ComponentContainerResized();
+	}
+	return AddComponentInternal<T>(index.first);
 }
 
 template<class T>
@@ -185,7 +195,11 @@ inline T& GameObject::AddComponent(const T& aComponent)
 {
 	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
 	auto index = myComponents.AddValue(aComponent);
-	return AddComponentInternal<T>(index);
+	if (index.second)
+	{
+		ComponentContainerResized();
+	}
+	return AddComponentInternal<T>(index.first);
 }
 
 template<class T>
@@ -193,47 +207,43 @@ inline T& GameObject::AddComponent(T&& aComponent)
 {
 	static_assert(std::is_base_of_v<Component, T> && "Trying to add something that isnt a Component!");
 	auto index = myComponents.AddValue(std::move(aComponent));
-	return AddComponentInternal<T>(index);
+	if (index.second)
+	{
+		ComponentContainerResized();
+	}
+	return AddComponentInternal<T>(index.first);
 }
 
 template<class T>
 inline const T& GameObject::GetComponent() const
 {
-	auto iter = myIndexList.equal_range(typeid(T));
-	return myComponents.GetValue<T>(iter.first->second);
+	auto iter = myIndexList.find(typeid(T));
+	return myComponents.GetValue<T>(iter->second);
 }
 
 template<class T>
 inline T& GameObject::GetComponent()
 {
-	auto iter = myIndexList.equal_range(typeid(T));
-	return myComponents.GetValue<T>(iter.first->second);
+	auto iter = myIndexList.find(typeid(T));
+	return myComponents.GetValue<T>(iter->second);
 }
 
 template<class T>
-inline const T* GameObject::GetComponent(unsigned anID) const
+inline const T* GameObject::TryGetComponent() const
 {
-	auto range = myIndexList.equal_range(typeid(T));
-	for (auto iter = range.first; iter != range.second; iter++)
+	if (myIndexList.contains(typeid(T)))
 	{
-		if (const T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
-		{
-			return &component;
-		}
+		return &GetComponent<T>();
 	}
 	return nullptr;
 }
 
 template<class T>
-inline T* GameObject::GetComponent(unsigned anID)
+inline T* GameObject::TryGetComponent()
 {
-	auto range = myIndexList.equal_range(typeid(T));
-	for (auto iter = range.first; iter != range.second; iter++)
+	if (myIndexList.contains(typeid(T)))
 	{
-		if (T& component = myComponents.GetValue<T>(iter->second); component.GetComponentID() == anID)
-		{
-			return &component;
-		}
+		return &GetComponent<T>();
 	}
 	return nullptr;
 }
@@ -313,8 +323,7 @@ inline bool GameObject::RemoveComponent(const T* aComponent)
 template<class T>
 inline bool GameObject::HasComponent() const
 {
-	auto iter = myIndexList.find(typeid(T));
-	return iter != myIndexList.end();
+	return myIndexList.contains(typeid(T));
 }
 
 template<class T>

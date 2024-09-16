@@ -62,7 +62,7 @@ void RHI::ReportError(HRESULT aHresult, const std::wstring& aMessage)
 {
 	const _com_error error(aHresult);
 	const LPCWSTR errorMessage = error.ErrorMessage();
-	std::wcerr << aMessage + L" " + errorMessage;
+	std::wcerr << aMessage + L" " + errorMessage + L"\n";
 }
 
 bool RHI::Initialize(HWND aWindowHandle, bool enableDeviceDebug, Texture* outBackBuffer, Texture* outDepthBuffer)
@@ -365,6 +365,7 @@ bool RHI::CreateConstantBuffer(ComPtr<ID3D11Buffer>& outCBuffer, size_t aSize, c
 	if (FAILED(result))
 	{
 		ReportError(result, L"Failed to create constant buffer!");
+		ReportError(RHI::Device->GetDeviceRemovedReason(), L"Device Removed Reason: ");
 		return false;
 	}
 

@@ -187,7 +187,8 @@ void NetworkManager::ClearMessages()
 GameObject NetworkManager::ExtractCreatedGameObject(const Network::NetMessage& aMessage)
 {	
 	GameObject result(Network::ExtractUUID(aMessage));
-	std::stringstream data(std::string(aMessage.data + sizeof(UUIDv4::UUID), aMessage.dataSize - sizeof(UUIDv4::UUID)));
+	std::string stringData(aMessage.data + sizeof(UUIDv4::UUID), aMessage.dataSize - sizeof(UUIDv4::UUID));
+	std::stringstream data(stringData);
 	result.Deserialize(data);
 	return result;
 }

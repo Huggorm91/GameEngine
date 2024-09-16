@@ -2,8 +2,6 @@
 #include "../Component.h"
 #include "../ComponentParts/MeshElement.h"
 #include "CrimsonUtilities/Math/Transform.h"
-#include "GraphicsEngine/Rendering/Color.h"
-#include "GraphicsEngine/Rendering/Texture.h"
 
 BEGIN_COMPONENT(MeshComponent)
 public:

@@ -1,5 +1,7 @@
 #include "GameplayEngine.pch.h"
 #include "CollisionManager.h"
+#include "../Engine.h"
+#include "../PostMaster/PostMaster.h"
 #include "AssetManager/Assets/GameObject.h"
 #include "AssetManager/Assets/Components/Collision/ColliderComponent.h"
 
@@ -135,11 +137,20 @@ void CollisionManager::CollisionEnter(ColliderComponent* aFirst, ColliderCompone
 	{
 		aSecond->GetParent().OnTriggerEnter(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerEnter(aSecond->GetLayer(), aSecond);
+		if (aFirst->IsTrigger())
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(aFirst->GetParentID(), aSecond->GetParentID()) });
+		}
+		else
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionEnter(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionEnter(aSecond->GetLayer(), aSecond);
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionEnter, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
 	}
 }
 
@@ -149,11 +160,20 @@ void CollisionManager::CollisionStay(ColliderComponent* aFirst, ColliderComponen
 	{
 		aSecond->GetParent().OnTriggerStay(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerStay(aSecond->GetLayer(), aSecond);
+		if (aFirst->IsTrigger())
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+		}
+		else
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionStay(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionStay(aSecond->GetLayer(), aSecond);
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionStay, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
 	}
 }
 
@@ -163,10 +183,19 @@ void CollisionManager::CollisionExit(ColliderComponent* aFirst, ColliderComponen
 	{
 		aSecond->GetParent().OnTriggerExit(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerExit(aSecond->GetLayer(), aSecond);
+		if (aFirst->IsTrigger())
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+		}
+		else
+		{
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionExit(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionExit(aSecond->GetLayer(), aSecond);
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionExit, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
 	}
 }

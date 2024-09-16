@@ -1,5 +1,6 @@
 #pragma once
 #include "CrimsonUtilities/Math/Vector4.hpp"
+#include "InterOp/RHI.h"
 #include "Texture.h"
 
 class GBuffer

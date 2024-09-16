@@ -12,22 +12,25 @@
 
 class InputMapper
 {
+	// Ensures safe removal of subscribers even if they have been moved in memory
+	friend class InputObserver;
+	void Attach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey = Crimson::eKey::None);
+	void Attach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction = Crimson::eKeyAction::All);
+
+	void Detach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey = Crimson::eKey::None);
+	void Detach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction = Crimson::eKeyAction::All);
+	void DetachAll(InputObserver* anObserver);
 public:
 	InputMapper();
 	~InputMapper();
 
 	void Init(HWND aHandle, bool aUsingXboxInput = false);
 
-	void Attach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey = Crimson::eKey::None);
-	void Attach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction = Crimson::eKeyAction::All);
 
 	void BindAction(Crimson::eInputAction anEvent, Crimson::KeyBind aKeybind);
 	void BindAction(Crimson::eInputAction anEvent, const std::vector<Crimson::KeyBind>& aKeybindList);
 	void UnbindAction(Crimson::eInputAction anEvent);
 
-	void Detach(InputObserver* anObserver, Crimson::eInputEvent anEvent, Crimson::eKey aKey = Crimson::eKey::None);
-	void Detach(InputObserver* anObserver, Crimson::eInputAction anEvent, Crimson::eKeyAction aKeyAction = Crimson::eKeyAction::All);
-	void DetachAll(InputObserver* anObserver);
 
 	void Notify();
 	void Update();

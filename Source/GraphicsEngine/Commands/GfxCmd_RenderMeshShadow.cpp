@@ -1,5 +1,6 @@
 #include "GraphicsEngine.pch.h"
 #include "GfxCmd_RenderMeshShadow.h"
+#include "Rendering/Vertex.h"
 
 GfxCmd_RenderMeshShadow::GfxCmd_RenderMeshShadow(const MeshComponent& aMesh) : GraphicsCommand(RenderStage::Shadow), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), myWorldPosition(aMesh.GetWorldPosition()), myHasBones(false), myBoneTransforms()
 #ifdef _DEBUG

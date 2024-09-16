@@ -2,6 +2,11 @@
 #include "Primitives.h"
 #include <math.h>
 
+#ifndef NETWORK_SERVER
+#include "GraphicsEngine/Rendering/Vertex.h"
+#include "GraphicsEngine/InterOp/RHI.h"
+#endif // !NETWORK_SERVER
+
 MeshData CreateCubeMesh(const float aSize)
 {
 	return CreateCubeMesh({ aSize, aSize, aSize });
@@ -12,6 +17,8 @@ MeshData CreateCubeMesh(const Crimson::Vector3f& aSize)
 	MeshData result;
 	result.myMeshName = "Cube";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
@@ -132,6 +139,7 @@ MeshData CreateCubeMesh(const Crimson::Vector3f& aSize)
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -146,6 +154,8 @@ MeshData CreatePyramidMesh(const Crimson::Vector3f& aSize)
 	MeshData result;
 	result.myMeshName = "Pyramid";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	Crimson::Vector3f Top = { 0.f, aSize.y, 0.f };
@@ -245,6 +255,7 @@ MeshData CreatePyramidMesh(const Crimson::Vector3f& aSize)
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -254,6 +265,8 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 	MeshData result;
 	result.myMeshName = "Sphere";
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 
 	// Add top vertex
@@ -345,6 +358,10 @@ MeshData CreateSphereMesh(const float aRadius, const int aSliceCount, const int 
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#else
+	UNREFERENCED_PARAMETER(aStackCount);
+	UNREFERENCED_PARAMETER(aSliceCount);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -359,6 +376,8 @@ MeshData CreateInvertedCubeMesh(const Crimson::Vector3f& aSize)
 	MeshData result;
 	result.myMeshName = "InvertedCube";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left | Ba = Back | Fr = Front
@@ -479,6 +498,7 @@ MeshData CreateInvertedCubeMesh(const Crimson::Vector3f& aSize)
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -493,6 +513,8 @@ MeshData CreateInvertedPyramidMesh(const Crimson::Vector3f& aSize)
 	MeshData result;
 	result.myMeshName = "InvertedPyramid";
 	result.myBoxSphereBounds.Init({ 0.f, aSize.y * 0.5f, 0.f }, aSize);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f halfSize = aSize * 0.5f;
 
 	Crimson::Vector3f Top = { 0.f, aSize.y, 0.f };
@@ -592,6 +614,7 @@ MeshData CreateInvertedPyramidMesh(const Crimson::Vector3f& aSize)
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -601,6 +624,8 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 	MeshData result;
 	result.myMeshName = "InvertedSphere";
 	result.myBoxSphereBounds.Init({ 0.f, aRadius, 0.f }, aRadius);
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector3f center{ 0.f, aRadius, 0.f };
 	float radiansPerSlice = (360 / aSliceCount) * 0.0174532925f;
 	Crimson::Matrix3x3f sliceMatrix = Crimson::Matrix3x3f::CreateRotationAroundY(radiansPerSlice);
@@ -698,6 +723,10 @@ MeshData CreateInvertedSphereMesh(const float aRadius, const int aSliceCount, co
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#else
+	UNREFERENCED_PARAMETER(aStackCount);
+	UNREFERENCED_PARAMETER(aSliceCount);
+#endif // !NETWORK_SERVER
 
 	return result;
 }
@@ -712,6 +741,8 @@ MeshData CreatePlaneMesh(const Crimson::Vector2f& aSize)
 	MeshData result;
 	result.myMeshName = "Plane";
 	result.myBoxSphereBounds.Init(Crimson::Vector3f::Null, { aSize.x, 0.f, aSize.y });
+
+#ifndef NETWORK_SERVER
 	Crimson::Vector2f halfSize = aSize * 0.5f;
 
 	// up = Up | do = Down | Ri = Right | Le = Left
@@ -769,6 +800,7 @@ MeshData CreatePlaneMesh(const Crimson::Vector2f& aSize)
 	result.myIndexCount = static_cast<UINT>(mdlIndices.size());
 	result.myPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	result.myStride = sizeof(Vertex);
+#endif // !NETWORK_SERVER
 
 	return result;
 }

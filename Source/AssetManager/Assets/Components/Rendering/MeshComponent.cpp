@@ -1,11 +1,14 @@
 #include "AssetManager.pch.h"
 #include "MeshComponent.h"
 #include "Assets/GameObject.h"
+#include "AssetManager.h"
+
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
 #include "GraphicsEngine/Commands/GfxCmd_UpdateWorldBounds.h"
-#include "AssetManager.h"
+#endif // !NETWORK_SERVER
 
 #ifdef EDITOR
 #include "Editor/ModelViewer.h"
@@ -113,6 +116,7 @@ MeshComponent& MeshComponent::operator=(MeshComponent&& aMeshComponent) noexcept
 
 void MeshComponent::Render()
 {
+#ifndef NETWORK_SERVER
 	if (!myIsActive)
 	{
 		return;
@@ -123,6 +127,7 @@ void MeshComponent::Render()
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
 	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this, myIsDeferred));
+#endif // !NETWORK_SERVER
 }
 
 void MeshComponent::Init(GameObject* aParent)
@@ -302,8 +307,10 @@ const std::string& MeshComponent::GetName() const
 void MeshComponent::TransformHasChanged() const
 {
 	const_cast<Transform&>(myTransform).SetHasChanged(true);
+#ifndef NETWORK_SERVER
 	const auto& transform = myTransform.GetTransformMatrix();
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_UpdateWorldBounds>(transform * Crimson::Vector4f(myBoxSphereBounds.GetMin(), 1.f), transform * Crimson::Vector4f(myBoxSphereBounds.GetMax(), 1.f)));
+#endif // !NETWORK_SERVER
 }
 
 #ifdef EDITOR

@@ -75,9 +75,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		GetWindowRect(consoleWindow, &consolePos);
 		MoveWindow(consoleWindow, consolePos.left, consolePos.top, consoleSize.x, consoleSize.y, true);
 	}
-
-	globalLauncher.Initialize(hInstance, WinProc);
-	return globalLauncher.Run();
+	if (globalLauncher.Initialize(hInstance, WinProc))
+	{
+		return globalLauncher.Run();
+	}
+	return EXIT_SUCCESS;
 }
 #pragma warning(default:6387)
 

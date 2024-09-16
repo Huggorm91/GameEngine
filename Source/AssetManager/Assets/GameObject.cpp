@@ -408,6 +408,7 @@ const Crimson::Vector4f& GameObject::GetWorldPosition() const
 {
 	if (myTransform.HasChanged())
 	{
+		const_cast<Transform&>(myTransform).Update();
 		for (auto& [type, index] : myIndexList)
 		{
 			myComponents.GetValue<Component>(index).TransformHasChanged();
@@ -452,13 +453,18 @@ Component* GameObject::AllocateComponent(const Component* aComponent)
 	// Allocate memory for the component
 	auto newIndex = myComponents.Allocate(aComponent->SizeOf());
 
+	if (newIndex.second)
+	{
+		ComponentContainerResized();
+	}
+
 	// Save references to new component
-	myIndexList.emplace(aComponent->TypeId(), newIndex);
+	myIndexList.emplace(aComponent->TypeId(), newIndex.first);
 #ifndef _RETAIL
-	myDebugPointers.emplace_back(&myComponents.GetValue<Component>(newIndex));
+	myDebugPointers.emplace_back(&myComponents.GetValue<Component>(newIndex.first));
 #endif // !_RETAIL
 
-	return &myComponents.GetValue<Component>(newIndex);
+	return &myComponents.GetValue<Component>(newIndex.first);
 }
 
 void GameObject::SetParent(GameObject* anObject)
@@ -471,6 +477,22 @@ void GameObject::SetParent(GameObject* anObject)
 	myParent = anObject;
 	myTransform.SetParent(&anObject->myTransform);
 	TransformHasChanged();
+}
+
+void GameObject::ComponentContainerResized()
+{
+#ifndef _RETAIL
+	myDebugPointers.clear();
+#endif // !_RETAIL
+
+	for (auto& [type, index] : myIndexList)
+	{
+		Component& component = myComponents.GetValue<Component>(index);
+		component.ComponentPointersInvalidated();
+#ifndef _RETAIL
+		myDebugPointers.emplace_back(&component);
+#endif // !_RETAIL
+	}
 }
 
 void GameObject::RemoveParentInternal()

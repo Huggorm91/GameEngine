@@ -20,11 +20,19 @@ Crimson::Message::Message(eMessageType aType, const std::string& aValue) :myMess
 {
 }
 
+Crimson::Message::Message(eMessageType aType, const UUIDv4::UUID& aValue) :myMessageType(aType), myData(aValue)
+{
+}
+
 Crimson::Message::Message(eMessageType aType, const Vector2<float>& aValue) :myMessageType(aType), myData(aValue)
 {
 }
 
 Crimson::Message::Message(eMessageType aType, const Vector3<float>& aValue) :myMessageType(aType), myData(aValue)
+{
+}
+
+Crimson::Message::Message(eMessageType aType, const std::pair<UUIDv4::UUID, UUIDv4::UUID>& aValue) :myMessageType(aType), myData(aValue)
 {
 }
 
@@ -51,6 +59,16 @@ const float* Crimson::Message::GetDataAsFloat() const
 const std::string* Crimson::Message::GetDataAsString() const
 {
 	return std::get_if<std::string>(&myData);
+}
+
+const UUIDv4::UUID* Crimson::Message::GetDataAsUUID() const
+{
+	return std::get_if<UUIDv4::UUID>(&myData);
+}
+
+const std::pair<UUIDv4::UUID, UUIDv4::UUID>* Crimson::Message::GetDataAsUUIDPair() const
+{
+	return std::get_if<std::pair<UUIDv4::UUID, UUIDv4::UUID>>(&myData);
 }
 
 const Crimson::Vector2<float>* Crimson::Message::GetDataAsVector2() const

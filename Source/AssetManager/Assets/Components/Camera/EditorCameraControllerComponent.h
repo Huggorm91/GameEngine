@@ -20,8 +20,12 @@ public:
 
 	void ReceiveEvent(Crimson::eInputEvent anEvent, Crimson::eKey aKey) override;
 
+	void ComponentPointersInvalidated() override;
+
 private:
 	bool myIsMoving;
 	float myMouseSensitivity;
 	float mySpeed;
+
+	void SubscribeToEvents();
 };

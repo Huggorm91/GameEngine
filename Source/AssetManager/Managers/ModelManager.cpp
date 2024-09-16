@@ -5,6 +5,11 @@
 #include <Importer.h>
 #undef LoadModel
 
+#ifndef NETWORK_SERVER
+#include "GraphicsEngine/Rendering/Vertex.h"
+#include "GraphicsEngine/InterOp/RHI.h"
+#endif // !NETWORK_SERVER
+
 using namespace Crimson;
 
 void ModelManager::Init()
@@ -229,13 +234,10 @@ std::vector<MeshElement> ModelManager::GetMeshElements(const std::string& aPath,
 {
 	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
 	{
-		if (model->HasComponent<MeshComponent>())
+		auto mesh = model->GetInheritedComponent<MeshComponent>();
+		if (mesh)
 		{
-			return model->GetComponent<MeshComponent>().GetElements();
-		}
-		else
-		{
-			return model->GetComponent<AnimatedMeshComponent>().GetElements();
+			return mesh->GetElements();
 		}
 	}
 
@@ -251,13 +253,10 @@ BoxSphereBounds ModelManager::GetMeshBounds(const std::string& aPath, bool aShou
 {
 	if (auto model = GetModel(aPath, aShouldLogErrors); model != nullptr)
 	{
-		if (model->HasComponent<MeshComponent>())
+		auto mesh = model->GetInheritedComponent<MeshComponent>();
+		if (mesh)
 		{
-			return model->GetComponent<MeshComponent>().GetBounds();
-		}
-		else
-		{
-			return model->GetComponent<AnimatedMeshComponent>().GetBounds();
+			return mesh->GetBounds();
 		}
 	}
 
@@ -319,6 +318,8 @@ GameObject* ModelManager::LoadModel(const std::string& aPath, bool aShouldLogErr
 		auto& dataList = myMeshData.emplace(aPath, std::vector<MeshData>()).first->second;
 		dataList.reserve(tgaMesh.Elements.size());
 		std::vector<MeshElement> elements;
+
+#ifndef NETWORK_SERVER
 		for (auto& tgaElement : tgaMesh.Elements)	// Load elements
 		{
 			dataList.emplace_back(tgaElement);
@@ -359,6 +360,14 @@ GameObject* ModelManager::LoadModel(const std::string& aPath, bool aShouldLogErr
 				return nullptr;
 			}
 		}
+#else
+		for (auto& tgaElement : tgaMesh.Elements)	// Mock loading elements
+		{
+			dataList.emplace_back(tgaElement);
+			MeshData& element = dataList.back();
+			elements.emplace_back(element);
+		}
+#endif // !NETWORK_SERVER
 
 		if (tgaMesh.Skeleton.GetRoot())	// Load Skeleton
 		{
@@ -415,6 +424,8 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 		auto& dataList = myMeshData.emplace(aPath, std::vector<MeshData>()).first->second;
 		dataList.reserve(tgaMesh.Elements.size());
 		std::vector<MeshElement> elements;
+
+#ifndef NETWORK_SERVER
 		for (auto& tgaElement : tgaMesh.Elements)	// Load elements
 		{
 			dataList.emplace_back(tgaElement);
@@ -455,6 +466,14 @@ Skeleton* ModelManager::LoadSkeleton(const std::string& aPath, bool aShouldLogEr
 				return nullptr;
 			}
 		}
+#else
+		for (auto& tgaElement : tgaMesh.Elements)	// Mock loading elements
+		{
+			dataList.emplace_back(tgaElement);
+			MeshData& element = dataList.back();
+			elements.emplace_back(element);
+		}
+#endif // !NETWORK_SERVER
 
 		// Load Skeleton
 		auto skeletonIter = mySkeletons.emplace(aPath, tgaMesh.Skeleton);

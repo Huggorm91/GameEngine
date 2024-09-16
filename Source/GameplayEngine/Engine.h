@@ -17,13 +17,14 @@ class Engine
 public:
 	~Engine();
 
-	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork);
+	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork, bool anIsServer = false);
 
 	static void BeginFrame();
 	static void EndFrame();
 
 	static bool IsValid();
 	static bool IsNetworkingEnabled();
+	static bool IsServer();
 
 	static Crimson::Blackboard<std::string>& GetBlackboard();
 	static MainLogger& GetLogger();
@@ -58,5 +59,6 @@ private:
 	std::unique_ptr<SceneManager> mySceneManager;
 	std::unique_ptr<NetworkManager> myNetworkManager;
 
+	bool myIsServer;
 	bool myIsInitialized;
 };

@@ -1,7 +1,9 @@
 #include "AssetManager.pch.h"
 #include "PerspectiveCameraComponent.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_SetFrameBuffer.h"
+#endif // !NETWORK_SERVER
 #include "AssetManager/Assets/GameObject.h"
 
 PerspectiveCameraComponent::PerspectiveCameraComponent() :
@@ -66,7 +68,9 @@ void PerspectiveCameraComponent::Render()
 	{
 		UpdateTransform();
 	}
+#ifndef NETWORK_SERVER
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_SetFrameBuffer>(myView, myProjection, myPosition));
+#endif // !NETWORK_SERVER
 }
 
 void PerspectiveCameraComponent::SetHorizontalFOV(float aDegree)
@@ -74,8 +78,10 @@ void PerspectiveCameraComponent::SetHorizontalFOV(float aDegree)
 	myIsVerticalFoV = false;
 	myFoVDegree = aDegree;
 	myProjection.m11 = CalculateFOV(Crimson::DegreeToRadian(aDegree));
+#ifndef NETWORK_SERVER
 	Crimson::Vector2f window = GraphicsEngine::Get().GetWindowSize();
 	myProjection.m22 = myProjection.m11 * (window.x / window.y);
+#endif // !NETWORK_SERVER
 }
 
 void PerspectiveCameraComponent::SetVerticalFOV(float aDegree)
@@ -83,8 +89,10 @@ void PerspectiveCameraComponent::SetVerticalFOV(float aDegree)
 	myIsVerticalFoV = true;
 	myFoVDegree = aDegree;
 	myProjection.m22 = CalculateFOV(Crimson::DegreeToRadian(aDegree));
+#ifndef NETWORK_SERVER
 	Crimson::Vector2f window = GraphicsEngine::Get().GetWindowSize();
 	myProjection.m11 = myProjection.m22 * (window.y / window.x);
+#endif // !NETWORK_SERVER
 }
 
 void PerspectiveCameraComponent::SetPlanes(float aNearPlane, float aFarPlane)
@@ -112,12 +120,14 @@ Crimson::Vector3f PerspectiveCameraComponent::TransformToClipSpace(const Crimson
 Crimson::Vector2f PerspectiveCameraComponent::ConvertToScreenCoordinates(const Crimson::Vector3f& aClipSpacePosition, float& anOutScale) const
 {
 	Crimson::Vector2f screenPosition;
+#ifndef NETWORK_SERVER
 	Crimson::Vector2f window = GraphicsEngine::Get().GetWindowSize();
 	float halfWidth = window.x * 0.5f;
 	screenPosition.x = Crimson::Lerp(halfWidth, window.x, aClipSpacePosition.x);
 
 	float halfHeight = window.y * 0.5f;
 	screenPosition.y = Crimson::Lerp(halfHeight, window.y, aClipSpacePosition.y);
+#endif // !NETWORK_SERVER
 
 	anOutScale = 1.f - aClipSpacePosition.z;
 	return screenPosition;

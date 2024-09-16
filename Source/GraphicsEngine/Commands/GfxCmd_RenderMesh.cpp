@@ -1,5 +1,6 @@
 #include "GraphicsEngine.pch.h"
 #include "GfxCmd_RenderMesh.h"
+#include "Rendering/Vertex.h"
 
 GfxCmd_RenderMesh::GfxCmd_RenderMesh(const MeshComponent& aMesh, bool aIsDeferred) : GraphicsCommand(aIsDeferred ? RenderStage::Deferred : RenderStage::Forward), myMeshElements(aMesh.GetElements()), myTransformMatrix(aMesh.GetTransform()), 
 myWorldPosition(aMesh.GetWorldPosition()), myColor(aMesh.GetColor()), myHasBones(false), myBoneTransforms(), myID(aMesh.GetParentID()), myBoneCount(0u)

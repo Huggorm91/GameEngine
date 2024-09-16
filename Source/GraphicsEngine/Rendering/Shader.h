@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "../InterOp/ShaderInfo.h"
+#include "GraphicsEngine/InterOp/ShaderInfo.h"
 
 struct ID3D11DeviceChild;
 struct ID3D11ShaderReflection;

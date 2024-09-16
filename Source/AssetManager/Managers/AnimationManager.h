@@ -1,5 +1,5 @@
 #pragma once
-#include "Assets/Animation/BlendSpace.h"
+#include "AssetManager/Assets/Animation/BlendSpace.h"
 #include <unordered_map>
 #include <unordered_set>
 

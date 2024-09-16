@@ -1,10 +1,5 @@
 #pragma once
-
-struct ID3D11Resource;
-struct ID3D11ShaderResourceView;
-struct ID3D11DepthStencilView;
-struct ID3D11RenderTargetView;
-struct D3D11_VIEWPORT;
+#include "d3d11.h"
 
 /**
  * \brief Represents raw texture data in some format.

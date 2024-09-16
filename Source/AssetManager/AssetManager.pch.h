@@ -19,9 +19,12 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <Windows.h>
+
+#ifndef NETWORK_SERVER
 #include <d3d11.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
+#endif // !NETWORK_SERVER
 
 #ifdef EDITOR
 #include "ThirdParty/ImGui/imgui.h"

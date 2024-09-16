@@ -21,6 +21,7 @@ enum
 
 Engine::Engine() :
 	myWindowHandle(NULL),
+	myIsServer(false),
 	myIsInitialized(false)
 {}
 
@@ -35,11 +36,13 @@ Engine& Engine::Get()
 	return instance;
 }
 
-void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork)
+void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork, bool anIsServer)
 {
 	auto& instance = Get();
 	if (!instance.myIsInitialized)
 	{
+		instance.myIsServer = anIsServer;
+
 		// Window
 		instance.myWindowSize = aWindowSize;
 		instance.myWindowHandle = aHandle;
@@ -55,9 +58,12 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShou
 		instance.myThreadPool = std::make_unique<ThreadPool>(Crimson::Max(1, static_cast<int>(std::thread::hardware_concurrency()) - TOTAL_THREADS));
 
 		// Input
-		instance.myInputMapper = std::make_unique<InputMapper>();
-		instance.myInputMapper->Init(aHandle);
-		instance.myInputHandler = std::make_unique<InputHandler>(*instance.myInputMapper);
+		if (!anIsServer)
+		{
+			instance.myInputMapper = std::make_unique<InputMapper>();
+			instance.myInputMapper->Init(aHandle);
+			instance.myInputHandler = std::make_unique<InputHandler>(*instance.myInputMapper);
+		}
 
 		// Events
 		instance.myPostMaster = std::make_unique<PostMaster>();
@@ -65,14 +71,14 @@ void Engine::Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShou
 		// Managers
 		instance.myCollisionManager = std::make_unique<CollisionManager>();
 		instance.myObjectManager = std::make_unique<ObjectManager>();
-		instance.mySceneManager = std::make_unique<SceneManager>(instance.myObjectManager.get(), instance.myThreadPool.get());
+		instance.mySceneManager = std::make_unique<SceneManager>();
 
 		// Network
 		if (aShouldConnectToNetwork)
 		{
 			instance.myNetworkManager = std::make_unique<NetworkManager>();
 			instance.myNetworkManager->Init();
-		}		
+		}
 
 		instance.myIsInitialized = true;
 	}
@@ -82,7 +88,11 @@ void Engine::BeginFrame()
 {
 	Crimson::Time::Update();
 	auto& instance = Get();
-	instance.myInputMapper->Notify();
+	if (!instance.myIsServer)
+	{
+		instance.myInputMapper->Notify();
+	}
+	
 	if (instance.myNetworkManager)
 	{
 		instance.myNetworkManager->Update();
@@ -96,7 +106,10 @@ void Engine::EndFrame()
 	instance.myCollisionManager->CheckCollisions();
 	instance.myCollisionManager->EndFrame();
 	instance.myObjectManager->EndOfFrame();
-	instance.myInputMapper->Update();
+	if (!instance.myIsServer)
+	{
+		instance.myInputMapper->Update();
+	}
 }
 
 bool Engine::IsValid()
@@ -107,6 +120,11 @@ bool Engine::IsValid()
 bool Engine::IsNetworkingEnabled()
 {
 	return bool(Get().myNetworkManager);
+}
+
+bool Engine::IsServer()
+{
+	return Get().myIsServer;
 }
 
 Crimson::Blackboard<std::string>& Engine::GetBlackboard()

@@ -1,9 +1,12 @@
 #include "AssetManager.pch.h"
 #include "AnimatedMeshComponent.h"
 #include "AssetManager/AssetManager.h"
+
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMesh.h"
 #include "GraphicsEngine/Commands/GfxCmd_RenderMeshShadow.h"
+#endif // !NETWORK_SERVER
 
 AnimatedMeshComponent::AnimatedMeshComponent() :
 	MeshComponent(ComponentType::AnimatedMesh),
@@ -59,6 +62,7 @@ void AnimatedMeshComponent::Update()
 
 void AnimatedMeshComponent::Render()
 {
+#ifndef NETWORK_SERVER
 	if (!myIsActive || mySkeleton == nullptr)
 	{
 		return;
@@ -69,6 +73,7 @@ void AnimatedMeshComponent::Render()
 		GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMeshShadow>(*this));
 	}
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<GfxCmd_RenderMesh>(*this, myIsDeferred));
+#endif // !NETWORK_SERVER
 }
 
 void AnimatedMeshComponent::Init(GameObject* aParent)

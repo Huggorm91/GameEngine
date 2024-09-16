@@ -1,7 +1,9 @@
 #pragma once
 #include "../Component.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/Drawer/LineHandle.h"
 #include "GraphicsEngine/Rendering/Color.h"
+#endif // !NETWORK_SERVER
 
 BEGIN_COMPONENT(DebugDrawComponent)
 public:
@@ -19,8 +21,10 @@ public:
 	void SetActive(bool aIsActive) override;
 	void ToogleActive() override;
 
+#ifndef NETWORK_SERVER
 	void SetLine(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, const Crimson::Vector4f& aColor = ColorManager::GetColor("White"), bool aIsUI = false);
 	void SetAxisLines(const Crimson::Vector3f& aCenter, float aLineLength, bool aIsAxisPointingBothWays, const Crimson::Vector3f& aXDirection = { 1.f, 0.f, 0.f }, const Crimson::Vector3f& aYDirection = { 0.f, 1.f, 0.f }, const Crimson::Vector3f& aZDirection = { 0.f, 0.f, 1.f }, const Crimson::Vector4f& aXColor = ColorManager::GetColor("Red"), const Crimson::Vector4f& aYColor = ColorManager::GetColor("Green"), const Crimson::Vector4f& aZColor = ColorManager::GetColor("Blue"), bool aIsUI = false);
+#endif // !NETWORK_SERVER
 	//void SetArrow(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, float aHeadSize, const Crimson::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
 	//void SetSquare(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, float aHeadSize, const Crimson::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
 	//void SetSquare(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, float aHeadSize, const Crimson::Vector4f& aColor = GetColor(eColor::White), bool aIsUI = false);
@@ -36,7 +40,9 @@ public:
 	//Json::Value ToJson() const override;
 
 private:
+#ifndef NETWORK_SERVER
 	LineHandle myHandle;
+#endif // !NETWORK_SERVER
 	/*enum class DrawType
 	{
 		Line,

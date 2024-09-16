@@ -5,6 +5,7 @@
 BEGIN_COMPONENT(AssignmentComponent)
 public:
 	AssignmentComponent();
+	AssignmentComponent(const Crimson::Vector3f& aDirection);
 	AssignmentComponent(const AssignmentComponent& aComponent) = default;
 	AssignmentComponent(AssignmentComponent&& aComponent) noexcept = default;
 	AssignmentComponent(const Json::Value& aJson);
@@ -14,10 +15,10 @@ public:
 	AssignmentComponent& operator=(AssignmentComponent&& aComponent) noexcept = default;
 
 	// void Init(GameObject* aParent) override;
-	// void Update() override;
+	void Update() override;
 	// void DebugDraw() override;
 
-	void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	// void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 	// void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 	// void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 
@@ -35,5 +36,6 @@ public:
 	// Json::Value ToJson() const override;
 
 private:
-
+	float myLifeTime;
+	Crimson::Vector3f myDirection;
 };

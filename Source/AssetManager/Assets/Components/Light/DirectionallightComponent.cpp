@@ -1,7 +1,9 @@
 #include "AssetManager.pch.h"
 #include "DirectionallightComponent.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetDirectionallight.h"
+#endif // !NETWORK_SERVER
 
 DirectionallightComponent::DirectionallightComponent() : Component(ComponentType::Directionallight), myInvertedLightDirection(), myColor(1.f, 1.f, 1.f), myIntensity(1.f), myCastShadows(false), myShadowMap(nullptr), myLightDirection()
 {
@@ -50,12 +52,13 @@ DirectionallightComponent& DirectionallightComponent::operator=(const Directiona
 
 void DirectionallightComponent::Render()
 {
+#ifndef NETWORK_SERVER
 	if (!myIsActive)
 	{
 		return;
 	}
-
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_SetDirectionallight>(*this));
+#endif // !NETWORK_SERVER
 }
 
 void DirectionallightComponent::SetLightDirection(const Crimson::Vector3f& aDirection)
@@ -172,6 +175,7 @@ Json::Value DirectionallightComponent::ToJson() const
 
 void DirectionallightComponent::CreateShadowMap()
 {
+#ifndef NETWORK_SERVER
 	myShadowMap = std::make_shared<Texture>();
 	if (!RHI::CreateTexture(myShadowMap.get(), L"Directionallight_Shadow_Map", 1024, 1024, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
 	{
@@ -179,4 +183,5 @@ void DirectionallightComponent::CreateShadowMap()
 		return;
 	}
 	RHI::ClearDepthStencil(myShadowMap.get());
+#endif // !NETWORK_SERVER
 }

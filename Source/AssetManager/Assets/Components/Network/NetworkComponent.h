@@ -26,6 +26,7 @@ public:
 private:
 	float mySyncFrequency;
 	float mySyncTimer;
+
 	enum SyncFlags
 	{
 		eSyncTransform,

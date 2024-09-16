@@ -9,7 +9,7 @@ class ObjectManager;
 class SceneManager
 {
 public:
-	SceneManager(ObjectManager* anObjectManager, ThreadPool* aThreadPool);
+	SceneManager();
 	~SceneManager() = default;
 
 	bool IsLoadingScene() const;
@@ -28,8 +28,6 @@ public:
 
 private:
 	bool myIsLoadingScene;
-	ThreadPool* myThreadPool;
-	ObjectManager* myObjectManager;
 	std::unique_ptr<Scene> myActiveScene;
 	std::future<Scene> myFuture;
 	SceneLoader mySceneLoader;

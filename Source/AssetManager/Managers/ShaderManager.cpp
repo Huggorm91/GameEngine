@@ -1,6 +1,8 @@
 #include "AssetManager.pch.h"
 #include "ShaderManager.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/InterOp/RHI.h"
+#endif // !NETWORK_SERVER
 
 using namespace Crimson;
 
@@ -41,6 +43,7 @@ Shader* ShaderManager::LoadShader(const std::string& aPath, bool aShouldLogError
 	}
 
 	Shader shader;
+#ifndef NETWORK_SERVER
 	if (RHI::LoadShader(&shader, Crimson::ToWString(path)))
 	{
 		auto iter = myShaders.emplace(aPath, shader);
@@ -51,5 +54,10 @@ Shader* ShaderManager::LoadShader(const std::string& aPath, bool aShouldLogError
 	{
 		AMLogger.Err("ShaderManager: Could not load a shader from: " + aPath);
 	}
-	return nullptr;
+	return nullptr;	
+#else
+	shader.myName = ToWString(aPath);
+	auto iter = myShaders.emplace(aPath, shader);
+	return &iter.first->second;
+#endif // !NETWORK_SERVER
 }

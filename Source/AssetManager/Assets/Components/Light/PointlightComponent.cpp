@@ -1,8 +1,10 @@
 #include "AssetManager.pch.h"
 #include "PointlightComponent.h"
 #include "Assets/GameObject.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddPointlight.h"
+#endif // !NETWORK_SERVER
 
 PointlightComponent::PointlightComponent():Component(ComponentType::Pointlight), myRadius(), myIntensity(), myPosition(), myColor(1.f, 1.f, 1.f), myCastShadows(false), myShadowMap(nullptr)
 {
@@ -51,12 +53,14 @@ PointlightComponent& PointlightComponent::operator=(const PointlightComponent& a
 
 void PointlightComponent::Render()
 {
+#ifndef NETWORK_SERVER
 	if (!myIsActive)
 	{
 		return;
 	}
 
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_AddPointlight>(*this));
+#endif // !NETWORK_SERVER
 }
 
 void PointlightComponent::SetRadius(float aRadius)
@@ -173,6 +177,7 @@ Json::Value PointlightComponent::ToJson() const
 
 void PointlightComponent::CreateShadowMap()
 {
+#ifndef NETWORK_SERVER
 	myShadowMap = std::make_shared<Texture>();
 	if (!RHI::CreateTextureCube(myShadowMap.get(), L"Pointlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
 	{
@@ -180,4 +185,5 @@ void PointlightComponent::CreateShadowMap()
 		return;
 	}
 	RHI::ClearDepthStencil(myShadowMap.get());
+#endif // !NETWORK_SERVER
 }

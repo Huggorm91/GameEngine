@@ -13,17 +13,7 @@ EditorCameraControllerComponent::EditorCameraControllerComponent(float aSpeed, f
 void EditorCameraControllerComponent::Init(GameObject* aParent)
 {
 	Component::Init(aParent);
-	auto& input = Engine::GetInputMapper();
-
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
-
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
-	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
+	SubscribeToEvents();
 }
 
 void EditorCameraControllerComponent::SetSpeed(float aSpeed)
@@ -60,8 +50,8 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
+			Attach(Crimson::eInputEvent::MouseMove);
 			auto& inputHandler = Engine::GetInputMapper();
-			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.CaptureMouse(true);
 			inputHandler.HideMouse();
 			myIsMoving = true;
@@ -72,8 +62,8 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
+			Detach(Crimson::eInputEvent::MouseMove);
 			auto& inputHandler = Engine::GetInputMapper();
-			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.ReleaseMouse();
 			inputHandler.ShowMouse();
 			myIsMoving = false;
@@ -153,4 +143,23 @@ void EditorCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anEvent,
 	default:
 		break;
 	}
+}
+
+void EditorCameraControllerComponent::ComponentPointersInvalidated()
+{
+	RenewInputObserverPointer();
+	SubscribeToEvents();
+}
+
+void EditorCameraControllerComponent::SubscribeToEvents()
+{
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
+
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
+	Attach(Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
 }

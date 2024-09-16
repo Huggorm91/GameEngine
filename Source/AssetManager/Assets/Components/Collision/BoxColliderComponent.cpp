@@ -3,7 +3,9 @@
 #include "Intersection.h"
 #include "Assets\GameObject.h"
 #include "../ComponentParts/BoxSphereBounds.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/Drawer/LineDrawer.h"
+#endif // !NETWORK_SERVER
 
 BoxColliderComponent::BoxColliderComponent() : ColliderComponent(ComponentType::BoxCollider)
 {}
@@ -82,7 +84,9 @@ Json::Value BoxColliderComponent::ToJson() const
 
 void BoxColliderComponent::DebugDraw()
 {
+#ifndef NETWORK_SERVER
 	//globalEngine->debugDrawer->RemovePrimitiveNextFrame(globalEngine->debugDrawer->AddBox(GetCenter(), GetSize(), Crimson::Vector3f::Null, Crimson::Vector4f(ourColorMap[GetLayer()], 1.f)));
+#endif // !NETWORK_SERVER
 }
 
 void BoxColliderComponent::InitWithMinMax(const Crimson::Vector3f& aMin, const Crimson::Vector3f& aMax, bool anIsStatic)

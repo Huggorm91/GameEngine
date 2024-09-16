@@ -1,7 +1,9 @@
 #include "AssetManager.pch.h"
 #include "ParticleEmitterComponent.h"
+#ifndef NETWORK_SERVER
 #include "Emitters/BurstEmitter.h"
 #include "Emitters/StreamEmitter.h"
+#endif // !NETWORK_SERVER
 
 ParticleEmitterComponent::ParticleEmitterComponent() : Component(ComponentType::ParticleEmitter), myEmitter()
 {}
@@ -9,6 +11,7 @@ ParticleEmitterComponent::ParticleEmitterComponent() : Component(ComponentType::
 ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson) : Component(aJson), myEmitter()
 {
 	// Lazy solution due to time constraints. Should be reworked
+#ifndef NETWORK_SERVER
 	ParticleEmitter::EmitterType type = static_cast<ParticleEmitter::EmitterType>(aJson["Emitter"]["Type"].asInt());
 	switch (type)
 	{
@@ -27,6 +30,7 @@ ParticleEmitterComponent::ParticleEmitterComponent(const Json::Value& aJson) : C
 	}
 
 	myEmitter->InitAfterJsonLoad();
+#endif // !NETWORK_SERVER
 }
 
 void ParticleEmitterComponent::Init(GameObject* aParent)
@@ -34,7 +38,9 @@ void ParticleEmitterComponent::Init(GameObject* aParent)
 	Component::Init(aParent);
 	if (myEmitter)
 	{
+#ifndef NETWORK_SERVER
 		myEmitter->SetParentTransform(*GetParentTransform());
+#endif // !NETWORK_SERVER
 	}
 }
 
@@ -45,18 +51,24 @@ void ParticleEmitterComponent::Render()
 		return;
 	}
 
+#ifndef NETWORK_SERVER
 	myEmitter->Update(Crimson::Time::GetDeltaTime());
+#endif // !NETWORK_SERVER
 }
 
 void ParticleEmitterComponent::SetEmitter(std::shared_ptr<ParticleEmitter> anEmitter)
 {
+#ifndef NETWORK_SERVER
 	myEmitter = anEmitter;
 	myEmitter->SetParentTransform(*GetParentTransform());
+#endif // !NETWORK_SERVER
 }
 
 void ParticleEmitterComponent::TransformHasChanged() const
 {
+#ifndef NETWORK_SERVER
 	myEmitter->SetParentTransform(*const_cast<Transform*>(GetParentTransform()));
+#endif // !NETWORK_SERVER
 }
 
 #ifdef EDITOR
@@ -70,6 +82,8 @@ void ParticleEmitterComponent::CreateImGuiComponents(const std::string& aWindowN
 Json::Value ParticleEmitterComponent::ToJson() const
 {
 	Json::Value result = Component::ToJson();
+#ifndef NETWORK_SERVER
 	result["Emitter"] = myEmitter->ToJson();
+#endif // !NETWORK_SERVER
 	return result;
 }

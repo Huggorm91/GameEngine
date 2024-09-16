@@ -1,6 +1,7 @@
 #pragma once
 #include "../Component.h"
-#include "GraphicsEngine/Drawer/ParticleEmitter.h"
+
+class ParticleEmitter;
 
 BEGIN_COMPONENT(ParticleEmitterComponent)
 public:

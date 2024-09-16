@@ -7,32 +7,32 @@
 // TODO: Remove everything inside #ifndef _RETAIL
 // Its only there for a school assignment
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent() : 
-	Component(ComponentType::FirstPersonCameraController), 
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent() :
+	Component(ComponentType::FirstPersonCameraController),
 #ifndef _RETAIL
 	myIsMoving(false),
 #endif // !_RETAIL
-	myMouseSensitivity(0.f), 
+	myMouseSensitivity(0.f),
 	mySpeed(0.f)
 {
 }
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(float aSpeed, float aSensitivity) : 
-	Component(ComponentType::FirstPersonCameraController), 
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(float aSpeed, float aSensitivity) :
+	Component(ComponentType::FirstPersonCameraController),
 #ifndef _RETAIL
 	myIsMoving(false),
 #endif // !_RETAIL
-	myMouseSensitivity(aSensitivity), 
+	myMouseSensitivity(aSensitivity),
 	mySpeed(aSpeed)
 {
 }
 
-FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(const Json::Value& aJson) : 
-	Component(aJson), 
+FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(const Json::Value& aJson) :
+	Component(aJson),
 #ifndef _RETAIL
 	myIsMoving(false),
 #endif // !_RETAIL
-	myMouseSensitivity(aJson["MouseSensitivity"].asFloat()), 
+	myMouseSensitivity(aJson["MouseSensitivity"].asFloat()),
 	mySpeed(aJson["Speed"].asFloat())
 {
 }
@@ -40,21 +40,7 @@ FirstPersonCameraControllerComponent::FirstPersonCameraControllerComponent(const
 void FirstPersonCameraControllerComponent::Init(GameObject* aParent)
 {
 	Component::Init(aParent);
-	auto& input = Engine::GetInputMapper();
-
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
-	input.Attach(this, Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
-
-#ifndef _RETAIL
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
-	input.Attach(this, Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
-#else
-	input.Attach(this, Crimson::eInputEvent::MouseMove);
-#endif // !_RETAIL
+	SubscribeToEvents();
 }
 
 void FirstPersonCameraControllerComponent::SetSpeed(float aSpeed)
@@ -93,20 +79,20 @@ void FirstPersonCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anE
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
+			Attach(Crimson::eInputEvent::MouseMove);
 			auto& inputHandler = Engine::GetInputMapper();
-			inputHandler.Attach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.CaptureMouse(true);
 			inputHandler.HideMouse();
 			myIsMoving = true;
-	}
+		}
 		break;
 	}
 	case Crimson::eInputEvent::KeyUp:
 	{
 		if (aKey == Crimson::eKey::MouseRightButton)
 		{
+			Detach(Crimson::eInputEvent::MouseMove);
 			auto& inputHandler = Engine::GetInputMapper();
-			inputHandler.Detach(this, Crimson::eInputEvent::MouseMove);
 			inputHandler.ReleaseMouse();
 			inputHandler.ShowMouse();
 			myIsMoving = false;
@@ -203,4 +189,27 @@ Json::Value FirstPersonCameraControllerComponent::ToJson() const
 	result["MouseSensitivity"] = myMouseSensitivity;
 	result["Speed"] = mySpeed;
 	return result;
+}
+
+void FirstPersonCameraControllerComponent::ComponentPointersInvalidated()
+{
+	RenewInputObserverPointer();
+	SubscribeToEvents();
+}
+
+void FirstPersonCameraControllerComponent::SubscribeToEvents()
+{
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::W);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::A);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::S);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
+	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
+
+#ifndef _RETAIL
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);
+	Attach(Crimson::eInputEvent::KeyUp, Crimson::eKey::MouseRightButton);
+#else
+	Attach(Crimson::eInputEvent::MouseMove);
+#endif // !_RETAIL
 }

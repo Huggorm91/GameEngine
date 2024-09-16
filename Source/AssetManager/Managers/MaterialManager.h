@@ -1,9 +1,11 @@
 #pragma once
-#include "GraphicsEngine/Rendering/Shader.h"
-#include "GraphicsEngine/Rendering/Texture.h"
-#include "GraphicsEngine/Rendering/Material.h"
 #include <unordered_map>
 #include <unordered_set>
+#ifndef NETWORK_SERVER
+#include "GraphicsEngine/Rendering/Material.h"
+#else
+#include "../Assets/Components/ComponentParts/MeshElement.h"
+#endif // !NETWORK_SERVER
 
 class MaterialManager
 {

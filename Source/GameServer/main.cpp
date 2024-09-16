@@ -1,13 +1,13 @@
-#include "NetworkServer/Server.h"
+#include "GameServer.h"
 
-inline Network::Server* globalServer = nullptr;
+GameServer globalServer;
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
 	switch (fdwCtrlType)
 	{
 	case CTRL_CLOSE_EVENT:
-		delete globalServer;
+		globalServer.Shutdown();
 		return TRUE;
 
 	default:
@@ -17,15 +17,11 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 
 int main()
 {
-	globalServer = new Network::Server();
 	SetConsoleCtrlHandler(CtrlHandler, TRUE);
-	globalServer->Init();
-	while (globalServer->IsRunning())
-	{
-		globalServer->Update();
-	}
 
-	globalServer->ShutDown();
-	system("PAUSE");
-	return 0;
+	if (globalServer.Initialize())
+	{
+		return globalServer.Run();
+	}
+	return EXIT_SUCCESS;
 }

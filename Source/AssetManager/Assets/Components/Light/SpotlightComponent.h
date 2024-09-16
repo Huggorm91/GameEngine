@@ -1,7 +1,11 @@
 #pragma once
 #include "../Component.h"
 #include "CrimsonUtilities/Math/Matrix4x4.hpp"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/Rendering/Texture.h"
+#else
+class Texture;
+#endif // !NETWORK_SERVER
 
 BEGIN_COMPONENT(SpotlightComponent)
 public:

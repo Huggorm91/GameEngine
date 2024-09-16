@@ -1,8 +1,10 @@
 #include "AssetManager.pch.h"
 #include "SpotlightComponent.h"
 #include "Assets/GameObject.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_AddSpotlight.h"
+#endif // !NETWORK_SERVER
 
 SpotlightComponent::SpotlightComponent() :Component(ComponentType::Spotlight), myRange(), myIntensity(), myInnerAngle(), myOuterAngle(), myPosition(), myLightDirection(), myColor(), myCastShadows(false), myShadowMap(nullptr)
 #ifndef _RETAIL
@@ -72,12 +74,14 @@ SpotlightComponent& SpotlightComponent::operator=(const SpotlightComponent& aLig
 
 void SpotlightComponent::Render()
 {
+#ifndef NETWORK_SERVER
 	if (!myIsActive)
 	{
 		return;
 	}
 
 	GraphicsEngine::Get().AddGraphicsCommand(std::make_shared<LitCmd_AddSpotlight>(*this));
+#endif // !NETWORK_SERVER
 }
 
 void SpotlightComponent::SetRange(float aRange)
@@ -157,6 +161,7 @@ Json::Value SpotlightComponent::ToJson() const
 
 void SpotlightComponent::CreateShadowMap()
 {
+#ifndef NETWORK_SERVER
 	myShadowMap = std::make_shared<Texture>();
 	if (!RHI::CreateTexture(myShadowMap.get(), L"Spotlight_Shadow_Map", 512, 512, DXGI_FORMAT_R32_TYPELESS, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE))
 	{
@@ -164,6 +169,7 @@ void SpotlightComponent::CreateShadowMap()
 		return;
 	}
 	RHI::ClearDepthStencil(myShadowMap.get());
+#endif // !NETWORK_SERVER
 }
 
 float SpotlightComponent::GetRange() const

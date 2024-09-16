@@ -1,6 +1,8 @@
 #include "AssetManager.pch.h"
 #include "TextureManager.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/InterOp/RHI.h"
+#endif // !NETWORK_SERVER
 
 using namespace Crimson;
 
@@ -68,6 +70,7 @@ const std::unordered_set<std::string>& TextureManager::GetTexturelist() const
 Texture TextureManager::LoadUncachedTexture(const std::string& aPath, bool aShouldLogErrors) const
 {
 	Texture texture;
+#ifndef NETWORK_SERVER
 	if (RHI::LoadTexture(&texture, Crimson::ToWString(aPath)))
 	{
 		return texture;
@@ -78,11 +81,17 @@ Texture TextureManager::LoadUncachedTexture(const std::string& aPath, bool aShou
 		AMLogger.Err("TextureManager: Could not load a texture from: " + aPath);
 	}
 	return Texture();
+#else
+	UNREFERENCED_PARAMETER(aShouldLogErrors);
+	texture.myName = ToWString(aPath);
+	return texture;
+#endif // !NETWORK_SERVER
 }
 
 Texture* TextureManager::LoadTexture(const std::string& aPath, bool aShouldLogErrors)
 {
 	Texture texture;
+#ifndef NETWORK_SERVER
 	if (RHI::LoadTexture(&texture, Crimson::ToWString(aPath)))
 	{
 		auto iter = myTextures.emplace(aPath, texture);
@@ -95,4 +104,11 @@ Texture* TextureManager::LoadTexture(const std::string& aPath, bool aShouldLogEr
 		AMLogger.Err("TextureManager: Could not load a texture from: " + aPath);
 	}
 	return nullptr;
+#else
+	UNREFERENCED_PARAMETER(aShouldLogErrors);
+	texture.myName = ToWString(aPath);
+	auto iter = myTextures.emplace(aPath, texture);
+	myLoadedTextures.emplace(aPath);
+	return &iter.first->second;
+#endif // !NETWORK_SERVER
 }

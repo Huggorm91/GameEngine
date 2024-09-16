@@ -1,5 +1,9 @@
 #pragma once
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/Rendering/Texture.h"
+#else
+#include "../Assets/Components/ComponentParts/MeshElement.h"
+#endif // !NETWORK_SERVER
 #include <unordered_map>
 #include <unordered_set>
 

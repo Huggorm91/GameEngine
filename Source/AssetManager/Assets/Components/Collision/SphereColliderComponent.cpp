@@ -3,7 +3,9 @@
 #include "Intersection.h"
 #include "Assets\GameObject.h"
 #include "../ComponentParts/BoxSphereBounds.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/Drawer/LineDrawer.h"
+#endif // !NETWORK_SERVER
 
 SphereColliderComponent::SphereColliderComponent() :
 	ColliderComponent(ComponentType::SphereCollider),
@@ -36,7 +38,9 @@ SphereColliderComponent::SphereColliderComponent(const Json::Value& aJson) :
 
 void SphereColliderComponent::DebugDraw()
 {
+#ifndef NETWORK_SERVER
 	//globalEngine->debugDrawer->RemovePrimitiveNextFrame(globalEngine->debugDrawer->AddSphere(GetCenter(), GetRadius(), Crimson::Vector3f::Zero, Crimson::Vector4f(ourColorMap[GetLayer()], 1.f)));
+#endif // !NETWORK_SERVER
 }
 
 void SphereColliderComponent::InitWithRadiusOffset(float aRadius, const Crimson::Vector3f& anOffset, bool anIsStatic)

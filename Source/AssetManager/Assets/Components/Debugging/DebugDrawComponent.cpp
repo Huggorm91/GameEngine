@@ -1,20 +1,24 @@
 #include "AssetManager.pch.h"
 #include "DebugDrawComponent.h"
 #include "../../GameObject.h"
+#ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
+#endif // !NETWORK_SERVER
 
 DebugDrawComponent::DebugDrawComponent() : Component(ComponentType::DebugDraw)
-#ifndef _RETAIL
+#if !defined _RETAIL && !defined NETWORK_SERVER
 	, myHandle(GraphicsEngine::Get().GetLineDrawer().GetNewHandle())
 #else
+#ifndef NETWORK_SERVER
 	, myHandle()
+#endif // !NETWORK_SERVER
 #endif // !_RETAIL	
 {
 }
 
 void DebugDrawComponent::TransformHasChanged() const
 {
-#ifndef _RETAIL
+#if !defined _RETAIL && !defined NETWORK_SERVER
 	myHandle.UpdateTransform(myParent->GetTransformMatrix());
 #endif // !_RETAIL
 }
@@ -22,7 +26,7 @@ void DebugDrawComponent::TransformHasChanged() const
 void DebugDrawComponent::SetActive(bool aIsActive)
 {
 	Component::SetActive(aIsActive);
-#ifndef _RETAIL
+#if !defined _RETAIL && !defined NETWORK_SERVER
 	myHandle.SetActive(aIsActive);
 #endif // !_RETAIL	
 }
@@ -30,11 +34,12 @@ void DebugDrawComponent::SetActive(bool aIsActive)
 void DebugDrawComponent::ToogleActive()
 {
 	Component::ToogleActive();
-#ifndef _RETAIL
+#if !defined _RETAIL && !defined NETWORK_SERVER
 	myHandle.SetActive(myIsActive);	
 #endif // !_RETAIL	
 }
 
+#ifndef NETWORK_SERVER
 void DebugDrawComponent::SetLine(const Crimson::Vector3f& aFrom, const Crimson::Vector3f& aTo, const Crimson::Vector4f& aColor, bool aIsUI)
 {
 #ifndef _RETAIL
@@ -68,3 +73,4 @@ void DebugDrawComponent::SetAxisLines(const Crimson::Vector3f& aCenter, float aL
 	UNREFERENCED_PARAMETER(aIsUI);
 #endif // !_RETAIL	
 }
+#endif // !NETWORK_SERVER
