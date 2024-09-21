@@ -1,7 +1,11 @@
 #include "AssetManager.pch.h"
 #include "NetworkComponent.h"
-#include "GameplayEngine/Network/NetworkManager.h"
 #include "../../GameObject.h"
+#ifndef NETWORK_SERVER
+#include "GameplayEngine/Network/NetworkManager.h"
+#else
+#include "GameServer/GameServer.h"
+#endif
 
 NetworkComponent::NetworkComponent() : 
 	Component(ComponentType::Network), 

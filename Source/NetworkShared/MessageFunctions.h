@@ -30,4 +30,23 @@ namespace Network
 
 	const UUIDv4::UUID& ExtractUUID(const NetMessage& aMessage);
 	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage);
+
+	inline bool MultiMessageSort(const NetMessage& aFirst, const NetMessage& aSecond)
+	{
+		if (aFirst.senderID == aSecond.senderID)
+		{
+			if (aFirst.messageID == aSecond.messageID)
+			{
+				return aFirst.packetIndex < aSecond.packetIndex;
+			}
+			else
+			{
+				return aFirst.messageID < aSecond.messageID;
+			}
+		}
+		else
+		{
+			return aFirst.senderID < aSecond.senderID;
+		}
+	}
 }

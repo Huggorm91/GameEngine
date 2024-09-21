@@ -37,7 +37,10 @@ public:
 	std::vector<Network::NetMessage>& GetMessages();
 	void ClearMessages();
 
-	GameObject ExtractCreatedGameObject(const Network::NetMessage& aMessage);
+	std::string GetStatisticsString();
+
+	static GameObject ExtractCreatedGameObject(const Network::NetMessage& aMessage);
+	static GameObject ExtractCreatedGameObject(const std::vector<Network::NetMessage*>& aMessageList);
 
 private:
 	std::vector<std::string> myChatHistory;

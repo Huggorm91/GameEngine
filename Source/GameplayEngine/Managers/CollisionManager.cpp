@@ -20,12 +20,21 @@ void CollisionManager::AddCollider(ColliderComponent* aCollider)
 
 void CollisionManager::RemoveCollider(ColliderComponent* aCollider)
 {
-	if (auto iter = myCollisionObjects.find(aCollider->GetLayer()); iter != myCollisionObjects.end())
+	myRemovedColliders.emplace(aCollider);
+}
+
+void CollisionManager::ChangeLayer(ColliderComponent* aCollider, CollisionLayer::Layer aNewLayer)
+{
+	myRemovedColliders.emplace(aCollider);
+
+	if (auto iter = myCollisionObjects.find(aNewLayer); iter != myCollisionObjects.end())
 	{
-		if (auto componentIter = iter->second.find(aCollider); componentIter != iter->second.end())
-		{
-			iter->second.erase(componentIter);
-		}
+		iter->second.emplace(aCollider);
+	}
+	else
+	{
+		myCollisionObjects.emplace(aNewLayer, std::unordered_set<ColliderComponent*>());
+		myCollisionObjects.at(aNewLayer).emplace(aCollider);
 	}
 }
 
@@ -35,6 +44,12 @@ void CollisionManager::CheckCollisions()
 	{
 		for (auto& component : componentList)
 		{
+			// Check if removed
+			if (myRemovedColliders.contains(component))
+			{
+				continue;
+			}
+
 			for (auto& [collidingLayer, collidingComponentList] : myCollisionObjects)
 			{
 				// Early escape if component doesnt collide with this layer
@@ -53,12 +68,18 @@ void CollisionManager::CheckCollisions()
 						continue;
 					}
 
+					// Check if removed
+					if (myRemovedColliders.contains(collidingComponent))
+					{
+						continue;
+					}
+
 					// Check if they already have collided this frame
 					lower = component < collidingComponent ? component : collidingComponent;
 					higher = lower == collidingComponent ? component : collidingComponent;
 					if (auto iter = myCollisions.find(lower); iter != myCollisions.end())
 					{
-						if (iter->second.find(higher) != iter->second.end())
+						if (iter->second.contains(higher))
 						{
 							continue;
 						}
@@ -108,13 +129,25 @@ void CollisionManager::CheckCollisions()
 		}
 	}
 
+	// Handle Collision Exit
 	for (auto& [firstCollider, collideList] : myPreviousCollisions)
 	{
+		// Check if removed
+		if (myRemovedColliders.contains(firstCollider))
+		{
+			continue;
+		}
 		for (auto& secondCollider : collideList)
 		{
+			// Check if removed
+			if (myRemovedColliders.contains(secondCollider))
+			{
+				continue;
+			}
 			CollisionExit(firstCollider, secondCollider);
 		}
 	}
+	myRemovedColliders.clear();
 }
 
 void CollisionManager::EndFrame()

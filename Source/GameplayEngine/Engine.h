@@ -10,21 +10,38 @@ class CollisionManager;
 class ObjectManager;
 class SceneManager;
 class MainLogger;
+#ifndef NETWORK_SERVER
 class NetworkManager;
+#else
+class GameServer;
+#endif // !NETWORK_SERVER
+
 
 class Engine
 {
 public:
 	~Engine();
 
-	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork, bool anIsServer = false);
+#ifndef NETWORK_SERVER
+	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork);
+#else
+	static void Init(GameServer* aServer);
+#endif // !NETWORK_SERVER
+	
 
 	static void BeginFrame();
 	static void EndFrame();
 
 	static bool IsValid();
 	static bool IsNetworkingEnabled();
-	static bool IsServer();
+	static constexpr bool IsServer()
+	{
+#ifndef NETWORK_SERVER
+		return false;
+#else
+		return true;
+#endif // !NETWORK_SERVER
+	}
 
 	static Crimson::Blackboard<std::string>& GetBlackboard();
 	static MainLogger& GetLogger();
@@ -34,7 +51,11 @@ public:
 	static CollisionManager& GetCollisionManager();
 	static ObjectManager& GetObjectManager();
 	static SceneManager& GetSceneManager();
+#ifndef NETWORK_SERVER
 	static NetworkManager& GetNetworkManager();
+#else
+	static GameServer& GetNetworkManager();
+#endif // !NETWORK_SERVER
 
 	static const Crimson::Vector2i& GetWindowSize();
 	static HWND GetWindowHandle();
@@ -57,8 +78,11 @@ private:
 	std::unique_ptr<CollisionManager> myCollisionManager;
 	std::unique_ptr<ObjectManager> myObjectManager;
 	std::unique_ptr<SceneManager> mySceneManager;
+#ifndef NETWORK_SERVER
 	std::unique_ptr<NetworkManager> myNetworkManager;
+#else
+	GameServer* myNetworkManager = nullptr;
+#endif // !NETWORK_SERVER
 
-	bool myIsServer;
 	bool myIsInitialized;
 };

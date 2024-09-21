@@ -15,14 +15,26 @@ namespace Network
 		myServerInfo(),
 		myServerSocket(),
 		myCurrentIP(nullptr),
+		myThread(nullptr),
+		myIncommingDataAmount(),
+		myOutgoignDataAmount(),
+		mySentPacketsAmount(),
+		myLostPacketsAmount(),
+		myResendTime(1.f / 5.f),
 		mySocketSize(sizeof(sockaddr_in)),
 		myClientIDGenerator(0u),
 		myMessageIDGenerator(1u),
+		myMaxResendAttempts(3u),
 		myIsRunning(false)
 	{}
 
 	Server::~Server()
 	{
+		if (myThread)
+		{
+			myIsRunning = false;
+			myThread->join();
+		}
 		ShutDown();
 		delete myCurrentIP;
 	}
@@ -84,16 +96,26 @@ namespace Network
 		myIsRunning = true;
 		myCurrentIP = new char[16];
 		myLogger->Succ("Server initialized!");
+
+		if (myThread == nullptr)
+		{
+			myThread = new std::thread([this]() {
+				while (myIsRunning)
+				{
+					this->Update();
+				}
+				});
+		}
 	}
 
 	void Server::Update()
 	{
 		ZeroMemory(&myClientInfo, sizeof(myClientInfo));
-		ZeroMemory(&myMessage, sizeof(myMessage));
+		ZeroMemory(&myIncommingMessage, sizeof(myIncommingMessage));
 		ZeroMemory(myCurrentIP, 16);
 
 		// Try to receive some data
-		if (recvfrom(myServerSocket, myMessage, sizeof(NetMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
+		if (recvfrom(myServerSocket, myIncommingMessage, sizeof(NetMessage), 0, (sockaddr*)&myClientInfo, &mySocketSize) == SOCKET_ERROR)
 		{
 			if (WSAGetLastError() == WSAEWOULDBLOCK)
 			{
@@ -130,11 +152,19 @@ namespace Network
 		client.ip = myCurrentIP;
 		client.port = port;
 
+		ZeroMemory(&myOutgoingMessage, sizeof(myOutgoingMessage));
+		{
+			std::unique_lock lock(myMainMutex);
+			myCachedMessages.emplace_back(myIncommingMessage);
+			myIncommingDataAmount += myIncommingMessage.dataSize;
+		}
+
 		// TODO: Save all messages sent by clients in a searchable list, so that they can be resent in case of packet loss
-		switch (myMessage.type)
+		switch (myIncommingMessage.type)
 		{
 		case MessageType::Invalid:
-			break;
+			ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
+			return; // Do not send these out to the clients
 		case MessageType::Connect:
 		{
 			HandleConnect(client, identifier);
@@ -147,12 +177,14 @@ namespace Network
 		}
 		case Network::MessageType::Confirmation:
 		{
-			HandleConfirmation();
-			break;
+			HandleConfirmation(identifier);
+			ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
+			return; // These messages will not be sent to other clients
 		}
 		case Network::MessageType::ResendMessage:
 		{
-			break;
+			// TODO: Implement this functionality
+			return; // Do not send until implemneted
 		}
 		case MessageType::Chat:
 		{
@@ -162,6 +194,7 @@ namespace Network
 		case Network::MessageType::Ping:
 		{
 			HandlePing(identifier);
+			ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
 			return; // Should not send to all
 		}
 		case Network::MessageType::GameObjectMessage:
@@ -180,10 +213,12 @@ namespace Network
 			break;
 		}
 		default:
-			break;
+			return; // Unknown Messagetype, do not send to clients
 		}
 
-		SendMessageToClients(myMessage, &client);
+		ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
+
+		SendMessageToClients(myOutgoingMessage, &client);
 
 		for (auto& id : myRemovedClients)
 		{
@@ -191,6 +226,35 @@ namespace Network
 			myClientIDs.erase(identifier);
 		}
 		myRemovedClients.clear();
+	}
+
+	std::vector<NetMessage> Server::Flush(float aTimeSinceLastFlushInSeconds)
+	{
+		std::unique_lock lock(myMainMutex);
+		HandlePacketLoss(aTimeSinceLastFlushInSeconds);
+		std::vector<NetMessage> copy = std::move(myCachedMessages);
+		myCachedMessages.clear();
+		return copy;
+	}
+
+	void Server::ReportStatistics()
+	{
+		std::unique_lock lock(myMainMutex);
+		myLogger->Log(std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount));
+		myIncommingDataAmount = 0;
+		myOutgoignDataAmount = 0;
+		mySentPacketsAmount = 0;
+		myLostPacketsAmount = 0;
+	}
+
+	void Server::SetTimeBetweenResend(float aTimeInSeconds)
+	{
+		myResendTime = aTimeInSeconds;
+	}
+
+	void Server::SetMaximumResendAttempts(uint8_t anAmount)
+	{
+		myMaxResendAttempts = anAmount;
 	}
 
 	bool Server::IsRunning() const
@@ -201,8 +265,8 @@ namespace Network
 	void Server::ShutDown()
 	{
 		// Send message to clients to inform them the server has been turned off
-		myMessage = CreateDisconnectMessage();
-		SendMessageToClients(myMessage);
+		myOutgoingMessage = CreateDisconnectMessage();
+		SendMessageToClients(myOutgoingMessage);
 
 		// Cleanup
 		closesocket(myServerSocket);
@@ -211,30 +275,55 @@ namespace Network
 		myLogger->PrintHistoryToFile(GetLogfileName());
 	}
 
-	void Server::SetConnectionCallback(const std::function<void(ClientInfo&)>& aFunction)
+	void Server::SetIncommingMessageCallback(MessageType aType, const std::function<void(ClientInfo&, const NetMessage&)>& aFunction)
 	{
-		myConnectCallback = aFunction;
+		myCallbacks[static_cast<size_t>(aType)] = aFunction;
 	}
 
 	void Server::SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
 	{
 		if (aClientToAvoid)
 		{
-			for (auto& [id, entry] : myClients)
+			if (aMessage.needReply)
 			{
-				if (*aClientToAvoid == entry)
+				for (auto& [id, entry] : myClients)
 				{
-					continue;
-				}
+					if (*aClientToAvoid == entry)
+					{
+						continue;
+					}
 
-				SendToClient(aMessage, entry);
+					SendGuaranteedToClient(aMessage, entry);
+				}
 			}
+			else
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					if (*aClientToAvoid == entry)
+					{
+						continue;
+					}
+
+					SendToClient(aMessage, entry);
+				}
+			}			
 		}
 		else
 		{
-			for (auto& [id, entry] : myClients)
+			if (aMessage.needReply)
 			{
-				SendToClient(aMessage, entry);
+				for (auto& [id, entry] : myClients)
+				{
+					SendGuaranteedToClient(aMessage, entry);
+				}
+			}
+			else
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					SendToClient(aMessage, entry);
+				}
 			}
 		}
 	}
@@ -256,7 +345,19 @@ namespace Network
 		else
 		{
 			outClient.failedMessageCount = 0;
+
+			std::unique_lock lock(myMainMutex);
+			myOutgoignDataAmount += myOutgoingMessage.dataSize;
+			++mySentPacketsAmount;
 		}
+	}
+
+	void Server::SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient)
+	{
+		SendToClient(aMessage, outClient);
+		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
+		std::unique_lock lock(myConfirmationMutex);
+		myWaitingConfirmations[identifier].emplace_back(ConfirmationData{ aMessage });
 	}
 
 	unsigned short Server::GetMessageID()
@@ -283,12 +384,39 @@ namespace Network
 		exit(EXIT_FAILURE);
 	}
 
+	void Server::HandlePacketLoss(float aTimeSinceLastCallInSeconds)
+	{
+		std::unique_lock lock(myConfirmationMutex);
+		for (auto& [id, dataList] : myWaitingConfirmations)
+		{
+			for (auto iter = dataList.begin(); iter != dataList.end();)
+			{
+				auto& data = *iter;
+				data.timeSinceLastSend += aTimeSinceLastCallInSeconds;
+				if (data.timeSinceLastSend >= myResendTime)
+				{
+					if (data.amountSent >= myMaxResendAttempts)
+					{
+						++myLostPacketsAmount;
+						iter = dataList.erase(iter);
+						continue;
+					}
+
+					SendToClient(data.message, myClients.at(id));
+					data.timeSinceLastSend = 0.f;
+					++data.amountSent;
+				}
+				++iter;
+			}
+		}
+	}
+
 	void Server::HandleConnect(ClientInfo& outClient, const std::string& anIdentifier)
 	{
 		outClient.username = "Client" + std::to_string(outClient.port);
 
 		myLogger->Log(std::format("New connection from: {}\tUsername: {}", anIdentifier, outClient.username));
-		SetMessageData(std::format("{} has joined the server.", outClient.username));
+		SetOutgoingMessageData(std::format("{} has joined the server.", outClient.username));
 
 		myClients.emplace(anIdentifier, outClient);
 		myClientIDs.emplace(anIdentifier, ++myClientIDGenerator);
@@ -297,41 +425,48 @@ namespace Network
 		memcpy_s(message.data, globalBuffLength, &myClientIDGenerator, sizeof(unsigned short));
 		sendto(myServerSocket, message, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
 
-		if (myConnectCallback)
-		{
-			myConnectCallback(outClient);
-		}
-		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myMessage);
+		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myIncommingMessage);
 	}
 
 	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
-			SetMessageData(std::format("{} has disconnected.", iter->second.username));
+			SetOutgoingMessageData(std::format("{} has disconnected.", iter->second.username));
 			myLogger->Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier, iter->second.username));
 			myClientIDs.erase(iter->first);
 			myClientHistory.erase(iter->first);
+			myWaitingConfirmations.erase(iter->first);
 			myClients.erase(iter);
 		}
 		else
 		{
-			SetMessageData(std::format("UnknownUser{} has disconnected.", aClient.port));
+			SetOutgoingMessageData(std::format("UnknownUser{} has disconnected.", aClient.port));
 			myLogger->Log(std::format("Unknown user disconnected: {}:{}", aClient.ip, aClient.port));
 		}
 	}
 
-	void Server::HandleConfirmation()
+	void Server::HandleConfirmation(const std::string& anIdentifier)
 	{
+		std::unique_lock lock(myConfirmationMutex);
+		auto& dataList = myWaitingConfirmations[anIdentifier];
+		for (auto iter = dataList.begin(); iter != dataList.end();)
+		{
+			if (*iter == myIncommingMessage)
+			{
+				dataList.erase(iter);
+				return;
+			}
+		}
 	}
 
 	void Server::HandlePing(const std::string& anIdentifier)
 	{
-		if (myMessage.needReply)
+		if (myIncommingMessage.needReply)
 		{
 			if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 			{
-				SendToClient(myMessage, iter->second);
+				SendToClient(myIncommingMessage, iter->second);
 				myLogger->Log(std::format("Ping from: {}\tUsername: {}", anIdentifier, iter->second.username));
 			}
 			else
@@ -349,35 +484,38 @@ namespace Network
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
-			SetMessageData(std::format("{}: {}", iter->second.username, myMessage.data));
-			myLogger->Log(std::format("{} sent message: {}", iter->second.username, myMessage.data));
+			SetOutgoingMessageData(std::format("{}: {}", iter->second.username, myIncommingMessage.data));
+			myLogger->Log(std::format("{} sent message: {}", iter->second.username, myIncommingMessage.data));
 		}
 		else
 		{
-			SetMessageData(std::format("UnknownUser{}: {}", aClient.port, myMessage.data));
-			myLogger->Log(std::format("Unknown user: {}:{}\tSent message: {}", aClient.ip, aClient.port, myMessage.data));
+			SetOutgoingMessageData(std::format("UnknownUser{}: {}", aClient.port, myIncommingMessage.data));
+			myLogger->Log(std::format("Unknown user: {}:{}\tSent message: {}", aClient.ip, aClient.port, myIncommingMessage.data));
 		}
 	}
 
 	void Server::HandleGameObjectMessage(const ClientInfo& aClient, const std::string& anIdentifier)
 	{
+		myOutgoingMessage = myIncommingMessage;
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
-			myLogger->Log(std::format("{} sent {}byte data to Object with UUID: {}", iter->second.username, myMessage.dataSize, ExtractUUID(myMessage).str()));
 			// TODO: Make sure only the latest message of each UUID and type is saved
-			myClientHistory[anIdentifier].emplace_back(myMessage);
-		}
-		else
-		{
-			myLogger->Log(std::format("Unknown user: {}:{}\tSent {}byte data to Object with UUID: {}", aClient.ip, aClient.port, myMessage.dataSize, ExtractUUID(myMessage).str()));
+			myClientHistory[anIdentifier].emplace_back(myIncommingMessage);
 		}
 	}
 
-	void Server::SetMessageData(const std::string& aMessage)
+	void Server::ActivateCallback(MessageType aType, ClientInfo& aClient, NetMessage& aMessage)
 	{
-		ZeroMemory(myMessage.data, globalBuffLength);
-		myMessage.dataSize = static_cast<unsigned short>(aMessage.size() + 1);
-		strcpy_s(myMessage.data, myMessage.dataSize, aMessage.c_str());
+		if (myCallbacks[static_cast<size_t>(aType)])
+		{
+			myCallbacks[static_cast<size_t>(aType)](aClient, aMessage);
+		}
+	}
+
+	void Server::SetOutgoingMessageData(const std::string& aMessage)
+	{
+		myOutgoingMessage.dataSize = static_cast<unsigned short>(aMessage.size() + 1);
+		strcpy_s(myOutgoingMessage.data, myOutgoingMessage.dataSize, aMessage.c_str());
 	}
 
 	std::string Server::GetIdentifier(const char* anIP, unsigned short aPort)

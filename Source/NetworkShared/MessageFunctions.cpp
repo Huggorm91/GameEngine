@@ -71,7 +71,7 @@ namespace Network
 		message.type = MessageType::CreateGameObject;
 
 		memcpy_s(message.data, globalBuffLength, &anID, idSize);
-		memcpy_s(message.data + idSize, globalBuffLength, someData.data(), someData.size());
+		memcpy_s(message.data + idSize, globalBuffLength - idSize, someData.data(), someData.size());
 
 		return message;
 	}

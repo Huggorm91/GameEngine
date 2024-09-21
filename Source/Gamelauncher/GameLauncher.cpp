@@ -272,13 +272,13 @@ void GameLauncher::Init()
 	player->AddComponent(FirstPersonCameraControllerComponent(cameraSpeed, mouseSensitivity));
 	auto& mesh = player->AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
 	mesh.SetColor({ Crimson::Random::RandomNumber(1.f), Crimson::Random::RandomNumber(1.f) , Crimson::Random::RandomNumber(1.f) , 1.f });
-	
+
 
 	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
 	{
 		auto& networkComponent = player->AddComponent<NetworkComponent>();
 		networkComponent.SyncTransform(true);
-		networkComponent.SetSyncFrequency(1.f/60.f);
+		networkComponent.SetSyncFrequency(1.f / 60.f);
 
 		GameObject networkObject(player->GetUUID());
 		networkObject.SetPosition({ 0.f, 200.f, 0.f });
@@ -309,6 +309,12 @@ void GameLauncher::Update()
 
 void GameLauncher::HandleNetmessages()
 {
+	myReportTimer += Crimson::Time::GetDeltaTime();
+	if (myReportTimer >= 1.f)
+	{
+		myReportTimer = 0.f;
+		myLogger.Log(Engine::GetNetworkManager().GetStatisticsString());
+	}
 	auto& messages = Engine::GetNetworkManager().GetMessages();
 	for (auto& message : messages)
 	{
@@ -343,7 +349,7 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
-			myLogger.Log(std::format("Recieved {}bytes of data for object: {}", message.dataSize, Network::ExtractUUID(message).str()));
+			Engine::GetLogger().Log(std::format("Recieved {}bytes of data for object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			if (auto object = Engine::GetObjectManager().GetGameObject(Network::ExtractUUID(message)))
 			{
 				object->RecieveNetmessage(Network::ExtractGameObjectMessage(message));
@@ -352,16 +358,36 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::CreateGameObject:
 		{
-			myLogger.Log(std::format("Recieved {}bytes of data for creating object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			if (message.totalPackets == 1u)
 			{
-				Engine::GetObjectManager().AddGameObject(Engine::GetNetworkManager().ExtractCreatedGameObject(message));
+				Engine::GetLogger().Log(std::format("Recieved {}bytes of data for creating object: {}", message.dataSize, Network::ExtractUUID(message).str()));
+				Engine::GetObjectManager().AddGameObject(NetworkManager::ExtractCreatedGameObject(message));
+			}
+			else
+			{
+				if (message.packetIndex != 0)
+				{
+					continue;
+				}
+				std::vector<Network::NetMessage*> objectMessages;
+				Network::NetMessage* current = &message;
+				size_t totalSize = 0;
+				for (unsigned short i = 0; i < message.totalPackets; i++)
+				{
+					assert(Network::ExtractUUID(message) == Network::ExtractUUID(*current) && "Not all messages belongs to the same UUID!");
+					assert(current->packetIndex == i && "Messages are not arranged in order!");
+					totalSize += current->dataSize;
+					objectMessages.emplace_back(current);
+					current++;
+				}
+				Engine::GetLogger().Log(std::format("Recieved {} packets with {}bytes of data for creating object: {}", message.totalPackets, totalSize, Network::ExtractUUID(message).str()));
+				Engine::GetObjectManager().AddGameObject(NetworkManager::ExtractCreatedGameObject(objectMessages));
 			}
 			break;
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
-			myLogger.Log(std::format("Recieved {}bytes of data for deleting object: {}", message.dataSize, Network::ExtractUUID(message).str()));
+			Engine::GetLogger().Log(std::format("Recieved {}bytes of data for deleting object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			Engine::GetObjectManager().RemoveGameObject(Network::ExtractUUID(message));
 			break;
 		}

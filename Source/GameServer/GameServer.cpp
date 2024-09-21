@@ -10,6 +10,8 @@
 #include "GameplayEngine/PostMaster/PostMaster.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+#include "GameplayEngine/Network/NetworkManager.h"
+#include "GameplayEngine/Network/GameObjectMessage.h"
 
 #include "AssetManager/AssetManager.h"
 
@@ -22,13 +24,16 @@ bool GameServer::Initialize()
 	try
 	{
 #endif // _DEBUG
-		Engine::Init(NULL, Crimson::Vector2i::Null, false, true);
+		Engine::Init(this);
 
 		myServer.Init(&Engine::GetLogger());
-		myServer.SetConnectionCallback([this](Network::ClientInfo& aClient) { HandleConnection(aClient); });
+		myServer.SetIncommingMessageCallback(Network::MessageType::Connect, [this](Network::ClientInfo& aClient, const Network::NetMessage&) { HandleConnection(aClient); });
+		myServer.SetIncommingMessageCallback(Network::MessageType::CreateGameObject, [this](Network::ClientInfo& aClient, const Network::NetMessage& aMessage) { HandleCreateObject(aClient, aMessage); });
+		myServer.SetIncommingMessageCallback(Network::MessageType::DeleteGameObject, [this](Network::ClientInfo& aClient, const Network::NetMessage& aMessage) { HandleDeleteObject(aClient, aMessage); });
+		myServer.SetIncommingMessageCallback(Network::MessageType::GameObjectMessage, [this](Network::ClientInfo& aClient, const Network::NetMessage& aMessage) { HandleObjectMessage(aClient, aMessage); });
 
 		AssetManager::Init();
-		AssetManager::GeneratePrimitives();		
+		AssetManager::GeneratePrimitives();
 #ifndef _DEBUG
 	}
 	catch (const std::exception& anException)
@@ -42,7 +47,7 @@ bool GameServer::Initialize()
 		HandleCrash(std::invalid_argument("Caught unknown Error!"));
 		Shutdown();
 		return false;
-}
+	}
 #endif // _DEBUG
 	return true;
 }
@@ -103,7 +108,7 @@ void GameServer::RecieveMessage(const Crimson::Message& aMessage)
 			SendDeleteObjectMessage(second);
 			Engine::GetObjectManager().RemoveGameObjectAtEndOfFrame(first);
 			Engine::GetObjectManager().RemoveGameObjectAtEndOfFrame(second);
-		}	
+		}
 		break;
 	}
 	case Crimson::eMessageType::GameObject_Died:
@@ -119,6 +124,22 @@ void GameServer::RecieveMessage(const Crimson::Message& aMessage)
 	default:
 		break;
 	}
+}
+
+void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
+{
+	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
+	constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
+
+	Network::GameObjectMessage message;
+	message.id = anID;
+	message.action = Network::ObjectAction::Move;
+	message.size = vectorSize + vectorSize;
+
+	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
+	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
+
+	myServer.SendMessageToClients(Network::CreateGameObjectMessage(message));
 }
 
 void GameServer::HandleCrash(const std::exception& anException)
@@ -137,7 +158,7 @@ void GameServer::Init()
 {
 	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::Collision_OnCollisionEnter);
 	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::GameObject_Died);
-	
+
 	Engine::GetSceneManager().LoadScene("Test");
 }
 
@@ -146,6 +167,7 @@ void GameServer::Update()
 	Engine::BeginFrame();
 	Engine::GetObjectManager().UpdateObjects(false);
 
+	// TODO: Remove
 	{ // Part of school assignment
 		static float timer = 0.f;
 		timer += Crimson::Time::GetDeltaTime();
@@ -157,9 +179,23 @@ void GameServer::Update()
 	}
 
 	Engine::EndFrame();
-	myServer.Update();
+	HandleNetMessages();
 }
 
+void GameServer::HandleNetMessages()
+{
+	myReportTimer += Crimson::Time::GetDeltaTime();
+	if (myReportTimer >= 1.f)
+	{
+		myReportTimer = 0.f;
+		myServer.ReportStatistics();
+	}
+	auto messages = myServer.Flush();
+	// This list now contains all incomming messages since Flush was last called
+	// Currently all messages of worth are handled in callbacks, so flushing just to keep the server from filling up with unhandled messages
+}
+
+// TODO: Remove this function and includes, they are only here for a school assignment
 #include "AssetManager/Assets/Components/Network/NetworkComponent.h"
 #include "AssetManager/Assets/Components/Network/AssignmentComponent.h"
 #include "AssetManager/Assets/Components/Collision/SphereColliderComponent.h"
@@ -168,7 +204,7 @@ void GameServer::CreateRandomObject()
 	if (Engine::GetObjectManager().GetTemporaryObjects().size() < 10)
 	{
 		auto& object = *Engine::GetObjectManager().AddGameObject();
-		object.SetPosition({Crimson::Random::RandomNumber(-200.f, 200.f), 0.f, Crimson::Random::RandomNumber(-200.f, 200.f) });
+		object.SetPosition({ Crimson::Random::RandomNumber(-200.f, 200.f), 0.f, Crimson::Random::RandomNumber(-200.f, 200.f) });
 
 		auto direction = Crimson::Vector3f::Null - object.GetWorldPosition();
 		object.AddComponent(AssignmentComponent(direction));
@@ -181,22 +217,35 @@ void GameServer::CreateRandomObject()
 
 		auto& network = object.AddComponent<NetworkComponent>();
 		network.SetSyncFrequency(Network::globalSyncFrequency);
-	}	
+		network.SyncTransform(true);
+
+		SendCopyOfRandomObject(object);
+	}
+}
+
+void GameServer::SendCopyOfRandomObject(const GameObject& anObject, Network::ClientInfo* aClient)
+{
+	GameObject copy(anObject.GetUUID());
+	copy.SetPosition(anObject.GetWorldPosition());
+	copy.AddComponent(anObject.GetComponent<MeshComponent>());
+
+	SendCreateObjectMessage(copy, aClient);
 }
 
 void GameServer::HandleConnection(Network::ClientInfo& aClient)
 {
 	for (auto& [id, object] : Engine::GetObjectManager().GetTemporaryObjects())
 	{
-		GameObject copy(object.GetUUID());
-		copy.SetPosition(object.GetWorldPosition());
-		copy.AddComponent(object.GetComponent<MeshComponent>());
+		SendCopyOfRandomObject(object, &aClient);
+	}
 
-		SendCreateObjectMessage(copy, aClient);
+	for (auto& [id, object] : myClientObjects)
+	{
+		SendCreateObjectMessage(object, &aClient);
 	}
 }
 
-void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::ClientInfo& aClient)
+void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::ClientInfo* aClient)
 {
 	std::vector<uint8_t> data;
 	{
@@ -209,7 +258,14 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 	{
 		auto message = Network::CreateCreateGameObjectMessage(anObject.GetUUID(), data);
 		message.messageID = myServer.GetMessageID();
-		myServer.SendToClient(message, aClient);
+		if (aClient)
+		{
+			myServer.SendToClient(message, *aClient);
+		}
+		else
+		{
+			myServer.SendMessageToClients(message);
+		}
 	}
 	else
 	{
@@ -243,7 +299,14 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 			message.messageID = id;
 			message.packetIndex = i;
 			message.totalPackets = totalPackets;
-			myServer.SendToClient(message, aClient);
+			if (aClient)
+			{
+				myServer.SendToClient(message, *aClient);
+			}
+			else
+			{
+				myServer.SendMessageToClients(message);
+			}
 		}
 	}
 }
@@ -251,4 +314,128 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 void GameServer::SendDeleteObjectMessage(const UUIDv4::UUID& anId)
 {
 	myServer.SendMessageToClients(Network::CreateDeleteGameObjectMessage(anId));
+}
+
+bool GameServer::HasAllCreateMessages(const UUIDv4::UUID& anId)
+{
+	std::sort(myMultipartCreateMessages.begin(), myMultipartCreateMessages.end(), Network::MultiMessageSort);
+
+	unsigned short currentSender = 0;
+	unsigned short currentMessage = 0;
+	unsigned short previousIndex = 0;
+
+	bool hasFoundUUID = false;
+	for (auto iter = myMultipartCreateMessages.begin(); iter != myMultipartCreateMessages.end(); iter++)
+	{
+		const auto& message = *iter;
+		if (Network::ExtractUUID(message) != anId)
+		{
+			if (hasFoundUUID)
+			{
+				return false;
+			}
+			else
+			{
+				continue;
+			}
+		}
+		else if (!hasFoundUUID)
+		{
+			currentSender = message.senderID;
+			currentMessage = message.messageID;
+			previousIndex = message.packetIndex;
+			hasFoundUUID = true;
+			continue;
+		}
+
+		assert(currentSender == message.senderID && "Sender is not the same!");
+		assert(currentMessage == message.messageID && "MessageID is not the same!");
+
+		if (previousIndex != message.packetIndex - 1)
+		{
+			return false;
+		}
+
+		if (message.packetIndex == message.totalPackets - 1)
+		{
+			return true;
+		}
+		else
+		{
+			previousIndex = message.packetIndex;
+		}
+	}
+	return false;
+}
+
+std::vector<Network::NetMessage*> GameServer::GetAllCreateMessages(const UUIDv4::UUID& anId)
+{
+	std::vector<Network::NetMessage*> objectMessages;
+	Network::NetMessage* current = nullptr;
+	unsigned short total = 0;
+
+	for (auto& message : myMultipartCreateMessages)
+	{
+		if (Network::ExtractUUID(message) == anId)
+		{
+			current = &message;
+			total = message.totalPackets;
+			break;
+		}
+	}
+
+	for (unsigned short i = 0; i < total; i++)
+	{
+		assert(anId == Network::ExtractUUID(*current) && "Not all messages belongs to the same UUID!");
+		assert(current->packetIndex == i && "Messages are not arranged in order!");
+		objectMessages.emplace_back(current);
+		current++;
+	}
+	return objectMessages;
+}
+
+void GameServer::RemoveAllCreateMessages(const UUIDv4::UUID& anId)
+{
+	for (auto iter = myMultipartCreateMessages.begin(); iter != myMultipartCreateMessages.end();)
+	{
+		if (Network::ExtractUUID(*iter) == anId)
+		{
+			iter = myMultipartCreateMessages.erase(iter);
+		}
+		else 
+		{
+			iter++;
+		}
+	}
+}
+
+void GameServer::HandleCreateObject(Network::ClientInfo&, const Network::NetMessage& aMessage)
+{
+	if (aMessage.totalPackets == 1u)
+	{
+		myClientObjects.emplace(Network::ExtractUUID(aMessage), NetworkManager::ExtractCreatedGameObject(aMessage));
+	}
+	else
+	{
+		myMultipartCreateMessages.emplace_back(aMessage);
+		const auto& id = Network::ExtractUUID(aMessage);
+		if (HasAllCreateMessages(id))
+		{
+			myClientObjects.emplace(Network::ExtractUUID(aMessage), NetworkManager::ExtractCreatedGameObject(GetAllCreateMessages(id)));
+			RemoveAllCreateMessages(id);
+		}		
+	}
+}
+
+void GameServer::HandleDeleteObject(Network::ClientInfo&, const Network::NetMessage& aMessage)
+{
+	myClientObjects.erase(Network::ExtractUUID(aMessage));
+}
+
+void GameServer::HandleObjectMessage(Network::ClientInfo&, const Network::NetMessage& aMessage)
+{
+	if (auto iter = myClientObjects.find(Network::ExtractUUID(aMessage)); iter != myClientObjects.end())
+	{
+		iter->second.RecieveNetmessage(Network::ExtractGameObjectMessage(aMessage));
+	}
 }

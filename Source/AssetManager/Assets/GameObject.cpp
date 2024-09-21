@@ -14,6 +14,7 @@ UUIDv4::UUID GameObject::nullUUID(uint64_t(0), uint64_t(0));
 
 GameObject::GameObject() :
 	myIsActive(true),
+	mySyncTimer(-1.f),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName("GameObject"),
@@ -51,24 +52,20 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 
 GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
+	mySyncTimer(-1.f),
 	myParent(nullptr),
 	myUUID(anUUID),
 	myName("GameObject"),
 #ifdef EDITOR
 	myImguiText(myName),
 #endif // EDITOR
-	myTransform(),
-	myChildren(),
-#ifndef _RETAIL
-	myDebugPointers(),
-#endif // !_RETAIL
-	myIndexList(),
 	myComponents(1000u)
 {
 }
 
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
+	mySyncTimer(-1.f),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
@@ -76,11 +73,6 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myImguiText(myName),
 #endif // EDITOR
 	myTransform(aGameObject.myTransform),
-	myChildren(),
-#ifndef _RETAIL
-	myDebugPointers(),
-#endif // !_RETAIL
-	myIndexList(),
 	myComponents(aGameObject.myComponents.GetSize())
 {
 	for (auto& [type, index] : aGameObject.myIndexList)
@@ -95,7 +87,9 @@ GameObject::GameObject(const GameObject& aGameObject) :
 
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
+	mySyncTimer(aGameObject.mySyncTimer),
 	myParent(aGameObject.myParent),
+	mySyncMovement(aGameObject.mySyncMovement),
 	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
 #ifdef EDITOR
@@ -103,10 +97,6 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 #endif // EDITOR
 	myTransform(aGameObject.myTransform),
 	myChildren(aGameObject.myChildren),
-#ifndef _RETAIL
-	myDebugPointers(),
-#endif // !_RETAIL
-	myIndexList(),
 	myComponents(aGameObject.myComponents.GetSize())
 {
 	for (auto& [type, index] : aGameObject.myIndexList)
@@ -121,6 +111,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 
 GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
+	mySyncTimer(-1.f),
 	myParent(nullptr),
 	myUUID(aJson["UUID"].isNull() ? GenerateUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
@@ -228,6 +219,8 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	const_cast<UUIDv4::UUID&>(myUUID) = aGameObject.myUUID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
+	mySyncTimer = aGameObject.mySyncTimer;
+	mySyncMovement = aGameObject.mySyncMovement;
 
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -255,6 +248,20 @@ void GameObject::Update()
 {
 	if (myIsActive)
 	{
+		if (mySyncTimer >= 0.f)
+		{
+			const float timeDelta = Crimson::Time::GetDeltaTime() / Network::globalSyncFrequency;
+			const float syncDelta = mySyncTimer / Network::globalSyncFrequency;
+			const float lerpValue = Crimson::Clamp(timeDelta, 0.f, syncDelta);
+			myTransform.AddToPosition(Crimson::Lerp(Crimson::Vector3f::Null, mySyncMovement, lerpValue));
+			myTransform.AddToRotationRadian(Crimson::Lerp(Crimson::Vector3f::Null, mySyncRotation, lerpValue));
+
+			mySyncTimer += Crimson::Time::GetDeltaTime();
+			if (mySyncTimer >= Network::globalSyncFrequency)
+			{
+				mySyncTimer = -1.f;
+			}
+		}
 		if (myTransform.HasChanged())
 		{
 			TransformHasChanged();
@@ -351,9 +358,18 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 {
 	if (aMessage.action == Network::ObjectAction::Move)
 	{
+#ifndef NETWORK_SERVER
+		const auto& position = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
+		mySyncMovement = position - myTransform.GetPosition();
+		const auto& rotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[sizeof(Crimson::Vector3f)]);
+		mySyncRotation = rotation - myTransform.GetRotationRadian();
+		mySyncTimer = 0.f;
+#else
 		myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
 		myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[sizeof(Crimson::Vector3f)]));
+#endif // !NETWORK_SERVER
 	}
+
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).RecieveNetmessage(aMessage);

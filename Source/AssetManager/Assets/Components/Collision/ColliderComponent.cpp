@@ -16,6 +16,7 @@ ColliderComponent::ColliderComponent(ComponentType aType, bool anIsStatic) :
 	myLayer(CollisionLayer::Default)
 {
 	myFlags[eIsStatic] = anIsStatic;
+	myLayersToCollideWith[CollisionLayer::Default] = true;
 }
 
 ColliderComponent::ColliderComponent(const ColliderComponent& aComponent) :

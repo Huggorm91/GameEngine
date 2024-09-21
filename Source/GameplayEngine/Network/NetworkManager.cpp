@@ -133,7 +133,7 @@ void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 			else
 			{
 				partialData.resize(bufferSize);
-				memcpy_s(partialData.data(), bufferSize, pointer, dataLeft);
+				memcpy_s(partialData.data(), bufferSize, pointer, bufferSize);
 				pointer = pointer + bufferSize;
 				dataLeft -= bufferSize;
 			}
@@ -184,11 +184,30 @@ void NetworkManager::ClearMessages()
 	myMessages.clear();
 }
 
+std::string NetworkManager::GetStatisticsString()
+{
+	return myClient->GetStatisticsString();
+}
+
 GameObject NetworkManager::ExtractCreatedGameObject(const Network::NetMessage& aMessage)
 {	
 	GameObject result(Network::ExtractUUID(aMessage));
 	std::string stringData(aMessage.data + sizeof(UUIDv4::UUID), aMessage.dataSize - sizeof(UUIDv4::UUID));
 	std::stringstream data(stringData);
+	result.Deserialize(data);
+	return result;
+}
+
+GameObject NetworkManager::ExtractCreatedGameObject(const std::vector<Network::NetMessage*>& aMessageList)
+{
+	GameObject result(Network::ExtractUUID(*aMessageList.front()));
+	std::stringstream data;
+	for (auto& message : aMessageList)
+	{
+		std::string stringData(message->data + sizeof(UUIDv4::UUID), message->dataSize - sizeof(UUIDv4::UUID));
+		data << stringData;
+	}
+
 	result.Deserialize(data);
 	return result;
 }

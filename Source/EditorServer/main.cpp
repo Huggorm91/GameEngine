@@ -22,7 +22,9 @@ int main()
 	globalServer->Init();
 	while (globalServer->IsRunning())
 	{
-		globalServer->Update();
+		auto messages = globalServer->Flush();
+		// This list now contains all incomming messages since Flush was last called
+		Sleep(1000); // Sleep for a second to not flush too often, since it locks the mutex preventing the server to handle other traffic
 	}
 
 	globalServer->ShutDown();

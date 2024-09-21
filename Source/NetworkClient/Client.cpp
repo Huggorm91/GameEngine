@@ -147,25 +147,6 @@ namespace Network
 		}
 	}
 
-	bool MultiMessageSort(const NetMessage& aFirst, const NetMessage& aSecond)
-	{
-		if (aFirst.senderID == aSecond.senderID)
-		{
-			if (aFirst.messageID == aSecond.messageID)
-			{
-				return aFirst.packetIndex < aSecond.packetIndex;
-			}
-			else
-			{
-				return aFirst.messageID < aSecond.messageID;
-			}
-		}
-		else
-		{
-			return aFirst.senderID < aSecond.senderID;
-		}
-	}
-
 	void Client::HandleMultiMessages()
 	{
 		std::sort(myMultipartMessages.begin(), myMultipartMessages.end(), MultiMessageSort);
@@ -210,6 +191,7 @@ namespace Network
 			}
 			else
 			{
+				previousIndex = message.packetIndex;
 				iter++;
 			}
 		}
@@ -308,6 +290,17 @@ namespace Network
 		std::vector<NetMessage> copy;
 		copy.swap(myMessages);
 		return copy;
+	}
+
+	std::string Client::GetStatisticsString()
+	{
+		std::unique_lock lock(myMutex);
+		std::string text = std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount);
+		myIncommingDataAmount = 0;
+		myOutgoignDataAmount = 0;
+		mySentPacketsAmount = 0;
+		myLostPacketsAmount = 0;
+		return text;
 	}
 
 	void Client::Recieve()

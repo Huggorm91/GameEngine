@@ -13,6 +13,7 @@ public:
 	void Shutdown();
 
 private:
+	float myReportTimer;
 	HINSTANCE myModuleHandle;
 	HWND myMainWindowHandle;
 	GameSettings mySettings;

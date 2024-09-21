@@ -15,18 +15,34 @@ public:
 
 	void RecieveMessage(const Crimson::Message& aMessage) override;
 
+	void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
+
 private:
 	Network::Server myServer;
+	std::unordered_map<UUIDv4::UUID, GameObject> myClientObjects;
+	std::vector<Network::NetMessage> myMultipartCreateMessages;
+	float myReportTimer = 0.f;
 
 	void HandleCrash(const std::exception& anException);
 
 	void Init();
 	void Update();
 
+	void HandleNetMessages();
+
 	void CreateRandomObject();
+	void SendCopyOfRandomObject(const GameObject& anObject, Network::ClientInfo* aClient = nullptr);
 
 	void HandleConnection(Network::ClientInfo& aClient);
-	void SendCreateObjectMessage(const GameObject& anObject, Network::ClientInfo& aClient);
+	void SendCreateObjectMessage(const GameObject& anObject, Network::ClientInfo* aClient = nullptr);
 	void SendDeleteObjectMessage(const UUIDv4::UUID& anId);
+
+	bool HasAllCreateMessages(const UUIDv4::UUID& anId);
+	std::vector<Network::NetMessage*> GetAllCreateMessages(const UUIDv4::UUID& anId);
+	void RemoveAllCreateMessages(const UUIDv4::UUID& anId);
+
+	void HandleCreateObject(Network::ClientInfo& aClient, const Network::NetMessage& aMessage);
+	void HandleDeleteObject(Network::ClientInfo& aClient, const Network::NetMessage& aMessage);
+	void HandleObjectMessage(Network::ClientInfo& aClient, const Network::NetMessage& aMessage);
 };
 

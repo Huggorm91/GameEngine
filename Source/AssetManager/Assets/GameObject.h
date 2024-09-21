@@ -136,11 +136,11 @@ private:
 	friend class Component;
 
 	bool myIsActive;
-
+	float mySyncTimer;
 	GameObject* myParent;
-
+	Crimson::Vector3f mySyncMovement; // TODO: Find better solution for network sync
+	Crimson::Vector3f mySyncRotation;
 	const UUIDv4::UUID myUUID;
-
 	std::string myName;
 #ifdef EDITOR
 	std::string myImguiText;
@@ -149,7 +149,6 @@ private:
 	Transform myTransform;
 
 	std::vector<GameObject*> myChildren;
-
 #ifndef _RETAIL
 	std::vector<Component*> myDebugPointers;
 #endif // !_RETAIL
