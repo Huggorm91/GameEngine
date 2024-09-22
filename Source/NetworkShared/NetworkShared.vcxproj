@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConfirmationData.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="MessageFunctions.h" />
     <ClInclude Include="NetMessage.h" />

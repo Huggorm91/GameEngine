@@ -9,6 +9,8 @@
 
 namespace Network
 {
+	struct ConfirmationData;
+
 	struct ClientInfo
 	{
 		sockaddr_in socket{};
@@ -25,17 +27,6 @@ namespace Network
 
 	class Server
 	{
-		struct ConfirmationData
-		{
-			NetMessage message;
-			float timeSinceLastSend = 0.f;
-			uint8_t amountSent = 0u;
-
-			inline bool operator==(const NetMessage& aMessage) const
-			{
-				return aMessage.senderID == message.senderID && aMessage.messageID == message.messageID && aMessage.packetIndex == message.packetIndex;
-			}
-		};
 	public:
 		Server();
 		~Server();
@@ -109,7 +100,7 @@ namespace Network
 		void HandleConfirmation(const std::string& anIdentifier);
 		void HandlePing(const std::string& anIdentifier);
 		void HandleChat(const ClientInfo& aClient, const std::string& anIdentifier);
-		void HandleGameObjectMessage(const ClientInfo& aClient, const std::string& anIdentifier);
+		void HandleGameObjectMessage(const std::string& anIdentifier);
 
 		void ActivateCallback(MessageType aType, ClientInfo& aClient, NetMessage& aMessage);
 

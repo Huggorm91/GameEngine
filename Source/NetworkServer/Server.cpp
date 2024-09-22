@@ -2,6 +2,7 @@
 #include "Server.h"
 #include "CrimsonUtilities/String/StringFunctions.h"
 #include "NetworkShared/MessageFunctions.h"
+#include "NetworkShared/ConfirmationData.h"
 #include <format>
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -199,17 +200,17 @@ namespace Network
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
-			HandleGameObjectMessage(client, identifier);
+			HandleGameObjectMessage(identifier);
 			break;
 		}
 		case Network::MessageType::CreateGameObject:
 		{
-			HandleGameObjectMessage(client, identifier);
+			HandleGameObjectMessage(identifier);
 			break;
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
-			HandleGameObjectMessage(client, identifier);
+			HandleGameObjectMessage(identifier);
 			break;
 		}
 		default:
@@ -494,7 +495,7 @@ namespace Network
 		}
 	}
 
-	void Server::HandleGameObjectMessage(const ClientInfo& aClient, const std::string& anIdentifier)
+	void Server::HandleGameObjectMessage(const std::string& anIdentifier)
 	{
 		myOutgoingMessage = myIncommingMessage;
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())

@@ -190,7 +190,7 @@ void GameServer::HandleNetMessages()
 		myReportTimer = 0.f;
 		myServer.ReportStatistics();
 	}
-	auto messages = myServer.Flush();
+	auto messages = myServer.Flush(Crimson::Time::GetDeltaTime());
 	// This list now contains all incomming messages since Flush was last called
 	// Currently all messages of worth are handled in callbacks, so flushing just to keep the server from filling up with unhandled messages
 }
