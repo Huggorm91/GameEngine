@@ -280,54 +280,6 @@ namespace Network
 		myCallbacks[static_cast<size_t>(aType)] = aFunction;
 	}
 
-	void Server::SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
-	{
-		if (aClientToAvoid)
-		{
-			if (aMessage.needReply)
-			{
-				for (auto& [id, entry] : myClients)
-				{
-					if (*aClientToAvoid == entry)
-					{
-						continue;
-					}
-
-					SendGuaranteedToClient(aMessage, entry);
-				}
-			}
-			else
-			{
-				for (auto& [id, entry] : myClients)
-				{
-					if (*aClientToAvoid == entry)
-					{
-						continue;
-					}
-
-					SendToClient(aMessage, entry);
-				}
-			}			
-		}
-		else
-		{
-			if (aMessage.needReply)
-			{
-				for (auto& [id, entry] : myClients)
-				{
-					SendGuaranteedToClient(aMessage, entry);
-				}
-			}
-			else
-			{
-				for (auto& [id, entry] : myClients)
-				{
-					SendToClient(aMessage, entry);
-				}
-			}
-		}
-	}
-
 	void Server::SendToClient(const NetMessage& aMessage, ClientInfo& outClient)
 	{
 		if (sendto(myServerSocket, aMessage, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
@@ -359,6 +311,52 @@ namespace Network
 		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
 		std::unique_lock lock(myConfirmationMutex);
 		myWaitingConfirmations[identifier].emplace_back(ConfirmationData{ aMessage });
+	}
+
+	void Server::SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
+	{
+		if (aClientToAvoid)
+		{
+			for (auto& [id, entry] : myClients)
+			{
+				if (*aClientToAvoid == entry)
+				{
+					continue;
+				}
+
+				SendToClient(aMessage, entry);
+			}
+		}
+		else
+		{
+			for (auto& [id, entry] : myClients)
+			{
+				SendToClient(aMessage, entry);
+			}
+		}
+	}
+
+	void Server::SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
+	{
+		if (aClientToAvoid)
+		{
+			for (auto& [id, entry] : myClients)
+			{
+				if (*aClientToAvoid == entry)
+				{
+					continue;
+				}
+
+				SendGuaranteedToClient(aMessage, entry);
+			}
+		}
+		else
+		{
+			for (auto& [id, entry] : myClients)
+			{
+				SendGuaranteedToClient(aMessage, entry);
+			}
+		}
 	}
 
 	unsigned short Server::GetMessageID()

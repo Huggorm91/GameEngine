@@ -48,10 +48,12 @@ namespace Network
 
 		void SetIncommingMessageCallback(MessageType aType, const std::function<void(ClientInfo&, const NetMessage&)>& aFunction);
 
-		// If aClientToAvoid is nullptr this function will send to all connected clients.
-		void SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr);
 		void SendToClient(const NetMessage& aMessage, ClientInfo& outClient);
 		void SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient);
+		// If aClientToAvoid is nullptr this function will send to all connected clients.
+		void SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr);
+		// If aClientToAvoid is nullptr this function will send to all connected clients.
+		void SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr);
 
 		unsigned short GetMessageID();
 

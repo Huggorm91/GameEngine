@@ -61,5 +61,9 @@ private:
 	float myResendTime;
 	uint8_t myMaxResendAttempts;
 
+	// These are private for now since MessageID is not handled correctly in them
+	bool SendMultiNetMessage(const Network::NetMessage& aMessage);
+	bool SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage);
+
 	void HandlePacketLoss();
 };

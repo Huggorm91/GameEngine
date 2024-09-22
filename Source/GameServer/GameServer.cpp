@@ -139,7 +139,8 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
 
-	myServer.SendMessageToClients(Network::CreateGameObjectMessage(message));
+	// TODO: Revert this to normal messages
+	myServer.SendGuaranteedMessageToClients(Network::CreateGameObjectMessage(message));
 }
 
 void GameServer::HandleCrash(const std::exception& anException)
@@ -260,11 +261,11 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 		message.messageID = myServer.GetMessageID();
 		if (aClient)
 		{
-			myServer.SendToClient(message, *aClient);
+			myServer.SendGuaranteedToClient(message, *aClient);
 		}
 		else
 		{
-			myServer.SendMessageToClients(message);
+			myServer.SendGuaranteedMessageToClients(message);
 		}
 	}
 	else
@@ -301,11 +302,11 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 			message.totalPackets = totalPackets;
 			if (aClient)
 			{
-				myServer.SendToClient(message, *aClient);
+				myServer.SendGuaranteedToClient(message, *aClient);
 			}
 			else
 			{
-				myServer.SendMessageToClients(message);
+				myServer.SendGuaranteedMessageToClients(message);
 			}
 		}
 	}
@@ -313,7 +314,7 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 
 void GameServer::SendDeleteObjectMessage(const UUIDv4::UUID& anId)
 {
-	myServer.SendMessageToClients(Network::CreateDeleteGameObjectMessage(anId));
+	myServer.SendGuaranteedMessageToClients(Network::CreateDeleteGameObjectMessage(anId));
 }
 
 bool GameServer::HasAllCreateMessages(const UUIDv4::UUID& anId)

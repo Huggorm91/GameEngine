@@ -109,13 +109,33 @@ bool NetworkManager::SendNetMessage(const Network::NetMessage& aMessage)
 
 bool NetworkManager::SendGuaranteedNetMessage(const Network::NetMessage& aMessage)
 {
-	assert(myClient && "Not initialized!");
 	const_cast<bool&>(aMessage.needReply) = true;
-	if (myClient->SendNetMessage(aMessage))
+	if (SendNetMessage(aMessage))
 	{
 		myWaitingConfirmations.emplace_back(Network::ConfirmationData{ aMessage });
+		return true;
+	}
+	return false;
+}
+
+bool NetworkManager::SendMultiNetMessage(const Network::NetMessage& aMessage)
+{
+	assert(myClient && "Not initialized!");
+	if (myClient->SendMultipartMessage(aMessage))
+	{
 		myOutgoignDataAmount += aMessage.dataSize;
 		++mySentPacketsAmount;
+		return true;
+	}
+	return false;
+}
+
+bool NetworkManager::SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage)
+{
+	const_cast<bool&>(aMessage.needReply) = true;
+	if (SendMultiNetMessage(aMessage))
+	{
+		myWaitingConfirmations.emplace_back(Network::ConfirmationData{ aMessage });
 		return true;
 	}
 	return false;
@@ -145,7 +165,8 @@ void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUI
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
 
-	myClient->SendNetMessage(Network::CreateGameObjectMessage(message));
+	// TODO: Revert this to normal messages
+	SendGuaranteedNetMessage(Network::CreateGameObjectMessage(message));
 }
 
 void NetworkManager::SendCreateGameObject(const GameObject& anObject)
@@ -159,7 +180,7 @@ void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 
 	if (data.size() <= Network::GetMaximumCreateGameobjectDataSize())
 	{
-		myClient->SendNetMessage(Network::CreateCreateGameObjectMessage(anObject.GetUUID(), data));
+		SendGuaranteedNetMessage(Network::CreateCreateGameObjectMessage(anObject.GetUUID(), data));		
 	}
 	else
 	{
@@ -193,14 +214,14 @@ void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 			message.messageID = id;
 			message.packetIndex = i;
 			message.totalPackets = totalPackets;
-			myClient->SendMultipartMessage(message);
+			SendGuaranteedMultiNetMessage(message);
 		}
 	}
 }
 
 void NetworkManager::SendDeleteGameObject(const UUIDv4::UUID& anID)
 {
-	myClient->SendNetMessage(Network::CreateDeleteGameObjectMessage(anID));
+	SendGuaranteedNetMessage(Network::CreateDeleteGameObjectMessage(anID));
 }
 
 void NetworkManager::SendChatMessage(const std::string& aMessage)
