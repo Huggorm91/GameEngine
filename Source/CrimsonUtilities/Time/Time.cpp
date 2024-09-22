@@ -71,4 +71,12 @@ double Crimson::Time::StopTimer(const std::chrono::high_resolution_clock::time_p
 void Crimson::Time::ResetDeltaTime()
 {
     myOldTime = std::chrono::high_resolution_clock::now();
+    myDeltatime -= myDeltatime;
+    myScaledDeltaTime = 0.f;
+}
+
+void Crimson::Time::ResetTotalTime()
+{
+    myTotalTime -= myTotalTime;
+    myScaledTotalTime = 0.;
 }

@@ -6,4 +6,5 @@ namespace Network
 	constexpr int globalPort = 27015;
 
 	constexpr float globalSyncFrequency = 1.f / 60.f;
+	constexpr float globalPingFrequency = 1.f;
 }

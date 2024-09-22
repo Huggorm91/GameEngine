@@ -58,6 +58,9 @@ private:
 	unsigned mySentPacketsAmount;
 	unsigned myLostPacketsAmount;
 
+	float myLatency;
+	float myLatencyTimer;
+
 	float myResendTime;
 	uint8_t myMaxResendAttempts;
 

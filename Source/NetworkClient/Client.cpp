@@ -97,10 +97,13 @@ namespace Network
 		std::string userName = "Default";
 
 		// Send Connect message to Server
-		if (sendto(mySocket, CreateConnectMessage(true, userName), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			myLogger.Warn(std::format("Connect: sendto() failed with error code: {}", WSAGetLastError()));
-			return false;
+			const auto& message = CreateConnectMessage(true, userName);
+			if (sendto(mySocket, message, message.GetCurrentSize(), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
+			{
+				myLogger.Warn(std::format("Connect: sendto() failed with error code: {}", WSAGetLastError()));
+				return false;
+			}
 		}
 
 		// Wait for reply from server
@@ -109,7 +112,7 @@ namespace Network
 		auto timer = Crimson::Time::StartTimer();
 		while (Crimson::Time::StopTimer(timer) < timeoutValue)
 		{
-			const auto result = recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen);
+			const auto result = recvfrom(mySocket, answer, sizeof(NetMessage), 0, (sockaddr*)&myServer, &slen);
 			if (result != SOCKET_ERROR)
 			{
 				if (answer.type == MessageType::Confirmation)
@@ -143,7 +146,8 @@ namespace Network
 	{
 		if (myIsConnected)
 		{
-			sendto(mySocket, CreateDisconnectMessage(), sizeof(NetMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
+			const auto& message = CreateDisconnectMessage();
+			sendto(mySocket, message, message.GetCurrentSize(), 0, (sockaddr*)&myServer, sizeof(sockaddr_in));
 			myIsConnected = false;
 		}
 	}
@@ -233,7 +237,7 @@ namespace Network
 
 	bool Client::SendNetMessageInternal(const NetMessage& aMessage)
 	{
-		if (sendto(mySocket, aMessage, sizeof(aMessage), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		if (sendto(mySocket, aMessage, aMessage.GetCurrentSize(), 0, (sockaddr*)&myServer, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			myLogger.Warn(std::format("SendNetMessage: sendto() failed with error code: {}", WSAGetLastError()));
 			++myFailedMessageCount;
@@ -301,7 +305,7 @@ namespace Network
 		while (myIsRunning)
 		{
 			// Try to receive some data
-			if (recvfrom(mySocket, answer, sizeof(answer), 0, (sockaddr*)&myServer, &slen) != SOCKET_ERROR)
+			if (recvfrom(mySocket, answer, sizeof(NetMessage), 0, (sockaddr*)&myServer, &slen) != SOCKET_ERROR)
 			{
 				if (answer.totalPackets == 1)
 				{
@@ -312,6 +316,14 @@ namespace Network
 				{
 					myMultipartMessages.emplace_back(answer);
 					HandleMultiMessages();
+				}
+
+				if (answer.needReply)
+				{
+					answer.needReply = false;
+					answer.type = MessageType::Confirmation;
+					answer.dataSize = 0;
+					SendNetMessageInternal(answer);
 				}
 			}
 			else

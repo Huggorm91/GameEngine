@@ -77,7 +77,7 @@ namespace Network
 
 		sockaddr_in myClientInfo;
 		sockaddr_in myServerInfo;
-		SOCKET myServerSocket;
+		SOCKET myServerSocket; // TODO: Create 2 sockets, one for sending and one for recieving
 		PSTR myCurrentIP;
 		std::thread* myThread;
 

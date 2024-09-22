@@ -130,14 +130,21 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 {
 	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
 	constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
+	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(double);
 
 	Network::GameObjectMessage message;
 	message.id = anID;
 	message.action = Network::ObjectAction::Move;
-	message.size = vectorSize + vectorSize;
+	message.size = messageSize;
 
+	// TODO: Rework timestamp to use a timepoint relative to servertime. 
+	// Current idea: Server saves time when started and sends this timepoint to all clients that connects.
+	// Should probably cache the current timepoint in Update
+	double timestamp = Crimson::Time::GetTotalTime();
+	constexpr int timestampOffset = vectorSize + vectorSize;
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
+	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
 	// TODO: Revert this to normal messages
 	myServer.SendGuaranteedMessageToClients(Network::CreateGameObjectMessage(message));

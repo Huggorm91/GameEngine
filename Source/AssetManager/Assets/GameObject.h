@@ -137,8 +137,9 @@ private:
 
 	bool myIsActive;
 	float mySyncTimer;
+	double myLatestSyncTime;
 	GameObject* myParent;
-	Crimson::Vector3f mySyncMovement; // TODO: Find better solution for network sync
+	Crimson::Vector3f mySyncPosition;
 	Crimson::Vector3f mySyncRotation;
 	const UUIDv4::UUID myUUID;
 	std::string myName;

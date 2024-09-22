@@ -38,5 +38,13 @@ namespace Network
 		{
 			return reinterpret_cast<const char*>(this);
 		}
+
+		inline int GetCurrentSize() const
+		{
+			constexpr int staticSize = sizeof(NetMessage) - sizeof(NetMessage::data);
+			return staticSize + dataSize;
+		}
 	};
+
+	static_assert(sizeof(NetMessage) <= 576, "NetMessage is too large to fit safely in an UDP message");
 }

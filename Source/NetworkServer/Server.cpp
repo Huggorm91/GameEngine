@@ -123,7 +123,7 @@ namespace Network
 				// No data to retrieve in socket
 				return;
 			}
-			if (WSAGetLastError() == WSAECONNRESET)
+			else if (WSAGetLastError() == WSAECONNRESET)
 			{
 				// Client has disconnected
 				inet_ntop(myServerInfo.sin_family, &myClientInfo.sin_addr, myCurrentIP, 16);
@@ -230,8 +230,8 @@ namespace Network
 
 	std::vector<NetMessage> Server::Flush(float aTimeSinceLastFlushInSeconds)
 	{
-		std::unique_lock lock(myMainMutex);
 		HandlePacketLoss(aTimeSinceLastFlushInSeconds);
+		std::unique_lock lock(myMainMutex);
 		std::vector<NetMessage> copy = std::move(myCachedMessages);
 		myCachedMessages.clear();
 		return copy;
@@ -240,11 +240,15 @@ namespace Network
 	void Server::ReportStatistics()
 	{
 		std::unique_lock lock(myMainMutex);
-		myLogger->Log(std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount));
-		myIncommingDataAmount = 0;
-		myOutgoignDataAmount = 0;
-		mySentPacketsAmount = 0;
-		myLostPacketsAmount = 0;
+		if (myIncommingDataAmount != 0 || myOutgoignDataAmount != 0)
+		{
+			// Send directly to cout to not flood log-file with statistics
+			std::cout << std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount) << std::endl;
+			myIncommingDataAmount = 0;
+			myOutgoignDataAmount = 0;
+			mySentPacketsAmount = 0;
+			myLostPacketsAmount = 0;
+		}		
 	}
 
 	void Server::SetTimeBetweenResend(float aTimeInSeconds)
@@ -282,7 +286,7 @@ namespace Network
 
 	void Server::SendToClient(const NetMessage& aMessage, ClientInfo& outClient)
 	{
-		if (sendto(myServerSocket, aMessage, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		if (sendto(myServerSocket, aMessage, aMessage.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			myLogger->Err("sendto() failed!");
 			LogWSAError();
@@ -297,9 +301,8 @@ namespace Network
 		else
 		{
 			outClient.failedMessageCount = 0;
-
 			std::unique_lock lock(myMainMutex);
-			myOutgoignDataAmount += myOutgoingMessage.dataSize;
+			myOutgoignDataAmount += aMessage.dataSize;
 			++mySentPacketsAmount;
 		}
 	}
@@ -401,9 +404,18 @@ namespace Network
 						continue;
 					}
 
-					SendToClient(data.message, myClients.at(id));
-					data.timeSinceLastSend = 0.f;
-					++data.amountSent;
+					if (myClients.contains(id))
+					{
+						SendToClient(data.message, myClients.at(id));
+						data.timeSinceLastSend = 0.f;
+						++data.amountSent;
+					}
+					else
+					{
+						// Client has disconnected
+						iter = dataList.erase(iter);
+						continue;
+					}
 				}
 				++iter;
 			}
@@ -421,8 +433,14 @@ namespace Network
 		myClientIDs.emplace(anIdentifier, ++myClientIDGenerator);
 
 		auto message = CreateConfirmationMessage();
-		memcpy_s(message.data, globalBuffLength, &myClientIDGenerator, sizeof(unsigned short));
-		sendto(myServerSocket, message, sizeof(NetMessage), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+		message.dataSize = sizeof(myClientIDGenerator);
+		memcpy_s(message.data, globalBuffLength, &myClientIDGenerator, sizeof(myClientIDGenerator));
+		sendto(myServerSocket, message, message.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
+		{
+			std::unique_lock lock(myMainMutex);
+			myOutgoignDataAmount += message.dataSize;
+			++mySentPacketsAmount;
+		}
 
 		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myIncommingMessage);
 	}
@@ -446,7 +464,7 @@ namespace Network
 	{
 		std::unique_lock lock(myConfirmationMutex);
 		auto& dataList = myWaitingConfirmations[anIdentifier];
-		for (auto iter = dataList.begin(); iter != dataList.end();)
+		for (auto iter = dataList.begin(); iter != dataList.end(); iter++)
 		{
 			if (*iter == myIncommingMessage)
 			{
@@ -523,6 +541,7 @@ namespace Network
 			auto message = myIncommingMessage;
 			message.needReply = false;
 			message.type = MessageType::Confirmation;
+			message.dataSize = 0;
 			SendToClient(message, aClient);
 		}
 	}

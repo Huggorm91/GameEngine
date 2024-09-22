@@ -53,6 +53,7 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
 	mySyncTimer(-1.f),
+	myLatestSyncTime(0.),
 	myParent(nullptr),
 	myUUID(anUUID),
 	myName("GameObject"),
@@ -66,6 +67,7 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
 	mySyncTimer(-1.f),
+	myLatestSyncTime(0.),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
@@ -88,8 +90,10 @@ GameObject::GameObject(const GameObject& aGameObject) :
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
 	mySyncTimer(aGameObject.mySyncTimer),
+	myLatestSyncTime(aGameObject.myLatestSyncTime),
 	myParent(aGameObject.myParent),
-	mySyncMovement(aGameObject.mySyncMovement),
+	mySyncPosition(aGameObject.mySyncPosition),
+	mySyncRotation(aGameObject.mySyncRotation),
 	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
 #ifdef EDITOR
@@ -112,6 +116,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
 	mySyncTimer(-1.f),
+	myLatestSyncTime(0.),
 	myParent(nullptr),
 	myUUID(aJson["UUID"].isNull() ? GenerateUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
@@ -220,7 +225,9 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 	mySyncTimer = aGameObject.mySyncTimer;
-	mySyncMovement = aGameObject.mySyncMovement;
+	mySyncPosition = aGameObject.mySyncPosition;
+	mySyncRotation = aGameObject.mySyncRotation;
+	myLatestSyncTime = aGameObject.myLatestSyncTime;
 
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -250,13 +257,11 @@ void GameObject::Update()
 	{
 		if (mySyncTimer >= 0.f)
 		{
-			const float timeDelta = Crimson::Time::GetDeltaTime() / Network::globalSyncFrequency;
-			const float syncDelta = mySyncTimer / Network::globalSyncFrequency;
-			const float lerpValue = Crimson::Clamp(timeDelta, 0.f, syncDelta);
-			myTransform.AddToPosition(Crimson::Lerp(Crimson::Vector3f::Null, mySyncMovement, lerpValue));
-			myTransform.AddToRotationRadian(Crimson::Lerp(Crimson::Vector3f::Null, mySyncRotation, lerpValue));
-
 			mySyncTimer += Crimson::Time::GetDeltaTime();
+			const float lerpValue = Crimson::Clamp(mySyncTimer / Network::globalSyncFrequency, 0.f, 1.f);
+			myTransform.SetPosition(Crimson::Lerp(myTransform.GetPosition(), mySyncPosition, lerpValue));
+			myTransform.SetRotationRadian(Crimson::Lerp(myTransform.GetRotationRadian(), mySyncRotation, lerpValue));
+
 			if (mySyncTimer >= Network::globalSyncFrequency)
 			{
 				mySyncTimer = -1.f;
@@ -358,16 +363,22 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 {
 	if (aMessage.action == Network::ObjectAction::Move)
 	{
+		constexpr unsigned rotationOffset = sizeof(Crimson::Vector3f);
+		constexpr unsigned timestampOffset = sizeof(Crimson::Vector3f) * 2;
+
+		const double timestamp = reinterpret_cast<const double&>(aMessage.data[timestampOffset]);
+		if (myLatestSyncTime < timestamp)
+		{
+			myLatestSyncTime = timestamp;
 #ifndef NETWORK_SERVER
-		const auto& position = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
-		mySyncMovement = position - myTransform.GetPosition();
-		const auto& rotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[sizeof(Crimson::Vector3f)]);
-		mySyncRotation = rotation - myTransform.GetRotationRadian();
-		mySyncTimer = 0.f;
+			mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
+			mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
+			mySyncTimer = 0.f;
 #else
-		myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
-		myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[sizeof(Crimson::Vector3f)]));
+			myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
+			myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]));
 #endif // !NETWORK_SERVER
+		}
 	}
 
 	for (auto& [type, index] : myIndexList)

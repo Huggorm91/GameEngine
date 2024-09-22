@@ -41,7 +41,7 @@ namespace Network
 		std::mutex myMutex;
 		std::string myLastError;
 		sockaddr_in myServer;
-		SOCKET mySocket;
+		SOCKET mySocket; // TODO: Create 2 sockets, one for sending and one for recieving
 		std::thread* myThread;
 		
 		unsigned myFailedMessageCount;

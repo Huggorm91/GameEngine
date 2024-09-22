@@ -26,6 +26,7 @@ namespace Crimson
 		static double StopTimer(const std::chrono::high_resolution_clock::time_point& aTimePoint);
 
 		static void ResetDeltaTime();
+		static void ResetTotalTime();
 
 	private:
 		static std::chrono::high_resolution_clock::time_point myOldTime;
