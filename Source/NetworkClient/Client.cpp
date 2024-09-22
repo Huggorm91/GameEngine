@@ -2,9 +2,10 @@
 #include "Client.h"
 #include <winsock2.h>
 #include <format>
-#include "CrimsonUtilities/String/StringFunctions.h"
 #include "CrimsonUtilities/Time/Time.h"
 #include "NetworkShared/MessageFunctions.h"
+#include "CrimsonUtilities/String/StringFunctions.h"
+
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -175,7 +176,7 @@ namespace Network
 				iter++;
 				continue;
 			}
-			if (previousIndex != message.packetIndex -1)
+			if (previousIndex != message.packetIndex - 1)
 			{
 				// Missing a packet
 				// TODO: Send request for replacement
@@ -186,7 +187,7 @@ namespace Network
 			unsigned short totalIndex = message.totalPackets - 1;
 			if (message.packetIndex == totalIndex)
 			{
-				messagesToMove.insert(messagesToMove.end(), std::make_move_iterator(iter - totalIndex) , std::make_move_iterator(iter + 1));
+				messagesToMove.insert(messagesToMove.end(), std::make_move_iterator(iter - totalIndex), std::make_move_iterator(iter + 1));
 				iter = myMultipartMessages.erase(iter - totalIndex, iter + 1);
 			}
 			else
@@ -290,17 +291,6 @@ namespace Network
 		std::vector<NetMessage> copy;
 		copy.swap(myMessages);
 		return copy;
-	}
-
-	std::string Client::GetStatisticsString()
-	{
-		std::unique_lock lock(myMutex);
-		std::string text = std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount);
-		myIncommingDataAmount = 0;
-		myOutgoignDataAmount = 0;
-		mySentPacketsAmount = 0;
-		myLostPacketsAmount = 0;
-		return text;
 	}
 
 	void Client::Recieve()

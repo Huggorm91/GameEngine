@@ -17,10 +17,10 @@ namespace Network
 		myServerSocket(),
 		myCurrentIP(nullptr),
 		myThread(nullptr),
-		myIncommingDataAmount(),
-		myOutgoignDataAmount(),
-		mySentPacketsAmount(),
-		myLostPacketsAmount(),
+		myIncommingDataAmount(0u),
+		myOutgoignDataAmount(0u),
+		mySentPacketsAmount(0u),
+		myLostPacketsAmount(0u),
 		myResendTime(1.f / 5.f),
 		mySocketSize(sizeof(sockaddr_in)),
 		myClientIDGenerator(0u),
@@ -223,8 +223,7 @@ namespace Network
 
 		for (auto& id : myRemovedClients)
 		{
-			myClients.erase(id);
-			myClientIDs.erase(identifier);
+			RemoveClient(id);
 		}
 		myRemovedClients.clear();
 	}
@@ -355,6 +354,7 @@ namespace Network
 
 	void Server::SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient)
 	{
+		const_cast<bool&>(aMessage.needReply) = true;
 		SendToClient(aMessage, outClient);
 		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
 		std::unique_lock lock(myConfirmationMutex);
@@ -429,16 +429,13 @@ namespace Network
 		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myIncommingMessage);
 	}
 
-	void Server::HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier)
+	void Server::HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
 			SetOutgoingMessageData(std::format("{} has disconnected.", iter->second.username));
 			myLogger->Log(std::format("Disconnect from: {}\tUsername: {}", anIdentifier, iter->second.username));
-			myClientIDs.erase(iter->first);
-			myClientHistory.erase(iter->first);
-			myWaitingConfirmations.erase(iter->first);
-			myClients.erase(iter);
+			RemoveClient(anIdentifier);
 		}
 		else
 		{
@@ -481,12 +478,13 @@ namespace Network
 		}
 	}
 
-	void Server::HandleChat(const ClientInfo& aClient, const std::string& anIdentifier)
+	void Server::HandleChat(ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
 			SetOutgoingMessageData(std::format("{}: {}", iter->second.username, myIncommingMessage.data));
 			myLogger->Log(std::format("{} sent message: {}", iter->second.username, myIncommingMessage.data));
+			ConfirmIncommingMessage(aClient);
 		}
 		else
 		{
@@ -502,6 +500,7 @@ namespace Network
 		{
 			// TODO: Make sure only the latest message of each UUID and type is saved
 			myClientHistory[anIdentifier].emplace_back(myIncommingMessage);
+			ConfirmIncommingMessage(iter->second);
 		}
 	}
 
@@ -519,9 +518,28 @@ namespace Network
 		strcpy_s(myOutgoingMessage.data, myOutgoingMessage.dataSize, aMessage.c_str());
 	}
 
+	void Server::ConfirmIncommingMessage(ClientInfo& aClient)
+	{
+		if (myIncommingMessage.needReply)
+		{
+			auto message = myIncommingMessage;
+			message.needReply = false;
+			message.type = MessageType::Confirmation;
+			SendToClient(message, aClient);
+		}
+	}
+
 	std::string Server::GetIdentifier(const char* anIP, unsigned short aPort)
 	{
 		return std::string(anIP) + ':' + std::to_string(aPort);
+	}
+
+	void Server::RemoveClient(const std::string& anIdentifier)
+	{
+		myClientIDs.erase(anIdentifier);
+		myClientHistory.erase(anIdentifier);
+		myWaitingConfirmations.erase(anIdentifier);
+		myClients.erase(anIdentifier);
 	}
 
 	int Server::LogWSAError()

@@ -35,6 +35,7 @@ namespace Network
 
 		std::vector<NetMessage> Flush(float aTimeSinceLastFlushInSeconds);
 		void ReportStatistics();
+
 		void SetTimeBetweenResend(float aTimeInSeconds);
 		void SetMaximumResendAttempts(uint8_t anAmount);
 
@@ -96,17 +97,19 @@ namespace Network
 		void HandlePacketLoss(float aPassedTime);
 
 		void HandleConnect(ClientInfo& outClient, const std::string& anIdentifier);
-		void HandleDisconnect(const ClientInfo& aClient, const std::string& anIdentifier);
+		void HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier);
 		void HandleConfirmation(const std::string& anIdentifier);
 		void HandlePing(const std::string& anIdentifier);
-		void HandleChat(const ClientInfo& aClient, const std::string& anIdentifier);
+		void HandleChat(ClientInfo& aClient, const std::string& anIdentifier);
 		void HandleGameObjectMessage(const std::string& anIdentifier);
 
 		void ActivateCallback(MessageType aType, ClientInfo& aClient, NetMessage& aMessage);
 
 		void SetOutgoingMessageData(const std::string& aMessage);
+		void ConfirmIncommingMessage(ClientInfo& aClient);
 
 		std::string GetIdentifier(const char* anIP, unsigned short aPort);
+		void RemoveClient(const std::string& anIdentifier);
 
 		// Returns the error code
 		int LogWSAError();

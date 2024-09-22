@@ -4,13 +4,20 @@
 #include "NetworkClient/Client.h"
 #include "GameObjectMessage.h"
 #include "NetworkShared/MessageFunctions.h"
+#include "NetworkShared/ConfirmationData.h"
 #include "CrimsonUtilities/Math/Transform.h"
+#include "CrimsonUtilities/Time/Time.h"
 #include <assert.h>
 
 // Needs to not be inline to avoid including Client.h in header
-NetworkManager::NetworkManager()
-{
-}
+NetworkManager::NetworkManager():
+	myIncommingDataAmount(0u),
+	myOutgoignDataAmount(0u),
+	mySentPacketsAmount(0u),
+	myLostPacketsAmount(0u),
+	myResendTime(1.f / 5.f),
+	myMaxResendAttempts(3u)
+{}
 
 // Needs to not be inline to avoid including Client.h in header
 NetworkManager::~NetworkManager()
@@ -31,6 +38,7 @@ void NetworkManager::Update()
 	auto messages = myClient->Flush();
 	for (auto& message : messages)
 	{
+		myIncommingDataAmount += message.dataSize;
 		switch (message.type)
 		{
 		case Network::MessageType::Disconnect:
@@ -53,6 +61,18 @@ void NetworkManager::Update()
 			myChatHistory.emplace_back(message.data);
 			break;
 		}
+		case Network::MessageType::Confirmation:
+		{
+			for (auto iter = myWaitingConfirmations.begin(); iter != myWaitingConfirmations.end();)
+			{
+				if (*iter == message)
+				{
+					myWaitingConfirmations.erase(iter);
+					break;
+				}
+			}
+			break;
+		}
 		default:
 		{
 			myMessages.emplace_back(message);
@@ -60,6 +80,7 @@ void NetworkManager::Update()
 		}
 		}
 	}
+	HandlePacketLoss();
 }
 
 void NetworkManager::Connect()
@@ -74,10 +95,40 @@ bool NetworkManager::IsConnected() const
 	return myClient->IsConnected();
 }
 
-void NetworkManager::SendNetMessage(const Network::NetMessage& aMessage) const
+bool NetworkManager::SendNetMessage(const Network::NetMessage& aMessage)
 {
 	assert(myClient && "Not initialized!");
-	myClient->SendNetMessage(aMessage);
+	if (myClient->SendNetMessage(aMessage))
+	{
+		myOutgoignDataAmount += aMessage.dataSize;
+		++mySentPacketsAmount;
+		return true;
+	}
+	return false;
+}
+
+bool NetworkManager::SendGuaranteedNetMessage(const Network::NetMessage& aMessage)
+{
+	assert(myClient && "Not initialized!");
+	const_cast<bool&>(aMessage.needReply) = true;
+	if (myClient->SendNetMessage(aMessage))
+	{
+		myWaitingConfirmations.emplace_back(Network::ConfirmationData{ aMessage });
+		myOutgoignDataAmount += aMessage.dataSize;
+		++mySentPacketsAmount;
+		return true;
+	}
+	return false;
+}
+
+void NetworkManager::SetTimeBetweenResend(float aTimeInSeconds)
+{
+	myResendTime = aTimeInSeconds;
+}
+
+void NetworkManager::SetMaximumResendAttempts(uint8_t anAmount)
+{
+	myMaxResendAttempts = anAmount;
 }
 
 void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
@@ -186,7 +237,12 @@ void NetworkManager::ClearMessages()
 
 std::string NetworkManager::GetStatisticsString()
 {
-	return myClient->GetStatisticsString();
+	std::string text = std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount);
+	myIncommingDataAmount = 0;
+	myOutgoignDataAmount = 0;
+	mySentPacketsAmount = 0;
+	myLostPacketsAmount = 0;
+	return text;
 }
 
 GameObject NetworkManager::ExtractCreatedGameObject(const Network::NetMessage& aMessage)
@@ -210,4 +266,27 @@ GameObject NetworkManager::ExtractCreatedGameObject(const std::vector<Network::N
 
 	result.Deserialize(data);
 	return result;
+}
+
+void NetworkManager::HandlePacketLoss()
+{
+	for (auto iter = myWaitingConfirmations.begin(); iter != myWaitingConfirmations.end();)
+	{
+		auto& data = *iter;
+		data.timeSinceLastSend += Crimson::Time::GetDeltaTime();
+		if (data.timeSinceLastSend >= myResendTime)
+		{
+			if (data.amountSent >= myMaxResendAttempts)
+			{
+				++myLostPacketsAmount;
+				iter = myWaitingConfirmations.erase(iter);
+				continue;
+			}
+
+			myClient->SendNetMessage(data.message);
+			data.timeSinceLastSend = 0.f;
+			++data.amountSent;
+		}
+		++iter;
+	}
 }

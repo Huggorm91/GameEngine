@@ -25,7 +25,6 @@ namespace Network
 		unsigned short GetMessageID();
 
 		std::vector<NetMessage> Flush();
-		std::string GetStatisticsString();
 
 		void Recieve();
 
@@ -36,6 +35,7 @@ namespace Network
 	private:
 		std::vector<NetMessage> myMessages;
 		std::vector<NetMessage> myMultipartMessages;
+
 		WSADATA myWSA;
 		FileLogger myLogger;
 		std::mutex myMutex;
@@ -43,15 +43,11 @@ namespace Network
 		sockaddr_in myServer;
 		SOCKET mySocket;
 		std::thread* myThread;
-
-		unsigned myIncommingDataAmount;
-		unsigned myOutgoignDataAmount;
-		unsigned mySentPacketsAmount;
-		unsigned myLostPacketsAmount;
-
+		
 		unsigned myFailedMessageCount;
+
 		unsigned short mySenderID;
-		unsigned short myIDGenerator;
+		unsigned short myIDGenerator;		
 
 		bool myHasError;
 		bool myIsRunning;

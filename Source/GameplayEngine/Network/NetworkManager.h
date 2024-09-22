@@ -9,6 +9,7 @@ class GameObject;
 namespace Network
 {
 	class Client;
+	struct ConfirmationData;
 }
 
 class NetworkManager
@@ -23,7 +24,11 @@ public:
 	void Connect();
 	bool IsConnected() const;
 
-	void SendNetMessage(const Network::NetMessage& aMessage) const;
+	bool SendNetMessage(const Network::NetMessage& aMessage);
+	bool SendGuaranteedNetMessage(const Network::NetMessage& aMessage);
+
+	void SetTimeBetweenResend(float aTimeInSeconds);
+	void SetMaximumResendAttempts(uint8_t anAmount);
 
 	void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
 
@@ -45,5 +50,16 @@ public:
 private:
 	std::vector<std::string> myChatHistory;
 	std::vector<Network::NetMessage> myMessages;
+	std::vector<Network::ConfirmationData> myWaitingConfirmations;
 	std::unique_ptr<Network::Client> myClient;
+
+	unsigned myIncommingDataAmount;
+	unsigned myOutgoignDataAmount;
+	unsigned mySentPacketsAmount;
+	unsigned myLostPacketsAmount;
+
+	float myResendTime;
+	uint8_t myMaxResendAttempts;
+
+	void HandlePacketLoss();
 };
