@@ -43,18 +43,19 @@ ModelViewer::ModelViewer() :
 void ModelViewer::SetKeyBinds()
 {
 	auto& input = Engine::GetInputMapper();
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
-
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
-	input.Attach(this, Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
-
 	input.BindAction(Crimson::eInputAction::Undo, Crimson::KeyBind{ Crimson::eKey::Z, Crimson::eKey::Ctrl });
 	input.BindAction(Crimson::eInputAction::Redo, Crimson::KeyBind{ Crimson::eKey::Y, Crimson::eKey::Ctrl });
-	input.Attach(this, Crimson::eInputAction::Undo);
-	input.Attach(this, Crimson::eInputAction::Redo);
+
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F1);
+
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F4);
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F5);
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F6);
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F7);
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::F8);
+
+	Attach(Crimson::eInputAction::Undo);
+	Attach(Crimson::eInputAction::Redo);
 }
 
 void ModelViewer::HandleCrash(const std::exception& anException, bool aTrySavingScene)
@@ -324,7 +325,7 @@ void ModelViewer::SetPlayMode(bool aState)
 			myPlayModePointers.at(parentID)->AddChild(myPlayModePointers.at(childID).get());
 		}
 
-		Engine::GetObjectManager().SetTemporaryObjects(&myPlayModeScene.gameObjects);
+		Engine::GetObjectManager().SetSceneObjects(&myPlayModeScene.gameObjects);
 		myImguiManager.SetActiveObjects(&myPlayModePointers);
 	}
 	else

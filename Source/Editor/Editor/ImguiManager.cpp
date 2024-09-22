@@ -65,8 +65,7 @@ void ImguiManager::Init(bool aStartInSkeletonEditor)
 
 	// Setup keybinds
 	{
-		auto& input = Engine::GetInputMapper();
-		input.Attach(this, eInputEvent::KeyDown, eKey::Del);
+		Attach(eInputEvent::KeyDown, eKey::Del);
 	}
 
 	// Load AssetBrowser icons
