@@ -281,80 +281,120 @@ namespace Network
 
 	void Server::SendToClient(const NetMessage& aMessage, ClientInfo& outClient)
 	{
-		// TODO: Add check if(aMessage.messageID == 0)
-		if (sendto(myServerSocket, aMessage, aMessage.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
-		{
-			myLogger->Err("sendto() failed!");
-			LogWSAError();
-			++outClient.failedMessageCount;
-			if (outClient.failedMessageCount > 5)
-			{
-				const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
-				myLogger->Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", identifier, outClient.username));
-				myRemovedClients.emplace_back(identifier);
-			}
-		}
-		else
-		{
-			outClient.failedMessageCount = 0;
-			std::unique_lock lock(myMainMutex);
-			myOutgoingDataAmount += aMessage.dataSize;
-			++mySentPacketsAmount;
-		}
+		const_cast<unsigned short&>(aMessage.messageID) = GetMessageID();
+		SendToClientInternal(aMessage, outClient);
 	}
 
 	void Server::SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries)
 	{
-		const_cast<bool&>(aMessage.needReply) = true;
-		SendToClient(aMessage, outClient);
-		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
-		std::unique_lock lock(myConfirmationMutex);
-		myWaitingConfirmations[identifier].emplace_back(ConfirmationData(aMessage, aShouldLimitRetries));
+		const_cast<unsigned short&>(aMessage.messageID) = GetMessageID();
+		SendGuaranteedToClientInternal(aMessage, outClient, aShouldLimitRetries);
 	}
 
 	void Server::SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
 	{
+		const_cast<unsigned short&>(aMessage.messageID) = GetMessageID();
 		if (aClientToAvoid)
 		{
+			const auto& clientToAvoid = *aClientToAvoid;
 			for (auto& [id, entry] : myClients)
 			{
-				if (*aClientToAvoid == entry)
+				if (clientToAvoid == entry)
 				{
 					continue;
 				}
-
-				SendToClient(aMessage, entry);
+				SendToClientInternal(aMessage, entry);
 			}
 		}
 		else
 		{
 			for (auto& [id, entry] : myClients)
 			{
-				SendToClient(aMessage, entry);
+				SendToClientInternal(aMessage, entry);
 			}
 		}
 	}
 
 	void Server::SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid, bool aShouldLimitRetries)
 	{
+		const_cast<unsigned short&>(aMessage.messageID) = GetMessageID();
 		if (aClientToAvoid)
 		{
+			const auto& clientToAvoid = *aClientToAvoid;
 			for (auto& [id, entry] : myClients)
 			{
-				if (*aClientToAvoid == entry)
+				if (clientToAvoid == entry)
 				{
 					continue;
 				}
-
-				SendGuaranteedToClient(aMessage, entry, aShouldLimitRetries);
+				SendGuaranteedToClientInternal(aMessage, entry, aShouldLimitRetries);
 			}
 		}
 		else
 		{
 			for (auto& [id, entry] : myClients)
 			{
-				SendGuaranteedToClient(aMessage, entry, aShouldLimitRetries);
+				SendGuaranteedToClientInternal(aMessage, entry, aShouldLimitRetries);
 			}
+		}
+	}
+
+	void Server::SendMultiMessageToClient(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries)
+	{
+		if (aMessage.needReply)
+		{
+			SendGuaranteedToClientInternal(aMessage, outClient, aShouldLimitRetries);
+		}
+		else
+		{
+			SendToClientInternal(aMessage, outClient);
+		}
+	}
+
+	void Server::SendMultiMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid, bool aShouldLimitRetries)
+	{
+		if (aClientToAvoid)
+		{
+			const auto& clientToAvoid = *aClientToAvoid;
+			if (aMessage.needReply)
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					if (clientToAvoid == entry)
+					{
+						continue;
+					}
+					SendGuaranteedToClientInternal(aMessage, entry, aShouldLimitRetries);
+				}
+			}
+			else
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					if (clientToAvoid == entry)
+					{
+						continue;
+					}
+					SendToClientInternal(aMessage, entry);
+				}
+			}			
+		}
+		else
+		{
+			if (aMessage.needReply)
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					SendGuaranteedToClientInternal(aMessage, entry, aShouldLimitRetries);
+				}
+			}
+			else
+			{
+				for (auto& [id, entry] : myClients)
+				{
+					SendToClientInternal(aMessage, entry);
+				}
+			}			
 		}
 	}
 
@@ -386,6 +426,38 @@ namespace Network
 
 		system("PAUSE");
 		exit(EXIT_FAILURE);
+	}
+
+	void Server::SendToClientInternal(const NetMessage& aMessage, ClientInfo& outClient)
+	{
+		if (sendto(myServerSocket, aMessage, aMessage.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
+		{
+			myLogger->Err("sendto() failed!");
+			LogWSAError();
+			++outClient.failedMessageCount;
+			if (outClient.failedMessageCount > 5)
+			{
+				const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
+				myLogger->Log(std::format("Client has failed to recieve too many messages. Client is now disconnected: {}\tUsername: {}", identifier, outClient.username));
+				myRemovedClients.emplace_back(identifier);
+			}
+		}
+		else
+		{
+			outClient.failedMessageCount = 0;
+			std::unique_lock lock(myMainMutex);
+			myOutgoingDataAmount += aMessage.dataSize;
+			++mySentPacketsAmount;
+		}
+	}
+
+	void Server::SendGuaranteedToClientInternal(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries)
+	{
+		const_cast<bool&>(aMessage.needReply) = true;
+		SendToClientInternal(aMessage, outClient);
+		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
+		std::unique_lock lock(myConfirmationMutex);
+		myWaitingConfirmations[identifier].emplace_back(ConfirmationData(aMessage, aShouldLimitRetries));
 	}
 
 	void Server::HandlePacketLoss(float aTimeSinceLastCallInSeconds)

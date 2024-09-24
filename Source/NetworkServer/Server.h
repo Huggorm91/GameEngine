@@ -54,6 +54,10 @@ namespace Network
 		void SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr);
 		// If aClientToAvoid is nullptr this function will send to all connected clients.
 		void SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr, bool aShouldLimitRetries = true);
+		// Important! This function does not alter the Message in any way, meaning messageID and needReply need to be set manually before calling
+		void SendMultiMessageToClient(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries = true);
+		// Important! This function does not alter the Message in any way, meaning messageID and needReply need to be set manually before calling
+		void SendMultiMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid = nullptr, bool aShouldLimitRetries = true);
 
 		unsigned short GetMessageID();
 
@@ -95,6 +99,9 @@ namespace Network
 		bool myIsRunning;
 
 		void ErrorShutDown();
+
+		void SendToClientInternal(const NetMessage& aMessage, ClientInfo& outClient);
+		void SendGuaranteedToClientInternal(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries);
 
 		void HandlePacketLoss(float aPassedTime);
 
