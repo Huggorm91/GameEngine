@@ -21,18 +21,18 @@ namespace Network
 		return message;
 	}
 
-	NetMessage CreateConfirmationMessage()
-	{
-		NetMessage message;
-		message.type = MessageType::Confirmation;
-		return message;
-	}
-
 	NetMessage CreatePingMessage()
 	{
 		NetMessage message;
 		message.type = MessageType::Ping;
 		message.needReply = true;
+		return message;
+	}
+
+	NetMessage CreateConfirmationMessage()
+	{
+		NetMessage message;
+		message.type = MessageType::Confirmation;
 		return message;
 	}
 
@@ -93,7 +93,8 @@ namespace Network
 	{
 		assert((aMessage.type == MessageType::GameObjectMessage 
 			|| aMessage.type == MessageType::CreateGameObject
-			|| aMessage.type == MessageType::DeleteGameObject)
+			|| aMessage.type == MessageType::DeleteGameObject
+			|| aMessage.type == MessageType::Confirmation) // Only Confirmations that was previously any of the above types is actually valid
 			&& "Invalid MessageType!");
 		return reinterpret_cast<const UUIDv4::UUID&>(aMessage.data);
 	}

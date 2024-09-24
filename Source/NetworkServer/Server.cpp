@@ -18,7 +18,7 @@ namespace Network
 		myCurrentIP(nullptr),
 		myThread(nullptr),
 		myIncommingDataAmount(0u),
-		myOutgoignDataAmount(0u),
+		myOutgoingDataAmount(0u),
 		mySentPacketsAmount(0u),
 		myLostPacketsAmount(0u),
 		myResendTime(1.f / 5.f),
@@ -31,11 +31,6 @@ namespace Network
 
 	Server::~Server()
 	{
-		if (myThread)
-		{
-			myIsRunning = false;
-			myThread->join();
-		}
 		ShutDown();
 		delete myCurrentIP;
 	}
@@ -160,7 +155,6 @@ namespace Network
 			myIncommingDataAmount += myIncommingMessage.dataSize;
 		}
 
-		// TODO: Save all messages sent by clients in a searchable list, so that they can be resent in case of packet loss
 		switch (myIncommingMessage.type)
 		{
 		case MessageType::Invalid:
@@ -181,11 +175,6 @@ namespace Network
 			HandleConfirmation(identifier);
 			ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
 			return; // These messages will not be sent to other clients
-		}
-		case Network::MessageType::ResendMessage:
-		{
-			// TODO: Implement this functionality
-			return; // Do not send until implemneted
 		}
 		case MessageType::Chat:
 		{
@@ -240,12 +229,12 @@ namespace Network
 	void Server::ReportStatistics()
 	{
 		std::unique_lock lock(myMainMutex);
-		if (myIncommingDataAmount != 0 || myOutgoignDataAmount != 0)
+		if (myIncommingDataAmount != 0 || myOutgoingDataAmount != 0)
 		{
 			// Send directly to cout to not flood log-file with statistics
-			std::cout << std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount) << std::endl;
+			std::cout << std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoingDataAmount, myLostPacketsAmount, mySentPacketsAmount) << std::endl;
 			myIncommingDataAmount = 0;
-			myOutgoignDataAmount = 0;
+			myOutgoingDataAmount = 0;
 			mySentPacketsAmount = 0;
 			myLostPacketsAmount = 0;
 		}		
@@ -268,6 +257,12 @@ namespace Network
 
 	void Server::ShutDown()
 	{
+		if (myThread)
+		{
+			myIsRunning = false;
+			myThread->join();
+		}
+
 		// Send message to clients to inform them the server has been turned off
 		myOutgoingMessage = CreateDisconnectMessage();
 		SendMessageToClients(myOutgoingMessage);
@@ -286,6 +281,7 @@ namespace Network
 
 	void Server::SendToClient(const NetMessage& aMessage, ClientInfo& outClient)
 	{
+		// TODO: Add check if(aMessage.messageID == 0)
 		if (sendto(myServerSocket, aMessage, aMessage.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			myLogger->Err("sendto() failed!");
@@ -302,18 +298,18 @@ namespace Network
 		{
 			outClient.failedMessageCount = 0;
 			std::unique_lock lock(myMainMutex);
-			myOutgoignDataAmount += aMessage.dataSize;
+			myOutgoingDataAmount += aMessage.dataSize;
 			++mySentPacketsAmount;
 		}
 	}
 
-	void Server::SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient)
+	void Server::SendGuaranteedToClient(const NetMessage& aMessage, ClientInfo& outClient, bool aShouldLimitRetries)
 	{
 		const_cast<bool&>(aMessage.needReply) = true;
 		SendToClient(aMessage, outClient);
 		const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
 		std::unique_lock lock(myConfirmationMutex);
-		myWaitingConfirmations[identifier].emplace_back(ConfirmationData{ aMessage });
+		myWaitingConfirmations[identifier].emplace_back(ConfirmationData(aMessage, aShouldLimitRetries));
 	}
 
 	void Server::SendMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
@@ -339,7 +335,7 @@ namespace Network
 		}
 	}
 
-	void Server::SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid)
+	void Server::SendGuaranteedMessageToClients(const NetMessage& aMessage, ClientInfo* aClientToAvoid, bool aShouldLimitRetries)
 	{
 		if (aClientToAvoid)
 		{
@@ -350,14 +346,14 @@ namespace Network
 					continue;
 				}
 
-				SendGuaranteedToClient(aMessage, entry);
+				SendGuaranteedToClient(aMessage, entry, aShouldLimitRetries);
 			}
 		}
 		else
 		{
 			for (auto& [id, entry] : myClients)
 			{
-				SendGuaranteedToClient(aMessage, entry);
+				SendGuaranteedToClient(aMessage, entry, aShouldLimitRetries);
 			}
 		}
 	}
@@ -374,7 +370,13 @@ namespace Network
 
 	void Server::ErrorShutDown()
 	{
-		if (myIsRunning)
+		bool wasRunning = myIsRunning;
+		if (myThread)
+		{
+			myIsRunning = false;
+			myThread->join();
+		}
+		if (wasRunning)
 		{
 			closesocket(myServerSocket);
 		}
@@ -397,7 +399,7 @@ namespace Network
 				data.timeSinceLastSend += aTimeSinceLastCallInSeconds;
 				if (data.timeSinceLastSend >= myResendTime)
 				{
-					if (data.amountSent >= myMaxResendAttempts)
+					if (data.shouldLimitRetries && data.amountSent >= myMaxResendAttempts)
 					{
 						++myLostPacketsAmount;
 						iter = dataList.erase(iter);
@@ -409,6 +411,7 @@ namespace Network
 						SendToClient(data.message, myClients.at(id));
 						data.timeSinceLastSend = 0.f;
 						++data.amountSent;
+						++myLostPacketsAmount;
 					}
 					else
 					{
@@ -438,7 +441,7 @@ namespace Network
 		sendto(myServerSocket, message, message.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
 		{
 			std::unique_lock lock(myMainMutex);
-			myOutgoignDataAmount += message.dataSize;
+			myOutgoingDataAmount += message.dataSize;
 			++mySentPacketsAmount;
 		}
 
@@ -468,7 +471,29 @@ namespace Network
 		{
 			if (*iter == myIncommingMessage)
 			{
+				//const bool isDestroyMessage = iter->message.type == Network::MessageType::DeleteGameObject;
+
+				// TODO: Fix this check, for unknown reasons the check of UUIDs crashes in Release
+				//if (isDestroyMessage && Network::ExtractUUID(iter->message) != Network::ExtractUUID(myIncommingMessage))
+				//{
+				//	// UUID has been corrupted
+				//	return;
+				//}
 				dataList.erase(iter);
+
+				// TODO: Fix this check, for unknown reasons the check of UUIDs crashes in Release
+				//if (isDestroyMessage)
+				//{
+				//	// Remove any CreateObject messages with the same UUID
+				//	for (auto createIter = dataList.begin(); createIter != dataList.end(); createIter++)
+				//	{
+				//		if (createIter->message.type == Network::MessageType::CreateGameObject && Network::ExtractUUID(createIter->message) == Network::ExtractUUID(myIncommingMessage))
+				//		{
+				//			dataList.erase(createIter);
+				//			break;
+				//		}
+				//	}
+				//}
 				return;
 			}
 		}
@@ -481,7 +506,6 @@ namespace Network
 			if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 			{
 				SendToClient(myIncommingMessage, iter->second);
-				myLogger->Log(std::format("Ping from: {}\tUsername: {}", anIdentifier, iter->second.username));
 			}
 			else
 			{
@@ -541,7 +565,6 @@ namespace Network
 			auto message = myIncommingMessage;
 			message.needReply = false;
 			message.type = MessageType::Confirmation;
-			message.dataSize = 0;
 			SendToClient(message, aClient);
 		}
 	}

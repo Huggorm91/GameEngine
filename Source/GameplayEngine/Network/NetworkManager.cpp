@@ -12,7 +12,7 @@
 // Needs to not be inline to avoid including Client.h in header
 NetworkManager::NetworkManager() :
 	myIncommingDataAmount(0u),
-	myOutgoignDataAmount(0u),
+	myOutgoingDataAmount(0u),
 	mySentPacketsAmount(0u),
 	myLostPacketsAmount(0u),
 	myLatency(0.f),
@@ -41,8 +41,16 @@ void NetworkManager::Update()
 	for (auto& message : messages)
 	{
 		myIncommingDataAmount += message.dataSize;
+		if (message.needReply)
+		{
+			myOutgoingDataAmount += message.dataSize;
+			++mySentPacketsAmount;
+		}
+
 		switch (message.type)
 		{
+		case Network::MessageType::Invalid:
+			break; // Ignore invalid messages
 		case Network::MessageType::Disconnect:
 		{
 			if (message.dataSize == 0)
@@ -63,16 +71,50 @@ void NetworkManager::Update()
 			myChatHistory.emplace_back(message.data);
 			break;
 		}
+		case Network::MessageType::Ping:
+		{
+			myLatency = std::chrono::duration<float, std::milli>(std::chrono::high_resolution_clock::now() - myPingTime).count();
+			break;
+		}
 		case Network::MessageType::Confirmation:
 		{
-			for (auto iter = myWaitingConfirmations.begin(); iter != myWaitingConfirmations.end();)
+			for (auto iter = myWaitingConfirmations.begin(); iter != myWaitingConfirmations.end(); iter++)
 			{
 				if (*iter == message)
 				{
+					const bool shouldLookForCreate = iter->message.type == Network::MessageType::DeleteGameObject;
 					myWaitingConfirmations.erase(iter);
+					if (shouldLookForCreate)
+					{
+						for (auto createIter = myWaitingConfirmations.begin(); createIter != myWaitingConfirmations.end(); createIter++)
+						{
+							if (createIter->message.type == Network::MessageType::CreateGameObject && Network::ExtractUUID(createIter->message) == Network::ExtractUUID(message))
+							{
+								myWaitingConfirmations.erase(createIter);
+								break;
+							}
+						}
+					}
 					break;
 				}
 			}
+			break;
+		}
+		case Network::MessageType::GameObjectMessage:
+		case Network::MessageType::CreateGameObject:
+		{
+			if (myRemovedUUIDs.contains(Network::ExtractUUID(message)))
+			{
+				continue;
+			}
+			myMessages.emplace_back(message);
+			break;
+		}
+		case Network::MessageType::DeleteGameObject:
+		{
+			// TODO: Potential issue with memory if myRemovedUUIDs is not emptied every now and then
+			myRemovedUUIDs.emplace(Network::ExtractUUID(message));
+			myMessages.emplace_back(message);
 			break;
 		}
 		default:
@@ -82,11 +124,15 @@ void NetworkManager::Update()
 		}
 		}
 	}
+
 	HandlePacketLoss();
+
 	myLatencyTimer += Crimson::Time::GetDeltaTime();
 	if (myLatencyTimer >= Network::globalPingFrequency)
 	{
-		// TODO: PING
+		myPingTime = std::chrono::high_resolution_clock::now();
+		myClient->SendNetMessage(Network::CreatePingMessage());
+		myLatencyTimer = 0.f;
 	}
 }
 
@@ -107,19 +153,19 @@ bool NetworkManager::SendNetMessage(const Network::NetMessage& aMessage)
 	assert(myClient && "Not initialized!");
 	if (myClient->SendNetMessage(aMessage))
 	{
-		myOutgoignDataAmount += aMessage.dataSize;
+		myOutgoingDataAmount += aMessage.dataSize;
 		++mySentPacketsAmount;
 		return true;
 	}
 	return false;
 }
 
-bool NetworkManager::SendGuaranteedNetMessage(const Network::NetMessage& aMessage)
+bool NetworkManager::SendGuaranteedNetMessage(const Network::NetMessage& aMessage, bool aShouldLimitRetries)
 {
 	const_cast<bool&>(aMessage.needReply) = true;
 	if (SendNetMessage(aMessage))
 	{
-		myWaitingConfirmations.emplace_back(Network::ConfirmationData{ aMessage });
+		myWaitingConfirmations.emplace_back(Network::ConfirmationData(aMessage, aShouldLimitRetries));
 		return true;
 	}
 	return false;
@@ -130,19 +176,19 @@ bool NetworkManager::SendMultiNetMessage(const Network::NetMessage& aMessage)
 	assert(myClient && "Not initialized!");
 	if (myClient->SendMultipartMessage(aMessage))
 	{
-		myOutgoignDataAmount += aMessage.dataSize;
+		myOutgoingDataAmount += aMessage.dataSize;
 		++mySentPacketsAmount;
 		return true;
 	}
 	return false;
 }
 
-bool NetworkManager::SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage)
+bool NetworkManager::SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage, bool aShouldLimitRetries)
 {
 	const_cast<bool&>(aMessage.needReply) = true;
 	if (SendMultiNetMessage(aMessage))
 	{
-		myWaitingConfirmations.emplace_back(Network::ConfirmationData{ aMessage });
+		myWaitingConfirmations.emplace_back(Network::ConfirmationData(aMessage, aShouldLimitRetries));
 		return true;
 	}
 	return false;
@@ -179,8 +225,7 @@ void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUI
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
 	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
-	// TODO: Revert this to normal messages
-	SendGuaranteedNetMessage(Network::CreateGameObjectMessage(message));
+	SendNetMessage(Network::CreateGameObjectMessage(message));
 }
 
 void NetworkManager::SendCreateGameObject(const GameObject& anObject)
@@ -194,7 +239,7 @@ void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 
 	if (data.size() <= Network::GetMaximumCreateGameobjectDataSize())
 	{
-		SendGuaranteedNetMessage(Network::CreateCreateGameObjectMessage(anObject.GetUUID(), data));		
+		SendGuaranteedNetMessage(Network::CreateCreateGameObjectMessage(anObject.GetUUID(), data));
 	}
 	else
 	{
@@ -272,11 +317,11 @@ void NetworkManager::ClearMessages()
 
 std::string NetworkManager::GetStatisticsString()
 {
-	if (myIncommingDataAmount != 0 || myOutgoignDataAmount != 0)
+	if (myIncommingDataAmount != 0 || myOutgoingDataAmount != 0)
 	{
-		std::string text = std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoignDataAmount, myLostPacketsAmount, mySentPacketsAmount);
+		std::string text = std::format("Network Statistics\nLatency: {}ms\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myLatency, myIncommingDataAmount, myOutgoingDataAmount, myLostPacketsAmount, mySentPacketsAmount);
 		myIncommingDataAmount = 0;
-		myOutgoignDataAmount = 0;
+		myOutgoingDataAmount = 0;
 		mySentPacketsAmount = 0;
 		myLostPacketsAmount = 0;
 		return text;
@@ -285,7 +330,7 @@ std::string NetworkManager::GetStatisticsString()
 }
 
 GameObject NetworkManager::ExtractCreatedGameObject(const Network::NetMessage& aMessage)
-{	
+{
 	GameObject result(Network::ExtractUUID(aMessage));
 	std::string stringData(aMessage.data + sizeof(UUIDv4::UUID), aMessage.dataSize - sizeof(UUIDv4::UUID));
 	std::stringstream data(stringData);
@@ -315,7 +360,7 @@ void NetworkManager::HandlePacketLoss()
 		data.timeSinceLastSend += Crimson::Time::GetDeltaTime();
 		if (data.timeSinceLastSend >= myResendTime)
 		{
-			if (data.amountSent >= myMaxResendAttempts)
+			if (data.shouldLimitRetries && data.amountSent >= myMaxResendAttempts)
 			{
 				++myLostPacketsAmount;
 				iter = myWaitingConfirmations.erase(iter);
@@ -325,6 +370,7 @@ void NetworkManager::HandlePacketLoss()
 			myClient->SendNetMessage(data.message);
 			data.timeSinceLastSend = 0.f;
 			++data.amountSent;
+			++myLostPacketsAmount;
 		}
 		++iter;
 	}

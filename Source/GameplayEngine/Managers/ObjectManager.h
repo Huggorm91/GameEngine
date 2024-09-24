@@ -25,6 +25,8 @@ public:
 	bool RemoveGameObject(const UUIDv4::UUID& anID);
 	void RemoveGameObjectAtEndOfFrame(const UUIDv4::UUID& anID);
 
+	bool HasGameObject(const UUIDv4::UUID& anID) const;
+
 	void SetSceneObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList);
 
 	void MoveTemporaryObjectsToScene();

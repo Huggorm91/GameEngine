@@ -183,7 +183,7 @@ namespace Network
 			if (previousIndex != message.packetIndex - 1)
 			{
 				// Missing a packet
-				// TODO: Send request for replacement
+				// TODO: Delete all messages with same sender and message IDs after a certain time
 				iter++;
 				continue;
 			}
@@ -322,7 +322,6 @@ namespace Network
 				{
 					answer.needReply = false;
 					answer.type = MessageType::Confirmation;
-					answer.dataSize = 0;
 					SendNetMessageInternal(answer);
 				}
 			}

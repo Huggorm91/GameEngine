@@ -71,7 +71,7 @@ namespace Crimson
 	std::string Timestamp()
 	{
 		SYSTEMTIME st;
-		GetSystemTime(&st);
+		GetLocalTime(&st);
 
 		std::stringstream result;
 		result << std::setfill('0') << std::setw(2) << st.wYear;
@@ -92,7 +92,7 @@ namespace Crimson
 	std::string FileNameTimestamp()
 	{
 		SYSTEMTIME st;
-		GetSystemTime(&st);
+		GetLocalTime(&st);
 
 		std::stringstream result;
 		result << std::setfill('0') << std::setw(2) << st.wYear;

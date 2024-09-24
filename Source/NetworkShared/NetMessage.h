@@ -9,7 +9,6 @@ namespace Network
 		Connect,
 		Disconnect,
 		Confirmation,
-		ResendMessage,
 		Chat,
 		Ping,
 		GameObjectMessage,

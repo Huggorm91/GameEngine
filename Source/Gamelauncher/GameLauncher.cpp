@@ -354,7 +354,6 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
-			//Engine::GetLogger().Log(std::format("Recieved {}bytes of data for object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			if (auto object = Engine::GetObjectManager().GetGameObject(Network::ExtractUUID(message)))
 			{
 				object->RecieveNetmessage(Network::ExtractGameObjectMessage(message));
@@ -363,17 +362,16 @@ void GameLauncher::HandleNetmessages()
 		}
 		case Network::MessageType::CreateGameObject:
 		{
+			if (Engine::GetObjectManager().HasGameObject(Network::ExtractUUID(message)))
+			{
+				continue;
+			}
 			if (message.totalPackets == 1u)
 			{
-				//Engine::GetLogger().Log(std::format("Recieved {}bytes of data for creating object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 				Engine::GetObjectManager().AddGameObject(NetworkManager::ExtractCreatedGameObject(message));
 			}
 			else
 			{
-				if (message.packetIndex != 0)
-				{
-					continue;
-				}
 				std::vector<Network::NetMessage*> objectMessages;
 				Network::NetMessage* current = &message;
 				size_t totalSize = 0;
@@ -385,14 +383,12 @@ void GameLauncher::HandleNetmessages()
 					objectMessages.emplace_back(current);
 					current++;
 				}
-				//Engine::GetLogger().Log(std::format("Recieved {} packets with {}bytes of data for creating object: {}", message.totalPackets, totalSize, Network::ExtractUUID(message).str()));
 				Engine::GetObjectManager().AddGameObject(NetworkManager::ExtractCreatedGameObject(objectMessages));
 			}
 			break;
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
-			//Engine::GetLogger().Log(std::format("Recieved {}bytes of data for deleting object: {}", message.dataSize, Network::ExtractUUID(message).str()));
 			Engine::GetObjectManager().RemoveGameObject(Network::ExtractUUID(message));
 			break;
 		}

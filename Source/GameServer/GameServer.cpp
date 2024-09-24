@@ -93,6 +93,7 @@ int GameServer::Run()
 
 void GameServer::Shutdown()
 {
+	myServer.ShutDown();
 }
 
 void GameServer::RecieveMessage(const Crimson::Message& aMessage)
@@ -146,8 +147,9 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
 	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
-	// TODO: Revert this to normal messages
-	myServer.SendGuaranteedMessageToClients(Network::CreateGameObjectMessage(message));
+	auto netMessage = Network::CreateGameObjectMessage(message);
+	netMessage.messageID = myServer.GetMessageID();
+	myServer.SendMessageToClients(netMessage);
 }
 
 void GameServer::HandleCrash(const std::exception& anException)
@@ -268,11 +270,11 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 		message.messageID = myServer.GetMessageID();
 		if (aClient)
 		{
-			myServer.SendGuaranteedToClient(message, *aClient);
+			myServer.SendGuaranteedToClient(message, *aClient, false);
 		}
 		else
 		{
-			myServer.SendGuaranteedMessageToClients(message);
+			myServer.SendGuaranteedMessageToClients(message, nullptr,  false);
 		}
 	}
 	else
@@ -309,11 +311,11 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 			message.totalPackets = totalPackets;
 			if (aClient)
 			{
-				myServer.SendGuaranteedToClient(message, *aClient);
+				myServer.SendGuaranteedToClient(message, *aClient, false);
 			}
 			else
 			{
-				myServer.SendGuaranteedMessageToClients(message);
+				myServer.SendGuaranteedMessageToClients(message, nullptr, false);
 			}
 		}
 	}
@@ -321,7 +323,9 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 
 void GameServer::SendDeleteObjectMessage(const UUIDv4::UUID& anId)
 {
-	myServer.SendGuaranteedMessageToClients(Network::CreateDeleteGameObjectMessage(anId));
+	auto message = Network::CreateDeleteGameObjectMessage(anId);
+	message.messageID = myServer.GetMessageID();
+	myServer.SendGuaranteedMessageToClients(message, nullptr, false);
 }
 
 bool GameServer::HasAllCreateMessages(const UUIDv4::UUID& anId)

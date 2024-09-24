@@ -18,6 +18,7 @@ namespace Network
 	NetMessage CreateConnectMessage(bool aNeedReply, const std::string& aUserName);
 	NetMessage CreateDisconnectMessage();
 
+	NetMessage CreatePingMessage();
 	NetMessage CreateConfirmationMessage();
 	NetMessage CreateChatMessage(const std::string& aMessage);
 

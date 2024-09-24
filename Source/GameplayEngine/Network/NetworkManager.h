@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <chrono>
 #include "NetworkShared/NetMessage.h"
 
 class Transform;
@@ -25,7 +26,7 @@ public:
 	bool IsConnected() const;
 
 	bool SendNetMessage(const Network::NetMessage& aMessage);
-	bool SendGuaranteedNetMessage(const Network::NetMessage& aMessage);
+	bool SendGuaranteedNetMessage(const Network::NetMessage& aMessage, bool aShouldLimitRetries = true);
 
 	void SetTimeBetweenResend(float aTimeInSeconds);
 	void SetMaximumResendAttempts(uint8_t anAmount);
@@ -48,13 +49,16 @@ public:
 	static GameObject ExtractCreatedGameObject(const std::vector<Network::NetMessage*>& aMessageList);
 
 private:
+	std::unordered_set<UUIDv4::UUID> myRemovedUUIDs;
 	std::vector<std::string> myChatHistory;
 	std::vector<Network::NetMessage> myMessages;
 	std::vector<Network::ConfirmationData> myWaitingConfirmations;
 	std::unique_ptr<Network::Client> myClient;
 
+	std::chrono::high_resolution_clock::time_point myPingTime;
+
 	unsigned myIncommingDataAmount;
-	unsigned myOutgoignDataAmount;
+	unsigned myOutgoingDataAmount;
 	unsigned mySentPacketsAmount;
 	unsigned myLostPacketsAmount;
 
@@ -66,7 +70,7 @@ private:
 
 	// These are private for now since MessageID is not handled correctly in them
 	bool SendMultiNetMessage(const Network::NetMessage& aMessage);
-	bool SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage);
+	bool SendGuaranteedMultiNetMessage(const Network::NetMessage& aMessage, bool aShouldLimitRetries = true);
 
 	void HandlePacketLoss();
 };

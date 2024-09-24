@@ -87,6 +87,11 @@ GameObject* ObjectManager::AddGameObject(const GameObject& anObject, bool anIsPe
 
 GameObject* ObjectManager::AddGameObject(GameObject&& anObject, bool anIsPersistant)
 {
+	if (HasGameObject(anObject.GetUUID()))
+	{
+		return myGameObjects.at(anObject.GetUUID());
+	}
+
 	GameObject* pointer = nullptr;
 	if (anIsPersistant)
 	{
@@ -135,6 +140,11 @@ bool ObjectManager::RemoveGameObject(const UUIDv4::UUID& anID)
 void ObjectManager::RemoveGameObjectAtEndOfFrame(const UUIDv4::UUID& anID)
 {
 	myObjectsToRemove.emplace_back(anID);
+}
+
+bool ObjectManager::HasGameObject(const UUIDv4::UUID& anID) const
+{
+	return myGameObjects.contains(anID);
 }
 
 void ObjectManager::SetSceneObjects(std::unordered_map<UUIDv4::UUID, GameObject>* anObjectList)
