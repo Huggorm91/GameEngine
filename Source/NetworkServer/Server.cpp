@@ -17,10 +17,10 @@ namespace Network
 		myServerSocket(),
 		myCurrentIP(nullptr),
 		myThread(nullptr),
-		myIncommingDataAmount(0u),
-		myOutgoingDataAmount(0u),
-		mySentPacketsAmount(0u),
-		myLostPacketsAmount(0u),
+		myIncommingDataTotal(0u),
+		myOutgoingDataTotal(0u),
+		mySentPacketsTotal(0u),
+		myLostPacketsTotal(0u),
 		myResendTime(1.f / 5.f),
 		mySocketSize(sizeof(sockaddr_in)),
 		myClientIDGenerator(0u),
@@ -152,7 +152,9 @@ namespace Network
 		{
 			std::unique_lock lock(myMainMutex);
 			myCachedMessages.emplace_back(myIncommingMessage);
-			myIncommingDataAmount += myIncommingMessage.dataSize;
+			myIncommingDataTotal += myIncommingMessage.dataSize;
+
+			myClientStatistics[identifier].outgoingData += myIncommingMessage.dataSize;
 		}
 
 		switch (myIncommingMessage.type)
@@ -229,14 +231,42 @@ namespace Network
 	void Server::ReportStatistics()
 	{
 		std::unique_lock lock(myMainMutex);
-		if (myIncommingDataAmount != 0 || myOutgoingDataAmount != 0)
+		if (myIncommingDataTotal != 0 || myOutgoingDataTotal != 0)
 		{
+			std::string text =	"------------------------------------\n"
+								"Network Statistics\n";			
+
+			for (auto& [id, stats] : myClientStatistics)
+			{
+				text += std::format("\n{}:\n"
+					"Incomming data: {} bytes\n"
+					"Outgoing data : {} bytes\n"
+					"Packetloss: {}/{}\n"
+					"------------------------------------",
+					id,
+					stats.incommingData,
+					stats.outgoingData,
+					stats.lostPackets, stats.sentPackets);
+
+				stats.Reset();
+			}
+
+			text += std::format("\nTotal:\n"
+								"Incomming data: {} bytes\n"
+								"Outgoing data : {} bytes\n"
+								"Packetloss: {}/{}\n"
+								"------------------------------------", 
+								myIncommingDataTotal, 
+								myOutgoingDataTotal, 
+								myLostPacketsTotal, mySentPacketsTotal);
+
+			myIncommingDataTotal = 0;
+			myOutgoingDataTotal = 0;
+			mySentPacketsTotal = 0;
+			myLostPacketsTotal = 0;
+
 			// Send directly to cout to not flood log-file with statistics
-			std::cout << std::format("Network Statistics\nIncomming data: {} bytes\nOutgoing data : {} bytes\nPacketloss: {}/{}", myIncommingDataAmount, myOutgoingDataAmount, myLostPacketsAmount, mySentPacketsAmount) << std::endl;
-			myIncommingDataAmount = 0;
-			myOutgoingDataAmount = 0;
-			mySentPacketsAmount = 0;
-			myLostPacketsAmount = 0;
+			std::cout << text << std::endl;
 		}		
 	}
 
@@ -446,8 +476,13 @@ namespace Network
 		{
 			outClient.failedMessageCount = 0;
 			std::unique_lock lock(myMainMutex);
-			myOutgoingDataAmount += aMessage.dataSize;
-			++mySentPacketsAmount;
+			myOutgoingDataTotal += aMessage.dataSize;
+			++mySentPacketsTotal;
+
+			const auto& identifier = GetIdentifier(outClient.ip.c_str(), outClient.port);
+			auto& stats = myClientStatistics[identifier];
+			stats.outgoingData += aMessage.dataSize;
+			++stats.sentPackets;
 		}
 	}
 
@@ -473,7 +508,11 @@ namespace Network
 				{
 					if (data.shouldLimitRetries && data.amountSent >= myMaxResendAttempts)
 					{
-						++myLostPacketsAmount;
+						++myLostPacketsTotal;
+						if (auto statIter = myClientStatistics.find(id); statIter != myClientStatistics.end())
+						{
+							++(statIter->second.lostPackets);
+						}
 						iter = dataList.erase(iter);
 						continue;
 					}
@@ -483,7 +522,8 @@ namespace Network
 						SendToClient(data.message, myClients.at(id));
 						data.timeSinceLastSend = 0.f;
 						++data.amountSent;
-						++myLostPacketsAmount;
+						++myLostPacketsTotal;
+						++(myClientStatistics[id].lostPackets);
 					}
 					else
 					{
@@ -505,6 +545,7 @@ namespace Network
 		SetOutgoingMessageData(std::format("{} has joined the server.", outClient.username));
 
 		myClients.emplace(anIdentifier, outClient);
+		myClientStatistics.emplace(anIdentifier, ClientStatistics());
 		myClientIDs.emplace(anIdentifier, ++myClientIDGenerator);
 
 		auto message = CreateConfirmationMessage();
@@ -513,8 +554,12 @@ namespace Network
 		sendto(myServerSocket, message, message.GetCurrentSize(), 0, (sockaddr*)&outClient.socket, sizeof(sockaddr_in));
 		{
 			std::unique_lock lock(myMainMutex);
-			myOutgoingDataAmount += message.dataSize;
-			++mySentPacketsAmount;
+			myOutgoingDataTotal += message.dataSize;
+			++mySentPacketsTotal;
+
+			auto& stats = myClientStatistics[anIdentifier];
+			stats.outgoingData += message.dataSize;
+			++stats.sentPackets;
 		}
 
 		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myIncommingMessage);
@@ -651,6 +696,7 @@ namespace Network
 		myClientIDs.erase(anIdentifier);
 		myClientHistory.erase(anIdentifier);
 		myWaitingConfirmations.erase(anIdentifier);
+		myClientStatistics.erase(anIdentifier);
 		myClients.erase(anIdentifier);
 	}
 

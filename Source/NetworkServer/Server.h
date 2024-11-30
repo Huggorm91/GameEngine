@@ -23,7 +23,22 @@ namespace Network
 		{
 			return aClient.port == port && aClient.ip == ip;
 		}
-	};	
+	};
+
+	struct ClientStatistics
+	{
+		unsigned incommingData = 0;
+		unsigned outgoingData = 0;
+		unsigned sentPackets = 0;
+		unsigned lostPackets = 0;
+
+		inline void Reset() {
+			incommingData = 0;
+			outgoingData = 0;
+			sentPackets = 0;
+			lostPackets = 0;
+		}
+	};
 
 	class Server
 	{
@@ -73,6 +88,7 @@ namespace Network
 		std::unique_ptr<MainLogger, std::function<void(MainLogger*)>> myLogger;
 
 		std::unordered_map<std::string, ClientInfo> myClients;
+		std::unordered_map<std::string, ClientStatistics> myClientStatistics;
 		std::unordered_map<std::string, unsigned short> myClientIDs;
 		std::unordered_map<std::string, std::vector<NetMessage>> myClientHistory;
 		std::unordered_map < std::string, std::vector<ConfirmationData>> myWaitingConfirmations;
@@ -85,10 +101,10 @@ namespace Network
 		PSTR myCurrentIP;
 		std::thread* myThread;
 
-		unsigned myIncommingDataAmount;
-		unsigned myOutgoingDataAmount;
-		unsigned mySentPacketsAmount;
-		unsigned myLostPacketsAmount;
+		unsigned myIncommingDataTotal;
+		unsigned myOutgoingDataTotal;
+		unsigned mySentPacketsTotal;
+		unsigned myLostPacketsTotal;
 
 		float myResendTime;
 		int mySocketSize;
