@@ -20,6 +20,7 @@ enum class ComponentType
 	Network,
 	FirstPersonCameraController,
 	Assignment,
+	AssignmentPlayer,
 	Count
 };
 

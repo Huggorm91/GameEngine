@@ -2,6 +2,7 @@
 #include "AssignmentComponent.h"
 #include "GameplayEngine/PostMaster/PostMaster.h"
 #include "AssetManager/Assets/GameObject.h"
+#include "AssetManager/Assets/Components/Collision/EnumCollisions.h"
 
 AssignmentComponent::AssignmentComponent() : Component(ComponentType::Assignment), myLifeTime(0.f)
 {
@@ -27,4 +28,20 @@ void AssignmentComponent::Update()
 
 	const auto& newPos = myParent->GetWorldPosition() + myDirection * (200.f * deltaTime);
 	myParent->SetPosition(newPos);
+}
+
+void AssignmentComponent::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent*)
+{
+	if (aLayer == CollisionLayer::Layer::NetworkCulling)
+	{
+		// Send Enable message to clients
+	}
+}
+
+void AssignmentComponent::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent*)
+{
+	if (aLayer == CollisionLayer::Layer::NetworkCulling)
+	{
+		// Send Disable message to clients
+	}
 }

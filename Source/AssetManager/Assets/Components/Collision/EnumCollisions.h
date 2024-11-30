@@ -13,6 +13,7 @@ namespace CollisionLayer
 		EnemyProjectile,
 		ExplodingBarrel,
 		HealingZone,
+		NetworkCulling,
 		Count
 	};
 
@@ -24,6 +25,7 @@ namespace CollisionLayer
 	"PlayerProjectile",
 	"EnemyProjectile",
 	"ExplodingBarrel",
-	"HealingZone"
+	"HealingZone",
+	"NetworkCulling"
 	};
 }

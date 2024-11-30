@@ -76,6 +76,10 @@ Component* AddComponent(const ComponentType aType, GameObject& aParent)
 	{
 		return &aParent.AddComponent<AssignmentComponent>();
 	}
+	case ComponentType::AssignmentPlayer:
+	{
+		return &aParent.AddComponent<AssignmentPlayerComponent>();
+	}
 	default:
 	{
 		AMLogger.Err("AddComponent: Invalid component type! GameObject ID : " + aParent.GetUUID().str() + "\tComponent type: " + std::to_string(static_cast<int>(aType)));
@@ -172,6 +176,11 @@ void LoadComponent(const Json::Value& aJson, GameObject& aParent)
 	case ComponentType::Assignment:
 	{
 		aParent.AddComponent(AssignmentComponent(aJson));
+		break;
+	}
+	case ComponentType::AssignmentPlayer:
+	{
+		aParent.AddComponent(AssignmentPlayerComponent(aJson));
 		break;
 	}
 	default:
@@ -290,6 +299,12 @@ void LoadComponent(std::istream& aStream, GameObject& aParent)
 		assignment.Deserialize(aStream);
 		break;
 	}
+	case ComponentType::AssignmentPlayer:
+	{
+		auto& assignment = aParent.AddComponent<AssignmentPlayerComponent>();
+		assignment.Deserialize(aStream);
+		break;
+	}
 	case ComponentType::Count:
 		break;
 	default:
@@ -369,6 +384,10 @@ std::string ComponentTypeToString(const ComponentType aType)
 	case ComponentType::Assignment:
 	{
 		return "Assignment";
+	}
+	case ComponentType::AssignmentPlayer:
+	{
+		return "AssignmentPlayer";
 	}
 	default:
 	{

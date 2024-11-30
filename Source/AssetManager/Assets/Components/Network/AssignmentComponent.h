@@ -2,6 +2,7 @@
 #include "../Component.h"
 
 // Created to fulfill needs for school assignments
+// Moving Orbs
 BEGIN_COMPONENT(AssignmentComponent)
 public:
 	AssignmentComponent();
@@ -18,9 +19,9 @@ public:
 	void Update() override;
 	// void DebugDraw() override;
 
-	// void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 	// void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
-	// void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
+	void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 
 	// void OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;
 	// void OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider) override;

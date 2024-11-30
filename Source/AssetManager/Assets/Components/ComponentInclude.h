@@ -22,3 +22,4 @@
 
 #include "Network/NetworkComponent.h"
 #include "Network/AssignmentComponent.h"
+#include "Network/AssignmentPlayerComponent.h"
