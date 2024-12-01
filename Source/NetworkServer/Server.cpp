@@ -241,8 +241,7 @@ namespace Network
 				text += std::format("\n{}:\n"
 					"Incomming data: {} bytes\n"
 					"Outgoing data : {} bytes\n"
-					"Packetloss: {}/{}\n"
-					"------------------------------------",
+					"Packetloss: {}/{}\n",
 					id,
 					stats.incommingData,
 					stats.outgoingData,
@@ -519,7 +518,8 @@ namespace Network
 
 					if (myClients.contains(id))
 					{
-						SendToClient(data.message, myClients.at(id));
+						// Do not assign a new MessageID
+						SendToClientInternal(data.message, myClients.at(id));
 						data.timeSinceLastSend = 0.f;
 						++data.amountSent;
 						++myLostPacketsTotal;

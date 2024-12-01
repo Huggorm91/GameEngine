@@ -390,7 +390,8 @@ void NetworkManager::HandlePacketLoss()
 				continue;
 			}
 
-			myClient->SendNetMessage(data.message);
+			// Treat it as a Multipart Message in order to not assign a new MessageID
+			myClient->SendMultipartMessage(data.message);
 			data.timeSinceLastSend = 0.f;
 			++data.amountSent;
 			++myLostPacketsAmount;

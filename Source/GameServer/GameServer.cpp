@@ -242,6 +242,7 @@ void GameServer::CreateRandomObject()
 void GameServer::SendCopyOfRandomObject(const GameObject& anObject, Network::ClientInfo* aClient)
 {
 	GameObject copy(anObject.GetUUID());
+	copy.SetActive(false);
 	copy.SetPosition(anObject.GetWorldPosition());
 	copy.AddComponent(anObject.GetComponent<MeshComponent>());
 
@@ -279,7 +280,7 @@ void GameServer::SendCreateObjectMessage(const GameObject& anObject, Network::Cl
 		}
 		else
 		{
-			myServer.SendGuaranteedMessageToClients(message, nullptr,  false);
+			myServer.SendGuaranteedMessageToClients(message, nullptr, false);
 		}
 	}
 	else
@@ -353,7 +354,7 @@ void GameServer::SendSetActiveMessage(bool aState, const UUIDv4::UUID& anID, con
 	if (auto iter = myClientInfo.find(aSenderID); iter != myClientInfo.end())
 	{
 		myServer.SendGuaranteedToClient(Network::CreateGameObjectMessage(message), iter->second);
-	}	
+	}
 }
 
 bool GameServer::HasAllCreateMessages(const UUIDv4::UUID& anId)
@@ -442,7 +443,7 @@ void GameServer::RemoveAllCreateMessages(const UUIDv4::UUID& anId)
 		{
 			iter = myMultipartCreateMessages.erase(iter);
 		}
-		else 
+		else
 		{
 			iter++;
 		}
@@ -466,7 +467,7 @@ void GameServer::HandleCreateObject(Network::ClientInfo& client, const Network::
 			myClientObjects.emplace(id, NetworkManager::ExtractCreatedGameObject(GetAllCreateMessages(id)));
 			myClientInfo.emplace(id, client);
 			RemoveAllCreateMessages(id);
-		}		
+		}
 	}
 }
 
