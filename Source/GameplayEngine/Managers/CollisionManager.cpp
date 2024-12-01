@@ -5,16 +5,39 @@
 #include "AssetManager/Assets/GameObject.h"
 #include "AssetManager/Assets/Components/Collision/ColliderComponent.h"
 
+bool CollisionManager::IsColliding(const UUIDv4::UUID& anID)
+{
+	return myCollisionObjects.contains(anID);
+}
+
+bool CollisionManager::IsCollidingWith(const UUIDv4::UUID& aFirstID, const UUIDv4::UUID& aSecondID)
+{
+	if (auto iter = myCollisionObjects.find(aFirstID); iter != myCollisionObjects.end())
+	{
+		return iter->second.contains(aSecondID);
+	}
+	return false;
+}
+
+std::unordered_set<UUIDv4::UUID> CollisionManager::GetCollidingObjects(const UUIDv4::UUID& anID)
+{
+	if (auto iter = myCollisionObjects.find(anID); iter != myCollisionObjects.end())
+	{
+		return iter->second;
+	}
+	return std::unordered_set<UUIDv4::UUID>();
+}
+
 void CollisionManager::AddCollider(ColliderComponent* aCollider)
 {
-	if (auto iter = myCollisionObjects.find(aCollider->GetLayer()); iter != myCollisionObjects.end())
+	if (auto iter = myCollisionComponents.find(aCollider->GetLayer()); iter != myCollisionComponents.end())
 	{
 		iter->second.emplace(aCollider);
 	}
 	else
 	{
-		myCollisionObjects.emplace(aCollider->GetLayer(), std::unordered_set<ColliderComponent*>());
-		myCollisionObjects.at(aCollider->GetLayer()).emplace(aCollider);
+		myCollisionComponents.emplace(aCollider->GetLayer(), std::unordered_set<ColliderComponent*>());
+		myCollisionComponents.at(aCollider->GetLayer()).emplace(aCollider);
 	}
 }
 
@@ -27,20 +50,23 @@ void CollisionManager::ChangeLayer(ColliderComponent* aCollider, CollisionLayer:
 {
 	myRemovedColliders.emplace(aCollider);
 
-	if (auto iter = myCollisionObjects.find(aNewLayer); iter != myCollisionObjects.end())
+	if (auto iter = myCollisionComponents.find(aNewLayer); iter != myCollisionComponents.end())
 	{
 		iter->second.emplace(aCollider);
 	}
 	else
 	{
-		myCollisionObjects.emplace(aNewLayer, std::unordered_set<ColliderComponent*>());
-		myCollisionObjects.at(aNewLayer).emplace(aCollider);
+		myCollisionComponents.emplace(aNewLayer, std::unordered_set<ColliderComponent*>());
+		myCollisionComponents.at(aNewLayer).emplace(aCollider);
 	}
 }
 
 void CollisionManager::CheckCollisions()
 {
-	for (auto& [layer, componentList] : myCollisionObjects)
+	// Empty each frame since we can't track removed colliders
+	myCollisionObjects.clear();
+
+	for (auto& [layer, componentList] : myCollisionComponents)
 	{
 		for (auto& component : componentList)
 		{
@@ -50,7 +76,7 @@ void CollisionManager::CheckCollisions()
 				continue;
 			}
 
-			for (auto& [collidingLayer, collidingComponentList] : myCollisionObjects)
+			for (auto& [collidingLayer, collidingComponentList] : myCollisionComponents)
 			{
 				// Early escape if component doesnt collide with this layer
 				if (component->CollidesWithLayer(collidingLayer) == false)
@@ -152,83 +178,99 @@ void CollisionManager::CheckCollisions()
 
 void CollisionManager::EndFrame()
 {
-	myCollisionObjects.clear();
+	myCollisionComponents.clear();
 	myPreviousCollisions = myCollisions;
 	myCollisions.clear();
 }
 
 void CollisionManager::Reset()
 {
-	myCollisionObjects.clear();
+	myCollisionComponents.clear();
 	myPreviousCollisions.clear();
+	myCollisionObjects.clear();
 	myCollisions.clear();
 }
 
-void CollisionManager::CollisionEnter(ColliderComponent* aFirst, ColliderComponent* aSecond) const
+void CollisionManager::CollisionEnter(ColliderComponent* aFirst, ColliderComponent* aSecond)
 {
+	auto& firstID = aFirst->GetParentID();
+	auto& secondID = aSecond->GetParentID();
+	myCollisionObjects[firstID].emplace(secondID);
+	myCollisionObjects[secondID].emplace(firstID);
+
 	if (aFirst->IsTrigger() || aSecond->IsTrigger())
 	{
 		aSecond->GetParent().OnTriggerEnter(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerEnter(aSecond->GetLayer(), aSecond);
 		if (aFirst->IsTrigger())
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(aFirst->GetParentID(), aSecond->GetParentID()) });
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(firstID, secondID) });
 		}
 		else
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerEnter, std::pair(secondID, firstID) });
 		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionEnter(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionEnter(aSecond->GetLayer(), aSecond);
-		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionEnter, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionEnter, std::pair(firstID, secondID)});
 	}
 }
 
-void CollisionManager::CollisionStay(ColliderComponent* aFirst, ColliderComponent* aSecond) const
+void CollisionManager::CollisionStay(ColliderComponent* aFirst, ColliderComponent* aSecond)
 {
+	auto& firstID = aFirst->GetParentID();
+	auto& secondID = aSecond->GetParentID();
+
+	// This is replaced every frame since the overhead for keeping track of them in OnExit is too great atm
+	myCollisionObjects[firstID].emplace(secondID);
+	myCollisionObjects[secondID].emplace(firstID);
+
 	if (aFirst->IsTrigger() || aSecond->IsTrigger())
 	{
 		aSecond->GetParent().OnTriggerStay(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerStay(aSecond->GetLayer(), aSecond);
 		if (aFirst->IsTrigger())
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(firstID, secondID)});
 		}
 		else
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerStay, std::pair(secondID, firstID) });
 		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionStay(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionStay(aSecond->GetLayer(), aSecond);
-		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionStay, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionStay, std::pair(firstID, secondID)});
 	}
 }
 
-void CollisionManager::CollisionExit(ColliderComponent* aFirst, ColliderComponent* aSecond) const
+void CollisionManager::CollisionExit(ColliderComponent* aFirst, ColliderComponent* aSecond)
 {
+	auto& firstID = aFirst->GetParentID();
+	auto& secondID = aSecond->GetParentID();
+
 	if (aFirst->IsTrigger() || aSecond->IsTrigger())
 	{
 		aSecond->GetParent().OnTriggerExit(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnTriggerExit(aSecond->GetLayer(), aSecond);
 		if (aFirst->IsTrigger())
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(firstID, secondID)});
 		}
 		else
 		{
-			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(aSecond->GetParentID(), aFirst->GetParentID()) });
+			Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnTriggerExit, std::pair(secondID, firstID) });
 		}
 	}
 	else
 	{
 		aSecond->GetParent().OnCollisionExit(aFirst->GetLayer(), aFirst);
 		aFirst->GetParent().OnCollisionExit(aSecond->GetLayer(), aSecond);
-		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionExit, std::pair(aFirst->GetParentID(), aSecond->GetParentID())});
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::Collision_OnCollisionExit, std::pair(firstID, secondID)});
 	}
 }

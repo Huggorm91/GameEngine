@@ -65,6 +65,8 @@ public:
 	template<class T>
 	bool HasComponent() const;
 
+	bool IsColliding() const;
+
 	void OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
 	void OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
 	void OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider);
@@ -136,6 +138,7 @@ private:
 	friend class Component;
 
 	bool myIsActive;
+	int myCollisionCount;
 	float mySyncTimer;
 	double myLatestSyncTime;
 	GameObject* myParent;

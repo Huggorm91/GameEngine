@@ -14,6 +14,7 @@ UUIDv4::UUID GameObject::nullUUID(uint64_t(0), uint64_t(0));
 
 GameObject::GameObject() :
 	myIsActive(true),
+	myCollisionCount(0),
 	mySyncTimer(-1.f),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
@@ -52,6 +53,7 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 
 GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
+	myCollisionCount(0),
 	mySyncTimer(-1.f),
 	myLatestSyncTime(0.),
 	myParent(nullptr),
@@ -66,6 +68,7 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
+	myCollisionCount(0),
 	mySyncTimer(-1.f),
 	myLatestSyncTime(0.),
 	myParent(nullptr),
@@ -89,6 +92,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
+	myCollisionCount(0),
 	mySyncTimer(aGameObject.mySyncTimer),
 	myLatestSyncTime(aGameObject.myLatestSyncTime),
 	myParent(aGameObject.myParent),
@@ -115,6 +119,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 
 GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
+	myCollisionCount(0),
 	mySyncTimer(-1.f),
 	myLatestSyncTime(0.),
 	myParent(nullptr),
@@ -311,8 +316,14 @@ void GameObject::DebugDraw()
 	}
 }
 
+bool GameObject::IsColliding() const
+{
+	return myCollisionCount > 0;
+}
+
 void GameObject::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
 {
+	myCollisionCount++;
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).OnCollisionEnter(aLayer, aCollider);
@@ -329,6 +340,7 @@ void GameObject::OnCollisionStay(CollisionLayer::Layer aLayer, ColliderComponent
 
 void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* aCollider)
 {
+	myCollisionCount--;
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).OnCollisionExit(aLayer, aCollider);
@@ -337,6 +349,7 @@ void GameObject::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent
 
 void GameObject::OnTriggerEnter(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger)
 {
+	myCollisionCount++;
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).OnTriggerEnter(aLayer, aTrigger);
@@ -353,6 +366,7 @@ void GameObject::OnTriggerStay(CollisionLayer::Layer aLayer, ColliderComponent* 
 
 void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* aTrigger)
 {
+	myCollisionCount--;
 	for (auto& [type, index] : myIndexList)
 	{
 		myComponents.GetValue<Component>(index).OnTriggerExit(aLayer, aTrigger);
