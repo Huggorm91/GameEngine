@@ -14,7 +14,7 @@ public:
 	AssignmentPlayerComponent& operator=(const AssignmentPlayerComponent& aComponent) = default;
 	AssignmentPlayerComponent& operator=(AssignmentPlayerComponent&& aComponent) noexcept = default;
 
-	void Init(GameObject* aParent) override;
+	//void Init(GameObject* aParent) override;
 	// void Update() override;
 	// void DebugDraw() override;
 

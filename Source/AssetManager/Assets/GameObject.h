@@ -140,7 +140,8 @@ private:
 	bool myIsActive;
 	int myCollisionCount;
 	float mySyncTimer;
-	double myLatestSyncTime;
+	double myLatestTransformSyncTime;
+	double myLatestSetActiveSyncTime;
 	GameObject* myParent;
 	Crimson::Vector3f mySyncPosition;
 	Crimson::Vector3f mySyncRotation;

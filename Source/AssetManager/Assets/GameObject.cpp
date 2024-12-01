@@ -55,7 +55,7 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
-	myLatestSyncTime(0.),
+	myLatestTransformSyncTime(0.),
 	myParent(nullptr),
 	myUUID(anUUID),
 	myName("GameObject"),
@@ -70,7 +70,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
-	myLatestSyncTime(0.),
+	myLatestTransformSyncTime(0.),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
@@ -94,7 +94,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
 	mySyncTimer(aGameObject.mySyncTimer),
-	myLatestSyncTime(aGameObject.myLatestSyncTime),
+	myLatestTransformSyncTime(aGameObject.myLatestTransformSyncTime),
 	myParent(aGameObject.myParent),
 	mySyncPosition(aGameObject.mySyncPosition),
 	mySyncRotation(aGameObject.mySyncRotation),
@@ -121,7 +121,7 @@ GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
-	myLatestSyncTime(0.),
+	myLatestTransformSyncTime(0.),
 	myParent(nullptr),
 	myUUID(aJson["UUID"].isNull() ? GenerateUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
@@ -232,7 +232,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	mySyncTimer = aGameObject.mySyncTimer;
 	mySyncPosition = aGameObject.mySyncPosition;
 	mySyncRotation = aGameObject.mySyncRotation;
-	myLatestSyncTime = aGameObject.myLatestSyncTime;
+	myLatestTransformSyncTime = aGameObject.myLatestTransformSyncTime;
 
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -375,15 +375,17 @@ void GameObject::OnTriggerExit(CollisionLayer::Layer aLayer, ColliderComponent* 
 
 void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 {
-	if (aMessage.action == Network::ObjectAction::Move)
+	switch (aMessage.action)
+	{
+	case Network::ObjectAction::Move:
 	{
 		constexpr unsigned rotationOffset = sizeof(Crimson::Vector3f);
 		constexpr unsigned timestampOffset = sizeof(Crimson::Vector3f) * 2;
 
-		const double timestamp = reinterpret_cast<const double&>(aMessage.data[timestampOffset]);
-		if (myLatestSyncTime < timestamp)
+		const double& timestamp = reinterpret_cast<const double&>(aMessage.data[timestampOffset]);
+		if (myLatestTransformSyncTime < timestamp)
 		{
-			myLatestSyncTime = timestamp;
+			myLatestTransformSyncTime = timestamp;
 #ifndef NETWORK_SERVER
 			mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
 			mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
@@ -393,6 +395,20 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 			myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]));
 #endif // !NETWORK_SERVER
 		}
+		break;
+	}
+	case Network::ObjectAction::SetActive:
+	{
+		const double& timestamp = reinterpret_cast<const double&>(aMessage.data[sizeof(bool)]);
+		if (myLatestSetActiveSyncTime < timestamp)
+		{
+			myLatestSetActiveSyncTime = timestamp;
+			myIsActive = reinterpret_cast<const bool&>(aMessage.data);
+		}
+		break;
+	}
+	default:
+		break;
 	}
 
 	for (auto& [type, index] : myIndexList)
