@@ -17,6 +17,8 @@ namespace Crimson
 
 		GameObject_TakeDamage,
 		GameObject_Died,
+		GameObject_Enable,
+		GameObject_Disable,
 
 		Count
 	};

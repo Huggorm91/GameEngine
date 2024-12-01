@@ -10,6 +10,7 @@ namespace Network
 	{
 		Invalid,
 		Move,
+		SetActive
 	};
 
 	constexpr unsigned short CalculateGameObjectMessageNonDataSize() { return sizeof(UUIDv4::UUID) + sizeof(ObjectAction) + sizeof(unsigned short); }

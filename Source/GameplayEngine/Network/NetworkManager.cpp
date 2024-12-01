@@ -230,6 +230,7 @@ void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUI
 
 void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 {
+	assert(myClient && "Not initialized!");
 	std::vector<uint8_t> data;
 	{
 		std::stringstream stream;
@@ -280,7 +281,29 @@ void NetworkManager::SendCreateGameObject(const GameObject& anObject)
 
 void NetworkManager::SendDeleteGameObject(const UUIDv4::UUID& anID)
 {
+	assert(myClient && "Not initialized!");
 	SendGuaranteedNetMessage(Network::CreateDeleteGameObjectMessage(anID));
+}
+
+void NetworkManager::SendSetActiveMessage(bool aState, const UUIDv4::UUID& anID)
+{
+	assert(myClient && "Not initialized!");
+	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
+
+	Network::GameObjectMessage message;
+	message.id = anID;
+	message.action = Network::ObjectAction::SetActive;
+	message.size = sizeof(bool) + sizeof(double);
+
+	// TODO: Rework timestamp to use a timepoint relative to servertime. 
+	// Current idea: Server saves time when started and sends this timepoint to all clients that connects.
+	// Should probably cache the current timepoint in Update
+	double timestamp = Crimson::Time::GetTotalTime();
+	constexpr int timestampOffset = sizeof(bool);
+	memcpy_s(message.data, dataSize, &aState, sizeof(bool));
+	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
+
+	SendNetMessage(Network::CreateGameObjectMessage(message));
 }
 
 void NetworkManager::SendChatMessage(const std::string& aMessage)

@@ -8,6 +8,7 @@
 
 #include "AssetManager/AssetManager.h"
 #include "AssetManager/Assets/Components/Network/NetworkComponent.h"
+#include "AssetManager/Assets/Components/Collision/SphereColliderComponent.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/FirstPersonCameraControllerComponent.h"
 
@@ -284,6 +285,8 @@ void GameLauncher::Init()
 		networkObject.SetPosition({ 0.f, 200.f, 0.f });
 		networkObject.AddComponent<MeshComponent>(player->GetComponent<MeshComponent>());
 		networkObject.AddComponent<NetworkComponent>();
+		auto& collider = networkObject.AddComponent(SphereColliderComponent(500.f, Crimson::Vector3f::Null, false));
+		collider.SetLayer(CollisionLayer::NetworkCulling);
 		Engine::GetNetworkManager().SendCreateGameObject(networkObject);
 		Engine::GetBlackboard().SetValue("playerUUID", player->GetUUID());
 	}
