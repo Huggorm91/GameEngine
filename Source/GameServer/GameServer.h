@@ -20,6 +20,7 @@ public:
 private:
 	Network::Server myServer;
 	std::unordered_map<UUIDv4::UUID, GameObject> myClientObjects;
+	std::unordered_map<UUIDv4::UUID, Network::ClientInfo> myClientInfo;
 	std::vector<Network::NetMessage> myMultipartCreateMessages;
 	float myReportTimer = 0.f;
 
@@ -36,6 +37,7 @@ private:
 	void HandleConnection(Network::ClientInfo& aClient);
 	void SendCreateObjectMessage(const GameObject& anObject, Network::ClientInfo* aClient = nullptr);
 	void SendDeleteObjectMessage(const UUIDv4::UUID& anId);
+	void SendSetActiveMessage(bool aState, const UUIDv4::UUID& anID, const UUIDv4::UUID& aSenderID);
 
 	bool HasAllCreateMessages(const UUIDv4::UUID& anId);
 	std::vector<Network::NetMessage*> GetAllCreateMessages(const UUIDv4::UUID& anId);

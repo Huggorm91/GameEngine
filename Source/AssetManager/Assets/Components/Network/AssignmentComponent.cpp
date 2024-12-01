@@ -2,7 +2,7 @@
 #include "AssignmentComponent.h"
 #include "GameplayEngine/PostMaster/PostMaster.h"
 #include "AssetManager/Assets/GameObject.h"
-#include "AssetManager/Assets/Components/Collision/EnumCollisions.h"
+#include "AssetManager/Assets/Components/Collision/ColliderComponent.h"
 
 AssignmentComponent::AssignmentComponent() : Component(ComponentType::Assignment), myLifeTime(0.f)
 {
@@ -30,18 +30,18 @@ void AssignmentComponent::Update()
 	myParent->SetPosition(newPos);
 }
 
-void AssignmentComponent::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent*)
+void AssignmentComponent::OnCollisionEnter(CollisionLayer::Layer aLayer, ColliderComponent* collider)
 {
 	if (aLayer == CollisionLayer::Layer::NetworkCulling)
 	{
-		// Send Enable message to clients
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::GameObject_Enable, std::pair(GetParentID(), collider->GetParentID()) });
 	}
 }
 
-void AssignmentComponent::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent*)
+void AssignmentComponent::OnCollisionExit(CollisionLayer::Layer aLayer, ColliderComponent* collider)
 {
 	if (aLayer == CollisionLayer::Layer::NetworkCulling)
 	{
-		// Send Disable message to clients
+		Engine::GetPostMaster().SendInstantMessage({ Crimson::eMessageType::GameObject_Disable, std::pair(GetParentID(), collider->GetParentID()) });
 	}
 }

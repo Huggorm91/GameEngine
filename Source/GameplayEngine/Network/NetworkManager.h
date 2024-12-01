@@ -36,6 +36,8 @@ public:
 	void SendCreateGameObject(const GameObject& anObject);
 	void SendDeleteGameObject(const UUIDv4::UUID& anID);
 
+	void SendSetActiveMessage(bool aState, const UUIDv4::UUID& anID);
+
 	void SendChatMessage(const std::string& aMessage);
 	constexpr std::string GetSelfHeader() const;
 
