@@ -82,6 +82,20 @@ Json::Value BoxColliderComponent::ToJson() const
 	return result;
 }
 
+void BoxColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myOffset), sizeof(myOffset));
+	aStream.write(reinterpret_cast<const char*>(&myHalfSize), sizeof(myHalfSize));
+}
+
+void BoxColliderComponent::Deserialize(std::istream& aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myOffset), sizeof(myOffset));
+	aStream.read(reinterpret_cast<char*>(&myHalfSize), sizeof(myHalfSize));
+}
+
 void BoxColliderComponent::DebugDraw()
 {
 #ifndef NETWORK_SERVER

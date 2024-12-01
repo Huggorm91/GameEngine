@@ -31,7 +31,7 @@ ColliderComponent::ColliderComponent(ColliderComponent&& aComponent) noexcept :
 	myFlags(aComponent.myFlags),
 	myLayer(aComponent.myLayer),
 	myLayersToCollideWith(aComponent.myLayersToCollideWith)
-{	
+{
 }
 
 ColliderComponent::ColliderComponent(const Json::Value& aJson) :
@@ -49,7 +49,7 @@ ColliderComponent::~ColliderComponent()
 	if (Engine::IsValid())
 	{
 		Engine::GetCollisionManager().RemoveCollider(this);
-	}	
+	}
 }
 
 ColliderComponent& ColliderComponent::operator=(const ColliderComponent& aComponent)
@@ -98,6 +98,37 @@ Json::Value ColliderComponent::ToJson() const
 	result["CollidingLayers"] = static_cast<unsigned>(myLayersToCollideWith.to_ulong());
 	result["Layer"] = myLayer;
 	return result;
+}
+
+void ColliderComponent::Serialize(std::ostream& aStream) const
+{
+	Component::Serialize(aStream);
+	bool isStatic = myFlags[eIsStatic];
+	bool isTrigger = myFlags[eIsTrigger];
+	unsigned long long layerMap = myLayersToCollideWith.to_ullong();
+
+	aStream.write(reinterpret_cast<const char*>(&isStatic), sizeof(bool));
+	aStream.write(reinterpret_cast<const char*>(&isTrigger), sizeof(bool));
+	aStream.write(reinterpret_cast<const char*>(&myLayer), sizeof(myLayer));
+	aStream.write(reinterpret_cast<const char*>(&layerMap), sizeof(layerMap));
+}
+
+void ColliderComponent::Deserialize(std::istream& aStream)
+{
+	Component::Deserialize(aStream);
+	bool isStatic = false;
+	bool isTrigger = false;
+	unsigned long long layerMap = 0u;
+
+	aStream.read(reinterpret_cast<char*>(&isStatic), sizeof(bool));
+	aStream.read(reinterpret_cast<char*>(&isTrigger), sizeof(bool));
+	aStream.read(reinterpret_cast<char*>(&myLayer), sizeof(myLayer));
+	aStream.read(reinterpret_cast<char*>(&layerMap), sizeof(layerMap));
+
+	myFlags[eHasChanged] = true;
+	myFlags[eIsStatic] = isStatic;
+	myFlags[eIsTrigger] = isTrigger;
+	myLayersToCollideWith = std::bitset<CollisionLayer::Count>(layerMap);
 }
 
 void ColliderComponent::SetDebugDrawColor(CollisionLayer::Layer aLayer, const Crimson::Vector3f& aColor)

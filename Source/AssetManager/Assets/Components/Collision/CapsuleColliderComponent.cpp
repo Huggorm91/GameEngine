@@ -93,6 +93,22 @@ Json::Value CapsuleColliderComponent::ToJson() const
 	return result;
 }
 
+void CapsuleColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myOffset), sizeof(myOffset));
+	aStream.write(reinterpret_cast<const char*>(&myRadius), sizeof(myRadius));
+	aStream.write(reinterpret_cast<const char*>(&myHeight), sizeof(myHeight));
+}
+
+void CapsuleColliderComponent::Deserialize(std::istream& aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myOffset), sizeof(myOffset));
+	aStream.read(reinterpret_cast<char*>(&myRadius), sizeof(myRadius));
+	aStream.read(reinterpret_cast<char*>(&myHeight), sizeof(myHeight));
+}
+
 void CapsuleColliderComponent::UpdateWorldPosition()
 {
 	assert(myParent && "CapsuleColliderComponent is not initialized");

@@ -43,6 +43,9 @@ public:
 
 	Json::Value ToJson() const override;
 
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 	static void SetDebugDrawColor(CollisionLayer::Layer aLayer, const Crimson::Vector3f& aColor);
 
 protected:

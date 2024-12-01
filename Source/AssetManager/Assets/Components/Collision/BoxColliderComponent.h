@@ -48,6 +48,9 @@ public:
 
 	Json::Value ToJson() const override;
 
+	void Serialize(std::ostream& aStream) const override;
+	void Deserialize(std::istream& aStream) override;
+
 private:
 	Crimson::Vector3f myOffset;
 	Crimson::Vector3f myHalfSize;

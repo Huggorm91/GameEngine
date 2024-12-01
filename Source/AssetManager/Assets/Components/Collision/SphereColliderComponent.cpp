@@ -130,6 +130,20 @@ Json::Value SphereColliderComponent::ToJson() const
 	return result; 
 }
 
+void SphereColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myOffset), sizeof(myOffset));
+	aStream.write(reinterpret_cast<const char*>(&myRadius), sizeof(myRadius));
+}
+
+void SphereColliderComponent::Deserialize(std::istream& aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myOffset), sizeof(myOffset));
+	aStream.read(reinterpret_cast<char*>(&myRadius), sizeof(myRadius));
+}
+
 void SphereColliderComponent::UpdateWorldPosition()
 {
 	assert(myParent && "SphereColliderComponent is not initialized");

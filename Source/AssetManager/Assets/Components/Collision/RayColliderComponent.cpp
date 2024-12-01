@@ -127,6 +127,22 @@ Json::Value RayColliderComponent::ToJson() const
 	return result;
 }
 
+void RayColliderComponent::Serialize(std::ostream& aStream) const
+{
+	ColliderComponent::Serialize(aStream);
+	aStream.write(reinterpret_cast<const char*>(&myDirection), sizeof(myDirection));
+	aStream.write(reinterpret_cast<const char*>(&myOffset), sizeof(myOffset));
+	aStream.write(reinterpret_cast<const char*>(&myLength), sizeof(myLength));
+}
+
+void RayColliderComponent::Deserialize(std::istream& aStream)
+{
+	ColliderComponent::Deserialize(aStream);
+	aStream.read(reinterpret_cast<char*>(&myDirection), sizeof(myDirection));
+	aStream.read(reinterpret_cast<char*>(&myOffset), sizeof(myOffset));
+	aStream.read(reinterpret_cast<char*>(&myLength), sizeof(myLength));
+}
+
 void RayColliderComponent::UpdateWorldPosition()
 {
 	assert(myParent && "RayColliderComponent is not initialized");
