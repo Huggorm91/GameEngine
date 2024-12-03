@@ -154,7 +154,7 @@ namespace Network
 			myCachedMessages.emplace_back(myIncommingMessage);
 			myIncommingDataTotal += myIncommingMessage.dataSize;
 
-			myClientStatistics[identifier].outgoingData += myIncommingMessage.dataSize;
+			myClientStatistics[identifier].incommingData += myIncommingMessage.dataSize;
 		}
 
 		switch (myIncommingMessage.type)
