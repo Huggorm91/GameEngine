@@ -10,6 +10,7 @@
 #include "GameplayEngine/PostMaster/PostMaster.h"
 #include "GameplayEngine/Managers/SceneManager.h"
 #include "GameplayEngine/Managers/ObjectManager.h"
+#include "GameplayEngine/Managers/CollisionManager.h"
 #include "GameplayEngine/Network/NetworkManager.h"
 #include "GameplayEngine/Network/GameObjectMessage.h"
 
@@ -135,6 +136,20 @@ void GameServer::RecieveMessage(const Crimson::Message& aMessage)
 
 void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
 {
+	std::vector<Network::ClientInfo*> recipients;
+	for (auto& id : Engine::GetCollisionManager().GetCollidingObjects(anID))
+	{
+		if (auto iter = myClientInfo.find(id); iter != myClientInfo.end())
+		{
+			recipients.emplace_back(&(iter->second));
+		}
+	}
+
+	if (recipients.empty())
+	{
+		return;
+	}
+
 	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
 	constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
 	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(double);
@@ -154,7 +169,10 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
 	auto netMessage = Network::CreateGameObjectMessage(message);
-	myServer.SendMessageToClients(netMessage);
+	for (auto& client : recipients)
+	{
+		myServer.SendToClient(netMessage, *client);
+	}
 }
 
 void GameServer::HandleCrash(const std::exception& anException)
