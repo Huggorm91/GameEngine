@@ -284,8 +284,7 @@ void GameLauncher::Init()
 		GameObject networkObject(player->GetUUID());
 		networkObject.SetPosition({ 0.f, 200.f, 0.f });
 		networkObject.AddComponent<MeshComponent>(player->GetComponent<MeshComponent>());
-		networkObject.AddComponent<NetworkComponent>();
-		auto& collider = networkObject.AddComponent(SphereColliderComponent(500.f, Crimson::Vector3f::Null, false));
+		auto& collider = networkObject.AddComponent(SphereColliderComponent(1500.f, Crimson::Vector3f::Null, false));
 		collider.SetLayer(CollisionLayer::NetworkCulling);
 		Engine::GetNetworkManager().SendCreateGameObject(networkObject);
 		Engine::GetBlackboard().SetValue("playerUUID", player->GetUUID());

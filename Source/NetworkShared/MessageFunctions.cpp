@@ -89,7 +89,7 @@ namespace Network
 		return message;
 	}
 
-	const UUIDv4::UUID& ExtractUUID(const NetMessage& aMessage)
+	UUIDv4::UUID ExtractUUID(const NetMessage& aMessage)
 	{
 		assert((aMessage.type == MessageType::GameObjectMessage 
 			|| aMessage.type == MessageType::CreateGameObject

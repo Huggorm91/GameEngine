@@ -121,12 +121,12 @@ namespace Network
 
 		void HandlePacketLoss(float aPassedTime);
 
-		void HandleConnect(ClientInfo& outClient, const std::string& anIdentifier);
-		void HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier);
+		bool HandleConnect(ClientInfo& outClient, const std::string& anIdentifier);
+		bool HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier);
 		void HandleConfirmation(const std::string& anIdentifier);
 		void HandlePing(const std::string& anIdentifier);
-		void HandleChat(ClientInfo& aClient, const std::string& anIdentifier);
-		void HandleGameObjectMessage(const std::string& anIdentifier);
+		bool HandleChat(ClientInfo& aClient, const std::string& anIdentifier);
+		bool HandleGameObjectMessage(const std::string& anIdentifier);
 
 		void ActivateCallback(MessageType aType, ClientInfo& aClient, NetMessage& aMessage);
 

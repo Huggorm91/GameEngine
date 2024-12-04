@@ -145,7 +145,7 @@ private:
 	GameObject* myParent;
 	Crimson::Vector3f mySyncPosition;
 	Crimson::Vector3f mySyncRotation;
-	const UUIDv4::UUID myUUID;
+	const UUIDv4::UUID myUUID; // TODO: Swap to using std::string instead since UUID::operator== causes a lot of issues in release
 	std::string myName;
 #ifdef EDITOR
 	std::string myImguiText;

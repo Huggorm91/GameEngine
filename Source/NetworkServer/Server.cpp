@@ -157,6 +157,8 @@ namespace Network
 			myClientStatistics[identifier].incommingData += myIncommingMessage.dataSize;
 		}
 
+		bool needsNewMessageID = true;
+
 		switch (myIncommingMessage.type)
 		{
 		case MessageType::Invalid:
@@ -164,12 +166,12 @@ namespace Network
 			return; // Do not send these out to the clients
 		case MessageType::Connect:
 		{
-			HandleConnect(client, identifier);
+			needsNewMessageID = HandleConnect(client, identifier);
 			break;
 		}
 		case MessageType::Disconnect:
 		{
-			HandleDisconnect(client, identifier);
+			needsNewMessageID = HandleDisconnect(client, identifier);
 			break;
 		}
 		case Network::MessageType::Confirmation:
@@ -180,7 +182,7 @@ namespace Network
 		}
 		case MessageType::Chat:
 		{
-			HandleChat(client, identifier);
+			needsNewMessageID = HandleChat(client, identifier);
 			break;
 		}
 		case Network::MessageType::Ping:
@@ -191,17 +193,17 @@ namespace Network
 		}
 		case Network::MessageType::GameObjectMessage:
 		{
-			HandleGameObjectMessage(identifier);
+			needsNewMessageID = HandleGameObjectMessage(identifier);
 			break;
 		}
 		case Network::MessageType::CreateGameObject:
 		{
-			HandleGameObjectMessage(identifier);
+			needsNewMessageID = HandleGameObjectMessage(identifier);
 			break;
 		}
 		case Network::MessageType::DeleteGameObject:
 		{
-			HandleGameObjectMessage(identifier);
+			needsNewMessageID = HandleGameObjectMessage(identifier);
 			break;
 		}
 		default:
@@ -210,7 +212,14 @@ namespace Network
 
 		ActivateCallback(myIncommingMessage.type, client, myIncommingMessage);
 
-		SendMessageToClients(myOutgoingMessage, &client);
+		if (needsNewMessageID)
+		{
+			SendMessageToClients(myOutgoingMessage, &client);
+		}
+		else
+		{
+			SendMultiMessageToClients(myOutgoingMessage, &client);
+		}
 
 		for (auto& id : myRemovedClients)
 		{
@@ -537,7 +546,7 @@ namespace Network
 		}
 	}
 
-	void Server::HandleConnect(ClientInfo& outClient, const std::string& anIdentifier)
+	bool Server::HandleConnect(ClientInfo& outClient, const std::string& anIdentifier)
 	{
 		outClient.username = "Client" + std::to_string(outClient.port);
 
@@ -563,9 +572,10 @@ namespace Network
 		}
 
 		myClientHistory.emplace(anIdentifier, std::vector<NetMessage>()).first->second.emplace_back(myIncommingMessage);
+		return true;
 	}
 
-	void Server::HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier)
+	bool Server::HandleDisconnect(ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
@@ -578,6 +588,8 @@ namespace Network
 			SetOutgoingMessageData(std::format("UnknownUser{} has disconnected.", aClient.port));
 			myLogger->Log(std::format("Unknown user disconnected: {}:{}", aClient.ip, aClient.port));
 		}
+
+		return true;
 	}
 
 	void Server::HandleConfirmation(const std::string& anIdentifier)
@@ -633,9 +645,11 @@ namespace Network
 		{
 			// This would be a return call from someone the server has pinged
 		}
+
+
 	}
 
-	void Server::HandleChat(ClientInfo& aClient, const std::string& anIdentifier)
+	bool Server::HandleChat(ClientInfo& aClient, const std::string& anIdentifier)
 	{
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
 		{
@@ -648,9 +662,11 @@ namespace Network
 			SetOutgoingMessageData(std::format("UnknownUser{}: {}", aClient.port, myIncommingMessage.data));
 			myLogger->Log(std::format("Unknown user: {}:{}\tSent message: {}", aClient.ip, aClient.port, myIncommingMessage.data));
 		}
+
+		return true;
 	}
 
-	void Server::HandleGameObjectMessage(const std::string& anIdentifier)
+	bool Server::HandleGameObjectMessage(const std::string& anIdentifier)
 	{
 		myOutgoingMessage = myIncommingMessage;
 		if (auto iter = myClients.find(anIdentifier); iter != myClients.end())
@@ -659,6 +675,8 @@ namespace Network
 			myClientHistory[anIdentifier].emplace_back(myIncommingMessage);
 			ConfirmIncommingMessage(iter->second);
 		}
+
+		return false;
 	}
 
 	void Server::ActivateCallback(MessageType aType, ClientInfo& aClient, NetMessage& aMessage)

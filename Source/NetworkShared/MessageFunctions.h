@@ -29,7 +29,7 @@ namespace Network
 
 	NetMessage CreateDeleteGameObjectMessage(const UUIDv4::UUID& anID);
 
-	const UUIDv4::UUID& ExtractUUID(const NetMessage& aMessage);
+	UUIDv4::UUID ExtractUUID(const NetMessage& aMessage);
 	const GameObjectMessage& ExtractGameObjectMessage(const NetMessage& aMessage);
 
 	inline bool MultiMessageSort(const NetMessage& aFirst, const NetMessage& aSecond)

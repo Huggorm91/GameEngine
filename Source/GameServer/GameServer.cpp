@@ -191,6 +191,8 @@ void GameServer::Init()
 {
 	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::Collision_OnCollisionEnter);
 	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::GameObject_Died);
+	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::GameObject_Enable);
+	Engine::GetPostMaster().Subscribe(this, Crimson::eMessageType::GameObject_Disable);
 
 	Engine::GetSceneManager().LoadScene("Test");
 }
@@ -199,6 +201,10 @@ void GameServer::Update()
 {
 	Engine::BeginFrame();
 	Engine::GetObjectManager().UpdateObjects(false);
+	for (auto& [id, object] : myClientObjects)
+	{
+		object.Update();
+	}
 
 	// TODO: Remove
 	{ // Part of school assignment
@@ -223,8 +229,8 @@ void GameServer::HandleNetMessages()
 		myReportTimer = 0.f;
 		myServer.ReportStatistics();
 	}
-	auto messages = myServer.Flush(Crimson::Time::GetDeltaTime());
 	// This list now contains all incomming messages since Flush was last called
+	auto messages = myServer.Flush(Crimson::Time::GetDeltaTime());
 	// Currently all messages of worth are handled in callbacks, so flushing just to keep the server from filling up with unhandled messages
 }
 
@@ -387,7 +393,7 @@ bool GameServer::HasAllCreateMessages(const UUIDv4::UUID& anId)
 	for (auto iter = myMultipartCreateMessages.begin(); iter != myMultipartCreateMessages.end(); iter++)
 	{
 		const auto& message = *iter;
-		if (Network::ExtractUUID(message) != anId)
+		if (Network::ExtractUUID(message).str() != anId.str())
 		{
 			if (hasFoundUUID)
 			{
@@ -435,7 +441,7 @@ std::vector<Network::NetMessage*> GameServer::GetAllCreateMessages(const UUIDv4:
 
 	for (auto& message : myMultipartCreateMessages)
 	{
-		if (Network::ExtractUUID(message) == anId)
+		if (Network::ExtractUUID(message).str() == anId.str())
 		{
 			current = &message;
 			total = message.totalPackets;
@@ -457,7 +463,7 @@ void GameServer::RemoveAllCreateMessages(const UUIDv4::UUID& anId)
 {
 	for (auto iter = myMultipartCreateMessages.begin(); iter != myMultipartCreateMessages.end();)
 	{
-		if (Network::ExtractUUID(*iter) == anId)
+		if (Network::ExtractUUID(*iter).str() == anId.str())
 		{
 			iter = myMultipartCreateMessages.erase(iter);
 		}
@@ -472,14 +478,14 @@ void GameServer::HandleCreateObject(Network::ClientInfo& client, const Network::
 {
 	if (aMessage.totalPackets == 1u)
 	{
-		auto& id = Network::ExtractUUID(aMessage);
+		const auto& id = Network::ExtractUUID(aMessage);
 		myClientObjects.emplace(id, NetworkManager::ExtractCreatedGameObject(aMessage));
 		myClientInfo.emplace(id, client);
 	}
 	else
 	{
 		myMultipartCreateMessages.emplace_back(aMessage);
-		const auto& id = Network::ExtractUUID(aMessage);
+		const auto id = Network::ExtractUUID(aMessage);
 		if (HasAllCreateMessages(id))
 		{
 			myClientObjects.emplace(id, NetworkManager::ExtractCreatedGameObject(GetAllCreateMessages(id)));
@@ -491,7 +497,7 @@ void GameServer::HandleCreateObject(Network::ClientInfo& client, const Network::
 
 void GameServer::HandleDeleteObject(Network::ClientInfo&, const Network::NetMessage& aMessage)
 {
-	auto& id = Network::ExtractUUID(aMessage);
+	const auto& id = Network::ExtractUUID(aMessage);
 	myClientObjects.erase(id);
 	myClientInfo.erase(id);
 }
