@@ -1,5 +1,5 @@
 #pragma once
-#include "../Vector3.hpp"
+#include "CrimsonUtilities/Math/Vector3.hpp"
 
 namespace Crimson
 {

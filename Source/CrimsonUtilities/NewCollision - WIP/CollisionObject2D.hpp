@@ -1,7 +1,7 @@
 #ifndef COLLISIONOBJECT2D
 #define COLLISIONOBJECT2D
-#include "../Enums/EnumCollisions.h"
-#include "../Vector2.hpp"
+#include "CrimsonUtilities/Math/Vector2.hpp"
+#include "EnumCollisions.h"
 #include <memory>
 #include <bitset>
 
