@@ -15,6 +15,11 @@ LineHandle::LineHandle(const LineHandle& aHandle) : myID(aHandle.myID)
 LineHandle::LineHandle(LineHandle&& aHandle) noexcept : myID(aHandle.myID)
 {}
 
+LineHandle::~LineHandle()
+{
+	Delete();
+}
+
 LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 {
 	const_cast<unsigned&>(myID) = aHandle.myID;

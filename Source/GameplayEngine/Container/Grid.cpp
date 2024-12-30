@@ -1,6 +1,10 @@
 #include "GameplayEngine.pch.h"
 #include "Grid.h"
-#include <unordered_set>
+#ifndef NETWORK_SERVER
+#include "GraphicsEngine/GraphicsEngine.h"
+#endif // NETWORK_SERVER
+
+std::vector<LineHandle> localHandles; // Lazy solution since this is only rendered for an assignment
 
 Grid::Grid(const Crimson::Vector3f& aCenterPosition, float aCellSize, unsigned aWidth, unsigned aHeigth) :
 	myCollider(),
@@ -9,6 +13,45 @@ Grid::Grid(const Crimson::Vector3f& aCenterPosition, float aCellSize, unsigned a
 	myHeigth(aHeigth)
 {
 	myCollider.InitWithPointAndSize(aCenterPosition, { aCellSize * aWidth, aCellSize * aHeigth });
+#ifndef NETWORK_SERVER
+	Crimson::Vector3f lowerLeft = { myCollider.GetMin().x, 0.f, myCollider.GetMin().y };
+	Crimson::Vector3f UpperRight = { myCollider.GetMax().x, 0.f, myCollider.GetMax().y };
+	Crimson::Vector3f upperLeft = { lowerLeft.x, 0.f, UpperRight.z };
+	Crimson::Vector3f lowerRight = { UpperRight.x, 0.f, lowerLeft.z };
+
+	// Border
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerLeft, upperLeft, ColorManager::GetColor("Red")));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(upperLeft, UpperRight, ColorManager::GetColor("Red")));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(UpperRight, lowerRight, ColorManager::GetColor("Red")));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerRight, lowerLeft, ColorManager::GetColor("Red")));
+
+	// Vertical Lines
+	Crimson::Vector3f upperPoint = upperLeft;
+	Crimson::Vector3f lowerPoint = lowerLeft;
+	for (int i = 0; i < aWidth - 1; i++)
+	{
+		upperPoint.x += aCellSize;
+		lowerPoint.x = upperPoint.x;
+
+		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerPoint, upperPoint, ColorManager::GetColor("Red")));
+	}
+
+	// Horizontal Lines
+	Crimson::Vector3f leftPoint = lowerLeft;
+	Crimson::Vector3f rightPoint = lowerRight;
+	for (int i = 0; i < aWidth - 1; i++)
+	{
+		leftPoint.x += aCellSize;
+		rightPoint.x = leftPoint.x;
+
+		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(leftPoint, rightPoint, ColorManager::GetColor("Red")));
+	}
+#endif // NETWORK_SERVER
+}
+
+Grid::~Grid()
+{
+	localHandles.clear();
 }
 
 int Grid::GetTileDistance(const Crimson::Vector3f& aFirstPosition, const Crimson::Vector3f& aSecondPosition) const
