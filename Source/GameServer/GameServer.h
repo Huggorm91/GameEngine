@@ -15,7 +15,7 @@ public:
 
 	void RecieveMessage(const Crimson::Message& aMessage) override;
 
-	void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
+	void SendTransformChanged(const Transform& aTransform, float aTimeUntilNextSync, const UUIDv4::UUID& anID, const UUIDv4::UUID& aRecipientID = GameObject::nullUUID);
 
 	const std::unordered_map<UUIDv4::UUID, GameObject>& GetClientObjects() const;
 
@@ -23,6 +23,7 @@ private:
 	Network::Server myServer;
 	std::unordered_map<UUIDv4::UUID, GameObject> myClientObjects;
 	std::unordered_map<UUIDv4::UUID, Network::ClientInfo> myClientInfo;
+	std::vector<UUIDv4::UUID> myDeletedClients;
 	std::vector<Network::NetMessage> myMultipartCreateMessages;
 	float myReportTimer = 0.f;
 

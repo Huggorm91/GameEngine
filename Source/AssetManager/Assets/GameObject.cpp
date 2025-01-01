@@ -16,6 +16,7 @@ GameObject::GameObject() :
 	myIsActive(true),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
+	mySyncFrequency(Network::globalSyncFrequency),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName("GameObject"),
@@ -55,6 +56,7 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
+	mySyncFrequency(Network::globalSyncFrequency),
 	myLatestTransformSyncTime(0.),
 	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
@@ -71,6 +73,7 @@ GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
+	mySyncFrequency(Network::globalSyncFrequency),
 	myLatestTransformSyncTime(0.),
 	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
@@ -96,6 +99,7 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
 	mySyncTimer(aGameObject.mySyncTimer),
+	mySyncFrequency(aGameObject.mySyncFrequency),
 	myLatestTransformSyncTime(aGameObject.myLatestTransformSyncTime),
 	myLatestSetActiveSyncTime(aGameObject.myLatestSetActiveSyncTime),
 	myParent(aGameObject.myParent),
@@ -124,6 +128,7 @@ GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
 	myCollisionCount(0),
 	mySyncTimer(-1.f),
+	mySyncFrequency(Network::globalSyncFrequency),
 	myLatestTransformSyncTime(0.),
 	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
@@ -234,6 +239,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
 	mySyncTimer = aGameObject.mySyncTimer;
+	mySyncFrequency = aGameObject.mySyncFrequency;
 	mySyncPosition = aGameObject.mySyncPosition;
 	mySyncRotation = aGameObject.mySyncRotation;
 	myLatestTransformSyncTime = aGameObject.myLatestTransformSyncTime;
@@ -268,15 +274,16 @@ void GameObject::Update()
 		if (mySyncTimer >= 0.f)
 		{
 			mySyncTimer += Crimson::Time::GetDeltaTime();
-			const float lerpValue = Crimson::Clamp(mySyncTimer / Network::globalSyncFrequency, 0.f, 1.f);
+			const float lerpValue = Crimson::Clamp(mySyncTimer / mySyncFrequency, 0.f, 1.f);
 			myTransform.SetPosition(Crimson::Lerp(myTransform.GetPosition(), mySyncPosition, lerpValue));
 			myTransform.SetRotationRadian(Crimson::Lerp(myTransform.GetRotationRadian(), mySyncRotation, lerpValue));
 
-			if (mySyncTimer >= Network::globalSyncFrequency)
+			if (mySyncTimer >= mySyncFrequency)
 			{
 				mySyncTimer = -1.f;
 			}
 		}
+
 		if (myTransform.HasChanged())
 		{
 			TransformHasChanged();
@@ -385,24 +392,27 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 	case Network::ObjectAction::Move:
 	{
 		constexpr unsigned rotationOffset = sizeof(Crimson::Vector3f);
-		constexpr unsigned timestampOffset = sizeof(Crimson::Vector3f) * 2;
+		constexpr unsigned timestampOffset = sizeof(Crimson::Vector3f) + sizeof(Crimson::Vector3f) + sizeof(float);
 
 		const double& timestamp = reinterpret_cast<const double&>(aMessage.data[timestampOffset]);
 		if (myLatestTransformSyncTime < timestamp)
 		{
 			myLatestTransformSyncTime = timestamp;
 #ifndef NETWORK_SERVER
+			constexpr unsigned syncTimeOffset = sizeof(Crimson::Vector3f) + sizeof(Crimson::Vector3f);
+
 			if (Engine::IsUsingGrid())
 			{
 				mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
-				mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);				
+				mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
+				mySyncFrequency = reinterpret_cast<const float&>(aMessage.data[syncTimeOffset]);
+				mySyncTimer = 0.f;
 			}
 			else
 			{
 				myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
 				myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]));
 			}
-			mySyncTimer = 0.f;
 #else
 			myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
 			myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]));

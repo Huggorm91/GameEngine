@@ -85,6 +85,10 @@ void FirstPersonCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anE
 			inputHandler.HideMouse();
 			myIsMoving = true;
 		}
+		else if (aKey == Crimson::eKey::Num1)
+		{
+			Engine::ToogleUsingGrid();
+		}
 		break;
 	}
 	case Crimson::eInputEvent::KeyUp:
@@ -159,12 +163,7 @@ void FirstPersonCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anE
 			movement *= rotationMatrix;
 			myParent->AddToPosition(movement);
 			break;
-		}
-		case Crimson::eKey::Num1:
-		{
-			Engine::ToogleUsingGrid();
-			break;
-		}
+		}		
 		default:
 			break;
 		}

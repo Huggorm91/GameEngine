@@ -188,6 +188,8 @@ void Engine::ToogleUsingGrid()
 {
 	bool& usingGrid = Get().myIsUsingGrid;
 	usingGrid = !usingGrid;
+
+	Get().myLogger->Log(usingGrid ? "Is Interpolating" : "Not Interpolating");
 }
 
 #ifndef NETWORK_SERVER

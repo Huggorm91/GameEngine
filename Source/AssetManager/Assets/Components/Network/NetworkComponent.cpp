@@ -38,7 +38,7 @@ void NetworkComponent::Update()
 
 	if (myRaisedFlags[eTransformHasChanged])
 	{
-		Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
+		Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), mySyncFrequency, myParent->GetUUID());
 	}
 	myRaisedFlags.reset();
 }

@@ -134,14 +134,27 @@ void GameServer::RecieveMessage(const Crimson::Message& aMessage)
 	}
 }
 
-void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
+void GameServer::SendTransformChanged(const Transform& aTransform, float aTimeUntilNextSync, const UUIDv4::UUID& anID, const UUIDv4::UUID& aRecipientID)
 {
 	std::vector<Network::ClientInfo*> recipients;
-	for (auto& id : Engine::GetCollisionManager().GetCollidingObjects(anID))
+	if (aRecipientID == GameObject::nullUUID) // Send to all clients
 	{
-		if (auto iter = myClientInfo.find(id); iter != myClientInfo.end())
+		for (auto& id : Engine::GetCollisionManager().GetCollidingObjects(anID))
 		{
-			recipients.emplace_back(&(iter->second));
+			if (auto iter = myClientInfo.find(id); iter != myClientInfo.end())
+			{
+				recipients.emplace_back(&(iter->second));
+			}
+		}
+	}
+	else // Only send to a single client
+	{
+		if (Engine::GetCollisionManager().IsCollidingWith(anID, aRecipientID))
+		{
+			if (auto iter = myClientInfo.find(aRecipientID); iter != myClientInfo.end())
+			{
+				recipients.emplace_back(&(iter->second));
+			}
 		}
 	}
 
@@ -152,7 +165,7 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 
 	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
 	constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
-	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(double);
+	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(float) + sizeof(double);
 
 	Network::GameObjectMessage message;
 	message.id = anID;
@@ -163,9 +176,12 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 	// Current idea: Server saves time when started and sends this timepoint to all clients that connects.
 	// Should probably cache the current timepoint in Update
 	double timestamp = Crimson::Time::GetTotalTime();
-	constexpr int timestampOffset = vectorSize + vectorSize;
+
+	constexpr int syncOffset = vectorSize + vectorSize;
+	constexpr int timestampOffset = syncOffset + sizeof(float);
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
+	memcpy_s(message.data + syncOffset, dataSize - syncOffset, &aTimeUntilNextSync, sizeof(float));
 	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
 	auto netMessage = Network::CreateGameObjectMessage(message);
@@ -228,6 +244,12 @@ void GameServer::Update()
 
 void GameServer::HandleNetMessages()
 {
+	for (auto& id : myDeletedClients)
+	{
+		myClientObjects.erase(id);
+	}
+	myDeletedClients.clear();
+
 	myReportTimer += Crimson::Time::GetDeltaTime();
 	if (myReportTimer >= 1.f)
 	{
@@ -503,7 +525,7 @@ void GameServer::HandleCreateObject(Network::ClientInfo& client, const Network::
 void GameServer::HandleDeleteObject(Network::ClientInfo&, const Network::NetMessage& aMessage)
 {
 	const auto& id = Network::ExtractUUID(aMessage);
-	myClientObjects.erase(id);
+	myDeletedClients.emplace_back(id);	
 	myClientInfo.erase(id);
 }
 

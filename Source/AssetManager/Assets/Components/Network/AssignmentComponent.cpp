@@ -62,7 +62,7 @@ void AssignmentComponent::Update()
 			timer += Crimson::Time::GetDeltaTime();
 			if (timer >= syncFrequency)
 			{
-				Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), myParent->GetUUID());
+				Engine::GetNetworkManager().SendTransformChanged(*GetParentTransform(), syncFrequency, myParent->GetUUID(), id);
 				timer = 0.f;
 			}
 		}

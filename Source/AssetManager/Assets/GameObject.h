@@ -142,6 +142,7 @@ private:
 	bool myIsActive;
 	int myCollisionCount;
 	float mySyncTimer;
+	float mySyncFrequency;
 	double myLatestTransformSyncTime;
 	double myLatestSetActiveSyncTime;
 	double myLifeTime;

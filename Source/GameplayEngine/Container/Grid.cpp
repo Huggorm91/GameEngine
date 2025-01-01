@@ -53,10 +53,11 @@ Grid::Grid(const Crimson::Vector3f& aCenterPosition, float aCellSize, unsigned a
 Grid::~Grid()
 {
 #ifndef NETWORK_SERVER
-	for (auto& handle : localHandles)
+	// GraphicsEngine seems to be deleted before GameEngine is so this causes a crash
+	/*for (auto& handle : localHandles)
 	{
 		handle.Delete();
-	}
+	}*/
 	localHandles.clear();
 #endif // NETWORK_SERVER
 }

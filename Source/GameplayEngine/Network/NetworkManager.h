@@ -31,7 +31,7 @@ public:
 	void SetTimeBetweenResend(float aTimeInSeconds);
 	void SetMaximumResendAttempts(uint8_t anAmount);
 
-	void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
+	void SendTransformChanged(const Transform& aTransform, float aTimeUntilNextSync, const UUIDv4::UUID& anID);
 
 	void SendCreateGameObject(const GameObject& anObject);
 	void SendDeleteGameObject(const UUIDv4::UUID& anID);

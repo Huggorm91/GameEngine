@@ -204,12 +204,12 @@ void NetworkManager::SetMaximumResendAttempts(uint8_t anAmount)
 	myMaxResendAttempts = anAmount;
 }
 
-void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID)
+void NetworkManager::SendTransformChanged(const Transform& aTransform, float aTimeUntilNextSync, const UUIDv4::UUID& anID)
 {
 	assert(myClient && "Not initialized!");
 	constexpr rsize_t dataSize = sizeof(Network::GameObjectMessage::data);
 	constexpr rsize_t vectorSize = sizeof(Crimson::Vector3f);
-	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(double);
+	constexpr rsize_t messageSize = vectorSize + vectorSize + sizeof(float) + sizeof(double);
 
 	Network::GameObjectMessage message;
 	message.id = anID;
@@ -220,9 +220,12 @@ void NetworkManager::SendTransformChanged(const Transform& aTransform, const UUI
 	// Current idea: Server saves time when started and sends this timepoint to all clients that connects.
 	// Should probably cache the current timepoint in Update
 	double timestamp = Crimson::Time::GetTotalTime();
-	constexpr int timestampOffset = vectorSize + vectorSize;
+
+	constexpr int syncOffset = vectorSize + vectorSize;
+	constexpr int timestampOffset = syncOffset + sizeof(float);
 	memcpy_s(message.data, dataSize, &aTransform.GetPosition(), vectorSize);
 	memcpy_s(message.data + vectorSize, dataSize - vectorSize, &aTransform.GetRotationRadian(), vectorSize);
+	memcpy_s(message.data + syncOffset, dataSize - syncOffset, &aTimeUntilNextSync, sizeof(float));
 	memcpy_s(message.data + timestampOffset, dataSize - timestampOffset, &timestamp, sizeof(double));
 
 	SendNetMessage(Network::CreateGameObjectMessage(message));
