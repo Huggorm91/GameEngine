@@ -10,6 +10,7 @@ class CollisionManager;
 class ObjectManager;
 class SceneManager;
 class MainLogger;
+class Grid;
 #ifndef NETWORK_SERVER
 class NetworkManager;
 #else
@@ -51,6 +52,7 @@ public:
 	static CollisionManager& GetCollisionManager();
 	static ObjectManager& GetObjectManager();
 	static SceneManager& GetSceneManager();
+	static Grid& GetGrid();
 #ifndef NETWORK_SERVER
 	static NetworkManager& GetNetworkManager();
 #else
@@ -78,6 +80,7 @@ private:
 	std::unique_ptr<CollisionManager> myCollisionManager;
 	std::unique_ptr<ObjectManager> myObjectManager;
 	std::unique_ptr<SceneManager> mySceneManager;
+	std::unique_ptr<Grid> myGrid;
 #ifndef NETWORK_SERVER
 	std::unique_ptr<NetworkManager> myNetworkManager;
 #else

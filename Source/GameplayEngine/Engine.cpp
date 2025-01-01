@@ -11,6 +11,7 @@
 #include "Managers\ObjectManager.h"
 #include "Managers\SceneManager.h"
 #include "Network\NetworkManager.h"
+#include "Container\Grid.h"
 
 enum
 {
@@ -84,6 +85,9 @@ void Engine::Init(GameServer* aServer)
 #else
 		instance.myNetworkManager = aServer;
 #endif
+
+		// Grid
+		instance.myGrid = std::make_unique<Grid>(Crimson::Vector3f::Null, 300.f, 3, 3);
 
 		instance.myIsInitialized = true;
 	}
@@ -167,6 +171,11 @@ ObjectManager& Engine::GetObjectManager()
 SceneManager& Engine::GetSceneManager()
 {
 	return *Get().mySceneManager;
+}
+
+Grid& Engine::GetGrid()
+{
+	return *Get().myGrid;
 }
 
 #ifndef NETWORK_SERVER
