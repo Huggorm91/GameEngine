@@ -175,6 +175,11 @@ void GameServer::SendTransformChanged(const Transform& aTransform, const UUIDv4:
 	}
 }
 
+const std::unordered_map<UUIDv4::UUID, GameObject>& GameServer::GetClientObjects() const
+{
+	return myClientObjects;
+}
+
 void GameServer::HandleCrash(const std::exception& anException)
 {
 	// Log crash
@@ -255,9 +260,9 @@ void GameServer::CreateRandomObject()
 		auto& collider = object.AddComponent(SphereColliderComponent(50.f, Crimson::Vector3f::Null, false));
 		collider.SetCollidingLayer(CollisionLayer::NetworkCulling, true);
 
-		auto& network = object.AddComponent<NetworkComponent>();
+		/*auto& network = object.AddComponent<NetworkComponent>();
 		network.SetSyncFrequency(Network::globalSyncFrequency);
-		network.SyncTransform(true);
+		network.SyncTransform(true);*/
 
 		SendCopyOfRandomObject(object);
 	}

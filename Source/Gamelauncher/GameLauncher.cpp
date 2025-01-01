@@ -274,7 +274,6 @@ void GameLauncher::Init()
 	auto& mesh = player->AddComponent(AssetManager::GetAsset<MeshComponent>("cube"));
 	mesh.SetColor({ Crimson::Random::RandomNumber(1.f), Crimson::Random::RandomNumber(1.f) , Crimson::Random::RandomNumber(1.f) , 1.f });
 
-
 	if (Engine::IsNetworkingEnabled() && Engine::GetNetworkManager().IsConnected())
 	{
 		auto& networkComponent = player->AddComponent<NetworkComponent>();

@@ -39,4 +39,5 @@ public:
 private:
 	float myLifeTime;
 	Crimson::Vector3f myDirection;
+	std::unordered_map<UUIDv4::UUID, float> mySyncTimers;
 };

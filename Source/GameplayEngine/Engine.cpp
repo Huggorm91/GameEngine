@@ -22,6 +22,7 @@ enum
 
 Engine::Engine() :
 	myWindowHandle(NULL),
+	myIsUsingGrid(true),
 	myIsInitialized(false)
 {}
 
@@ -87,7 +88,7 @@ void Engine::Init(GameServer* aServer)
 #endif
 
 		// Grid
-		instance.myGrid = std::make_unique<Grid>(Crimson::Vector3f::Null, 300.f, 3, 3);
+		instance.myGrid = std::make_unique<Grid>(Crimson::Vector3f::Null, 500.f, 3, 3);
 
 		instance.myIsInitialized = true;
 	}
@@ -176,6 +177,17 @@ SceneManager& Engine::GetSceneManager()
 Grid& Engine::GetGrid()
 {
 	return *Get().myGrid;
+}
+
+bool Engine::IsUsingGrid()
+{
+	return Get().myIsUsingGrid;
+}
+
+void Engine::ToogleUsingGrid()
+{
+	bool& usingGrid = Get().myIsUsingGrid;
+	usingGrid = !usingGrid;
 }
 
 #ifndef NETWORK_SERVER

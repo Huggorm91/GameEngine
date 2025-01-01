@@ -262,6 +262,7 @@ bool GameObject::operator==(const UUIDv4::UUID& anUUID) const
 
 void GameObject::Update()
 {
+	myLifeTime += Crimson::Time::GetDeltaTime();
 	if (myIsActive)
 	{
 		if (mySyncTimer >= 0.f)
@@ -391,8 +392,16 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 		{
 			myLatestTransformSyncTime = timestamp;
 #ifndef NETWORK_SERVER
-			mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
-			mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
+			if (Engine::IsUsingGrid())
+			{
+				mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
+				mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);				
+			}
+			else
+			{
+				myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
+				myTransform.SetRotationRadian(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]));
+			}
 			mySyncTimer = 0.f;
 #else
 			myTransform.SetPosition(reinterpret_cast<const Crimson::Vector3f&>(aMessage.data));
@@ -732,6 +741,11 @@ void GameObject::SetName(const std::string& aName)
 const std::string& GameObject::GetName() const
 {
 	return myName;
+}
+
+double GameObject::GetLifeTime() const
+{
+	return myLifeTime;
 }
 
 std::string GameObject::ToString() const

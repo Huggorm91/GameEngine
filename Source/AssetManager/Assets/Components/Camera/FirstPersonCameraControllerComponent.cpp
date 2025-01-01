@@ -160,6 +160,11 @@ void FirstPersonCameraControllerComponent::ReceiveEvent(Crimson::eInputEvent anE
 			myParent->AddToPosition(movement);
 			break;
 		}
+		case Crimson::eKey::Num1:
+		{
+			Engine::ToogleUsingGrid();
+			break;
+		}
 		default:
 			break;
 		}
@@ -205,6 +210,7 @@ void FirstPersonCameraControllerComponent::SubscribeToEvents()
 	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::D);
 	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::SpaceBar);
 	Attach(Crimson::eInputEvent::KeyHeld, Crimson::eKey::Ctrl);
+	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::Num1);
 
 #ifndef _RETAIL
 	Attach(Crimson::eInputEvent::KeyDown, Crimson::eKey::MouseRightButton);

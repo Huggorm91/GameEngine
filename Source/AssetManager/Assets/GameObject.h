@@ -109,6 +109,8 @@ public:
 	void SetName(const std::string& aName);
 	const std::string& GetName() const;
 
+	double GetLifeTime() const;
+
 	// returns "{Name}: {UUID}"
 	std::string ToString() const;
 
@@ -142,6 +144,7 @@ private:
 	float mySyncTimer;
 	double myLatestTransformSyncTime;
 	double myLatestSetActiveSyncTime;
+	double myLifeTime;
 	GameObject* myParent;
 	Crimson::Vector3f mySyncPosition;
 	Crimson::Vector3f mySyncRotation;

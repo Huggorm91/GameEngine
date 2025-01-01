@@ -17,6 +17,8 @@ public:
 
 	void SendTransformChanged(const Transform& aTransform, const UUIDv4::UUID& anID);
 
+	const std::unordered_map<UUIDv4::UUID, GameObject>& GetClientObjects() const;
+
 private:
 	Network::Server myServer;
 	std::unordered_map<UUIDv4::UUID, GameObject> myClientObjects;

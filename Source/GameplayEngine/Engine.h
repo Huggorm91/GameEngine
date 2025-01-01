@@ -27,8 +27,7 @@ public:
 	static void Init(HWND aHandle, const Crimson::Vector2i& aWindowSize, bool aShouldConnectToNetwork);
 #else
 	static void Init(GameServer* aServer);
-#endif // !NETWORK_SERVER
-	
+#endif // !NETWORK_SERVER	
 
 	static void BeginFrame();
 	static void EndFrame();
@@ -52,7 +51,12 @@ public:
 	static CollisionManager& GetCollisionManager();
 	static ObjectManager& GetObjectManager();
 	static SceneManager& GetSceneManager();
+
+	// TODO: Remove Grid, only used for assignment
 	static Grid& GetGrid();
+	static bool IsUsingGrid();
+	static void ToogleUsingGrid();
+
 #ifndef NETWORK_SERVER
 	static NetworkManager& GetNetworkManager();
 #else
@@ -87,5 +91,6 @@ private:
 	GameServer* myNetworkManager = nullptr;
 #endif // !NETWORK_SERVER
 
+	bool myIsUsingGrid;
 	bool myIsInitialized;
 };
