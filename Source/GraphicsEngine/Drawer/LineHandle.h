@@ -7,7 +7,7 @@ public:
 	LineHandle();
 	LineHandle(const LineHandle& aHandle);
 	LineHandle(LineHandle&& aHandle) noexcept;
-	~LineHandle();
+	~LineHandle() = default;
 	LineHandle& operator=(const LineHandle& aHandle);
 	LineHandle& operator=(LineHandle&& aHandle) noexcept;
 

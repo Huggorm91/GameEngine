@@ -80,8 +80,8 @@ namespace Crimson
 	template<typename T>
 	inline bool AABB2D<T>::IsInside(const Vector2<T>& aPosition) const
 	{
-		Vector2<T> min = GetMin();
-		Vector2<T> max = GetMax();
+		const Vector2<T>& min = GetMin();
+		const Vector2<T>& max = GetMax();
 		if (min.x <= aPosition.x && aPosition.x <= max.x &&
 			min.y <= aPosition.y && aPosition.y <= max.y)
 		{

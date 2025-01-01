@@ -2,9 +2,9 @@
 #include "Grid.h"
 #ifndef NETWORK_SERVER
 #include "GraphicsEngine/GraphicsEngine.h"
-#endif // NETWORK_SERVER
 
 std::vector<LineHandle> localHandles; // Lazy solution since this is only rendered for an assignment
+#endif // NETWORK_SERVER
 
 Grid::Grid(const Crimson::Vector3f& aCenterPosition, float aCellSize, unsigned aWidth, unsigned aHeigth) :
 	myCollider(),
@@ -14,44 +14,51 @@ Grid::Grid(const Crimson::Vector3f& aCenterPosition, float aCellSize, unsigned a
 {
 	myCollider.InitWithPointAndSize(aCenterPosition, { aCellSize * aWidth, aCellSize * aHeigth });
 #ifndef NETWORK_SERVER
-	Crimson::Vector3f lowerLeft = { myCollider.GetMin().x, 0.f, myCollider.GetMin().y };
-	Crimson::Vector3f UpperRight = { myCollider.GetMax().x, 0.f, myCollider.GetMax().y };
-	Crimson::Vector3f upperLeft = { lowerLeft.x, 0.f, UpperRight.z };
-	Crimson::Vector3f lowerRight = { UpperRight.x, 0.f, lowerLeft.z };
+	// Set up lines for rendering
+	Crimson::Vector3f lowerLeft = { myCollider.GetMin().x, 10.f, myCollider.GetMin().y };
+	Crimson::Vector3f UpperRight = { myCollider.GetMax().x, 10.f, myCollider.GetMax().y };
+	Crimson::Vector3f upperLeft = { lowerLeft.x, 10.f, UpperRight.z };
+	Crimson::Vector3f lowerRight = { UpperRight.x, 10.f, lowerLeft.z };
 
 	// Border
-	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerLeft, upperLeft, ColorManager::GetColor("Red")));
-	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(upperLeft, UpperRight, ColorManager::GetColor("Red")));
-	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(UpperRight, lowerRight, ColorManager::GetColor("Red")));
-	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerRight, lowerLeft, ColorManager::GetColor("Red")));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerLeft, upperLeft, {1.f, 0.f, 0.f, 1.f}));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(upperLeft, UpperRight, { 1.f, 0.f, 0.f, 1.f }));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(UpperRight, lowerRight, { 1.f, 0.f, 0.f, 1.f }));
+	localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerRight, lowerLeft, { 1.f, 0.f, 0.f, 1.f }));
 
 	// Vertical Lines
 	Crimson::Vector3f upperPoint = upperLeft;
 	Crimson::Vector3f lowerPoint = lowerLeft;
-	for (int i = 0; i < aWidth - 1; i++)
+	for (unsigned i = 0; i < aWidth - 1; i++)
 	{
 		upperPoint.x += aCellSize;
 		lowerPoint.x = upperPoint.x;
 
-		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerPoint, upperPoint, ColorManager::GetColor("Red")));
+		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(lowerPoint, upperPoint, { 1.f, 0.f, 0.f, 1.f }));
 	}
 
 	// Horizontal Lines
 	Crimson::Vector3f leftPoint = lowerLeft;
 	Crimson::Vector3f rightPoint = lowerRight;
-	for (int i = 0; i < aWidth - 1; i++)
+	for (unsigned i = 0; i < aWidth - 1; i++)
 	{
-		leftPoint.x += aCellSize;
-		rightPoint.x = leftPoint.x;
+		leftPoint.z += aCellSize;
+		rightPoint.z = leftPoint.z;
 
-		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(leftPoint, rightPoint, ColorManager::GetColor("Red")));
+		localHandles.emplace_back(GraphicsEngine::Get().GetLineDrawer().AddLine(leftPoint, rightPoint, { 1.f, 0.f, 0.f, 1.f }));
 	}
 #endif // NETWORK_SERVER
 }
 
 Grid::~Grid()
 {
+#ifndef NETWORK_SERVER
+	for (auto& handle : localHandles)
+	{
+		handle.Delete();
+	}
 	localHandles.clear();
+#endif // NETWORK_SERVER
 }
 
 int Grid::GetTileDistance(const Crimson::Vector3f& aFirstPosition, const Crimson::Vector3f& aSecondPosition) const

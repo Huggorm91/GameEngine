@@ -15,11 +15,6 @@ LineHandle::LineHandle(const LineHandle& aHandle) : myID(aHandle.myID)
 LineHandle::LineHandle(LineHandle&& aHandle) noexcept : myID(aHandle.myID)
 {}
 
-LineHandle::~LineHandle()
-{
-	Delete();
-}
-
 LineHandle& LineHandle::operator=(const LineHandle& aHandle)
 {
 	const_cast<unsigned&>(myID) = aHandle.myID;
@@ -87,7 +82,7 @@ LineHandle LineDrawer::GetNewHandle()
 	return myCounter++;
 }
 
-void LineDrawer::UpdatePrimitiveColor(LineHandle aHandle, const Crimson::Vector4f& aColor)
+void LineDrawer::UpdatePrimitiveColor(const LineHandle& aHandle, const Crimson::Vector4f& aColor)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -106,7 +101,7 @@ void LineDrawer::UpdatePrimitiveColor(LineHandle aHandle, const Crimson::Vector4
 	}
 }
 
-void LineDrawer::UpdatePrimitiveTransform(LineHandle aHandle, const Crimson::Matrix4x4f& aTransform)
+void LineDrawer::UpdatePrimitiveTransform(const LineHandle& aHandle, const Crimson::Matrix4x4f& aTransform)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -122,7 +117,7 @@ void LineDrawer::UpdatePrimitiveTransform(LineHandle aHandle, const Crimson::Mat
 	}
 }
 
-void LineDrawer::ActivateHandle(LineHandle aHandle)
+void LineDrawer::ActivateHandle(const LineHandle& aHandle)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -139,7 +134,7 @@ void LineDrawer::ActivateHandle(LineHandle aHandle)
 	}
 }
 
-void LineDrawer::DeactivateHandle(LineHandle aHandle)
+void LineDrawer::DeactivateHandle(const LineHandle& aHandle)
 {
 	if (auto iter = myActiveLines.find(aHandle.myID); iter != myActiveLines.end())
 	{
@@ -153,7 +148,7 @@ void LineDrawer::DeactivateHandle(LineHandle aHandle)
 	}
 }
 
-void LineDrawer::DeleteHandle(LineHandle aHandle)
+void LineDrawer::DeleteHandle(const LineHandle& aHandle)
 {
 	if (auto iter = myLines.find(aHandle.myID); iter != myLines.end())
 	{
@@ -162,12 +157,12 @@ void LineDrawer::DeleteHandle(LineHandle aHandle)
 	}
 }
 
-bool LineDrawer::IsValid(LineHandle aHandle) const
+bool LineDrawer::IsValid(const LineHandle& aHandle) const
 {
 	return myLines.find(aHandle.myID) != myLines.end();
 }
 
-bool LineDrawer::IsActive(LineHandle aHandle) const
+bool LineDrawer::IsActive(const LineHandle& aHandle) const
 {
 	if (myActiveLines.find(aHandle.myID) != myActiveLines.end())
 	{
@@ -388,7 +383,7 @@ unsigned LineDrawer::AddPrimitive(const LinePrimitive& aPrimitive)
 	return myCounter++;
 }
 
-void LineDrawer::UpdatePrimitive(const LinePrimitive& aPrimitive, LineHandle aHandle)
+void LineDrawer::UpdatePrimitive(const LinePrimitive& aPrimitive, const LineHandle& aHandle)
 {
 	auto& primitive = myLines.at(aHandle.myID);
 	bool isActive = IsActive(aHandle);
