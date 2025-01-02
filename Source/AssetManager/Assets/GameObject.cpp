@@ -15,8 +15,6 @@ UUIDv4::UUID GameObject::nullUUID(uint64_t(0), uint64_t(0));
 GameObject::GameObject() :
 	myIsActive(true),
 	myCollisionCount(0),
-	mySyncTimer(-1.f),
-	mySyncFrequency(Network::globalSyncFrequency),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName("GameObject"),
@@ -55,10 +53,6 @@ GameObject::GameObject(const Prefab& aPrefab) : GameObject()
 GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 	myIsActive(true),
 	myCollisionCount(0),
-	mySyncTimer(-1.f),
-	mySyncFrequency(Network::globalSyncFrequency),
-	myLatestTransformSyncTime(0.),
-	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
 	myUUID(anUUID),
 	myName("GameObject"),
@@ -72,10 +66,6 @@ GameObject::GameObject(const UUIDv4::UUID& anUUID) :
 GameObject::GameObject(const GameObject& aGameObject) :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
-	mySyncTimer(-1.f),
-	mySyncFrequency(Network::globalSyncFrequency),
-	myLatestTransformSyncTime(0.),
-	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
 	myUUID(GenerateUUID()),
 	myName(aGameObject.myName),
@@ -98,18 +88,13 @@ GameObject::GameObject(const GameObject& aGameObject) :
 GameObject::GameObject(GameObject&& aGameObject) noexcept :
 	myIsActive(aGameObject.myIsActive),
 	myCollisionCount(0),
-	mySyncTimer(aGameObject.mySyncTimer),
-	mySyncFrequency(aGameObject.mySyncFrequency),
-	myLatestTransformSyncTime(aGameObject.myLatestTransformSyncTime),
-	myLatestSetActiveSyncTime(aGameObject.myLatestSetActiveSyncTime),
 	myParent(aGameObject.myParent),
-	mySyncPosition(aGameObject.mySyncPosition),
-	mySyncRotation(aGameObject.mySyncRotation),
 	myUUID(aGameObject.myUUID),
 	myName(aGameObject.myName),
 #ifdef EDITOR
 	myImguiText(myName),
 #endif // EDITOR
+	myNetworkSyncData(aGameObject.myNetworkSyncData),
 	myTransform(aGameObject.myTransform),
 	myChildren(aGameObject.myChildren),
 	myComponents(aGameObject.myComponents.GetSize())
@@ -127,10 +112,6 @@ GameObject::GameObject(GameObject&& aGameObject) noexcept :
 GameObject::GameObject(const Json::Value& aJson) :
 	myIsActive(aJson["IsActive"].asBool()),
 	myCollisionCount(0),
-	mySyncTimer(-1.f),
-	mySyncFrequency(Network::globalSyncFrequency),
-	myLatestTransformSyncTime(0.),
-	myLatestSetActiveSyncTime(0.),
 	myParent(nullptr),
 	myUUID(aJson["UUID"].isNull() ? GenerateUUID().bytes() : aJson["UUID"].asString()),
 	myName(aJson["Name"].asString()),
@@ -238,11 +219,7 @@ GameObject& GameObject::operator=(GameObject&& aGameObject) noexcept
 	const_cast<UUIDv4::UUID&>(myUUID) = aGameObject.myUUID;
 	myParent = aGameObject.myParent;
 	myChildren = aGameObject.myChildren;
-	mySyncTimer = aGameObject.mySyncTimer;
-	mySyncFrequency = aGameObject.mySyncFrequency;
-	mySyncPosition = aGameObject.mySyncPosition;
-	mySyncRotation = aGameObject.mySyncRotation;
-	myLatestTransformSyncTime = aGameObject.myLatestTransformSyncTime;
+	myNetworkSyncData = aGameObject.myNetworkSyncData;
 
 	for (auto& [type, index] : aGameObject.myIndexList)
 	{
@@ -271,16 +248,16 @@ void GameObject::Update()
 	myLifeTime += Crimson::Time::GetDeltaTime();
 	if (myIsActive)
 	{
-		if (mySyncTimer >= 0.f)
+		if (myNetworkSyncData.syncTimer >= 0.f)
 		{
-			mySyncTimer += Crimson::Time::GetDeltaTime();
-			const float lerpValue = Crimson::Clamp(mySyncTimer / mySyncFrequency, 0.f, 1.f);
-			myTransform.SetPosition(Crimson::Lerp(myTransform.GetPosition(), mySyncPosition, lerpValue));
-			myTransform.SetRotationRadian(Crimson::Lerp(myTransform.GetRotationRadian(), mySyncRotation, lerpValue));
+			myNetworkSyncData.syncTimer += Crimson::Time::GetDeltaTime();
+			const float lerpValue = Crimson::Clamp(myNetworkSyncData.syncTimer / myNetworkSyncData.syncFrequency, 0.f, 1.f);
+			myTransform.SetPosition(Crimson::Lerp(myNetworkSyncData.syncStartPosition, myNetworkSyncData.syncEndPosition, lerpValue));
+			myTransform.SetRotationRadian(Crimson::Lerp(myNetworkSyncData.syncStartRotation, myNetworkSyncData.syncEndRotation, lerpValue));
 
-			if (mySyncTimer >= mySyncFrequency)
+			if (myNetworkSyncData.syncTimer >= myNetworkSyncData.syncFrequency)
 			{
-				mySyncTimer = -1.f;
+				myNetworkSyncData.syncTimer = -1.f;
 			}
 		}
 
@@ -395,18 +372,20 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 		constexpr unsigned timestampOffset = sizeof(Crimson::Vector3f) + sizeof(Crimson::Vector3f) + sizeof(float);
 
 		const double& timestamp = reinterpret_cast<const double&>(aMessage.data[timestampOffset]);
-		if (myLatestTransformSyncTime < timestamp)
+		if (myNetworkSyncData.latestTransformSyncTime < timestamp)
 		{
-			myLatestTransformSyncTime = timestamp;
+			myNetworkSyncData.latestTransformSyncTime = timestamp;
 #ifndef NETWORK_SERVER
 			constexpr unsigned syncTimeOffset = sizeof(Crimson::Vector3f) + sizeof(Crimson::Vector3f);
 
 			if (Engine::IsUsingGrid())
 			{
-				mySyncPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
-				mySyncRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
-				mySyncFrequency = reinterpret_cast<const float&>(aMessage.data[syncTimeOffset]);
-				mySyncTimer = 0.f;
+				myNetworkSyncData.syncStartPosition = myTransform.GetPosition();
+				myNetworkSyncData.syncEndPosition = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data);
+				myNetworkSyncData.syncStartRotation = myTransform.GetRotationRadian();
+				myNetworkSyncData.syncEndRotation = reinterpret_cast<const Crimson::Vector3f&>(aMessage.data[rotationOffset]);
+				myNetworkSyncData.syncFrequency = reinterpret_cast<const float&>(aMessage.data[syncTimeOffset]);
+				myNetworkSyncData.syncTimer = 0.f;
 			}
 			else
 			{
@@ -423,9 +402,9 @@ void GameObject::RecieveNetmessage(const Network::GameObjectMessage& aMessage)
 	case Network::ObjectAction::SetActive:
 	{
 		const double& timestamp = reinterpret_cast<const double&>(aMessage.data[sizeof(bool)]);
-		if (myLatestSetActiveSyncTime < timestamp)
+		if (myNetworkSyncData.latestSetActiveSyncTime < timestamp)
 		{
-			myLatestSetActiveSyncTime = timestamp;
+			myNetworkSyncData.latestSetActiveSyncTime = timestamp;
 			myIsActive = reinterpret_cast<const bool&>(aMessage.data);
 		}
 		break;

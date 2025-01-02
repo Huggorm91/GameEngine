@@ -1,7 +1,8 @@
 #pragma once
 #include "Components/Component.h"
-#include "CrimsonUtilities/Container/MemoryBlock.h"
+#include "NetworkShared/Globals.h"
 #include "CrimsonUtilities/Math/Transform.h"
+#include "CrimsonUtilities/Container/MemoryBlock.h"
 #include <unordered_map>
 
 class Prefab;
@@ -134,27 +135,34 @@ public:
 	static UUIDv4::UUID nullUUID;
 
 private:
+	struct NetworkSyncData
+	{
+		float syncTimer = -1.f;
+		float syncFrequency = Network::globalSyncFrequency;
+		double latestTransformSyncTime = 0.;
+		double latestSetActiveSyncTime = 0.;
+		Crimson::Vector3f syncStartPosition;
+		Crimson::Vector3f syncEndPosition;
+		Crimson::Vector3f syncStartRotation;
+		Crimson::Vector3f syncEndRotation;
+	};
+
 #ifdef EDITOR
 	friend class PrefabManager;
 #endif // EDITOR
 	friend class Component;
 
 	bool myIsActive;
-	int myCollisionCount;
-	float mySyncTimer;
-	float mySyncFrequency;
-	double myLatestTransformSyncTime;
-	double myLatestSetActiveSyncTime;
+	int myCollisionCount;	
 	double myLifeTime;
-	GameObject* myParent;
-	Crimson::Vector3f mySyncPosition;
-	Crimson::Vector3f mySyncRotation;
+	GameObject* myParent;	
 	const UUIDv4::UUID myUUID; // TODO: Swap to using std::string instead since UUID::operator== causes a lot of issues in release
 	std::string myName;
 #ifdef EDITOR
 	std::string myImguiText;
-#endif // EDITOR
+#endif // EDITOR	
 
+	NetworkSyncData myNetworkSyncData;
 	Transform myTransform;
 
 	std::vector<GameObject*> myChildren;
