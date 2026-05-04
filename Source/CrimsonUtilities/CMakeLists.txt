@@ -1,0 +1,95 @@
+cmake_minimum_required(VERSION 4.0)
+
+set(CrimsonUtilities_LOCAL_SOURCES
+        Collision/2DColliders.hpp
+        Collision/3DColliders.hpp
+        Collision/AABB2D.hpp
+        Collision/AABB3D.hpp
+        Collision/Circle.hpp
+        Collision/Intersection.hpp
+        Collision/Intersection2D.hpp
+        Collision/Line.hpp
+        Collision/LineVolume.hpp
+        Collision/Plane.hpp
+        Collision/PlaneVolume.hpp
+        Collision/Ray.hpp
+        Collision/Ray2D.hpp
+        Collision/Sphere.hpp
+        Container/BSTSet.hpp
+        Container/DoublyLinkedList.hpp
+        Container/HashMap.hpp
+        Container/Heap.hpp
+        Container/MinHeap.hpp
+        Container/Queue.hpp
+        Container/Stack.hpp
+        Container/MemoryBlock.cpp
+        File/DirectoryFunctions.cpp
+        File/FileSelectors.cpp
+        #Hash/CityHash/city.cc
+        Hash/SpookyHash/SpookyHashV2.cpp
+        Hash/Hash.hpp
+        Input/Input.cpp
+        Input/InputHandler.cpp
+        Input/InputMapper.cpp
+        Input/InputObserver.hpp
+        Input/KeyBind.cpp
+        Input/XBoxController.cpp
+        #Json/jsonCpp/jsoncpp.cpp
+        Json/nlohmannJson/json.hpp
+        Json/nlohmannJson/json_fwd.hpp
+        Json/Json.cpp
+        Json/JsonVector.hpp
+        Math/sivPerlinNoise/PerlinNoise.hpp
+        Math/AStar.hpp
+        Math/Dijkstra.hpp
+        Math/Matrix.hpp
+        Math/Matrix2x2.hpp
+        Math/Matrix3x3.hpp
+        Math/Matrix4x4.hpp
+        Math/Quaternion.hpp
+        Math/QuaternionTransform.cpp
+        Math/Random.cpp
+        Math/Transform.cpp
+        Math/Vector2.hpp
+        Math/Vector3.hpp
+        Math/Vector4.hpp
+        PostMaster/Message.cpp
+        PostMaster/Observer.hpp
+        PostMaster/PostMaster.cpp
+        String/StringFunctions.cpp
+        Time/Timer.cpp
+)
+
+set(CrimsonUtilities_PUBLIC_HEADERS
+        Container/MemoryBlock.h
+        File/DirectoryFunctions.h
+        File/FileSelectors.h
+        Input/EnumInputAction.h
+        Input/EnumInputEvents.h
+        Input/EnumKeys.h
+        Input/Input.h
+        Input/InputHandler.h
+        Input/InputMapper.h
+        Input/KeyBind.h
+        Input/XBoxController.h
+        Json/Json.h
+        Math/QuaternionTransform.h
+        Math/Random.h
+        Math/Transform.h
+        PostMaster/EnumMessageTypes.h
+        PostMaster/Message.h
+        PostMaster/PostMaster.h
+        String/StringFunctions.h
+        Time/Timer.h
+)
+
+set(CrimsonUtilities_PRIVATE_HEADERS
+        Hash/CityHash/city.h
+        Hash/SpookyHash/SpookyHashV2.h
+        #Json/jsonCpp/json.h
+        #Json/jsonCpp/json-forwards.h
+)
+
+add_library(CrimsonUtilities
+        ${CrimsonUtilities_LOCAL_SOURCES}
+)

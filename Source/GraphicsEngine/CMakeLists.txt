@@ -1,0 +1,100 @@
+cmake_minimum_required(VERSION 4.0)
+
+set(GraphicsEngine_LOCAL_SOURCES
+        GraphicsEngine.pch.cpp
+        GraphicsEngine.cpp
+        Settings.cpp
+        Commands/Light/LightCommand.cpp
+        Commands/Light/LitCmd_AddPointlight.cpp
+        Commands/Light/LitCmd_AddSpotlight.cpp
+        Commands/Light/LitCmd_ResetLightBuffer.cpp
+        Commands/Light/LitCmd_SetAmbientlight.cpp
+        Commands/Light/LitCmd_SetDirectionallight.cpp
+        Commands/Light/LitCmd_SetShadowBias.cpp
+        Commands/GfxCmd_ClearDepthStencil.cpp
+        Commands/GfxCmd_ClearRenderTarget.cpp
+        Commands/GfxCmd_RenderMesh.cpp
+        Commands/GfxCmd_RenderMeshShadow.cpp
+        Commands/GfxCmd_SetFrameBuffer.cpp
+        Commands/GfxCmd_SetRenderTarget.cpp
+        Commands/GfxCmd_SetTextureResource.cpp
+        Commands/GfxCmd_UpdateWorldBounds.cpp
+        Commands/GraphicsCommand.cpp
+        Drawer/EmitterData.cpp
+        Drawer/LineDrawer.cpp
+        Drawer/LineHandle.cpp
+        Drawer/ParticleDrawer.cpp
+        Drawer/ParticleEmitter.cpp
+        InterOp/DDSTextureLoader11.cpp
+        InterOp/RHI.cpp
+        Rendering/Buffers/ConstantBuffer.cpp
+        Rendering/Color.cpp
+        Rendering/GBuffer.cpp
+        Rendering/LineVertex.cpp
+        Rendering/Material.cpp
+        Rendering/ParticleVertex.cpp
+        Rendering/Shader.cpp
+        Rendering/Texture.cpp
+        Rendering/TextureContainer.cpp
+        Rendering/Vertex.cpp
+)
+
+set(GraphicsEngine_PUBLIC_HEADERS
+        GraphicsEngine.h
+        GraphicsEngineDefines.h
+        Settings.h
+        Commands/Light/LightCommand.h
+        Commands/Light/LitCmd_AddPointlight.h
+        Commands/Light/LitCmd_AddSpotlight.h
+        Commands/Light/LitCmd_ResetLightBuffer.h
+        Commands/Light/LitCmd_SetAmbientlight.h
+        Commands/Light/LitCmd_SetDirectionallight.h
+        Commands/Light/LitCmd_SetShadowBias.h
+        Commands/CommandContainer.h
+        Commands/GfxCmd_ClearDepthStencil.h
+        Commands/GfxCmd_ClearRenderTarget.h
+        Commands/GfxCmd_RenderMesh.h
+        Commands/GfxCmd_RenderMeshShadow.h
+        Commands/GfxCmd_SetFrameBuffer.h
+        Commands/GfxCmd_SetRenderTarget.h
+        Commands/GfxCmd_SetTextureResource.h
+        Commands/GfxCmd_UpdateWorldBounds.h
+        Commands/GraphicsCommand.h
+        Drawer/EmitterData.h
+        Drawer/LineDrawer.h
+        Drawer/LineHandle.h
+        Drawer/ParticleDrawer.h
+        Drawer/ParticleEmitter.h
+        InterOp/DDSTextureLoader11.h
+        InterOp/RHI.h
+        InterOp/ShaderInfo.h
+        Rendering/Buffers/ConstantBuffer.h
+        Rendering/Buffers/FrameBuffer.h
+        Rendering/Buffers/LightBuffer.h
+        Rendering/Buffers/MaterialBuffer.h
+        Rendering/Buffers/ObjectBuffer.h
+        Rendering/Buffers/ParticleBuffer.h
+        Rendering/Color.h
+        Rendering/GBuffer.h
+        Rendering/LineVertex.h
+        Rendering/Material.h
+        Rendering/ParticleVertex.h
+        Rendering/Shader.h
+        Rendering/ShaderContainer.h
+        Rendering/Texture.h
+        Rendering/TextureContainer.h
+        Rendering/Vertex.h
+)
+
+set(GraphicsEngine_PRIVATE_HEADERS
+        GraphicsEngine.pch.h
+        Rendering/DefaultTextures/Default_C.h
+        Rendering/DefaultTextures/Default_FX.h
+        Rendering/DefaultTextures/Default_M.h
+        Rendering/DefaultTextures/Default_N.h
+)
+
+# TODO: Check how to compile shaders with CMAKE
+add_library(GraphicsEngine
+        ${GraphicsEngine_LOCAL_SOURCES}
+)

@@ -1,0 +1,109 @@
+cmake_minimum_required(VERSION 4.0)
+
+set(AssetManager_LOCAL_SOURCES
+        AssetManager.pch.cpp
+        AssetManager.cpp
+        Assets/Animation/StateMachine/AnimationStateBase.cpp
+        Assets/Animation/StateMachine/AnimationStateMachine.cpp
+        Assets/Animation/Animation.cpp
+        Assets/Animation/AnimationBase.cpp
+        Assets/Animation/AnimationLayer.cpp
+        Assets/Animation/BlendSpace.cpp
+        Assets/Animation/Bone.cpp
+        Assets/Animation/Skeleton.cpp
+        Assets/Animation/Socket.cpp
+        Assets/Components/Camera/EditorCameraControllerComponent.cpp
+        Assets/Components/Camera/PerspectiveCameraComponent.cpp
+        Assets/Components/Collision/BoxColliderComponent.cpp
+        Assets/Components/Collision/CapsuleColliderComponent.cpp
+        Assets/Components/Collision/ColliderComponent.cpp
+        Assets/Components/Collision/Intersection.cpp
+        Assets/Components/Collision/RayColliderComponent.cpp
+        Assets/Components/Collision/SphereColliderComponent.cpp
+        Assets/Components/ComponentParts/BoxSphereBounds.cpp
+        Assets/Components/ComponentParts/MeshElement.cpp
+        Assets/Components/ComponentParts/TgaImporterConversions.cpp
+        Assets/Components/Debugging/DebugDrawComponent.cpp
+        Assets/Components/Light/DirectionallightComponent.cpp
+        Assets/Components/Light/PointlightComponent.cpp
+        Assets/Components/Light/SpotlightComponent.cpp
+        Assets/Components/Particles/Emitters/BurstEmitter.cpp
+        Assets/Components/Particles/Emitters/StreamEmitter.cpp
+        Assets/Components/Particles/ParticleEmitterComponent.cpp
+        Assets/Components/Rendering/AnimatedMeshComponent.cpp
+        Assets/Components/Rendering/AnimationControllerComponent.cpp
+        Assets/Components/Rendering/MeshComponent.cpp
+        Assets/Components/Component.cpp
+        Assets/Components/ComponentType.cpp
+        Assets/GameObject.cpp
+        Assets/ImguiTransform.cpp
+        Assets/Prefab.cpp
+        Assets/Primitives.cpp
+        Managers/AnimationManager.cpp
+        Managers/CollisionManager.cpp
+        Managers/MaterialManager.cpp
+        Managers/ModelManager.cpp
+        Managers/PrefabManager.cpp
+        Managers/SceneManager.cpp
+        Managers/ShaderManager.cpp
+        Managers/TextureManager.cpp
+)
+
+set(AssetManager_PUBLIC_HEADERS
+        AssetManager.h
+        Assets/Animation/StateMachine/AnimationStateBase.h
+        Assets/Animation/StateMachine/AnimationStateMachine.h
+        Assets/Animation/Animation.h
+        Assets/Animation/AnimationBase.h
+        Assets/Animation/AnimationLayer.h
+        Assets/Animation/BlendSpace.h
+        Assets/Animation/Bone.h
+        Assets/Animation/Skeleton.h
+        Assets/Animation/Socket.h
+        Assets/Components/Camera/EditorCameraControllerComponent.h
+        Assets/Components/Camera/PerspectiveCameraComponent.h
+        Assets/Components/Collision/BoxColliderComponent.h
+        Assets/Components/Collision/CapsuleColliderComponent.h
+        Assets/Components/Collision/ColliderComponent.h
+        Assets/Components/Collision/EnumCollisions.h
+        Assets/Components/Collision/ColliderForwards.h
+        Assets/Components/Collision/Intersection.h
+        Assets/Components/Collision/RayColliderComponent.h
+        Assets/Components/Collision/SphereColliderComponent.h
+        Assets/Components/ComponentParts/MeshElement.h
+        Assets/Components/Debugging/DebugDrawComponent.h
+        Assets/Components/Light/PointlightComponent.h
+        Assets/Components/Light/SpotlightComponent.h
+        Assets/Components/Particles/Emitters/BurstEmitter.h
+        Assets/Components/Particles/Emitters/StreamEmitter.h
+        Assets/Components/Particles/ParticleEmitterComponent.h
+        Assets/Components/Rendering/AnimatedMeshComponent.h
+        Assets/Components/Rendering/AnimationControllerComponent.h
+        Assets/Components/Rendering/MeshComponent.h
+        Assets/Components/Component.h
+        Assets/Components/ComponentInclude.h
+        Assets/Components/ComponentMacros.h
+        Assets/Components/ComponentTemplate.h
+        Assets/Components/ComponentType.h
+        Assets/Binary.h
+        Assets/GameObject.h
+        Assets/ImguiTransform.h
+        Assets/Prefab.h
+        Assets/Primitives.h
+        Managers/AnimationManager.h
+        Managers/CollisionManager.h
+        Managers/MaterialManager.h
+        Managers/ModelManager.h
+        Managers/PrefabManager.h
+        Managers/SceneManager.h
+        Managers/ShaderManager.h
+        Managers/TextureManager.h
+)
+
+set(AssetManager_PRIVATE_HEADERS
+        AssetManager.pch.h
+)
+
+add_library(AssetManager
+        ${AssetManager_LOCAL_SOURCES}
+)
