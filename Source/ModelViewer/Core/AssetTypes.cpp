@@ -1,6 +1,6 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "AssetTypes.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 
 std::string Assets::GetAssetTypeName(eAssetType aType)
 {

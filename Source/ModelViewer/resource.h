@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Modelviewer.rc
+// Used by ModelViewer.rc
 //
 #define IDC_MYICON                      2
 #define IDD_MODELVIEWER_DIALOG          102

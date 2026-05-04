@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "SplashWindow.h"
 
 #include <thread>

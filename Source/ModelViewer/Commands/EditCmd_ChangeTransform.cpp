@@ -1,6 +1,6 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "EditCmd_ChangeTransform.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 
 EditCmd_ChangeTransform::EditCmd_ChangeTransform(Crimson::Vector3f& aValueToChange, const Crimson::Vector3f& aNewValue, bool& aHasChangedFlag) : myPointer(&aValueToChange), myNewValue(aNewValue), myOldValue(aValueToChange), myHasChangedFlag(&aHasChangedFlag)
 {

@@ -1,4 +1,4 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "EditCmd_RemoveGameObjects.h"
 
 EditCmd_RemoveGameObjects::EditCmd_RemoveGameObjects(): myObjects(GetSelectedObjects()), myChildList()

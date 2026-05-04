@@ -5,7 +5,7 @@
 
 #ifndef _RETAIL
 #include "ModelViewer/ModelViewer.h"
-#include "Modelviewer/Commands/EditCmd_ChangeGameObjectName.h"
+#include "ModelViewer/Commands/EditCmd_ChangeGameObjectName.h"
 #include "ImguiTransform.h"
 #endif // !_RETAIL
 

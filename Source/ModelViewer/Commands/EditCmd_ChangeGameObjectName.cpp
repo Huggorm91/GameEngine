@@ -1,6 +1,6 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "EditCmd_ChangeGameObjectName.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 
 EditCmd_ChangeGameObjectName::EditCmd_ChangeGameObjectName(GameObject* anObject, const std::string& aNewName) : myObject(anObject), myOldName(anObject->GetName()), myOldImguiName(ModelViewer::GetImguiManager().GetIndexName(anObject)), myNewName(aNewName)
 {

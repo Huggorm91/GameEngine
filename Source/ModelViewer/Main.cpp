@@ -1,8 +1,8 @@
 ﻿#define WIN32_LEAN_AND_MEAN
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "Windows.h"
 #include "resource.h"
-#include "Modelviewer.h"
+#include "ModelViewer.h"
 #include "Input/InputHandler.h"
 #include "Time/Timer.h"
 
@@ -24,7 +24,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(nCmdShow);
 
     //constexpr SIZE windowSize = { 1920, 1080 };
-    //constexpr LPCWSTR windowTitle = L"Modelviewer";
+    //constexpr LPCWSTR windowTitle = L"ModelViewer";
 
     ModelViewer& MV = ModelViewer::Get();
 

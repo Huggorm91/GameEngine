@@ -1,6 +1,6 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "EditCommand.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 
 bool EditCommand::Merge(const EditCommand*)
 {

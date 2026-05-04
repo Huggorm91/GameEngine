@@ -1,5 +1,5 @@
-#include "Modelviewer.pch.h"
-#include "Modelviewer.h"
+#include "ModelViewer.pch.h"
+#include "ModelViewer.h"
 #include "Windows/SplashWindow.h"
 #include "Commands/EditCmd_AddGameobject.h"
 #include "Commands/EditCmd_RemoveGameobject.h"

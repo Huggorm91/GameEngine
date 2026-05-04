@@ -1,6 +1,6 @@
 #pragma once
 #include "EditCommand.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 #include "AssetManager/Assets/GameObject.h"
 
 template <class CompType>

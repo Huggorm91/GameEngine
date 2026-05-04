@@ -1,10 +1,10 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "ImguiManager.h"
-#include "../Modelviewer.h"
-#include "../Commands/EditCmd_AddGameobject.h"
-#include "../Commands/EditCmd_AddGameobjects.h"
-#include "../Commands/EditCmd_RemoveGameobjects.h"
-#include "../Commands/EditCmd_ChangeMultipleGameObjects.h"
+#include "ModelViewer.h"
+#include "Commands/EditCmd_AddGameObject.h"
+#include "Commands/EditCmd_AddGameObjects.h"
+#include "Commands/EditCmd_RemoveGameObjects.h"
+#include "Commands/EditCmd_ChangeMultipleGameObjects.h"
 
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "GraphicsEngine/Commands/Light/LitCmd_SetAmbientlight.h"
@@ -15,7 +15,7 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "File\FileSelectors.h"
+#include "File/FileSelectors.h"
 #include "Input/InputMapper.h"
 #include "Time/Timer.h"
 

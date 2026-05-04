@@ -1,11 +1,11 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "SkeletonEditor.h"
 #include "AssetManager/Assets/Components/Camera/PerspectiveCameraComponent.h"
 #include "AssetManager/Assets/Components/Camera/EditorCameraControllerComponent.h"
 #include "AssetManager/Assets/ImguiTransform.h"
 #include "GraphicsEngine/GraphicsEngine.h"
 #include "File/FileSelectors.h"
-#include "Modelviewer.h"
+#include "ModelViewer.h"
 #include "Time/Timer.h"
 #include "Math/Sort.hpp"
 

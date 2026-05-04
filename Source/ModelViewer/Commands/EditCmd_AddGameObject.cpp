@@ -1,6 +1,6 @@
-#include "Modelviewer.pch.h"
+#include "ModelViewer.pch.h"
 #include "EditCmd_AddGameObject.h"
-#include "../Modelviewer.h"
+#include "../ModelViewer.h"
 
 EditCmd_AddGameObject::EditCmd_AddGameObject(const std::shared_ptr<GameObject>& anObject) : myObject(anObject), myID(anObject->GetID())
 {
