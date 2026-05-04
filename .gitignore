@@ -40,7 +40,14 @@ bld/
 [Bb]in/Crashdump
 [Bb]in/README.txt
 Content
+_[Cc]make/
+_[Ll]ib/
+_[Tt]emp/
 */GraphicsEngine/Shaders/Include/
+
+# CLion files
+/.idea
+/.ideaurn files
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
