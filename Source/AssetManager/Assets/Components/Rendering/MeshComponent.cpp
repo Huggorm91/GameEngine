@@ -9,7 +9,7 @@
 #ifndef _RETAIL
 #include "AssetManager.h"
 #include "ModelViewer/ModelViewer.h"
-#include "ModelViewer/Commands/EditCmd_ChangeValue.h"
+#include "ModelViewer/Commands/EditCmd_ChangeValue.hpp"
 #include "../../ImguiTransform.h"
 #endif // !_RETAIL
 
